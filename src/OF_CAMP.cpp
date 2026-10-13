@@ -70,6 +70,7 @@ enum { TOWN_LIST_Y1 = INFO_Y1+54,			// header of the town list
 	  };
 
 static Button3D     button_recruit_town;
+static ButtonCustom button_camp_spy_menu;		// spy menu button of the player's own Fort, moved below the button row
 static ButtonCustom button_town_list[TOWN_LIST_MAX_ROW];
 static ButtonCustom button_town_list_cancel;
 static short        town_list_recno_array[MAX_LINKED_FIRM_TOWN];
@@ -415,12 +416,9 @@ void FirmCamp::put_info(int refreshFlag)
 			button_reward.paint( INFO_X1+BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', "REWARDCB" );
 			button_defense.paint( INFO_X2-BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', defense_flag ? (char*)"DEFENSE1" : (char*)"DEFENSE0" );
 
-			//--- 7kmod: recruit button, its space is shared with the spy button ---//
+			//--- 7kmod: recruit button, the spy button is moved to below the button row ---//
 
-			if( !player_spy_count )
-				button_recruit_town.paint( INFO_X1+BUTTON_ACTION_WIDTH*2, INFO_Y1+242, 'A', "TRAIN" );
-			else
-				button_recruit_town.reset();
+			button_recruit_town.paint( INFO_X1+BUTTON_ACTION_WIDTH*2, INFO_Y1+242, 'A', "TRAIN" );
 		}
 
 		if( button_recruit_town.init_flag )
@@ -447,17 +445,34 @@ void FirmCamp::put_info(int refreshFlag)
 			button_reward.disable();
 		}
 
-		x=INFO_X1+BUTTON_ACTION_WIDTH*2;
+		//--- 7kmod: the spy menu button is displayed as a text button below the button row ---//
+		//--- (a player's own firm has no other spy buttons, as it cannot be bribed or captured) ---//
+
+		if( refreshFlag==INFO_REPAINT )
+		{
+			if( player_spy_count > 0 )
+			{
+				button_camp_spy_menu.paint( INFO_X1, INFO_Y1+242+BUTTON_ACTION_HEIGHT+1, INFO_X2, INFO_Y2-1,
+					ButtonCustom::disp_text_button_func, ButtonCustomPara((void*)"Spy Menu",0) );
+			}
+			else
+			{
+				button_camp_spy_menu.reset();
+			}
+		}
 	}
 	else
 	{
 		x=INFO_X1;
 
 		if( refreshFlag==INFO_REPAINT )
+		{
 			button_recruit_town.reset();		// 7kmod: the recruit button is only for the player's own Forts
-	}
+			button_camp_spy_menu.reset();
+		}
 
-	disp_spy_button(x, INFO_Y1+242, refreshFlag);
+		disp_spy_button(x, INFO_Y1+242, refreshFlag);
+	}
 
 	#ifdef DEBUG
 		if( sys.testing_session || sys.debug_session )
@@ -510,11 +525,22 @@ int FirmCamp::detect_info()
 
 	//---------- detect spy button ----------//
 
-	if( detect_spy_button() )
-		return 1;
-
 	if( !own_firm() )
+	{
+		if( detect_spy_button() )
+			return 1;
+
 		return 0;
+	}
+
+	//--- 7kmod: spy menu button of the player's own Fort ---//
+
+	if( player_spy_count > 0 && button_camp_spy_menu.init_flag && button_camp_spy_menu.detect() )
+	{
+		firm_menu_mode = FIRM_MENU_SPY;
+		info.disp();
+		return 1;
+	}
 
 	//------ detect the overseer button -----//
 
@@ -589,7 +615,7 @@ int FirmCamp::detect_info()
 
 	//----- 7kmod: detect the recruit button -------//
 
-	if( button_recruit_town.init_flag && !player_spy_count && button_recruit_town.detect() )
+	if( button_recruit_town.init_flag && button_recruit_town.detect() )
 	{
 		if( !can_recruit_from_town() )
 			return 1;
