@@ -228,6 +228,7 @@ public:
 	int           fort_recruit_valid();
 	int           fort_recruit_can_pull(int raceId);
 	int           fort_train_count(short firmRecno);
+	void          reduce_mixed_race_resistance();		// 7kmod
 	void          disp_fort_train_count();
 
 public:

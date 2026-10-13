@@ -363,6 +363,8 @@ void TownArray::think_new_independent_town()
 			break;
 	}
 
+	townPtr->reduce_mixed_race_resistance();		// 7kmod: mixed race towns have lower resistance
+
 	//---------- set town layout -----------//
 
 	townPtr->auto_set_layout();

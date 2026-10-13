@@ -853,6 +853,8 @@ int Battle::create_town(int nationRecno, int raceId, int& xLoc, int& yLoc)
 
 			totalPop += curPop;
 		}
+
+		townPtr->reduce_mixed_race_resistance();		// 7kmod: mixed race towns have lower resistance
 	}
 
 	//---------- set town layout -----------//
