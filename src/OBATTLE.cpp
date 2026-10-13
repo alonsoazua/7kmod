@@ -822,33 +822,36 @@ int Battle::create_town(int nationRecno, int raceId, int& xLoc, int& yLoc)
 
 		int curPop, totalPop=0, townResistance;
 
+		//--- 7kmod: the total population no longer depends on the number of races. ---//
+		//--- All independent towns get 15 to 29 people, as single race towns did,  ---//
+		//--- shared among the races with the first race having a larger share      ---//
+		//--- (weight 3 for the first race and 2 for each other race).              ---//
+
+		int targetPop    = 15 + misc.random(15);		// 15 to 29
+		int totalWeight  = 3 + 2*(mixedRaceCount-1);
+
+		targetPop = MIN(targetPop, MAX_TOWN_POPULATION);
+
 		for( int i=0 ; i<mixedRaceCount ; i++ )
 		{
-			if(totalPop>=MAX_TOWN_POPULATION)
+			if(totalPop>=targetPop)
 				break;
 
 			townResistance = town_array.independent_town_resistance();
 
-			if( i==0 )
-			{
-				curPop = 15/mixedRaceCount + misc.random(15/mixedRaceCount);
-				if(curPop>=MAX_TOWN_POPULATION)
-					curPop = MAX_TOWN_POPULATION;
-
-				err_when(curPop==0);
-				townPtr->init_pop( raceId, curPop, townResistance, 0, 1 ); 	// last 1-first initialization at the beginning of the game
-				totalPop += curPop;
-			}
+			if( i==mixedRaceCount-1 )		// the last race gets the remaining population
+				curPop = targetPop - totalPop;
 			else
-			{
-				curPop = 10/mixedRaceCount + misc.random(10/mixedRaceCount);
-				if(curPop>=MAX_TOWN_POPULATION-totalPop)
-					curPop = MAX_TOWN_POPULATION-totalPop;
+				curPop = targetPop * (i==0 ? 3 : 2) / totalWeight;
 
-				err_when(curPop==0);
+			curPop = MAX(curPop, 1);
+
+			if( i==0 )
+				townPtr->init_pop( raceId, curPop, townResistance, 0, 1 ); 	// last 1-first initialization at the beginning of the game
+			else
 				townPtr->init_pop( random_race(), curPop, townResistance, 0, 1 );
-				totalPop += curPop;
-			}
+
+			totalPop += curPop;
 		}
 	}
 
