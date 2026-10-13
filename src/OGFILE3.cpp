@@ -1449,7 +1449,14 @@ int TownArray::read_file(File* filePtr)
 			}
 			else
 			{
-				if( !filePtr->file_read(&gf_rec, sizeof(TownGF)) )
+				//--- 7kmod: saved games before the mod don't have the 7kmod fields ---//
+
+				int townGFSize = game_file_array.load_file_game_version >= GAME_VERSION_7KMOD ?
+									  sizeof(TownGF) : TOWN_GF_SIZE_BEFORE_7KMOD;
+
+				memset(&gf_rec.town, 0, sizeof(TownGF));
+
+				if( !filePtr->file_read(&gf_rec, townGFSize) )
 					return 0;
 				townPtr->read_record(&gf_rec.town);
 			}

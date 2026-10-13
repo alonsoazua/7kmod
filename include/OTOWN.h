@@ -162,6 +162,8 @@ public:
 	char  train_queue_count;
 	short	train_unit_recno;			// race id. of the unit the town is currently training, 0-if currently not training any
 	int	train_unit_action_id;	// id. of the action to be assigned to this unit when it is finished training.
+	short	train_queue_firm_array[MAX_TRAIN_QUEUE];	// 7kmod: the Fort each queued unit goes into when trained, 0 for none
+	short	train_unit_firm_recno;	// 7kmod: the Fort the unit under training goes into when trained, 0 for none
 	uint32_t start_train_frame_no;
 	short defend_target_recno; 	// used in defend mode, store recno of latest target atttacking this town
 	
@@ -319,7 +321,7 @@ public:
 	void 	set_auto_grant_loyalty(int loyaltyLevel);
 	void 	disp_auto_loyalty();
 
-	void	add_queue(char skillId, char raceId, int amount = 1);
+	void	add_queue(char skillId, char raceId, int amount = 1, short firmRecno = 0);
 	void	remove_queue(char skillId, int amount = 1);
 
 	int   write_file(File*);

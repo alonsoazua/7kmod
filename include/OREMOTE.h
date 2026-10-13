@@ -167,6 +167,7 @@ enum { MSG_QUEUE_HEADER=FIRST_REMOTE_MSG_ID,
 		 MSG_U_SHIP_COPY_ROUTE,
 		 MSG_FIRM_REQ_BUILDER,
 		 MSG_F_MARKET_RESTOCK,
+		 MSG_TOWN_TRAIN_FOR_FIRM,		// 7kmod: train units in a town that go into a Fort when trained
 
 		 LAST_REMOTE_MSG_ID			// keep this item last
 	  };
@@ -316,6 +317,7 @@ public:
 	void	caravan_copy_route();
 	void	firm_request_builder();
 	void	market_switch_restock();
+	void	town_train_for_firm();		// 7kmod
 };
 
 //----------- Define class Remote -----------//

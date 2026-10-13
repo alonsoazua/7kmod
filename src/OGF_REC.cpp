@@ -2947,6 +2947,8 @@ void Town::write_record(TownGF *r)
 	WriteInt16Array(linked_town_array, MAX_LINKED_TOWN_TOWN);
 	WriteInt8Array(linked_firm_enable_array, MAX_LINKED_FIRM_TOWN);
 	WriteInt8Array(linked_town_enable_array, MAX_LINKED_TOWN_TOWN);
+	WriteInt16Array(train_queue_firm_array, MAX_TRAIN_QUEUE);		// 7kmod
+	WriteInt16(train_unit_firm_recno);
 }
 
 void Town::read_record(TownGF *r)
@@ -3016,6 +3018,8 @@ void Town::read_record(TownGF *r)
 	ReadInt16Array(linked_town_array, MAX_LINKED_TOWN_TOWN);
 	ReadInt8Array(linked_firm_enable_array, MAX_LINKED_FIRM_TOWN);
 	ReadInt8Array(linked_town_enable_array, MAX_LINKED_TOWN_TOWN);
+	ReadInt16Array(train_queue_firm_array, MAX_TRAIN_QUEUE);		// 7kmod
+	ReadInt16(train_unit_firm_recno);
 }
 
 void Version_1_Town::write_record(Version_1_TownGF *r)

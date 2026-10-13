@@ -3799,6 +3799,7 @@ void Town::cancel_train_unit()
 
 		unit_array.disappear_in_town(train_unit_recno, town_recno);
 		train_unit_recno = 0;
+		train_unit_firm_recno = 0;		// 7kmod
 		//#### end alex 17/3 ####//
 	}
 }

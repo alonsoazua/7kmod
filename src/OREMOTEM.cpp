@@ -181,6 +181,7 @@ static MsgProcessFP msg_process_function_array[] =
 	&RemoteMsg::ship_copy_route,
 	&RemoteMsg::firm_request_builder,
 	&RemoteMsg::market_switch_restock,
+	&RemoteMsg::town_train_for_firm,		// 7kmod
 };
 
 //---------- Declare static functions ----------//
@@ -2320,6 +2321,27 @@ void RemoteMsg::town_recruit()
 	}
 }
 // ------- End of function RemoteMsg::town_recruit ---------//
+
+
+// ------- Begin of function RemoteMsg::town_train_for_firm ---------//
+//
+// 7kmod: add units to the town's training queue that go into the given
+// Fort when they are trained.
+//
+void RemoteMsg::town_train_for_firm()
+{
+	err_when( id != MSG_TOWN_TRAIN_FOR_FIRM);
+	// packet structure : <town recno> <skill id> <race id> <amount> <firm recno>
+	short *shortPtr = (short *)data_buf;
+	if( validate_town(*shortPtr) && shortPtr[1] > 0 && shortPtr[2] > 0 )
+	{
+		town_array[*shortPtr]->add_queue((char) shortPtr[1], (char) shortPtr[2], shortPtr[3], shortPtr[4]);
+
+		if( town_array.selected_recno == *shortPtr )
+			info.update();
+	}
+}
+// ------- End of function RemoteMsg::town_train_for_firm ---------//
 
 
 // ------- Begin of function RemoteMsg::town_skip_recruit ---------//

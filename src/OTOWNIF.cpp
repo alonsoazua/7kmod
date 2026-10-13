@@ -783,16 +783,17 @@ int Town::detect_main_menu()
 
 				if( remote.is_enable() )
 				{
-					// packet structure : <town recno> <skill id> <race id> <amount>
-					short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_RECRUIT, 4*sizeof(short) );
+					// packet structure : <town recno> <skill id> <race id> <amount> <firm recno>
+					short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_TRAIN_FOR_FIRM, 5*sizeof(short) );
 					shortPtr[0] = town_recno;
 					shortPtr[1] = SKILL_LEADING;
 					shortPtr[2] = raceId;
 					shortPtr[3] = (short)trainAmount;
+					shortPtr[4] = fort_recruit_firm_recno;
 				}
 				else
 				{
-					add_queue(SKILL_LEADING, raceId, trainAmount);
+					add_queue(SKILL_LEADING, raceId, trainAmount, fort_recruit_firm_recno);		// the trained units go into the Fort
 				}
 
 				se_ctrl.immediate_sound("TURN_ON");
@@ -2085,6 +2086,7 @@ int Town::recruit(int trainSkillId, int raceId, char remoteAction)
 		err_when( train_unit_recno );		// if there is already a unit under training
 
 		train_unit_recno = unitRecno;
+		train_unit_firm_recno = 0;		// 7kmod: set by process_queue() if the unit goes into a Fort
 		start_train_frame_no = sys.frame_count;	// as an offset for displaying the progress bar correctly
 
 		unitPtr->deinit_sprite();
@@ -2214,6 +2216,7 @@ void Town::process_train()
 	{
 		unit_array.disappear_in_town(train_unit_recno, town_recno);
 		train_unit_recno = 0;
+		train_unit_firm_recno = 0;		// 7kmod
 		return;
 	}
 
@@ -2258,9 +2261,29 @@ void Town::finish_train(Unit* unitPtr)
 	unitPtr->unit_mode = 0;		// reset it to 0 from UNIT_MODE_UNDER_TRAINING
 	train_unit_recno   = 0;
 
+	short destFirmRecno = train_unit_firm_recno;		// 7kmod: the Fort the unit goes into
+	train_unit_firm_recno = 0;
+	int   unitRecno = unitPtr->sprite_recno;
+	int   unitNationRecno = unitPtr->nation_recno;
+
 	int townRecno = town_recno;		// save the recno as it can be deleted in dec_pop()
 
 	dec_pop(unitPtr->race_id, 0);		// decrease the population now as the recruit() does do so
+
+	//---- 7kmod: put the trained unit directly into its Fort if it still has room ----//
+
+	if( destFirmRecno && !firm_array.is_deleted(destFirmRecno) && !unit_array.is_deleted(unitRecno) )
+	{
+		Firm* firmPtr = firm_array[destFirmRecno];
+
+		if( firmPtr->firm_id == FIRM_CAMP && firmPtr->nation_recno == unitNationRecno &&
+			 !firmPtr->under_construction && firmPtr->worker_array &&
+			 firmPtr->worker_count < MAX_WORKER &&
+			 unit_array[unitRecno]->rank_id == RANK_SOLDIER )
+		{
+			firmPtr->assign_unit(unitRecno);
+		}
+	}
 
 	//---- if this trained unit is tied to an AI action ----//
 
@@ -2309,13 +2332,17 @@ void Town::process_queue()
 		{
 			skillId = train_queue_skill_array[i];
 			raceId = train_queue_race_array[i];
+			short firmRecno = train_queue_firm_array[i];		// 7kmod
 			err_when(train_queue_count-i-1 < 0 || train_queue_count-i-1 > MAX_TRAIN_QUEUE);
 			memmove(train_queue_skill_array, train_queue_skill_array+i+1,
 						sizeof(train_queue_skill_array[0])*(train_queue_count-i-1));
 			memmove(train_queue_race_array, train_queue_race_array+i+1,
 						sizeof(train_queue_race_array[0])*(train_queue_count-i-1));
+			memmove(train_queue_firm_array, train_queue_firm_array+i+1,
+						sizeof(train_queue_firm_array[0])*(train_queue_count-i-1));		// 7kmod
 			train_queue_count -= i+1;
-			recruit(skillId, raceId, COMMAND_AUTO);
+			if( recruit(skillId, raceId, COMMAND_AUTO) && train_unit_recno )
+				train_unit_firm_recno = firmRecno;		// 7kmod: the Fort the unit goes into when trained
 			break;
 		}
 	}
@@ -2330,7 +2357,7 @@ void Town::process_queue()
 
 
 //--------- Begin of function Town::add_queue ---------//
-void Town::add_queue(char skillId, char raceId, int amount)
+void Town::add_queue(char skillId, char raceId, int amount, short firmRecno)
 {
 	err_when(amount < 0);
 	if (amount < 0) return;
@@ -2341,6 +2368,7 @@ void Town::add_queue(char skillId, char raceId, int amount)
 	for (int i = 0; i < enqueueAmount; ++i)
 	{
 		train_queue_skill_array[train_queue_count] = skillId;
+		train_queue_firm_array[train_queue_count] = firmRecno;		// 7kmod
 		train_queue_race_array[train_queue_count++] = raceId;
 	}	
 
@@ -2364,6 +2392,7 @@ void Town::remove_queue(char skillId, int amount)
 
 			misc.del_array_rec(train_queue_skill_array, train_queue_count, sizeof(train_queue_skill_array[0]), i+1);
 			misc.del_array_rec(train_queue_race_array, train_queue_count, sizeof(train_queue_race_array[0]), i+1);
+			misc.del_array_rec(train_queue_firm_array, train_queue_count, sizeof(train_queue_firm_array[0]), i+1);		// 7kmod
 			train_queue_count--;			
 			amount--;
 

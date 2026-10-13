@@ -1553,7 +1553,13 @@ struct TownGF
 	int16_t              linked_town_array[MAX_LINKED_TOWN_TOWN];
 	int8_t               linked_firm_enable_array[MAX_LINKED_FIRM_TOWN];
 	int8_t               linked_town_enable_array[MAX_LINKED_TOWN_TOWN];
+	// 7kmod fields, only in saved games of version GAME_VERSION_7KMOD or later. Keep them last.
+	int16_t              train_queue_firm_array[MAX_TRAIN_QUEUE];
+	int16_t              train_unit_firm_recno;
 };
+
+// 7kmod: size of TownGF in saved games before the 7kmod fields were added
+#define TOWN_GF_SIZE_BEFORE_7KMOD (sizeof(TownGF) - sizeof(int16_t)*(MAX_TRAIN_QUEUE+1))
 
 struct Version_1_TownGF
 {

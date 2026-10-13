@@ -31,6 +31,11 @@ extern const char *GAME_VERSION_STR;
 //#define GAME_VERSION       110          // Version 1.00, don't change it unless the format of save game files has been changed
 extern const int GAME_VERSION;
 
+// 7kmod: saved game version of the mod. Saved games with an older version
+// (such as the official 2.15.x games, version 213) can still be loaded,
+// while the official game refuses to load the mod's saved games.
+#define GAME_VERSION_7KMOD	290
+
 //-------- Define constant ------------//
 
 #define APP_NAME           "SK"                         // application name
