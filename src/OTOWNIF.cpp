@@ -392,11 +392,22 @@ void Town::disp_main_menu(int refreshFlag)
 
 	if( nation_recno==nation_array.player_recno )
 	{
+		int fortMode = fort_recruit_valid();		// 7kmod
+
 		if( refreshFlag == INFO_REPAINT )
 		{
 			button_recruit.paint( BUTTON_X1, y, 'A', "RECRUIT" );
 
-			if( has_linked_own_camp )
+			if( fortMode )		// 7kmod: fort mode only has Recruit, Train and Back to Fort
+			{
+				button_train.paint( BUTTON_X1+BUTTON_ACTION_WIDTH, y, 'A', "TRAIN" );
+				button_tax.reset();
+				button_grant.reset();
+
+				button_back_fort.paint( BUTTON_X1+BUTTON_ACTION_WIDTH*2, y, BUTTON_X2, y+BUTTON_ACTION_HEIGHT-1,
+					i_disp_back_fort_button, ButtonCustomPara(NULL, fort_recruit_firm_recno) );
+			}
+			else if( has_linked_own_camp )
 			{
 				button_train.paint( BUTTON_X1+BUTTON_ACTION_WIDTH, y, 'A', "TRAIN" );
 				button_tax.paint( BUTTON_X1+BUTTON_ACTION_WIDTH*2, y, 'A', "COLLTAX" );
@@ -423,26 +434,10 @@ void Town::disp_main_menu(int refreshFlag)
 			#endif
 		}
 
-		//------ 7kmod: in fort mode, display the button for returning to the Fort ------//
+		if( refreshFlag == INFO_REPAINT && !fortMode )
+			button_back_fort.reset();		// 7kmod
 
-		int fortMode = fort_recruit_valid();
-
-		if( refreshFlag == INFO_REPAINT )
-		{
-			if( fortMode )
-			{
-				int backY = y+BUTTON_ACTION_HEIGHT+2;
-
-				button_back_fort.paint( BUTTON_X1+BUTTON_ACTION_WIDTH, backY, BUTTON_X2, backY+34,
-					i_disp_back_fort_button, ButtonCustomPara(NULL, fort_recruit_firm_recno) );
-			}
-			else
-			{
-				button_back_fort.reset();
-			}
-		}
-
-		if( has_linked_own_camp )		 // a whole row is used for displaying buttons, so additional buttons will be displayed in the next row
+		if( has_linked_own_camp || fortMode )		 // a whole row is used for displaying buttons, so additional buttons will be displayed in the next row
 			y += BUTTON_ACTION_HEIGHT;
 		else
 			x += BUTTON_ACTION_WIDTH;	 // only one button "Recruit", new button displayed next to it.
@@ -621,8 +616,7 @@ int Town::fort_recruit_can_pull(int raceId)
 
 //-------- Begin of static function i_disp_back_fort_button --------//
 //
-// 7kmod: button showing the Fort being recruited for.
-// button->custom_para.value is the firm recno of the Fort.
+// 7kmod: button for returning to the Fort being recruited for.
 //
 static void i_disp_back_fort_button(ButtonCustom *button, int repaintBody)
 {
@@ -644,13 +638,7 @@ static void i_disp_back_fort_button(ButtonCustom *button, int repaintBody)
 		y2--;
 	}
 
-	int midY = (y1+y2)/2;
-	int firmRecno = button->custom_para.value;
-
-	if( firmRecno && !firm_array.is_deleted(firmRecno) )
-		font_san.center_put( x1+2, y1+1, x2-2, midY, firm_array[firmRecno]->firm_name() );
-
-	font_san.center_put( x1+2, midY, x2-2, y2-1, "Back to Fort" );
+	font_san.center_put( x1+2, y1+1, x2-2, y2-1, "Back to Fort" );
 }
 //--------- End of static function i_disp_back_fort_button ---------//
 
@@ -787,6 +775,32 @@ int Town::detect_main_menu()
 
 	if( button_train.detect(GETKEY(KEYEVENT_TOWN_TRAIN)) )
 	{
+		if( fortMode )		// 7kmod: train a Leadership unit directly
+		{
+			if( can_train(raceId) )
+			{
+				int trainAmount = (mouse.event_skey_state & SHIFT_KEY_MASK) ? TOWN_TRAIN_BATCH_COUNT : 1;
+
+				if( remote.is_enable() )
+				{
+					// packet structure : <town recno> <skill id> <race id> <amount>
+					short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_RECRUIT, 4*sizeof(short) );
+					shortPtr[0] = town_recno;
+					shortPtr[1] = SKILL_LEADING;
+					shortPtr[2] = raceId;
+					shortPtr[3] = (short)trainAmount;
+				}
+				else
+				{
+					add_queue(SKILL_LEADING, raceId, trainAmount);
+				}
+
+				se_ctrl.immediate_sound("TURN_ON");
+				info.disp();
+			}
+			return 1;
+		}
+
 		town_menu_mode = TOWN_MENU_TRAIN;
 		disable_refresh = 1;    // static var for disp_info() only
 		info.disp();

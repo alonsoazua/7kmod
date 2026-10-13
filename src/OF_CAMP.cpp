@@ -65,7 +65,8 @@ enum { CAMP_MENU_MAIN,
 enum { TOWN_LIST_Y1 = INFO_Y1+54,			// header of the town list
 		 TOWN_LIST_ROW_Y1 = TOWN_LIST_Y1+24,	// first row of the town list
 		 TOWN_LIST_ROW_HEIGHT = 24,
-		 TOWN_LIST_MAX_ROW = (INFO_Y2-26-TOWN_LIST_ROW_Y1) / TOWN_LIST_ROW_HEIGHT,
+		 TOWN_LIST_CANCEL_HEIGHT = 34,
+		 TOWN_LIST_MAX_ROW = (INFO_Y2-TOWN_LIST_CANCEL_HEIGHT-2-TOWN_LIST_ROW_Y1) / TOWN_LIST_ROW_HEIGHT,
 	  };
 
 static Button3D     button_recruit_town;
@@ -417,7 +418,7 @@ void FirmCamp::put_info(int refreshFlag)
 			//--- 7kmod: recruit button, its space is shared with the spy button ---//
 
 			if( !player_spy_count )
-				button_recruit_town.paint( INFO_X1+BUTTON_ACTION_WIDTH*2, INFO_Y1+242, 'A', "RECRUIT" );
+				button_recruit_town.paint( INFO_X1+BUTTON_ACTION_WIDTH*2, INFO_Y1+242, 'A', "TRAIN" );
 			else
 				button_recruit_town.reset();
 		}
@@ -728,7 +729,7 @@ void FirmCamp::disp_recruit_town_menu(int refreshFlag)
 
 		//------- display the cancel button -------//
 
-		button_town_list_cancel.paint( x1, y+2, x2, y+22,
+		button_town_list_cancel.paint( x1, y+1, x2, y+TOWN_LIST_CANCEL_HEIGHT,
 			ButtonCustom::disp_text_button_func, ButtonCustomPara((void*)_("Cancel"),0) );
 	}
 	else
