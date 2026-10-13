@@ -108,6 +108,7 @@ static char       disable_refresh=0;
 static short 		action_spy_recno;	// recno of the spy that is doing the bribing or viewing secret reports of other nations
 static ButtonCustom button_back_fort;		// 7kmod: return to the Fort in fort recruit mode
 static char       last_fort_mode;		// 7kmod: whether the last displayed interface was in fort mode
+static short      last_fort_train_count;	// 7kmod: the last displayed number of units training for the Fort
 
 //-------- Define static class member var ------//
 
@@ -457,6 +458,9 @@ void Town::disp_main_menu(int refreshFlag)
 				button_train.enable();
 			else
 				button_train.disable();
+
+			if( fortMode )
+				disp_fort_train_count();		// 7kmod
 		}
 
 		if( button_tax.init_flag )
@@ -612,6 +616,56 @@ int Town::fort_recruit_can_pull(int raceId)
 			 firmPtr->worker_count < MAX_WORKER;
 }
 //-------- End of function Town::fort_recruit_can_pull --------//
+
+
+//------- Begin of function Town::fort_train_count -------//
+//
+// 7kmod: return the number of units queued or under training in this
+// town that go into the given Fort when trained.
+//
+int Town::fort_train_count(short firmRecno)
+{
+	int count=0;
+
+	for( int i=0 ; i<train_queue_count ; i++ )
+	{
+		if( train_queue_firm_array[i] == firmRecno )
+			count++;
+	}
+
+	if( train_unit_recno && train_unit_firm_recno == firmRecno )
+		count++;
+
+	return count;
+}
+//-------- End of function Town::fort_train_count --------//
+
+
+//------- Begin of function Town::disp_fort_train_count -------//
+//
+// 7kmod: display on the Train button the number of units training for
+// the Fort, in the same style as the auto tax/grant loyalty numbers.
+//
+void Town::disp_fort_train_count()
+{
+	int count = fort_train_count(fort_recruit_firm_recno);
+
+	if( count > 0 )
+	{
+		vga_front.bar( button_train.x1+8, button_train.y1+10, button_train.x2-12, button_train.y2-15, V_WHITE );
+		vga_front.rect( button_train.x1+8, button_train.y1+10, button_train.x2-12, button_train.y2-15, 1, V_BLACK );
+
+		font_mid.center_put( button_train.x1+8, button_train.y1+10, button_train.x2-12, button_train.y2-15,
+									misc.format(count) );
+	}
+	else if( last_fort_train_count > 0 )
+	{
+		button_train.paint();		// remove the number
+	}
+
+	last_fort_train_count = count;
+}
+//-------- End of function Town::disp_fort_train_count --------//
 
 
 //-------- Begin of static function i_disp_back_fort_button --------//

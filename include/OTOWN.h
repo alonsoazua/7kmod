@@ -227,6 +227,8 @@ public:
 	static void   clear_fort_recruit();
 	int           fort_recruit_valid();
 	int           fort_recruit_can_pull(int raceId);
+	int           fort_train_count(short firmRecno);
+	void          disp_fort_train_count();
 
 public:
 	Town();
