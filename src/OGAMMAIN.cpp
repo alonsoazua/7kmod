@@ -395,6 +395,10 @@ void Game::disp_version()
 		font_news.center_put( 0, VGA_HEIGHT-20, VGA_WIDTH-1, VGA_HEIGHT-1, str );
 	else
 		font_news.right_put( VGA_WIDTH-10, VGA_HEIGHT-20, str );
+
+	//----------- 7kmod: mod marker on the main menu --------//
+
+	font_news.put( 10, VGA_HEIGHT-20, "7kmod-test" );
 }
 //---------- End of function Game::disp_version ---------//
 

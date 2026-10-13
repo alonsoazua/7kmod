@@ -47,7 +47,7 @@ extern const int GAME_VERSION;
 
 // config dir
 #define CONFIG_ORGANIZATION_NAME "7kfans.com"
-#define CONFIG_APPLICATION_NAME "7kaa"
+#define CONFIG_APPLICATION_NAME "7kaa-mod"	// 7kmod: keep saves/config separate from the official game
 
 // data dirs
 #define DIR_RES         "RESOURCE" PATH_DELIM
