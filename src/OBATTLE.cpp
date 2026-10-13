@@ -832,7 +832,7 @@ int Battle::create_town(int nationRecno, int raceId, int& xLoc, int& yLoc)
 		if( nationRecno )
 			mixedRaceCount = 1;
 		else
-			mixedRaceCount= misc.random(3)+1;		// 1 to 3 mixed races
+			mixedRaceCount= misc.random(MAX_INDEPENDENT_TOWN_RACES)+1;		// 7kmod-gameplay: 1 to MAX_INDEPENDENT_TOWN_RACES mixed races (originally 1 to 3)
 
 		int curPop, totalPop=0, townResistance;
 

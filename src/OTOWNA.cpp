@@ -346,6 +346,19 @@ void TownArray::think_new_independent_town()
 		if( townPtr->population >= maxTownPop )
 			break;
 
+		//--- 7kmod-gameplay: limit the number of races of the town ---//
+
+		int townRaceCount=0;
+
+		for( i=0 ; i<MAX_RACE ; i++ )
+		{
+			if( townPtr->race_pop_array[i] > 0 )
+				townRaceCount++;
+		}
+
+		if( townRaceCount >= MAX_INDEPENDENT_TOWN_RACES )
+			break;
+
 		//---- next race to be added to the independent town ----//
 
 		raceId = random_race();

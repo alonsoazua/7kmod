@@ -81,6 +81,8 @@
 
 #define MAX_TRAIN_QUEUE					10
 
+#define MAX_INDEPENDENT_TOWN_RACES		2		// 7kmod-gameplay: max. no. of races of a new independent town (originally 3)
+
 //-------- Define class Town ----------//
 
 struct TownGF;
