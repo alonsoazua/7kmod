@@ -1379,6 +1379,8 @@ int Power::detect_select(int selX1, int selY1, int selX2, int selY2, int recallG
 
 		//--- only set selected_recno for single unit selected, don't do so for nation selection
 
+		Town::clear_fort_recruit();		// 7kmod: a new selection ends the town's fort recruit mode
+
 		firm_array.selected_recno = selectedFirmRecno;
 		town_array.selected_recno = selectedTownRecno;
 		site_array.selected_recno = selectedSiteRecno;
@@ -1450,6 +1452,8 @@ void Power::reset_selection()
 	firm_array.selected_recno = 0;
 	town_array.selected_recno = 0;
 	site_array.selected_recno = 0;
+
+	Town::clear_fort_recruit();		// 7kmod
 
 	wall_res.selected_x_loc = -1;
 	wall_res.selected_y_loc = -1;

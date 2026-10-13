@@ -212,6 +212,20 @@ public:
 
 	static short  if_town_recno;
 
+	//------ 7kmod: recruit-for-fort mode of the town interface ------//
+	//
+	// When a player opens a linked town from a Fort's "Recruit" button,
+	// the town interface works in "fort mode": the Recruit button pulls
+	// the selected race directly into that Fort.
+
+	static short  fort_recruit_firm_recno;		// the Fort recruiting, 0 if not in fort mode
+	static short  fort_recruit_town_recno;		// the town the fort mode applies to
+
+	static void   open_fort_recruit(short firmRecno, short townRecno);
+	static void   clear_fort_recruit();
+	int           fort_recruit_valid();
+	int           fort_recruit_can_pull(int raceId);
+
 public:
 	Town();
 

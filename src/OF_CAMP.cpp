@@ -47,11 +47,39 @@
 #include <OSERES.h>
 #include <OSE.h>
 #include "gettext.h"
+#include <OTOWN.h>
+#include <OBUTTCUS.h>
+#include <vga_util.h>
 
 
 //----------- Define static vars -------------//
 
 static Button3D button_patrol, button_reward, button_defense;
+
+//------ 7kmod: recruit soldiers from linked towns ------//
+
+enum { CAMP_MENU_MAIN,
+		 CAMP_MENU_SELECT_TOWN,
+	  };
+
+enum { TOWN_LIST_Y1 = INFO_Y1+54,			// header of the town list
+		 TOWN_LIST_ROW_Y1 = TOWN_LIST_Y1+24,	// first row of the town list
+		 TOWN_LIST_ROW_HEIGHT = 24,
+		 TOWN_LIST_MAX_ROW = (INFO_Y2-26-TOWN_LIST_ROW_Y1) / TOWN_LIST_ROW_HEIGHT,
+	  };
+
+static Button3D     button_recruit_town;
+static ButtonCustom button_town_list[TOWN_LIST_MAX_ROW];
+static ButtonCustom button_town_list_cancel;
+static short        town_list_recno_array[MAX_LINKED_FIRM_TOWN];
+static short        town_list_count;
+static short        town_list_last_jobless[TOWN_LIST_MAX_ROW];
+static short        town_list_last_loyalty[TOWN_LIST_MAX_ROW];
+static char         camp_menu_mode = CAMP_MENU_MAIN;
+static short        camp_menu_firm_recno = 0;
+static char         camp_disable_refresh = 0;
+
+static void i_disp_town_list_button(ButtonCustom *button, int repaintBody);
 
 //--------- Declare static functions ---------//
 
@@ -352,6 +380,19 @@ void FirmCamp::update_influence()
 //
 void FirmCamp::put_info(int refreshFlag)
 {
+	//------ 7kmod: display the town selection menu -------//
+
+	if( (refreshFlag==INFO_REPAINT && !camp_disable_refresh) || camp_menu_firm_recno != firm_recno )
+		camp_menu_mode = CAMP_MENU_MAIN;
+
+	if( camp_menu_mode == CAMP_MENU_SELECT_TOWN )
+	{
+		disp_recruit_town_menu(refreshFlag);
+		return;
+	}
+
+	//--------------------------------------//
+
 	disp_basic_info(INFO_Y1, refreshFlag);
 
 	if( !should_show_info() )
@@ -372,6 +413,21 @@ void FirmCamp::put_info(int refreshFlag)
 			button_patrol.paint( INFO_X1, INFO_Y1+242, 'A', "PATROL" );
 			button_reward.paint( INFO_X1+BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', "REWARDCB" );
 			button_defense.paint( INFO_X2-BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', defense_flag ? (char*)"DEFENSE1" : (char*)"DEFENSE0" );
+
+			//--- 7kmod: recruit button, its space is shared with the spy button ---//
+
+			if( !player_spy_count )
+				button_recruit_town.paint( INFO_X1+BUTTON_ACTION_WIDTH*2, INFO_Y1+242, 'A', "RECRUIT" );
+			else
+				button_recruit_town.reset();
+		}
+
+		if( button_recruit_town.init_flag )
+		{
+			if( can_recruit_from_town() )
+				button_recruit_town.enable();
+			else
+				button_recruit_town.disable();
 		}
 
 		if( overseer_recno || worker_count )
@@ -393,7 +449,12 @@ void FirmCamp::put_info(int refreshFlag)
 		x=INFO_X1+BUTTON_ACTION_WIDTH*2;
 	}
 	else
+	{
 		x=INFO_X1;
+
+		if( refreshFlag==INFO_REPAINT )
+			button_recruit_town.reset();		// 7kmod: the recruit button is only for the player's own Forts
+	}
 
 	disp_spy_button(x, INFO_Y1+242, refreshFlag);
 
@@ -409,6 +470,13 @@ void FirmCamp::put_info(int refreshFlag)
 //
 int FirmCamp::detect_info()
 {
+	//------ 7kmod: detect the town selection menu -------//
+
+	if( camp_menu_mode == CAMP_MENU_SELECT_TOWN && camp_menu_firm_recno == firm_recno )
+		return detect_recruit_town_menu();
+
+	//--------------------------------------//
+
 	if( detect_basic_info() )
 		return 1;
 
@@ -518,9 +586,251 @@ int FirmCamp::detect_info()
 		return 1;
 	}
 
+	//----- 7kmod: detect the recruit button -------//
+
+	if( button_recruit_town.init_flag && !player_spy_count && button_recruit_town.detect() )
+	{
+		if( !can_recruit_from_town() )
+			return 1;
+
+		town_list_count = get_recruit_town_list(town_list_recno_array);
+
+		if( town_list_count == 1 )		// only one town, open it directly
+		{
+			Town::open_fort_recruit(firm_recno, town_list_recno_array[0]);
+		}
+		else if( town_list_count > 1 )
+		{
+			se_ctrl.immediate_sound("TURN_ON");
+
+			camp_menu_mode = CAMP_MENU_SELECT_TOWN;
+			camp_menu_firm_recno = firm_recno;
+			camp_disable_refresh = 1;		// static var for put_info() only
+			info.disp();
+			camp_disable_refresh = 0;
+		}
+		return 1;
+	}
+
 	return 0;
 }
 //----------- End of function FirmCamp::detect_info -----------//
+
+
+//--------- Begin of function FirmCamp::get_recruit_town_list ---------//
+//
+// 7kmod: get the player's own towns linked to this Fort.
+//
+// <short*> townRecnoArray - array for returning the town recnos,
+//                           must have MAX_LINKED_FIRM_TOWN elements.
+//
+// return: <int> the number of towns.
+//
+int FirmCamp::get_recruit_town_list(short* townRecnoArray)
+{
+	int townCount=0;
+
+	for( int i=0 ; i<linked_town_count ; i++ )
+	{
+		short townRecno = linked_town_array[i];
+
+		if( town_array.is_deleted(townRecno) )
+			continue;
+
+		if( town_array[townRecno]->nation_recno != nation_recno )
+			continue;
+
+		townRecnoArray[townCount++] = townRecno;
+	}
+
+	return townCount;
+}
+//----------- End of function FirmCamp::get_recruit_town_list -----------//
+
+
+//--------- Begin of function FirmCamp::can_recruit_from_town ---------//
+//
+// 7kmod: whether the recruit button of the Fort should be enabled.
+//
+int FirmCamp::can_recruit_from_town()
+{
+	if( !own_firm() || under_construction || worker_count >= MAX_WORKER )
+		return 0;
+
+	short townRecnoArray[MAX_LINKED_FIRM_TOWN];
+
+	return get_recruit_town_list(townRecnoArray) > 0;
+}
+//----------- End of function FirmCamp::can_recruit_from_town -----------//
+
+
+//--------- Begin of function FirmCamp::disp_recruit_town_menu ---------//
+//
+// 7kmod: display the list of linked towns to recruit soldiers from.
+//
+void FirmCamp::disp_recruit_town_menu(int refreshFlag)
+{
+	//--- if the list of linked towns has changed, rebuild the menu ---//
+
+	short townRecnoArray[MAX_LINKED_FIRM_TOWN];
+	int   townCount = get_recruit_town_list(townRecnoArray);
+
+	if( townCount==0 || !own_firm() )
+	{
+		camp_menu_mode = CAMP_MENU_MAIN;
+		if( refreshFlag == INFO_UPDATE )
+			info.disp();
+		return;
+	}
+
+	if( refreshFlag == INFO_UPDATE &&
+		 ( townCount != town_list_count ||
+			memcmp(townRecnoArray, town_list_recno_array, sizeof(short)*townCount) ) )
+	{
+		camp_disable_refresh = 1;
+		info.disp();
+		camp_disable_refresh = 0;
+		return;
+	}
+
+	int rowCount = MIN(townCount, TOWN_LIST_MAX_ROW);
+	int x1=INFO_X1, x2=INFO_X2;
+
+	if( refreshFlag == INFO_REPAINT )
+	{
+		town_list_count = townCount;
+		memcpy(town_list_recno_array, townRecnoArray, sizeof(short)*townCount);
+
+		disp_basic_info(INFO_Y1, refreshFlag);
+
+		//------- display the field description -------//
+
+		vga_util.d3_panel_up( x1, TOWN_LIST_Y1, x2, TOWN_LIST_Y1+20 );
+
+		font_san.put( x1+6,   TOWN_LIST_Y1+4, "Recruit from" );
+		font_san.put( x1+102, TOWN_LIST_Y1+4, _("Peasants") );
+		font_san.put( x1+152, TOWN_LIST_Y1+4, _("Loyalty") );
+
+		//------- display the town buttons -------//
+
+		int y = TOWN_LIST_ROW_Y1;
+
+		for( int i=0 ; i<rowCount ; i++, y+=TOWN_LIST_ROW_HEIGHT )
+		{
+			Town* townPtr = town_array[townRecnoArray[i]];
+
+			town_list_last_jobless[i] = townPtr->jobless_population;
+			town_list_last_loyalty[i] = townPtr->average_loyalty();
+
+			button_town_list[i].paint( x1, y, x2, y+TOWN_LIST_ROW_HEIGHT-2,
+				i_disp_town_list_button, ButtonCustomPara(NULL, townRecnoArray[i]) );
+		}
+
+		//------- display the cancel button -------//
+
+		button_town_list_cancel.paint( x1, y+2, x2, y+22,
+			ButtonCustom::disp_text_button_func, ButtonCustomPara((void*)_("Cancel"),0) );
+	}
+	else
+	{
+		//------- update the numbers of the towns -------//
+
+		for( int i=0 ; i<rowCount ; i++ )
+		{
+			Town* townPtr = town_array[townRecnoArray[i]];
+
+			if( town_list_last_jobless[i] != townPtr->jobless_population ||
+				 town_list_last_loyalty[i] != townPtr->average_loyalty() )
+			{
+				town_list_last_jobless[i] = townPtr->jobless_population;
+				town_list_last_loyalty[i] = townPtr->average_loyalty();
+				button_town_list[i].paint();
+			}
+		}
+	}
+}
+//----------- End of function FirmCamp::disp_recruit_town_menu -----------//
+
+
+//--------- Begin of function FirmCamp::detect_recruit_town_menu ---------//
+//
+int FirmCamp::detect_recruit_town_menu()
+{
+	int rowCount = MIN(town_list_count, TOWN_LIST_MAX_ROW);
+
+	for( int i=0 ; i<rowCount ; i++ )
+	{
+		if( button_town_list[i].detect() )
+		{
+			short townRecno = town_list_recno_array[i];
+
+			camp_menu_mode = CAMP_MENU_MAIN;
+
+			if( !town_array.is_deleted(townRecno) &&
+				 town_array[townRecno]->nation_recno == nation_recno )
+			{
+				Town::open_fort_recruit(firm_recno, townRecno);
+			}
+			else
+			{
+				info.disp();
+			}
+			return 1;
+		}
+	}
+
+	//------ detect the cancel button or right-click --------//
+
+	if( button_town_list_cancel.detect() || mouse.any_click(INFO_X1, INFO_Y1, INFO_X2, INFO_Y2, RIGHT_BUTTON) )
+	{
+		se_ctrl.immediate_sound("TURN_OFF");
+		camp_menu_mode = CAMP_MENU_MAIN;
+		info.disp();
+		return 1;
+	}
+
+	return 0;
+}
+//----------- End of function FirmCamp::detect_recruit_town_menu -----------//
+
+
+//-------- Begin of static function i_disp_town_list_button --------//
+//
+// button->custom_para.value is the town recno.
+//
+static void i_disp_town_list_button(ButtonCustom *button, int repaintBody)
+{
+	int x1 = button->x1;
+	int y1 = button->y1;
+	int x2 = button->x2;
+	int y2 = button->y2;
+
+	if( button->pushed_flag )
+	{
+		vga_util.d3_panel2_down(x1, y1, x2, y2);
+		x1++;
+		y1++;
+	}
+	else
+	{
+		vga_util.d3_panel2_up(x1, y1, x2, y2);
+		x2--;
+		y2--;
+	}
+
+	int townRecno = button->custom_para.value;
+
+	if( town_array.is_deleted(townRecno) )
+		return;
+
+	Town* townPtr = town_array[townRecno];
+	int   textY = y1 + (y2-y1+1-font_san.height())/2;
+
+	font_san.put( x1+5,   textY, townPtr->town_name(), 0, x1+98 );
+	font_san.put( x1+110, textY, townPtr->jobless_population );
+	font_san.put( x1+160, textY, townPtr->average_loyalty() );
+}
+//--------- End of static function i_disp_town_list_button ---------//
 
 
 //--------- Begin of function FirmCamp::disp_camp_info ---------//

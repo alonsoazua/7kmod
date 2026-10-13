@@ -48,6 +48,10 @@
 #include <ONEWS.h>
 #include "gettext.h"
 #include <ConfigAdv.h>
+#include <OFIRM.h>
+#include <OFIRMA.h>
+#include <OFIRMID.h>
+#include <OPOWER.h>
 
 
 //------------- Define coordinations -----------//
@@ -102,10 +106,14 @@ static char 		last_has_linked_own_camp;
 static char       town_menu_mode=TOWN_MENU_MAIN;
 static char       disable_refresh=0;
 static short 		action_spy_recno;	// recno of the spy that is doing the bribing or viewing secret reports of other nations
+static ButtonCustom button_back_fort;		// 7kmod: return to the Fort in fort recruit mode
+static char       last_fort_mode;		// 7kmod: whether the last displayed interface was in fort mode
 
 //-------- Define static class member var ------//
 
 short  Town::if_town_recno = 0;
+short  Town::fort_recruit_firm_recno = 0;
+short  Town::fort_recruit_town_recno = 0;
 
 //----------- Define static functions ----------//
 
@@ -118,6 +126,7 @@ static void put_spy_rec(int recNo, int x, int y, int refreshFlag);
 static void i_disp_skill_button(ButtonCustom *button, int);
 static void i_disp_queue_skill_button(ButtonCustom *button, int);
 // ###### end Gilbert 12/9 ########//
+static void i_disp_back_fort_button(ButtonCustom *button, int);
 
 
 //--------- Begin of function Town::disp_info ---------//
@@ -130,7 +139,12 @@ void Town::disp_info(int refreshFlag)
 		 (refreshFlag==INFO_REPAINT && !disable_refresh) )
 	{
 		if( town_recno != last_town_recno )
+		{
 			browse_race_recno = 1;
+
+			if( fort_recruit_town_recno != town_recno )		// 7kmod: switching to another town ends fort mode
+				clear_fort_recruit();
+		}
 
 		town_menu_mode  = TOWN_MENU_MAIN;
 		last_town_recno = town_recno;
@@ -149,6 +163,19 @@ void Town::disp_info(int refreshFlag)
 	if( last_has_linked_own_camp != has_linked_own_camp )
 	{
 		last_has_linked_own_camp = has_linked_own_camp;
+		needRepaint = 1;
+	}
+
+	//--- 7kmod: end fort mode if the Fort is gone, captured or unlinked ---//
+
+	if( fort_recruit_town_recno == town_recno && fort_recruit_firm_recno && !fort_recruit_valid() )
+		clear_fort_recruit();
+
+	char fortMode = (char) fort_recruit_valid();
+
+	if( last_fort_mode != fortMode )
+	{
+		last_fort_mode = fortMode;
 		needRepaint = 1;
 	}
 
@@ -396,6 +423,25 @@ void Town::disp_main_menu(int refreshFlag)
 			#endif
 		}
 
+		//------ 7kmod: in fort mode, display the button for returning to the Fort ------//
+
+		int fortMode = fort_recruit_valid();
+
+		if( refreshFlag == INFO_REPAINT )
+		{
+			if( fortMode )
+			{
+				int backY = y+BUTTON_ACTION_HEIGHT+2;
+
+				button_back_fort.paint( BUTTON_X1+BUTTON_ACTION_WIDTH, backY, BUTTON_X2, backY+34,
+					i_disp_back_fort_button, ButtonCustomPara(NULL, fort_recruit_firm_recno) );
+			}
+			else
+			{
+				button_back_fort.reset();
+			}
+		}
+
 		if( has_linked_own_camp )		 // a whole row is used for displaying buttons, so additional buttons will be displayed in the next row
 			y += BUTTON_ACTION_HEIGHT;
 		else
@@ -405,7 +451,7 @@ void Town::disp_main_menu(int refreshFlag)
 
 		int raceId = race_filter(browse_race.recno());
 
-		if( can_recruit(raceId) )
+		if( fortMode ? fort_recruit_can_pull(raceId) : can_recruit(raceId) )
 			button_recruit.enable();
 		else
 			button_recruit.disable();
@@ -492,6 +538,123 @@ void Town::disp_main_menu(int refreshFlag)
 //----------- End of function Town::disp_main_menu -----------//
 
 
+//------- Begin of function Town::open_fort_recruit -------//
+//
+// 7kmod: select the given town and display its interface in fort
+// recruit mode for the given Fort.
+//
+void Town::open_fort_recruit(short firmRecno, short townRecno)
+{
+	power.reset_selection();
+
+	fort_recruit_firm_recno = firmRecno;
+	fort_recruit_town_recno = townRecno;
+
+	town_array.selected_recno = townRecno;
+
+	se_ctrl.immediate_sound("TURN_ON");
+
+	info.disp();
+}
+//-------- End of function Town::open_fort_recruit --------//
+
+
+//------- Begin of function Town::clear_fort_recruit -------//
+//
+void Town::clear_fort_recruit()
+{
+	fort_recruit_firm_recno = 0;
+	fort_recruit_town_recno = 0;
+}
+//-------- End of function Town::clear_fort_recruit --------//
+
+
+//------- Begin of function Town::fort_recruit_valid -------//
+//
+// Return 1 if this town's interface is in fort recruit mode and the
+// Fort is still a player's Fort linked to this player's town.
+//
+int Town::fort_recruit_valid()
+{
+	if( !fort_recruit_firm_recno || fort_recruit_town_recno != town_recno )
+		return 0;
+
+	if( !nation_recno || nation_recno != nation_array.player_recno )
+		return 0;
+
+	if( firm_array.is_deleted(fort_recruit_firm_recno) )
+		return 0;
+
+	Firm* firmPtr = firm_array[fort_recruit_firm_recno];
+
+	if( firmPtr->firm_id != FIRM_CAMP || firmPtr->nation_recno != nation_recno )
+		return 0;
+
+	for( int i=0 ; i<firmPtr->linked_town_count ; i++ )
+	{
+		if( firmPtr->linked_town_array[i] == town_recno )
+			return 1;
+	}
+
+	return 0;
+}
+//-------- End of function Town::fort_recruit_valid --------//
+
+
+//------- Begin of function Town::fort_recruit_can_pull -------//
+//
+// Return 1 if a unit of the given race can be recruited directly into
+// the Fort of the current fort recruit mode.
+//
+int Town::fort_recruit_can_pull(int raceId)
+{
+	if( !fort_recruit_valid() || !can_recruit(raceId) )
+		return 0;
+
+	Firm* firmPtr = firm_array[fort_recruit_firm_recno];
+
+	return !firmPtr->under_construction && firmPtr->worker_array &&
+			 firmPtr->worker_count < MAX_WORKER;
+}
+//-------- End of function Town::fort_recruit_can_pull --------//
+
+
+//-------- Begin of static function i_disp_back_fort_button --------//
+//
+// 7kmod: button showing the Fort being recruited for.
+// button->custom_para.value is the firm recno of the Fort.
+//
+static void i_disp_back_fort_button(ButtonCustom *button, int repaintBody)
+{
+	int x1 = button->x1;
+	int y1 = button->y1;
+	int x2 = button->x2;
+	int y2 = button->y2;
+
+	if( button->pushed_flag )
+	{
+		vga_util.d3_panel2_down(x1, y1, x2, y2);
+		x1++;
+		y1++;
+	}
+	else
+	{
+		vga_util.d3_panel2_up(x1, y1, x2, y2);
+		x2--;
+		y2--;
+	}
+
+	int midY = (y1+y2)/2;
+	int firmRecno = button->custom_para.value;
+
+	if( firmRecno && !firm_array.is_deleted(firmRecno) )
+		font_san.center_put( x1+2, y1+1, x2-2, midY, firm_array[firmRecno]->firm_name() );
+
+	font_san.center_put( x1+2, midY, x2-2, y2-1, "Back to Fort" );
+}
+//--------- End of static function i_disp_back_fort_button ---------//
+
+
 //--------- Begin of function Town::disp_auto_loyalty ---------//
 //
 void Town::disp_auto_loyalty()
@@ -575,8 +738,9 @@ int Town::detect_main_menu()
 		return 0;
 
 	int raceId = race_filter(browse_race.recno());
+	int fortMode = fort_recruit_valid();		// 7kmod
 
-	if( can_recruit(raceId) )
+	if( fortMode ? fort_recruit_can_pull(raceId) : can_recruit(raceId) )
 		button_recruit.enable();
 	else
 		button_recruit.disable();
@@ -586,11 +750,38 @@ int Town::detect_main_menu()
 	else
 		button_train.disable();
 
+	//------- 7kmod: detect the button for returning to the Fort -------//
+
+	if( fortMode && button_back_fort.init_flag && button_back_fort.detect() )
+	{
+		short firmRecno = fort_recruit_firm_recno;
+
+		se_ctrl.immediate_sound("TURN_OFF");
+
+		clear_fort_recruit();
+		power.reset_selection();
+		firm_array.selected_recno = firmRecno;
+		firm_array[firmRecno]->sort_worker();
+		info.disp();
+		return 1;
+	}
+
 	//------- detect buttons --------//
 
 	if( button_recruit.detect(GETKEY(KEYEVENT_TOWN_RECRUIT)) )
 	{
-		recruit(-1, 0, COMMAND_PLAYER);
+		if( fortMode )		// 7kmod: recruit directly into the Fort
+		{
+			if( fort_recruit_can_pull(raceId) )
+			{
+				firm_array[fort_recruit_firm_recno]->pull_town_people(town_recno, COMMAND_PLAYER, raceId, 1);		// last 1-force pulling people from the town to the firm
+				se_ctrl.immediate_sound("PULL_MAN");
+			}
+		}
+		else
+		{
+			recruit(-1, 0, COMMAND_PLAYER);
+		}
 		return 1;
 	}
 
