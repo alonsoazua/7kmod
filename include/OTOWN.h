@@ -82,6 +82,7 @@
 #define MAX_TRAIN_QUEUE					10
 
 #define MAX_INDEPENDENT_TOWN_RACES		2		// 7kmod-gameplay: max. no. of races of a new independent town (originally 3)
+#define MIXED_RACE_TOWN_CHANCE			55		// 7kmod-gameplay: chance (%) that a starting independent town has 2 races instead of 1
 
 //-------- Define class Town ----------//
 

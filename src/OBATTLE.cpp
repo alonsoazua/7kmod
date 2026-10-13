@@ -832,7 +832,7 @@ int Battle::create_town(int nationRecno, int raceId, int& xLoc, int& yLoc)
 		if( nationRecno )
 			mixedRaceCount = 1;
 		else
-			mixedRaceCount= misc.random(MAX_INDEPENDENT_TOWN_RACES)+1;		// 7kmod-gameplay: 1 to MAX_INDEPENDENT_TOWN_RACES mixed races (originally 1 to 3)
+			mixedRaceCount= misc.random(100) < MIXED_RACE_TOWN_CHANCE ? 2 : 1;		// 7kmod-gameplay: 2 races with MIXED_RACE_TOWN_CHANCE %, otherwise 1 (originally 1 to 3 with equal chances)
 
 		int curPop, totalPop=0, townResistance;
 
@@ -863,7 +863,16 @@ int Battle::create_town(int nationRecno, int raceId, int& xLoc, int& yLoc)
 			if( i==0 )
 				townPtr->init_pop( raceId, curPop, townResistance, 0, 1 ); 	// last 1-first initialization at the beginning of the game
 			else
-				townPtr->init_pop( random_race(), curPop, townResistance, 0, 1 );
+			{
+				//--- 7kmod-gameplay: pick a race not yet in the town, so a mixed town really has 2 races ---//
+
+				int newRaceId = random_race();
+
+				for( int tryCount=0 ; tryCount<50 && townPtr->race_pop_array[newRaceId-1] > 0 ; tryCount++ )
+					newRaceId = random_race();
+
+				townPtr->init_pop( newRaceId, curPop, townResistance, 0, 1 );
+			}
 
 			totalPop += curPop;
 		}
