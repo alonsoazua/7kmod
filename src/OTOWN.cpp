@@ -4661,12 +4661,14 @@ static char random_race()
 
 //------ Begin of function Town::reduce_mixed_race_resistance ------//
 //
-// 7kmod: reduce the resistance of a new independent town by 10 for
-// each race beyond the first one, as mixed race towns are less united.
+// 7kmod: reduce the resistance of a new independent town with mixed
+// races, as mixed race towns are less united: by 8 with 2 races and
+// by 12 with 3 or more races.
 // The resistance does not go below MIN_MIXED_RACE_RESISTANCE, as a
 // zero resistance makes the town join that nation.
 //
-#define MIXED_RACE_RESISTANCE_DEC	10
+#define MIXED_2_RACE_RESISTANCE_DEC	8		// 2 races
+#define MIXED_3_RACE_RESISTANCE_DEC	12		// 3 or more races
 #define MIN_MIXED_RACE_RESISTANCE	10
 
 void Town::reduce_mixed_race_resistance()
@@ -4685,7 +4687,7 @@ void Town::reduce_mixed_race_resistance()
 	if( raceCount < 2 )
 		return;
 
-	float decValue = (float) MIXED_RACE_RESISTANCE_DEC * (raceCount-1);
+	float decValue = (float) (raceCount==2 ? MIXED_2_RACE_RESISTANCE_DEC : MIXED_3_RACE_RESISTANCE_DEC);
 
 	for( int i=0 ; i<MAX_RACE ; i++ )
 	{
