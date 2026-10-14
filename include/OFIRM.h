@@ -423,6 +423,12 @@ protected:
 
 			  void disp_spy_button(int x, int y, int refreshFlag);
 			  int  detect_spy_button();
+
+			  //--- 7kmod: button pages, for the spy button of the player's own firm when the button row is full ---//
+
+			  int  button_page();
+			  void disp_button_page_arrows(int stripY1, int refreshFlag);
+			  int  detect_button_page_arrows();
 			  void disp_spy_menu(int refreshFlag);
 			  void detect_spy_menu();
 			  int  can_player_spy_capture();

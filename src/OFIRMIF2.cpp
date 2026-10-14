@@ -29,6 +29,7 @@
 #include <OSTR.h>
 #include <OHELP.h>
 #include <OFONT.h>
+#include <OSE.h>
 #include <OMOUSE.h>
 #include <OVBROWIF.h>
 #include <OGAME.h>
@@ -722,3 +723,85 @@ int Firm::can_worker_capture(int captureNationRecno)
 }
 //--------- End of function Firm::can_worker_capture --------//
 
+
+//------ 7kmod: button pages for the spy button of the player's own firm ------//
+//
+// When the button row of the player's own firm is full, the spy button
+// is displayed in a second page of the button row. The pages are
+// switched with "<" and ">" buttons, displayed below the button row only
+// when the player has spies in the firm.
+
+static Button button_page_prev, button_page_next;
+static char   button_page_no;				// 0-the normal buttons, 1-the spy button
+static short  button_page_firm_recno;		// the firm the page applies to
+
+
+//--------- Begin of function Firm::button_page --------//
+//
+// return: <int> 0 - the page with the normal buttons
+//               1 - the page with the spy button
+//
+int Firm::button_page()
+{
+	if( button_page_firm_recno != firm_recno || !own_firm() || player_spy_count==0 )
+		return 0;
+
+	return button_page_no;
+}
+//----------- End of function Firm::button_page ---------//
+
+
+//--------- Begin of function Firm::disp_button_page_arrows --------//
+//
+// <int> stripY1 - the top of the strip below the button row
+//
+void Firm::disp_button_page_arrows(int stripY1, int refreshFlag)
+{
+	if( refreshFlag != INFO_REPAINT )
+		return;
+
+	if( !own_firm() || player_spy_count==0 )
+	{
+		button_page_prev.reset();
+		button_page_next.reset();
+		return;
+	}
+
+	vga_util.d3_panel_up( INFO_X1, stripY1, INFO_X2, INFO_Y2-1 );
+
+	int y = stripY1 + (INFO_Y2-1-stripY1-18)/2;
+
+	font_san.put( INFO_X1+6, y+2, button_page()==0 ? "Page 1 of 2" : "Page 2 of 2" );
+
+	button_page_prev.paint_text( INFO_X2-40, y, INFO_X2-23, y+18, "<" );
+	button_page_next.paint_text( INFO_X2-20, y, INFO_X2-3, y+18, ">" );
+}
+//----------- End of function Firm::disp_button_page_arrows ---------//
+
+
+//--------- Begin of function Firm::detect_button_page_arrows --------//
+//
+int Firm::detect_button_page_arrows()
+{
+	if( !own_firm() || player_spy_count==0 )
+		return 0;
+
+	int newPage = -1;
+
+	if( button_page_prev.init_flag && button_page_prev.detect() )
+		newPage = 0;
+
+	else if( button_page_next.init_flag && button_page_next.detect() )
+		newPage = 1;
+
+	if( newPage < 0 )
+		return 0;
+
+	button_page_no = newPage;
+	button_page_firm_recno = firm_recno;
+
+	se_ctrl.immediate_sound("TURN_ON");
+	info.disp();
+	return 1;
+}
+//----------- End of function Firm::detect_button_page_arrows ---------//
