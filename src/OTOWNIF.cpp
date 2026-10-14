@@ -2135,6 +2135,14 @@ int Town::recruit(int trainSkillId, int raceId, char remoteAction)
 		
 			unitPtr->skill.skill_id    = trainSkillId;
 			unitPtr->skill.skill_level = TRAIN_SKILL_LEVEL;
+
+			//--- 7kmod-gameplay: Elite Workers technology ---//
+
+			if( trainSkillId != SKILL_LEADING &&
+				 mod_tech_res.get_level(MOD_TECH_ELITE_WORKERS, nationRecno) > 0 )
+			{
+				unitPtr->skill.skill_level = ELITE_WORKERS_SKILL_LEVEL;
+			}
 		}
 
 		nation_array[nationRecno]->add_expense( EXPENSE_TRAIN_UNIT, (float) TRAIN_SKILL_COST );
