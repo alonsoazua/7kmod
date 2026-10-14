@@ -52,6 +52,7 @@
 #include <OFIRMA.h>
 #include <OFIRMID.h>
 #include <OPOWER.h>
+#include <ModTech.h>
 
 
 //------------- Define coordinations -----------//
@@ -2123,7 +2124,14 @@ int Town::recruit(int trainSkillId, int raceId, char remoteAction)
 		else
 		{
 			if( trainSkillId == SKILL_LEADING )		// also increase the combat level for leadership skill training
-				unitPtr->set_combat_level(TRAIN_SKILL_LEVEL);
+			{
+				//--- 7kmod-gameplay: Elite Warriors technology ---//
+
+				if( mod_tech_res.get_level(MOD_TECH_ELITE_WARRIORS, nationRecno) > 0 )
+					unitPtr->set_combat_level(ELITE_WARRIORS_COMBAT_LEVEL);
+				else
+					unitPtr->set_combat_level(TRAIN_SKILL_LEVEL);
+			}
 		
 			unitPtr->skill.skill_id    = trainSkillId;
 			unitPtr->skill.skill_level = TRAIN_SKILL_LEVEL;

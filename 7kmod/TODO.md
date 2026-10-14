@@ -7,7 +7,18 @@ queda solo con mejoras de comodidad (interfaz) sobre la 2.15.7.
 
 ## 1. Mejoras permanentes en la Torre de Investigación
 
-**Estado:** analizado, sin implementar. Faltan las decisiones de diseño (ver abajo).
+**Estado:** primera tecnología implementada con un enfoque distinto al de abajo:
+un sistema de tecnologías propio del mod (`ModTech.h` / `ModTech.cpp`), separado de
+las armas de `TechRes`. La torre muestra primero "Technologies" o "War Machines";
+las tecnologías del mod solo aparecen en "Technologies", así que no tocan la
+diplomacia, los reportes ni las demás partes que asumen que una tecnología es un arma.
+
+- **Guerreros élite (Elite Warriors):** las unidades entrenadas en Leadership empiezan
+  con 30 de combate en lugar de 20 (el Leadership sigue en 20). La IA no la investiga.
+  El costo (`complex_level` 0.1) es muy bajo, solo para pruebas.
+- Pendiente: costo real, que la IA use las tecnologías, ícono propio y más tecnologías.
+
+El análisis original (agregar las mejoras a la lista de armas) queda abajo como referencia.
 
 **Idea:** además de desbloquear armas, la Torre de Investigación puede
 investigar mejoras permanentes para la nación. Primera mejora:

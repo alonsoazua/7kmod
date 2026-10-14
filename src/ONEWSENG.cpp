@@ -30,6 +30,7 @@
 #include <OSPY.h>
 #include <OFONT.h>
 #include <OTECHRES.h>
+#include <ModTech.h>
 #include <OMONSRES.h>
 #include <OREMOTE.h>
 #include <OGODRES.h>
@@ -1261,6 +1262,16 @@ void News::tech_researched()
 	// [Mark <version>] research.
 	//
 	//----------------------------------------------//
+
+	//--- 7kmod-gameplay: mod technologies have a negative id. ---//
+
+	if( short_para1 < 0 )
+	{
+		str  = "Your scientists have finished their ";
+		str += mod_tech_res.name(-short_para1);
+		str += " research.";
+		return;
+	}
 
 	if( tech_res[short_para1]->max_tech_level > 1 )		// if the tech has more than one level
 	{

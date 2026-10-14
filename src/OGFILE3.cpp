@@ -1246,7 +1246,14 @@ int FirmResearch::write_derived_file(File *filePtr)
 //--------- Begin of function FirmResearch::read_derived_file ---------//
 int FirmResearch::read_derived_file(File* filePtr)
 {
-	if( !filePtr->file_read(&gf_rec, sizeof(FirmResearchGF)) )
+	//--- 7kmod-gameplay: saved games before the mod technologies don't have mod_tech_id ---//
+
+	int researchGFSize = game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_MOD_TECH ?
+								sizeof(FirmResearchGF) : RESEARCH_GF_SIZE_BEFORE_MOD_TECH;
+
+	memset(&gf_rec.firm_research, 0, sizeof(FirmResearchGF));
+
+	if( !filePtr->file_read(&gf_rec, researchGFSize) )
 		return 0;
 	read_derived_record(&gf_rec.firm_research);
 	return 1;

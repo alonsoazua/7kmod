@@ -39,8 +39,9 @@ class FirmResearch : public Firm
 public:
 	short tech_id;				   // the id. of the tech this firm is currently researching
 	float complete_percent;		// percent completed on researching the current technology
+	short mod_tech_id;			// 7kmod-gameplay: the id. of the mod technology this firm is currently researching, see ModTech.h
 
-	int	is_operating()		{ return productivity > 0 && tech_id; }
+	int	is_operating()		{ return productivity > 0 && (tech_id || mod_tech_id); }
 
 public:
 	FirmResearch();
@@ -56,6 +57,13 @@ public:
 
 	void 	disp_research_menu(int refreshFlag);
 	int	detect_research_menu();
+
+	void 	disp_research_category_menu(int refreshFlag);		// 7kmod-gameplay
+	int	detect_research_category_menu();
+	void 	disp_mod_tech_menu(int refreshFlag);
+	int	detect_mod_tech_menu();
+	void 	start_mod_research(int modTechId, char remoteAction);
+	void 	process_mod_research();
 
 	void 	start_research(int techId, char remoteAction);
 	void 	process_research();

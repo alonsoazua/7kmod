@@ -43,6 +43,9 @@
 #include <OSERES.h>
 #include <OBUTTCUS.h>
 #include "gettext.h"
+#include <ModTech.h>
+#include <ONEWS.h>
+#include <OINFO.h>
 
 //------------- Define constant ------------//
 
@@ -53,6 +56,8 @@
 
 enum { RESEARCH_MENU_MAIN,
 		 RESEARCH_MENU_RESEARCH,
+		 RESEARCH_MENU_CATEGORY,		// 7kmod-gameplay: choose between technologies and war machines
+		 RESEARCH_MENU_MOD_TECH,		// 7kmod-gameplay: the technologies of the mod
 	  };
 
 //----------- Define static vars -------------//
@@ -66,6 +71,14 @@ static ButtonCustom	button_cancel;
 // ######## end Gilbert 16/8 ######//
 static int added_count;			// no. of buttons in button_research_array
 static Button3D	button_vacate_firm;
+
+//------ 7kmod-gameplay: research categories and mod technologies ------//
+
+static ButtonCustom	button_category_tech, button_category_weapon;
+static ButtonCustom	button_mod_tech_array[MAX_MOD_TECH];
+static int				mod_tech_added_count;
+
+static void i_disp_mod_tech_button(ButtonCustom *, int);
 
 //---------- Declare static functions ---------//
 
@@ -96,6 +109,7 @@ void FirmResearch::init_derived()
 {
 	tech_id = 0;				   // the id. of the tech this firm is currently researching
 	complete_percent = (float) 0;		// percent completed on researching the current technology
+	mod_tech_id = 0;				// 7kmod-gameplay
 }
 //----------- End of function FirmResearch::init_derived -----------//
 
@@ -125,6 +139,14 @@ void FirmResearch::put_info(int refreshFlag)
 		case RESEARCH_MENU_RESEARCH:
 			disp_research_menu(refreshFlag);
 			break;
+
+		case RESEARCH_MENU_CATEGORY:
+			disp_research_category_menu(refreshFlag);
+			break;
+
+		case RESEARCH_MENU_MOD_TECH:
+			disp_mod_tech_menu(refreshFlag);
+			break;
 	}
 }
 //----------- End of function FirmResearch::put_info -----------//
@@ -144,6 +166,12 @@ int FirmResearch::detect_info()
 
 		case RESEARCH_MENU_RESEARCH:
 			return detect_research_menu();
+
+		case RESEARCH_MENU_CATEGORY:
+			return detect_research_category_menu();
+
+		case RESEARCH_MENU_MOD_TECH:
+			return detect_mod_tech_menu();
 	}
 
 	return 0;
@@ -233,7 +261,7 @@ int FirmResearch::detect_main_menu()
 
 	if( button_select_research.detect(GETKEY(KEYEVENT_FIRM_BUILD)) )
 	{
-		research_menu_mode = RESEARCH_MENU_RESEARCH;
+		research_menu_mode = RESEARCH_MENU_CATEGORY;		// 7kmod-gameplay: first choose between technologies and war machines
 		disable_refresh = 1;    // static var for disp_info() only
 		info.disp();
 		disable_refresh = 0;
@@ -424,17 +452,38 @@ void i_disp_research_button(ButtonCustom *button, int repaintBody)
 void FirmResearch::disp_research_info(int dispY1, int refreshFlag)
 {
 	static short lastTechId=0;
+	static short lastModTechId=0;
 
-	if( refreshFlag==INFO_UPDATE && lastTechId != tech_id )
+	if( refreshFlag==INFO_UPDATE && (lastTechId != tech_id || lastModTechId != mod_tech_id) )
 	{
 		lastTechId = tech_id;
+		lastModTechId = mod_tech_id;
 		info.disp();
 	}
+
+	lastTechId = tech_id;
+	lastModTechId = mod_tech_id;
 
 	//---------------- paint the panel --------------//
 
 	if( refreshFlag == INFO_REPAINT )
 		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+50 );
+
+	//------ 7kmod-gameplay: researching a mod technology, which has no icon ------//
+
+	if( mod_tech_id )
+	{
+		int x=INFO_X1+6, y=dispY1+4;
+
+		if( refreshFlag == INFO_REPAINT )
+		{
+			font_san.put( x, y+4, mod_tech_res.name(mod_tech_id) );
+			font_san.put( x, y+38-16, "Technology" );
+		}
+
+		vga_front.indicator( 0, x+80, y+21, mod_tech_res.get_progress(mod_tech_id, nation_recno), (float)100, VGA_GRAY );
+		return;
+	}
 
 	if( !tech_id )
 		return;
@@ -541,7 +590,7 @@ void FirmResearch::start_research(int techId, char remoteAction)
 
 	//---- if the firm currently is already researching something ---//
 
-	if( tech_id )
+	if( tech_id || mod_tech_id )
 		terminate_research();
 
 	//-------- set self parameters ---------//
@@ -561,6 +610,12 @@ void FirmResearch::start_research(int techId, char remoteAction)
 //
 void FirmResearch::process_research()
 {
+	if( mod_tech_id )		// 7kmod-gameplay
+	{
+		process_mod_research();
+		return;
+	}
+
 	if( !tech_id )
 		return;
 
@@ -639,6 +694,12 @@ void FirmResearch::research_complete()
 //
 void FirmResearch::terminate_research()
 {
+	if( mod_tech_id )		// 7kmod-gameplay
+	{
+		mod_tech_id = 0;
+		complete_percent = (float) 0;
+	}
+
 	if( !tech_id )
 		return;
 
@@ -648,3 +709,251 @@ void FirmResearch::terminate_research()
 	complete_percent = (float) 0;
 }
 //----------- End of function FirmResearch::terminate_research ---------//
+
+
+//--------- Begin of function FirmResearch::disp_research_category_menu ---------//
+//
+// 7kmod-gameplay: choose between researching technologies and war machines.
+//
+void FirmResearch::disp_research_category_menu(int refreshFlag)
+{
+	if( refreshFlag != INFO_REPAINT )
+		return;
+
+	int y=INFO_Y1;
+
+	button_category_tech.paint( INFO_X1, y, INFO_X2, y+RESEARCH_OPTION_HEIGHT-2,
+		ButtonCustom::disp_text_button_func, ButtonCustomPara((void*)"Technologies",0) );
+	y += RESEARCH_OPTION_HEIGHT;
+
+	button_category_weapon.paint( INFO_X1, y, INFO_X2, y+RESEARCH_OPTION_HEIGHT-2,
+		ButtonCustom::disp_text_button_func, ButtonCustomPara((void*)"War Machines",0) );
+	y += RESEARCH_OPTION_HEIGHT;
+
+	button_cancel.paint(INFO_X1, y, INFO_X2, y+RESEARCH_OPTION_HEIGHT*3/4,
+		ButtonCustom::disp_text_button_func, ButtonCustomPara((void*)_("Cancel"),0) );
+}
+//----------- End of function FirmResearch::disp_research_category_menu -----------//
+
+
+//--------- Begin of function FirmResearch::detect_research_category_menu ---------//
+//
+int FirmResearch::detect_research_category_menu()
+{
+	int newMode = -1;
+
+	if( button_category_tech.detect() )
+		newMode = RESEARCH_MENU_MOD_TECH;
+
+	else if( button_category_weapon.detect() )
+		newMode = RESEARCH_MENU_RESEARCH;
+
+	else if( button_cancel.detect() )
+		newMode = RESEARCH_MENU_MAIN;
+
+	if( newMode < 0 )
+		return 0;
+
+	se_ctrl.immediate_sound( newMode==RESEARCH_MENU_MAIN ? "TURN_OFF" : "TURN_ON" );
+
+	research_menu_mode = newMode;
+
+	if( newMode != RESEARCH_MENU_MAIN )
+		disable_refresh = 1;    // static var for put_info() only
+
+	info.disp();
+	disable_refresh = 0;
+	return 1;
+}
+//----------- End of function FirmResearch::detect_research_category_menu -----------//
+
+
+//--------- Begin of function FirmResearch::disp_mod_tech_menu ---------//
+//
+// 7kmod-gameplay: display the mod technologies that can be researched.
+//
+void FirmResearch::disp_mod_tech_menu(int refreshFlag)
+{
+	if( refreshFlag != INFO_REPAINT )
+		return;
+
+	int y=INFO_Y1;
+	mod_tech_added_count=0;
+
+	for( int modTechId=1 ; modTechId<=MAX_MOD_TECH ; modTechId++ )
+	{
+		if( !mod_tech_res.can_research(modTechId, nation_recno) )
+			continue;
+
+		button_mod_tech_array[mod_tech_added_count].paint(INFO_X1, y, INFO_X2, y+RESEARCH_OPTION_HEIGHT-2,
+			i_disp_mod_tech_button, ButtonCustomPara(this, modTechId) );
+
+		mod_tech_added_count++;
+		y += RESEARCH_OPTION_HEIGHT;
+	}
+
+	if( mod_tech_added_count==0 )
+	{
+		font_san.d3_put( INFO_X1, y, INFO_X2, y+RESEARCH_OPTION_HEIGHT-2, "All technologies have been researched" );
+		y += RESEARCH_OPTION_HEIGHT;
+	}
+
+	button_cancel.paint(INFO_X1, y, INFO_X2, y+RESEARCH_OPTION_HEIGHT*3/4,
+		ButtonCustom::disp_text_button_func, ButtonCustomPara((void*)_("Cancel"),0) );
+}
+//----------- End of function FirmResearch::disp_mod_tech_menu -----------//
+
+
+//--------- Begin of function FirmResearch::detect_mod_tech_menu ---------//
+//
+int FirmResearch::detect_mod_tech_menu()
+{
+	for( int i=0 ; i<mod_tech_added_count ; i++ )
+	{
+		if( button_mod_tech_array[i].detect() )
+		{
+			int modTechId = button_mod_tech_array[i].custom_para.value;
+
+			if( mod_tech_res.can_research(modTechId, nation_recno) )
+			{
+				start_mod_research(modTechId, COMMAND_PLAYER);
+				se_ctrl.immediate_sound("TURN_ON");
+			}
+			else
+			{
+				se_ctrl.immediate_sound("TURN_OFF");
+			}
+
+			research_menu_mode = RESEARCH_MENU_MAIN;
+			info.disp();
+			return 1;
+		}
+	}
+
+	if( button_cancel.detect() )
+	{
+		se_ctrl.immediate_sound("TURN_OFF");
+		research_menu_mode = RESEARCH_MENU_MAIN;
+		info.disp();
+		return 1;
+	}
+
+	return 0;
+}
+//----------- End of function FirmResearch::detect_mod_tech_menu -----------//
+
+
+//--------- Begin of function FirmResearch::start_mod_research ---------//
+//
+// 7kmod-gameplay: start researching a mod technology.
+//
+void FirmResearch::start_mod_research(int modTechId, char remoteAction)
+{
+	if( !remoteAction && remote.is_enable() )
+	{
+		// packet structure : <firm recno> <mod tech id>
+		short *shortPtr = (short *)remote.new_send_queue_msg(MSG_F_RESEARCH_START_MOD_TECH, 2*sizeof(short) );
+		shortPtr[0] = firm_recno;
+		shortPtr[1] = (short) modTechId;
+		return;
+	}
+
+	if( !mod_tech_res.can_research(modTechId, nation_recno) )
+		return;
+
+	//---- if the firm currently is already researching something ---//
+
+	if( tech_id || mod_tech_id )
+		terminate_research();
+
+	mod_tech_id = modTechId;
+}
+//----------- End of function FirmResearch::start_mod_research -----------//
+
+
+//--------- Begin of function FirmResearch::process_mod_research ---------//
+//
+// 7kmod-gameplay: make progress with the research of a mod technology, in
+// the same way as FirmResearch::process_research().
+//
+void FirmResearch::process_mod_research()
+{
+	float progressPoint;
+
+	if( config.fast_build && nation_recno==nation_array.player_recno )
+		progressPoint = (float) productivity / 100 + (float) 0.5;
+	else
+		progressPoint = (float) productivity / 300;
+
+	progressPoint = progressPoint * (float) 30 / mod_tech_res.complex_level(mod_tech_id);
+
+	int modTechId = mod_tech_id;
+
+	if( !mod_tech_res.progress(modTechId, nation_recno, progressPoint) )
+		return;
+
+	//------ the technology has been researched ------//
+
+	if( own_firm() )
+	{
+		news_array.tech_researched( -modTechId, mod_tech_res.get_level(modTechId, nation_recno) );		// negative id. for mod technologies
+		se_res.far_sound(center_x, center_y, 1, 'F', firm_id, "FINS");
+	}
+
+	//--- stop all the towers of this nation researching the technology, including this one, if it has reached its max level ---//
+
+	if( !mod_tech_res.can_research(modTechId, nation_recno) )
+	{
+		for( int i=firm_array.size() ; i>0 ; i-- )
+		{
+			if( firm_array.is_deleted(i) )
+				continue;
+
+			Firm* firmPtr = firm_array[i];
+
+			if( firmPtr->firm_id == FIRM_RESEARCH &&
+				 firmPtr->nation_recno == nation_recno &&
+				 ((FirmResearch*)firmPtr)->mod_tech_id == modTechId )
+			{
+				((FirmResearch*)firmPtr)->terminate_research();
+			}
+		}
+	}
+
+	if( firm_recno == firm_array.selected_recno )
+		info.disp();
+}
+//----------- End of function FirmResearch::process_mod_research -----------//
+
+
+//-------- Begin of static function i_disp_mod_tech_button --------//
+//
+// 7kmod-gameplay: button of a mod technology in the research menu.
+// button->custom_para.value is the mod technology id.
+//
+static void i_disp_mod_tech_button(ButtonCustom *button, int repaintBody)
+{
+	int x1 = button->x1;
+	int y1 = button->y1;
+	int x2 = button->x2;
+	int y2 = button->y2;
+
+	if( button->pushed_flag )
+	{
+		vga_util.d3_panel2_down(x1, y1, x2, y2);
+		x1++;
+		y1++;
+	}
+	else
+	{
+		vga_util.d3_panel2_up(x1, y1, x2, y2);
+		x2--;
+		y2--;
+	}
+
+	int modTechId = button->custom_para.value;
+
+	font_bible.put( x1+8, y1+6, mod_tech_res.name(modTechId), 0, x2-4 );
+	font_san.put( x1+8, y1+28, mod_tech_res.des(modTechId), 0, x2-4 );
+}
+//--------- End of static function i_disp_mod_tech_button ---------//

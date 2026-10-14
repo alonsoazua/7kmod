@@ -43,6 +43,7 @@
 #include <OF_BASE.h>
 #include <OF_MONS.h>
 #include <OTECHRES.h>
+#include <ModTech.h>
 #include <ONATION.h>
 #include <OREBEL.h>
 #include <OREMOTE.h>
@@ -154,6 +155,7 @@ void NationBase::init(int nationType, int raceId, int colorSchemeId, uint32_t pl
 	//--------- init technology ----------//
 
 	tech_res.init_nation_tech(nation_recno);
+	mod_tech_res.init_nation(nation_recno);		// 7kmod-gameplay
 
 	//------- reset all god knowledge --------//
 

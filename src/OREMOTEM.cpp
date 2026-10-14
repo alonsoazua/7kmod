@@ -42,6 +42,8 @@
 #include <OBOX.h>
 // ##### patch end Gilbert 20/1 #######//
 #include <gettext.h>
+#include <ModTech.h>
+#include <OF_RESE.h>
 
 //---------------- Define variable type ---------------//
 
@@ -185,6 +187,7 @@ static MsgProcessFP msg_process_function_array[] =
 	&RemoteMsg::harbor_trade_raw,			// 7kmod-gameplay
 	&RemoteMsg::harbor_hire_shipment,		// 7kmod-gameplay
 	&RemoteMsg::firm_toggle_auto_recruit,	// 7kmod-gameplay
+	&RemoteMsg::research_start_mod_tech,	// 7kmod-gameplay
 };
 
 //---------- Declare static functions ----------//
@@ -2415,6 +2418,31 @@ void RemoteMsg::firm_toggle_auto_recruit()
 	}
 }
 // ------- End of function RemoteMsg::firm_toggle_auto_recruit ---------//
+
+
+// ------- Begin of function RemoteMsg::research_start_mod_tech ---------//
+//
+// 7kmod-gameplay: start researching a mod technology in a tower of science.
+//
+void RemoteMsg::research_start_mod_tech()
+{
+	err_when( id != MSG_F_RESEARCH_START_MOD_TECH );
+	// packet structure : <firm recno> <mod tech id>
+	short *shortPtr = (short *)data_buf;
+	if( validate_firm(*shortPtr) && shortPtr[1] >= 1 && shortPtr[1] <= MAX_MOD_TECH )
+	{
+		FirmResearch *research = firm_array[*shortPtr]->cast_to_FirmResearch();
+
+		if( research && mod_tech_res.can_research(shortPtr[1], research->nation_recno) )
+		{
+			research->start_mod_research( shortPtr[1], COMMAND_REMOTE );
+
+			if( firm_array.selected_recno == *shortPtr )
+				info.disp();
+		}
+	}
+}
+// ------- End of function RemoteMsg::research_start_mod_tech ---------//
 
 
 // ------- Begin of function RemoteMsg::town_skip_recruit ---------//

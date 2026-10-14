@@ -9,6 +9,7 @@ bin_PROGRAMS = 7kaa
 	ConfigAdv.cpp \
 	CmdLine.cpp \
 	LocaleRes.cpp \
+	ModTech.cpp \
 	OAI_ACT.cpp \
 	OAI_ACT2.cpp \
 	OAI_ATTK.cpp \

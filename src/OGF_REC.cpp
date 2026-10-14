@@ -2829,12 +2829,14 @@ void FirmResearch::write_derived_record(FirmResearchGF *r)
 {
 	WriteInt16(tech_id);
 	WriteFloat(complete_percent);
+	WriteInt16(mod_tech_id);		// 7kmod-gameplay
 }
 
 void FirmResearch::read_derived_record(FirmResearchGF *r)
 {
 	ReadInt16(tech_id);
 	ReadFloat(complete_percent);
+	ReadInt16(mod_tech_id);		// 7kmod-gameplay
 }
 
 void FirmWar::write_derived_record(FirmWarGF *r)
