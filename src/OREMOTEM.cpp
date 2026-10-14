@@ -184,6 +184,7 @@ static MsgProcessFP msg_process_function_array[] =
 	&RemoteMsg::town_train_for_firm,		// 7kmod
 	&RemoteMsg::harbor_trade_raw,			// 7kmod-gameplay
 	&RemoteMsg::harbor_hire_shipment,		// 7kmod-gameplay
+	&RemoteMsg::firm_toggle_auto_recruit,	// 7kmod-gameplay
 };
 
 //---------- Declare static functions ----------//
@@ -2394,6 +2395,26 @@ void RemoteMsg::harbor_hire_shipment()
 	}
 }
 // ------- End of function RemoteMsg::harbor_hire_shipment ---------//
+
+
+// ------- Begin of function RemoteMsg::firm_toggle_auto_recruit ---------//
+//
+// 7kmod-gameplay: turn the automatic recruiting of a firm on or off.
+//
+void RemoteMsg::firm_toggle_auto_recruit()
+{
+	err_when( id != MSG_FIRM_TOGGLE_AUTO_RECRUIT );
+	// packet structure : <firm recno> <auto recruit flag>
+	short *shortPtr = (short *)data_buf;
+	if( validate_firm(*shortPtr) )
+	{
+		firm_array[*shortPtr]->set_auto_recruit( (char) shortPtr[1], COMMAND_REMOTE );
+
+		if( firm_array.selected_recno == *shortPtr )
+			info.update();
+	}
+}
+// ------- End of function RemoteMsg::firm_toggle_auto_recruit ---------//
 
 
 // ------- Begin of function RemoteMsg::town_skip_recruit ---------//

@@ -913,7 +913,14 @@ int Firm::write_file(File* filePtr)
 //
 int Firm::read_file(File* filePtr)
 {
-	if( !filePtr->file_read(&gf_rec, sizeof(FirmGF)) )
+	//--- 7kmod-gameplay: saved games before the auto recruit flag don't have it ---//
+
+	int firmGFSize = game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_AUTO_RECRUIT ?
+						  sizeof(FirmGF) : FIRM_GF_SIZE_BEFORE_AUTO_RECRUIT;
+
+	memset(&gf_rec.firm, 0, sizeof(FirmGF));
+
+	if( !filePtr->file_read(&gf_rec, firmGFSize) )
 		return 0;
 	read_record(&gf_rec.firm);
 
