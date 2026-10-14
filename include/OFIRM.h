@@ -398,6 +398,7 @@ public:
 	int	detect_recruit_town_menu();
 
 	void	disp_recruit_buttons(int x, int y, int refreshFlag);
+	void	reset_recruit_buttons();
 	int	detect_recruit_buttons();
 	void	set_auto_recruit(char autoRecruitFlag, char remoteAction);
 
