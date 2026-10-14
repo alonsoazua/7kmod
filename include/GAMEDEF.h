@@ -37,7 +37,8 @@ extern const int GAME_VERSION;
 #define GAME_VERSION_7KMOD_TRAIN_FIRM		290		// Town: Fort of the units under training
 #define GAME_VERSION_7KMOD_HARBOR_TRADE	291		// 7kmod-gameplay, FirmHarbor: raw material trade
 #define GAME_VERSION_7KMOD_HARBOR_SUPPLY	292		// 7kmod-gameplay, FirmHarbor: trade supply from hired shipments
-#define GAME_VERSION_7KMOD	292
+#define GAME_VERSION_7KMOD_AUTO_RECRUIT	293		// 7kmod-gameplay, Firm: auto recruit flag
+#define GAME_VERSION_7KMOD	293
 
 //-------- Define constant ------------//
 

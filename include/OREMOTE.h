@@ -170,6 +170,7 @@ enum { MSG_QUEUE_HEADER=FIRST_REMOTE_MSG_ID,
 		 MSG_TOWN_TRAIN_FOR_FIRM,		// 7kmod: train units in a town that go into a Fort when trained
 		 MSG_F_HARBOR_TRADE_RAW,		// 7kmod-gameplay: set the raw material traded by a harbor
 		 MSG_F_HARBOR_HIRE_SHIPMENT,	// 7kmod-gameplay: hire a shipment of raw materials for a harbor
+		 MSG_FIRM_TOGGLE_AUTO_RECRUIT,	// 7kmod-gameplay: turn the automatic recruiting of a firm on or off
 
 		 LAST_REMOTE_MSG_ID			// keep this item last
 	  };
@@ -322,6 +323,7 @@ public:
 	void	town_train_for_firm();		// 7kmod
 	void	harbor_trade_raw();			// 7kmod-gameplay
 	void	harbor_hire_shipment();		// 7kmod-gameplay
+	void	firm_toggle_auto_recruit();	// 7kmod-gameplay
 };
 
 //----------- Define class Remote -----------//

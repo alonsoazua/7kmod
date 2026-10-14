@@ -381,6 +381,29 @@ public:
 
 	int	get_raw_supply(short& rawId, float*& stockQtyPtr, short& nextOutputFirmRecno);		// 7kmod-gameplay
 
+	//------ 7kmod: recruiting and training from linked towns ------//
+
+	char	auto_recruit_flag;		// 7kmod-gameplay: whether the player's mine, factory or tower of science recruits workers automatically
+
+	int	is_recruit_firm();				// whether units can be recruited and trained for this firm from linked towns
+	int	recruit_train_skill_id();		// the skill trained for this firm
+	int	is_auto_recruit_firm();			// 7kmod-gameplay: whether this firm has the auto recruit toggle
+
+	int	get_recruit_town_list(short* townRecnoArray);
+	int	can_recruit_from_town();
+	void	open_recruit_from_town();
+	int	disp_recruit_town_menu_if_active(int refreshFlag);
+	int	is_recruit_town_menu_active();
+	void	disp_recruit_town_menu(int refreshFlag);
+	int	detect_recruit_town_menu();
+
+	void	disp_recruit_buttons(int x, int y, int refreshFlag);
+	int	detect_recruit_buttons();
+	void	set_auto_recruit(char autoRecruitFlag, char remoteAction);
+
+	void	disp_spy_button_7kmod(int x, int y, int refreshFlag);
+	int	detect_spy_button_7kmod(int x);
+
 	//---------- AI functions ----------//
 
 			  void 			think_repair();

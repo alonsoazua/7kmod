@@ -104,6 +104,9 @@ void FirmResearch::init_derived()
 //
 void FirmResearch::put_info(int refreshFlag)
 {
+	if( disp_recruit_town_menu_if_active(refreshFlag) )		// 7kmod
+		return;
+
 	if( refreshFlag==INFO_REPAINT && !disable_refresh )
 		research_menu_mode = RESEARCH_MENU_MAIN;
 
@@ -125,6 +128,9 @@ void FirmResearch::put_info(int refreshFlag)
 //
 int FirmResearch::detect_info()
 {
+	if( is_recruit_town_menu_active() )		// 7kmod
+		return detect_recruit_town_menu();
+
 	switch( research_menu_mode )
 	{
 		case RESEARCH_MENU_MAIN:
@@ -171,9 +177,12 @@ void FirmResearch::disp_main_menu(int refreshFlag)
 			button_vacate_firm.disable();
 
 		x += (BUTTON_ACTION_WIDTH * 2);
+
+		disp_recruit_buttons(x, INFO_Y1+235, refreshFlag);		// 7kmod
+		x += BUTTON_ACTION_WIDTH*2;
 	}
 
-	disp_spy_button( x, INFO_Y1+235, refreshFlag );
+	disp_spy_button_7kmod( x, INFO_Y1+235, refreshFlag );
 }
 //----------- End of function FirmResearch::disp_main_menu -----------//
 
@@ -198,11 +207,16 @@ int FirmResearch::detect_main_menu()
 
 	//-------- detect spy button ----------//
 
-	if( detect_spy_button() )
+	if( detect_spy_button_7kmod(own_firm() ? INFO_X1+BUTTON_ACTION_WIDTH*4 : INFO_X1) )
 		return 1;
 
 	if( !own_firm() )
 		return 0;
+
+	//------ 7kmod: detect recruit buttons -------//
+
+	if( detect_recruit_buttons() )
+		return 1;
 
 	//------ detect the select research button -------//
 

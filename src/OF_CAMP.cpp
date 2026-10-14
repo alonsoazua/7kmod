@@ -80,6 +80,9 @@ static char         camp_menu_mode = CAMP_MENU_MAIN;
 static short        camp_menu_firm_recno = 0;
 static char         camp_disable_refresh = 0;
 
+static Button3D     button_firm_recruit, button_firm_auto_recruit;		// 7kmod: for mines, factories and towers of science
+static ButtonCustom button_firm_spy_text;
+
 static void i_disp_town_list_button(ButtonCustom *button, int repaintBody);
 
 //--------- Declare static functions ---------//
@@ -383,14 +386,8 @@ void FirmCamp::put_info(int refreshFlag)
 {
 	//------ 7kmod: display the town selection menu -------//
 
-	if( (refreshFlag==INFO_REPAINT && !camp_disable_refresh) || camp_menu_firm_recno != firm_recno )
-		camp_menu_mode = CAMP_MENU_MAIN;
-
-	if( camp_menu_mode == CAMP_MENU_SELECT_TOWN )
-	{
-		disp_recruit_town_menu(refreshFlag);
+	if( disp_recruit_town_menu_if_active(refreshFlag) )
 		return;
-	}
 
 	//--------------------------------------//
 
@@ -485,7 +482,7 @@ int FirmCamp::detect_info()
 {
 	//------ 7kmod: detect the town selection menu -------//
 
-	if( camp_menu_mode == CAMP_MENU_SELECT_TOWN && camp_menu_firm_recno == firm_recno )
+	if( is_recruit_town_menu_active() )
 		return detect_recruit_town_menu();
 
 	//--------------------------------------//
@@ -616,25 +613,8 @@ int FirmCamp::detect_info()
 
 	if( button_recruit_town.init_flag && button_recruit_town.detect() )
 	{
-		if( !can_recruit_from_town() )
-			return 1;
-
-		town_list_count = get_recruit_town_list(town_list_recno_array);
-
-		if( town_list_count == 1 )		// only one town, open it directly
-		{
-			Town::open_fort_recruit(firm_recno, town_list_recno_array[0]);
-		}
-		else if( town_list_count > 1 )
-		{
-			se_ctrl.immediate_sound("TURN_ON");
-
-			camp_menu_mode = CAMP_MENU_SELECT_TOWN;
-			camp_menu_firm_recno = firm_recno;
-			camp_disable_refresh = 1;		// static var for put_info() only
-			info.disp();
-			camp_disable_refresh = 0;
-		}
+		if( can_recruit_from_town() )
+			open_recruit_from_town();
 		return 1;
 	}
 
@@ -643,7 +623,241 @@ int FirmCamp::detect_info()
 //----------- End of function FirmCamp::detect_info -----------//
 
 
-//--------- Begin of function FirmCamp::get_recruit_town_list ---------//
+//--------- Begin of function Firm::is_recruit_firm ---------//
+//
+// 7kmod: whether units can be recruited and trained for this firm from
+// its linked towns.
+//
+int Firm::is_recruit_firm()
+{
+	return firm_id==FIRM_CAMP || firm_id==FIRM_MINE ||
+			 firm_id==FIRM_FACTORY || firm_id==FIRM_RESEARCH;
+}
+//----------- End of function Firm::is_recruit_firm -----------//
+
+
+//--------- Begin of function Firm::recruit_train_skill_id ---------//
+//
+// 7kmod: the skill units are trained in for this firm.
+//
+int Firm::recruit_train_skill_id()
+{
+	switch( firm_id )
+	{
+		case FIRM_CAMP:		return SKILL_LEADING;
+		case FIRM_MINE:		return SKILL_MINING;
+		case FIRM_FACTORY:	return SKILL_MFT;
+		case FIRM_RESEARCH:	return SKILL_RESEARCH;
+	}
+
+	return 0;
+}
+//----------- End of function Firm::recruit_train_skill_id -----------//
+
+
+//--------- Begin of function Firm::is_auto_recruit_firm ---------//
+//
+// 7kmod-gameplay: whether this firm has the auto recruit toggle. The
+// player's mines, factories and towers of science don't recruit workers
+// automatically unless it is turned on.
+//
+int Firm::is_auto_recruit_firm()
+{
+	return firm_id==FIRM_MINE || firm_id==FIRM_FACTORY || firm_id==FIRM_RESEARCH;
+}
+//----------- End of function Firm::is_auto_recruit_firm -----------//
+
+
+//--------- Begin of function Firm::open_recruit_from_town ---------//
+//
+// 7kmod: open the town selection menu, or the town directly if there is
+// only one linked town of the player.
+//
+void Firm::open_recruit_from_town()
+{
+	town_list_count = get_recruit_town_list(town_list_recno_array);
+
+	if( town_list_count == 1 )		// only one town, open it directly
+	{
+		Town::open_fort_recruit(firm_recno, town_list_recno_array[0]);
+	}
+	else if( town_list_count > 1 )
+	{
+		se_ctrl.immediate_sound("TURN_ON");
+
+		camp_menu_mode = CAMP_MENU_SELECT_TOWN;
+		camp_menu_firm_recno = firm_recno;
+		camp_disable_refresh = 1;		// static var for disp_recruit_town_menu_if_active() only
+		info.disp();
+		camp_disable_refresh = 0;
+	}
+}
+//----------- End of function Firm::open_recruit_from_town -----------//
+
+
+//--------- Begin of function Firm::disp_recruit_town_menu_if_active ---------//
+//
+// 7kmod: called at the beginning of put_info(). Display the town
+// selection menu if it is active for this firm.
+//
+// return: <int> 1 - the menu is displayed, 0 - it isn't
+//
+int Firm::disp_recruit_town_menu_if_active(int refreshFlag)
+{
+	if( (refreshFlag==INFO_REPAINT && !camp_disable_refresh) || camp_menu_firm_recno != firm_recno )
+		camp_menu_mode = CAMP_MENU_MAIN;
+
+	if( camp_menu_mode != CAMP_MENU_SELECT_TOWN )
+		return 0;
+
+	disp_recruit_town_menu(refreshFlag);
+	return 1;
+}
+//----------- End of function Firm::disp_recruit_town_menu_if_active -----------//
+
+
+//--------- Begin of function Firm::is_recruit_town_menu_active ---------//
+//
+int Firm::is_recruit_town_menu_active()
+{
+	return camp_menu_mode == CAMP_MENU_SELECT_TOWN && camp_menu_firm_recno == firm_recno;
+}
+//----------- End of function Firm::is_recruit_town_menu_active -----------//
+
+
+//--------- Begin of function Firm::disp_recruit_buttons ---------//
+//
+// 7kmod: display the Recruit button and, 7kmod-gameplay, the auto recruit
+// toggle, for the player's mines, factories and towers of science.
+//
+void Firm::disp_recruit_buttons(int x, int y, int refreshFlag)
+{
+	static char lastAutoRecruitFlag;
+
+	if( refreshFlag == INFO_REPAINT )
+	{
+		button_firm_recruit.paint( x, y, 'A', "TRAIN" );
+		button_firm_auto_recruit.paint( x+BUTTON_ACTION_WIDTH, y, 'A',
+			auto_recruit_flag ? (char*)"DEFENSE1" : (char*)"DEFENSE0" );
+
+		lastAutoRecruitFlag = auto_recruit_flag;
+	}
+	else if( lastAutoRecruitFlag != auto_recruit_flag )		// the flag has been changed
+	{
+		button_firm_auto_recruit.update_bitmap( auto_recruit_flag ? (char*)"DEFENSE1" : (char*)"DEFENSE0" );
+		lastAutoRecruitFlag = auto_recruit_flag;
+	}
+
+	if( can_recruit_from_town() )
+		button_firm_recruit.enable();
+	else
+		button_firm_recruit.disable();
+}
+//----------- End of function Firm::disp_recruit_buttons -----------//
+
+
+//--------- Begin of function Firm::detect_recruit_buttons ---------//
+//
+int Firm::detect_recruit_buttons()
+{
+	if( button_firm_recruit.init_flag && button_firm_recruit.detect() )
+	{
+		if( can_recruit_from_town() )
+			open_recruit_from_town();
+		return 1;
+	}
+
+	if( button_firm_auto_recruit.init_flag && button_firm_auto_recruit.detect() )
+	{
+		se_ctrl.immediate_sound( !auto_recruit_flag ? (char*)"TURN_ON" : (char*)"TURN_OFF" );
+
+		set_auto_recruit( !auto_recruit_flag, COMMAND_PLAYER );		// the button is updated by disp_recruit_buttons()
+		return 1;
+	}
+
+	return 0;
+}
+//----------- End of function Firm::detect_recruit_buttons -----------//
+
+
+//--------- Begin of function Firm::set_auto_recruit ---------//
+//
+// 7kmod-gameplay: turn the automatic recruiting of workers on or off.
+//
+void Firm::set_auto_recruit(char autoRecruitFlag, char remoteAction)
+{
+	if( !remoteAction && remote.is_enable() )
+	{
+		// packet structure : <firm recno> <auto recruit flag>
+		short *shortPtr = (short *)remote.new_send_queue_msg(MSG_FIRM_TOGGLE_AUTO_RECRUIT, 2*sizeof(short));
+		shortPtr[0] = firm_recno;
+		shortPtr[1] = autoRecruitFlag;
+		return;
+	}
+
+	auto_recruit_flag = autoRecruitFlag;
+}
+//----------- End of function Firm::set_auto_recruit -----------//
+
+
+//--------- Begin of function Firm::disp_spy_button_7kmod ---------//
+//
+// 7kmod: display the spy button. If the buttons of the player's own firm
+// leave no space for it, the spy menu button is displayed as a text
+// button below the button row (a player's own firm has no other spy
+// buttons, as it cannot be bribed or captured).
+//
+void Firm::disp_spy_button_7kmod(int x, int y, int refreshFlag)
+{
+	if( own_firm() && x+BUTTON_ACTION_WIDTH > INFO_X2+1 )
+	{
+		if( refreshFlag==INFO_REPAINT )
+		{
+			if( player_spy_count > 0 )
+			{
+				button_firm_spy_text.paint( INFO_X1, y+BUTTON_ACTION_HEIGHT+1, INFO_X2, INFO_Y2-1,
+					ButtonCustom::disp_text_button_func, ButtonCustomPara((void*)"Spy Menu",0) );
+			}
+			else
+			{
+				button_firm_spy_text.reset();
+			}
+		}
+	}
+	else
+	{
+		if( refreshFlag==INFO_REPAINT )
+			button_firm_spy_text.reset();
+
+		disp_spy_button(x, y, refreshFlag);
+	}
+}
+//----------- End of function Firm::disp_spy_button_7kmod -----------//
+
+
+//--------- Begin of function Firm::detect_spy_button_7kmod ---------//
+//
+// <int> x - the x position passed to disp_spy_button_7kmod()
+//
+int Firm::detect_spy_button_7kmod(int x)
+{
+	if( own_firm() && x+BUTTON_ACTION_WIDTH > INFO_X2+1 )
+	{
+		if( player_spy_count > 0 && button_firm_spy_text.init_flag && button_firm_spy_text.detect() )
+		{
+			firm_menu_mode = FIRM_MENU_SPY;
+			info.disp();
+			return 1;
+		}
+		return 0;
+	}
+
+	return detect_spy_button();
+}
+//----------- End of function Firm::detect_spy_button_7kmod -----------//
+
+
+//--------- Begin of function Firm::get_recruit_town_list ---------//
 //
 // 7kmod: get the player's own towns linked to this Fort.
 //
@@ -652,7 +866,7 @@ int FirmCamp::detect_info()
 //
 // return: <int> the number of towns.
 //
-int FirmCamp::get_recruit_town_list(short* townRecnoArray)
+int Firm::get_recruit_town_list(short* townRecnoArray)
 {
 	int townCount=0;
 
@@ -671,30 +885,30 @@ int FirmCamp::get_recruit_town_list(short* townRecnoArray)
 
 	return townCount;
 }
-//----------- End of function FirmCamp::get_recruit_town_list -----------//
+//----------- End of function Firm::get_recruit_town_list -----------//
 
 
-//--------- Begin of function FirmCamp::can_recruit_from_town ---------//
+//--------- Begin of function Firm::can_recruit_from_town ---------//
 //
 // 7kmod: whether the recruit button of the Fort should be enabled.
 //
-int FirmCamp::can_recruit_from_town()
+int Firm::can_recruit_from_town()
 {
-	if( !own_firm() || under_construction || worker_count >= MAX_WORKER )
+	if( !own_firm() || under_construction || !worker_array || worker_count >= MAX_WORKER )
 		return 0;
 
 	short townRecnoArray[MAX_LINKED_FIRM_TOWN];
 
 	return get_recruit_town_list(townRecnoArray) > 0;
 }
-//----------- End of function FirmCamp::can_recruit_from_town -----------//
+//----------- End of function Firm::can_recruit_from_town -----------//
 
 
-//--------- Begin of function FirmCamp::disp_recruit_town_menu ---------//
+//--------- Begin of function Firm::disp_recruit_town_menu ---------//
 //
 // 7kmod: display the list of linked towns to recruit soldiers from.
 //
-void FirmCamp::disp_recruit_town_menu(int refreshFlag)
+void Firm::disp_recruit_town_menu(int refreshFlag)
 {
 	//--- if the list of linked towns has changed, rebuild the menu ---//
 
@@ -775,12 +989,12 @@ void FirmCamp::disp_recruit_town_menu(int refreshFlag)
 		}
 	}
 }
-//----------- End of function FirmCamp::disp_recruit_town_menu -----------//
+//----------- End of function Firm::disp_recruit_town_menu -----------//
 
 
-//--------- Begin of function FirmCamp::detect_recruit_town_menu ---------//
+//--------- Begin of function Firm::detect_recruit_town_menu ---------//
 //
-int FirmCamp::detect_recruit_town_menu()
+int Firm::detect_recruit_town_menu()
 {
 	int rowCount = MIN(town_list_count, TOWN_LIST_MAX_ROW);
 
@@ -817,7 +1031,7 @@ int FirmCamp::detect_recruit_town_menu()
 
 	return 0;
 }
-//----------- End of function FirmCamp::detect_recruit_town_menu -----------//
+//----------- End of function Firm::detect_recruit_town_menu -----------//
 
 
 //-------- Begin of static function i_disp_town_list_button --------//

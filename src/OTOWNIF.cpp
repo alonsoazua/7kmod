@@ -586,7 +586,7 @@ int Town::fort_recruit_valid()
 
 	Firm* firmPtr = firm_array[fort_recruit_firm_recno];
 
-	if( firmPtr->firm_id != FIRM_CAMP || firmPtr->nation_recno != nation_recno )
+	if( !firmPtr->is_recruit_firm() || firmPtr->nation_recno != nation_recno )		// 7kmod-gameplay: Forts, mines, factories and towers of science
 		return 0;
 
 	for( int i=0 ; i<firmPtr->linked_town_count ; i++ )
@@ -692,7 +692,20 @@ static void i_disp_back_fort_button(ButtonCustom *button, int repaintBody)
 		y2--;
 	}
 
-	font_san.center_put( x1+2, y1+1, x2-2, y2-1, "Back to Fort" );
+	//--- 7kmod-gameplay: show the type of the firm, as mines, factories and towers of science can also recruit ---//
+
+	String str("Back to ");
+	int firmRecno = button->custom_para.value;
+
+	if( firmRecno && !firm_array.is_deleted(firmRecno) )
+		str += _(firm_res[firm_array[firmRecno]->firm_id]->name);
+	else
+		str += "Fort";
+
+	if( font_san.text_width(str) > x2-x1-4 )		// too long, such as "Back to Tower of Science"
+		str = "Back";
+
+	font_san.center_put( x1+2, y1+1, x2-2, y2-1, str );
 }
 //--------- End of static function i_disp_back_fort_button ---------//
 
@@ -840,14 +853,14 @@ int Town::detect_main_menu()
 					// packet structure : <town recno> <skill id> <race id> <amount> <firm recno>
 					short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_TRAIN_FOR_FIRM, 5*sizeof(short) );
 					shortPtr[0] = town_recno;
-					shortPtr[1] = SKILL_LEADING;
+					shortPtr[1] = firm_array[fort_recruit_firm_recno]->recruit_train_skill_id();
 					shortPtr[2] = raceId;
 					shortPtr[3] = (short)trainAmount;
 					shortPtr[4] = fort_recruit_firm_recno;
 				}
 				else
 				{
-					add_queue(SKILL_LEADING, raceId, trainAmount, fort_recruit_firm_recno);		// the trained units go into the Fort
+					add_queue(firm_array[fort_recruit_firm_recno]->recruit_train_skill_id(), raceId, trainAmount, fort_recruit_firm_recno);		// the trained units go into the firm
 				}
 
 				se_ctrl.immediate_sound("TURN_ON");
@@ -2330,7 +2343,7 @@ void Town::finish_train(Unit* unitPtr)
 	{
 		Firm* firmPtr = firm_array[destFirmRecno];
 
-		if( firmPtr->firm_id == FIRM_CAMP && firmPtr->nation_recno == unitNationRecno &&
+		if( firmPtr->is_recruit_firm() && firmPtr->nation_recno == unitNationRecno &&
 			 !firmPtr->under_construction && firmPtr->worker_array &&
 			 firmPtr->worker_count < MAX_WORKER &&
 			 unit_array[unitRecno]->rank_id == RANK_SOLDIER )

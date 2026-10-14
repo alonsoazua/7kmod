@@ -1300,7 +1300,12 @@ struct FirmGF
 	int8_t               should_close_flag;
 	int8_t               no_neighbor_space;
 	int8_t               ai_should_build_factory_count;
+	// 7kmod-gameplay field, only in saved games of version GAME_VERSION_7KMOD_AUTO_RECRUIT or later. Keep it last.
+	int8_t               auto_recruit_flag;
 };
+
+// 7kmod-gameplay: size of FirmGF in saved games before the auto recruit flag was added
+#define FIRM_GF_SIZE_BEFORE_AUTO_RECRUIT (sizeof(FirmGF) - sizeof(int8_t))
 
 struct FirmBaseGF
 {

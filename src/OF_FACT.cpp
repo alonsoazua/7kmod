@@ -208,6 +208,9 @@ void FirmFactory::auto_set_product()
 //
 void FirmFactory::put_info(int refreshFlag)
 {
+	if( disp_recruit_town_menu_if_active(refreshFlag) )		// 7kmod
+		return;
+
 	//---------- display info ------------//
 
 	disp_basic_info(INFO_Y1, refreshFlag);
@@ -238,11 +241,14 @@ void FirmFactory::put_info(int refreshFlag)
 			button_vacate_firm.disable();
 
 		x += (BUTTON_ACTION_WIDTH * 2);
+
+		disp_recruit_buttons(x, INFO_Y1+248, refreshFlag);		// 7kmod
+		x += BUTTON_ACTION_WIDTH*2;
 	}
 
 	//---------- display spy button ----------//
 
-	disp_spy_button(x, INFO_Y1+248, refreshFlag);
+	disp_spy_button_7kmod(x, INFO_Y1+248, refreshFlag);
 }
 //----------- End of function FirmFactory::put_info -----------//
 
@@ -251,6 +257,9 @@ void FirmFactory::put_info(int refreshFlag)
 //
 int FirmFactory::detect_info()
 {
+	if( is_recruit_town_menu_active() )		// 7kmod
+		return detect_recruit_town_menu();
+
 	//-------- detect basic info -----------//
 
 	if( detect_basic_info() )
@@ -267,11 +276,16 @@ int FirmFactory::detect_info()
 
 	//-------- detect spy button ----------//
 
-	if( detect_spy_button() )
+	if( detect_spy_button_7kmod(own_firm() ? INFO_X1+BUTTON_ACTION_WIDTH*4 : INFO_X1) )
 		return 1;
 
 	if( !own_firm() )
 		return 0;
+
+	//------ 7kmod: detect recruit buttons -------//
+
+	if( detect_recruit_buttons() )
+		return 1;
 
 	//---- detect change production button -----//
 
