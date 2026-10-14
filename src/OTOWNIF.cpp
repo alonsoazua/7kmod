@@ -109,6 +109,8 @@ static char       disable_refresh=0;
 static short 		action_spy_recno;	// recno of the spy that is doing the bribing or viewing secret reports of other nations
 static ButtonCustom button_back_fort;		// 7kmod: return to the Fort in fort recruit mode
 static char       last_fort_mode;		// 7kmod: whether the last displayed interface was in fort mode
+static Button3D   button_train_captain;		// 7kmod-gameplay
+static short      last_captain_train_count;
 static short      last_fort_train_count;	// 7kmod: the last displayed number of units training for the Fort
 
 //-------- Define static class member var ------//
@@ -444,6 +446,31 @@ void Town::disp_main_menu(int refreshFlag)
 		else
 			x += BUTTON_ACTION_WIDTH;	 // only one button "Recruit", new button displayed next to it.
 
+		//---- 7kmod-gameplay: the Train Captain button, at the start of the second row ----//
+
+		if( refreshFlag == INFO_REPAINT )
+		{
+			if( has_linked_own_camp && !fortMode )
+			{
+				button_train_captain.paint( x, y, 'A', "PROMOTE" );
+				last_captain_train_count = 0;
+			}
+			else
+				button_train_captain.reset();
+		}
+
+		if( button_train_captain.init_flag )
+		{
+			if( can_train_captain() )
+				button_train_captain.enable();
+			else
+				button_train_captain.disable();
+
+			disp_captain_train_count();
+
+			x += BUTTON_ACTION_WIDTH;		// the spy button goes next to it
+		}
+
 		//-------- enable/disable the train button -----------//
 
 		int raceId = race_filter(browse_race.recno());
@@ -669,6 +696,109 @@ void Town::disp_fort_train_count()
 //-------- End of function Town::disp_fort_train_count --------//
 
 
+//------- Begin of function Town::can_train_captain -------//
+//
+// 7kmod-gameplay: whether a captain can be added to the training queue.
+// Captains are only trained in towns where the race of the king is the
+// majority, and they are of the king's race.
+//
+int Town::can_train_captain()
+{
+	if( !nation_recno )
+		return 0;
+
+	Nation* nationPtr = nation_array[nation_recno];
+	int kingRaceId = nationPtr->race_id;
+
+	return kingRaceId && majority_race() == kingRaceId &&
+			 has_linked_own_camp && jobless_race_pop_array[kingRaceId-1] > 0 &&
+			 nationPtr->cash > TRAIN_CAPTAIN_COST &&
+			 train_queue_count + (train_unit_recno>0) < MAX_TRAIN_QUEUE;
+}
+//-------- End of function Town::can_train_captain --------//
+
+
+//------- Begin of function Town::is_training_captain -------//
+//
+// 7kmod-gameplay: whether the unit under training is a captain. Only
+// captains start the training with CAPTAIN_LEADERSHIP_LEVEL leadership.
+//
+int Town::is_training_captain()
+{
+	if( !train_unit_recno )
+		return 0;
+
+	Unit* unitPtr = unit_array[train_unit_recno];
+
+	return unitPtr->skill.skill_id == SKILL_LEADING &&
+			 unitPtr->skill.skill_level >= CAPTAIN_LEADERSHIP_LEVEL;
+}
+//-------- End of function Town::is_training_captain --------//
+
+
+//------- Begin of function Town::captain_train_count -------//
+//
+// 7kmod-gameplay: the number of captains queued or under training.
+//
+int Town::captain_train_count()
+{
+	int count = is_training_captain();
+
+	for( int i=0 ; i<train_queue_count ; i++ )
+	{
+		if( train_queue_skill_array[i] == TRAIN_CAPTAIN_ID )
+			count++;
+	}
+
+	return count;
+}
+//-------- End of function Town::captain_train_count --------//
+
+
+//------- Begin of function Town::train_total_days -------//
+//
+// The number of days needed for training the unit under training.
+//
+int Town::train_total_days()
+{
+	int totalDays = is_training_captain() ? TRAIN_CAPTAIN_DAYS : TOTAL_TRAIN_DAYS;		// 7kmod-gameplay
+
+	if( config.fast_build && nation_recno==nation_array.player_recno )
+		totalDays /= 2;
+
+	return totalDays;
+}
+//-------- End of function Town::train_total_days --------//
+
+
+//------- Begin of function Town::disp_captain_train_count -------//
+//
+// 7kmod-gameplay: display the number of captains in training on the
+// Train Captain button.
+//
+void Town::disp_captain_train_count()
+{
+	int count = captain_train_count();
+
+	if( count > 0 )
+	{
+		Button3D& b = button_train_captain;
+
+		vga_front.bar( b.x1+8, b.y1+10, b.x2-12, b.y2-15, V_WHITE );
+		vga_front.rect( b.x1+8, b.y1+10, b.x2-12, b.y2-15, 1, V_BLACK );
+
+		font_mid.center_put( b.x1+8, b.y1+10, b.x2-12, b.y2-15, misc.format(count) );
+	}
+	else if( last_captain_train_count > 0 )
+	{
+		button_train_captain.paint();		// remove the number
+	}
+
+	last_captain_train_count = count;
+}
+//-------- End of function Town::disp_captain_train_count --------//
+
+
 //-------- Begin of static function i_disp_back_fort_button --------//
 //
 // 7kmod: button for returning to the Fort being recruited for.
@@ -805,6 +935,50 @@ int Town::detect_main_menu()
 		button_train.enable();
 	else
 		button_train.disable();
+
+	//------- 7kmod-gameplay: detect the Train Captain button -------//
+	//
+	// Left click adds a captain to the training queue, right click
+	// removes one from it.
+
+	if( !fortMode && button_train_captain.init_flag )
+	{
+		if( can_train_captain() )
+			button_train_captain.enable();
+		else
+			button_train_captain.disable();
+
+		int rc = button_train_captain.detect(0, 0, 1);
+
+		if( rc==2 && captain_train_count()==0 )
+			rc = 0;
+
+		if( rc )
+		{
+			int kingRaceId = nation_array[nation_recno]->race_id;
+
+			if( remote.is_enable() )
+			{
+				// packet structure : <town recno> <skill id> <race id> <amount>
+				short *shortPtr = (short *)remote.new_send_queue_msg(MSG_TOWN_RECRUIT, 4*sizeof(short) );
+				shortPtr[0] = town_recno;
+				shortPtr[1] = TRAIN_CAPTAIN_ID;
+				shortPtr[2] = rc==1 ? kingRaceId : -1;		// -1 for removing from the queue
+				shortPtr[3] = 1;
+			}
+			else
+			{
+				if( rc==1 )
+					add_queue(TRAIN_CAPTAIN_ID, kingRaceId, 1);
+				else
+					remove_queue(TRAIN_CAPTAIN_ID, 1);
+			}
+
+			se_ctrl.immediate_sound(rc==1 ? "TURN_ON" : "TURN_OFF");
+			info.disp();
+			return 1;
+		}
+	}
 
 	//------- 7kmod: detect the button for returning to the Fort -------//
 
@@ -993,12 +1167,7 @@ void Town::disp_train_info(int refreshFlag)
 		// vga_util.d3_panel_down(x+RACE_ICON_WIDTH+6, y, MSG_X2-4, MSG_Y2-4 );
 	}
 
-	int totalDays;
-
-	if( config.fast_build && nation_recno==nation_array.player_recno )
-		totalDays = TOTAL_TRAIN_DAYS/2;
-	else
-		totalDays = TOTAL_TRAIN_DAYS;
+	int totalDays = train_total_days();		// 7kmod-gameplay: captains take longer
 
 	vga_front.indicator( 0, x+RACE_ICON_WIDTH+6, y, float(sys.frame_count-start_train_frame_no),
 		float(totalDays * FRAMES_PER_DAY), VGA_GRAY );
@@ -1301,7 +1470,7 @@ static void i_disp_queue_skill_button(ButtonCustom *button, int repaintBody)
 	{
 		Unit *unitPtr = unit_array[townPtr->train_unit_recno];
 		// ##### begin Gilbert 10/10 #######//
-		if(unitPtr->skill.skill_id==skillId
+		if((unitPtr->skill.skill_id==skillId && !townPtr->is_training_captain())		// 7kmod-gameplay: captains have their own button
 			//### begin alex 17/3 ###//
 			//|| (unitPtr->spy_recno && skillId == SKILL_SPYING) )
 			|| (skillId == SKILL_SPYING && unitPtr->spy_recno && unitPtr->skill.skill_id == 0) ) // 0 for spying-training
@@ -2121,6 +2290,13 @@ int Town::recruit(int trainSkillId, int raceId, char remoteAction)
 		{
 			unitPtr->spy_recno = spy_array.add_spy(unitRecno, TRAIN_SKILL_LEVEL);
 		}
+		else if( trainSkillId == TRAIN_CAPTAIN_ID )		// 7kmod-gameplay: a captain, made a general when trained
+		{
+			unitPtr->set_combat_level(CAPTAIN_COMBAT_LEVEL);
+			unitPtr->skill.skill_id    = SKILL_LEADING;
+			unitPtr->skill.skill_level = CAPTAIN_LEADERSHIP_LEVEL;
+			unitPtr->skill.skill_potential = 50+misc.random(51);		// 50 to 100 potential
+		}
 		else
 		{
 			if( trainSkillId == SKILL_LEADING )		// also increase the combat level for leadership skill training
@@ -2145,7 +2321,8 @@ int Town::recruit(int trainSkillId, int raceId, char remoteAction)
 			}
 		}
 
-		nation_array[nationRecno]->add_expense( EXPENSE_TRAIN_UNIT, (float) TRAIN_SKILL_COST );
+		nation_array[nationRecno]->add_expense( EXPENSE_TRAIN_UNIT,
+			(float) (trainSkillId == TRAIN_CAPTAIN_ID ? TRAIN_CAPTAIN_COST : TRAIN_SKILL_COST) );
 	}
 	else
 	{
@@ -2305,12 +2482,7 @@ void Town::process_train()
 
 	//------------- process training ---------------//
 
-	int totalDays;
-
-	if( config.fast_build && nation_recno==nation_array.player_recno )
-		totalDays = TOTAL_TRAIN_DAYS/2;
-	else
-		totalDays = TOTAL_TRAIN_DAYS;
+	int totalDays = train_total_days();		// 7kmod-gameplay: captains take longer
 
 	if( (int)(sys.frame_count-start_train_frame_no) / FRAMES_PER_DAY >= totalDays )
 	{
@@ -2332,7 +2504,12 @@ void Town::finish_train(Unit* unitPtr)
 	if( !world.locate_space(&xLoc, &yLoc, loc_x2, loc_y2, spriteInfo->loc_width, spriteInfo->loc_height) )
 		return;
 
+	int isCaptain = is_training_captain();		// 7kmod-gameplay
+
 	unitPtr->init_sprite(xLoc, yLoc);
+
+	if( isCaptain )
+		unitPtr->set_rank(RANK_GENERAL);
 
 	if( unitPtr->is_own() )
 	{
@@ -2411,7 +2588,9 @@ void Town::process_queue()
 	char i;
 	for(i=0; i<queueCount; ++i)
 	{
-		if(can_train(train_queue_race_array[i]))
+		if(can_train(train_queue_race_array[i]) &&
+			(train_queue_skill_array[i] != TRAIN_CAPTAIN_ID ||
+			 nation_array[nation_recno]->cash > TRAIN_CAPTAIN_COST))		// 7kmod-gameplay
 		{
 			skillId = train_queue_skill_array[i];
 			raceId = train_queue_race_array[i];
@@ -2488,7 +2667,8 @@ void Town::remove_queue(char skillId, int amount)
 	if(train_unit_recno)
 	{
 		Unit *unitPtr = unit_array[train_unit_recno];
-		if((unitPtr->skill).skill_id==skillId)
+		if( skillId == TRAIN_CAPTAIN_ID ? is_training_captain() :		// 7kmod-gameplay
+			 ((unitPtr->skill).skill_id==skillId && !is_training_captain()) )
 			cancel_train_unit();
 	}
 }
