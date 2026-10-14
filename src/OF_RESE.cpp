@@ -100,6 +100,12 @@ void FirmResearch::init_derived()
 //----------- End of function FirmResearch::init_derived -----------//
 
 
+//------ 7kmod: the button row is moved up 6 pixels (from INFO_Y1+235) ------//
+//------ so that a second row fits for the spy button of the player's tower ------//
+
+#define RESEARCH_BUTTON_Y	(INFO_Y1+229)
+
+
 //--------- Begin of function FirmResearch::put_info ---------//
 //
 void FirmResearch::put_info(int refreshFlag)
@@ -166,8 +172,8 @@ void FirmResearch::disp_main_menu(int refreshFlag)
 	{
 		if (refreshFlag == INFO_REPAINT)
 		{
-			button_select_research.paint(INFO_X1, INFO_Y1 + 235, 'A', "RESEARCH");
-			button_vacate_firm.paint(INFO_X1 + BUTTON_ACTION_WIDTH, INFO_Y1 + 235, 'A', "RECRUIT");
+			button_select_research.paint(INFO_X1, RESEARCH_BUTTON_Y, 'A', "RESEARCH");
+			button_vacate_firm.paint(INFO_X1 + BUTTON_ACTION_WIDTH, RESEARCH_BUTTON_Y, 'A', "RECRUIT");
 			button_vacate_firm.set_help_code("MOBILIZE");
 		}
 
@@ -178,11 +184,16 @@ void FirmResearch::disp_main_menu(int refreshFlag)
 
 		x += (BUTTON_ACTION_WIDTH * 2);
 
-		disp_recruit_buttons(x, INFO_Y1+235, refreshFlag);		// 7kmod
+		disp_recruit_buttons(x, RESEARCH_BUTTON_Y, refreshFlag);		// 7kmod
 		x += BUTTON_ACTION_WIDTH*2;
 	}
 
-	disp_spy_button_7kmod( x, INFO_Y1+235, refreshFlag );
+	//--- 7kmod: the button row of the player's own tower is full, so its spy button is displayed in a second row ---//
+
+	if( own_firm() )
+		disp_spy_button( INFO_X1, RESEARCH_BUTTON_Y+BUTTON_ACTION_HEIGHT, refreshFlag );
+	else
+		disp_spy_button( x, RESEARCH_BUTTON_Y, refreshFlag );
 }
 //----------- End of function FirmResearch::disp_main_menu -----------//
 
@@ -207,7 +218,7 @@ int FirmResearch::detect_main_menu()
 
 	//-------- detect spy button ----------//
 
-	if( detect_spy_button_7kmod(own_firm() ? INFO_X1+BUTTON_ACTION_WIDTH*4 : INFO_X1) )
+	if( detect_spy_button() )
 		return 1;
 
 	if( !own_firm() )
