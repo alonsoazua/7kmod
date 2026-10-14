@@ -106,10 +106,19 @@ FirmWar::~FirmWar()
 //----------- End of function FirmWar::~FirmWar -----------//
 
 
+//------ 7kmod: the button row is moved up 6 pixels (from INFO_Y1+235) ------//
+//------ so that a second row fits for the spy button of the player's war factory ------//
+
+#define WAR_BUTTON_Y	(INFO_Y1+229)
+
+
 //--------- Begin of function FirmWar::put_info ---------//
 //
 void FirmWar::put_info(int refreshFlag)
 {
+	if( disp_recruit_town_menu_if_active(refreshFlag) )		// 7kmod
+		return;
+
 	if( refreshFlag==INFO_REPAINT && !disable_refresh )
 		war_menu_mode = WAR_MENU_MAIN;
 
@@ -131,6 +140,9 @@ void FirmWar::put_info(int refreshFlag)
 //
 int FirmWar::detect_info()
 {
+	if( is_recruit_town_menu_active() )		// 7kmod
+		return detect_recruit_town_menu();
+
 	switch( war_menu_mode )
 	{
 		case WAR_MENU_MAIN:
@@ -168,8 +180,8 @@ void FirmWar::disp_main_menu(int refreshFlag)
 	{
 		if (refreshFlag == INFO_REPAINT)
 		{	
-			button_select_build.paint(INFO_X1, INFO_Y1 + 235, 'A', "MAKEWEAP");
-			button_vacate_firm.paint(INFO_X1 + BUTTON_ACTION_WIDTH, INFO_Y1 + 235, 'A', "RECRUIT");
+			button_select_build.paint(INFO_X1, WAR_BUTTON_Y, 'A', "MAKEWEAP");
+			button_vacate_firm.paint(INFO_X1 + BUTTON_ACTION_WIDTH, WAR_BUTTON_Y, 'A', "RECRUIT");
 			button_vacate_firm.set_help_code("MOBILIZE");
 		}
 
@@ -179,9 +191,17 @@ void FirmWar::disp_main_menu(int refreshFlag)
 			button_vacate_firm.disable();
 
 		x += (BUTTON_ACTION_WIDTH * 2);
+
+		disp_recruit_buttons(x, WAR_BUTTON_Y, refreshFlag);		// 7kmod
+		x += BUTTON_ACTION_WIDTH*2;
 	}
 
-	disp_spy_button( x, INFO_Y1+235, refreshFlag );
+	//--- 7kmod: the button row of the player's own war factory is full, so its spy button is displayed in a second row ---//
+
+	if( own_firm() )
+		disp_spy_button( INFO_X1, WAR_BUTTON_Y+BUTTON_ACTION_HEIGHT, refreshFlag );
+	else
+		disp_spy_button( x, WAR_BUTTON_Y, refreshFlag );
 }
 //----------- End of function FirmWar::disp_main_menu -----------//
 
@@ -224,6 +244,11 @@ int FirmWar::detect_main_menu()
 		}
 		return 1;
 	}
+
+	//------ 7kmod: detect recruit buttons -------//
+
+	if( detect_recruit_buttons() )
+		return 1;
 
 	//------ detect the select research button -------//
 
