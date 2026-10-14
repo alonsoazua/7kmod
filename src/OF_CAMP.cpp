@@ -689,7 +689,7 @@ int FirmCamp::detect_info()
 int Firm::is_recruit_firm()
 {
 	return firm_id==FIRM_CAMP || firm_id==FIRM_MINE ||
-			 firm_id==FIRM_FACTORY || firm_id==FIRM_RESEARCH;
+			 firm_id==FIRM_FACTORY || firm_id==FIRM_RESEARCH || firm_id==FIRM_WAR_FACTORY;
 }
 //----------- End of function Firm::is_recruit_firm -----------//
 
@@ -706,6 +706,7 @@ int Firm::recruit_train_skill_id()
 		case FIRM_MINE:		return SKILL_MINING;
 		case FIRM_FACTORY:	return SKILL_MFT;
 		case FIRM_RESEARCH:	return SKILL_RESEARCH;
+		case FIRM_WAR_FACTORY:	return SKILL_MFT;
 	}
 
 	return 0;
@@ -721,7 +722,7 @@ int Firm::recruit_train_skill_id()
 //
 int Firm::is_auto_recruit_firm()
 {
-	return firm_id==FIRM_MINE || firm_id==FIRM_FACTORY || firm_id==FIRM_RESEARCH;
+	return firm_id==FIRM_MINE || firm_id==FIRM_FACTORY || firm_id==FIRM_RESEARCH || firm_id==FIRM_WAR_FACTORY;
 }
 //----------- End of function Firm::is_auto_recruit_firm -----------//
 
