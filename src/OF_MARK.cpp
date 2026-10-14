@@ -621,33 +621,35 @@ void FirmMarket::input_goods(int maxInputQty)
 		firmPtr = firm_array[linked_firm_array[t]];
 
 		//----------- check if the firm is a mine ----------//
+		//--- 7kmod-gameplay: or any other raw material supplier, such as a trading harbor ---//
 
-		if( firmPtr->firm_id != FIRM_MINE && firmPtr->firm_id != FIRM_FACTORY )
+		short  supplyRawId=0, supplyNextOutputFirmRecno=0;
+		float* supplyStockQty=NULL;
+		int	 isRawSupply = firmPtr->get_raw_supply(supplyRawId, supplyStockQty, supplyNextOutputFirmRecno);
+
+		if( !isRawSupply && firmPtr->firm_id != FIRM_FACTORY )
 			continue;
 
 		//--------- if it's a mine ------------//
 
-		if( firmPtr->firm_id == FIRM_MINE && is_raw_market() )
+		if( isRawSupply && is_raw_market() )
 		{
-			firmMine = (FirmMine*) firmPtr;
-
-			if( firmMine->raw_id )
 			{
 				for( i=0, marketGoods=market_goods_array ; i<MAX_MARKET_GOODS ; i++, marketGoods++ )
 				{
 					//--- only assign a slot to the product if it comes from a firm of our own ---//
 
-					if( marketGoods->raw_id == firmMine->raw_id )
+					if( marketGoods->raw_id == supplyRawId )
 					{
 						is_inputing_array[i] = 1;
 
-						if( firmMine->next_output_firm_recno == firm_recno &&
-							 firmMine->stock_qty > 0 && marketGoods->stock_qty < max_stock_qty )
+						if( supplyNextOutputFirmRecno == firm_recno &&
+							 *supplyStockQty > 0 && marketGoods->stock_qty < max_stock_qty )
 						{
-							inputQty = MIN( firmMine->stock_qty, maxInputQty );
+							inputQty = MIN( *supplyStockQty, maxInputQty );
 							inputQty = MIN( inputQty, max_stock_qty - marketGoods->stock_qty );
 
-							firmMine->stock_qty	  -= inputQty;
+							*supplyStockQty	  -= inputQty;
 							marketGoods->stock_qty += inputQty;
 							marketGoods->cur_month_supply += inputQty;
 
@@ -665,7 +667,7 @@ void FirmMarket::input_goods(int maxInputQty)
 
 				//----- no matched slot for this goods -----//
 
-				if( i==MAX_MARKET_GOODS && firmMine->stock_qty>0 && !queued_firm_recno )
+				if( i==MAX_MARKET_GOODS && *supplyStockQty>0 && !queued_firm_recno )
 					queued_firm_recno = firmPtr->firm_recno;
 			}
 		}
@@ -724,9 +726,12 @@ void FirmMarket::input_goods(int maxInputQty)
 		{
 			if( !is_inputing_array[i] && marketGoods->stock_qty==0 )
 			{
-				if( firmPtr->firm_id == FIRM_MINE && is_raw_market() )
+				short  supplyRawId=0, supplyNextOutputFirmRecno=0;		// 7kmod-gameplay: any raw material supplier
+				float* supplyStockQty=NULL;
+
+				if( firmPtr->get_raw_supply(supplyRawId, supplyStockQty, supplyNextOutputFirmRecno) && is_raw_market() )
 				{
-					set_goods(1, ((FirmMine*)firmPtr)->raw_id, i);
+					set_goods(1, supplyRawId, i);
 					break;
 				}
 				else if( firmPtr->firm_id == FIRM_FACTORY && is_retail_market() )

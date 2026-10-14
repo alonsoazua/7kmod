@@ -65,6 +65,23 @@ public:
 	short			 linked_factory_array[MAX_LINKED_FIRM_FIRM];
 	short			 linked_market_array[MAX_LINKED_FIRM_FIRM];
 
+	//------ 7kmod-gameplay: raw material trade ------//
+
+	short			 trade_raw_id;					// the raw material the harbor trades, 0 if not set yet
+	float			 trade_stock_qty;				// traded raw materials in stock
+	float			 trade_cur_month_production;
+	float			 trade_last_month_production;
+	short			 trade_next_output_link_id;
+	short			 trade_next_output_firm_recno;
+
+	float			 trade_production_30days()	{ return trade_last_month_production*(30-info.game_day)/30 +
+																	trade_cur_month_production; }
+	void			 produce_trade_raw();
+	void			 set_next_trade_output_firm();
+	void			 rotate_trade_raw(char remoteAction);
+	void			 set_trade_raw(int rawId);
+	void			 next_month();
+
 	int			 total_linked_trade_firm()
 					 { return linked_mine_num + linked_factory_num + linked_market_num; }
 
@@ -127,6 +144,9 @@ private:
 
 	void 	disp_main_menu(int refreshFlag);
 	int	detect_main_menu();
+
+	void 	disp_trade_menu(int refreshFlag);		// 7kmod-gameplay
+	int	detect_trade_menu();
 
 	void 	disp_build_menu(int refreshFlag);
 	void  disp_build_button(int y, int unitId, int buttonUp);

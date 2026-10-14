@@ -379,6 +379,8 @@ public:
 	virtual FirmWar*		cast_to_FirmWar() { return 0; };
 	virtual FirmHarbor*	cast_to_FirmHarbor() { return 0; };
 
+	int	get_raw_supply(short& rawId, float*& stockQtyPtr, short& nextOutputFirmRecno);		// 7kmod-gameplay
+
 	//---------- AI functions ----------//
 
 			  void 			think_repair();

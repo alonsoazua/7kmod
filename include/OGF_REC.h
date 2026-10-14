@@ -1360,7 +1360,17 @@ struct FirmHarborGF
 	int16_t              linked_mine_array[MAX_LINKED_FIRM_FIRM];
 	int16_t              linked_factory_array[MAX_LINKED_FIRM_FIRM];
 	int16_t              linked_market_array[MAX_LINKED_FIRM_FIRM];
+	// 7kmod-gameplay fields, only in saved games of version GAME_VERSION_7KMOD_HARBOR_TRADE or later. Keep them last.
+	int16_t              trade_raw_id;
+	float                trade_stock_qty;
+	float                trade_cur_month_production;
+	float                trade_last_month_production;
+	int16_t              trade_next_output_link_id;
+	int16_t              trade_next_output_firm_recno;
 };
+
+// 7kmod-gameplay: size of FirmHarborGF in saved games before the harbor trade fields were added
+#define HARBOR_GF_SIZE_BEFORE_TRADE (sizeof(FirmHarborGF) - sizeof(int16_t)*3 - sizeof(float)*3)
 
 struct InnUnitGF
 {
