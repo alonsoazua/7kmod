@@ -30,6 +30,7 @@
 #include <OFIRMDIE.h>
 #include <OGAME.h>
 #include <OGFILE.h>
+#include <ModTech.h>
 #include <OGF_V1.h>
 #include <OGODRES.h>
 #include <OINFO.h>
@@ -449,6 +450,13 @@ int GameFile::write_file_3(File* filePtr)
 	if( !config_adv.write_file(filePtr) )
 		return 0;
 
+	// ##### 7kmod-gameplay: GAME_VERSION >= GAME_VERSION_7KMOD_MOD_TECH ##### //
+
+	write_book_mark( filePtr, BOOK_MARK+290 );
+
+	if( !mod_tech_res.write_file(filePtr) )
+		return 0;
+
 	return 1;
 }
 //---------- End of function GameFile::write_file_3 -------//
@@ -718,6 +726,20 @@ int GameFile::read_file_3(File* filePtr)
 		return 0;
 
 	if( !config_adv.read_file(filePtr) )
+		return 0;
+
+	//--- 7kmod-gameplay: technologies of the mod ---//
+
+	if( game_file_array.load_file_game_version < GAME_VERSION_7KMOD_MOD_TECH )
+	{
+		mod_tech_res.reset();
+		return 1;
+	}
+
+	if( !read_book_mark( filePtr, BOOK_MARK+290 ) )
+		return 0;
+
+	if( !mod_tech_res.read_file(filePtr) )
 		return 0;
 
 	return 1;

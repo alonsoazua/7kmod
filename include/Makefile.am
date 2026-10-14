@@ -4,6 +4,7 @@ noinst_HEADERS = \
 	COLOR.h \
 	CRC.h \
 	ConfigAdv.h \
+	ModTech.h \
 	CmdLine.h \
 	FilePath.h \
 	GAMEDEF.h \

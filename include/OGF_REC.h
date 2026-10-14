@@ -1471,7 +1471,12 @@ struct FirmResearchGF
 {
 	int16_t              tech_id;
 	float                complete_percent;
+	// 7kmod-gameplay field, only in saved games of version GAME_VERSION_7KMOD_MOD_TECH or later. Keep it last.
+	int16_t              mod_tech_id;
 };
+
+// 7kmod-gameplay: size of FirmResearchGF in saved games before the mod technologies were added
+#define RESEARCH_GF_SIZE_BEFORE_MOD_TECH (sizeof(FirmResearchGF) - sizeof(int16_t))
 
 struct FirmWarGF
 {

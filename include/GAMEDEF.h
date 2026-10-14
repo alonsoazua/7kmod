@@ -38,7 +38,8 @@ extern const int GAME_VERSION;
 #define GAME_VERSION_7KMOD_HARBOR_TRADE	291		// 7kmod-gameplay, FirmHarbor: raw material trade
 #define GAME_VERSION_7KMOD_HARBOR_SUPPLY	292		// 7kmod-gameplay, FirmHarbor: trade supply from hired shipments
 #define GAME_VERSION_7KMOD_AUTO_RECRUIT	293		// 7kmod-gameplay, Firm: auto recruit flag
-#define GAME_VERSION_7KMOD	293
+#define GAME_VERSION_7KMOD_MOD_TECH		294		// 7kmod-gameplay: ModTechRes and FirmResearch::mod_tech_id
+#define GAME_VERSION_7KMOD	294
 
 //-------- Define constant ------------//
 
