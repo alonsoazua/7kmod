@@ -83,7 +83,6 @@ static short        camp_menu_firm_recno = 0;
 static char         camp_disable_refresh = 0;
 
 static Button3D     button_firm_recruit, button_firm_auto_recruit;		// 7kmod: for mines, factories and towers of science
-static ButtonCustom button_firm_spy_text;
 
 static void i_disp_town_list_button(ButtonCustom *button, int repaintBody);
 
@@ -862,32 +861,21 @@ void Firm::set_auto_recruit(char autoRecruitFlag, char remoteAction)
 //--------- Begin of function Firm::disp_spy_button_7kmod ---------//
 //
 // 7kmod: display the spy button. If the buttons of the player's own firm
-// leave no space for it, the spy menu button is displayed as a text
-// button below the button row (a player's own firm has no other spy
-// buttons, as it cannot be bribed or captured).
+// leave no space for it, it is displayed in the second page of the button
+// row, switched with the arrows below it (a player's own firm has no other
+// spy buttons, as it cannot be bribed or captured).
 //
 void Firm::disp_spy_button_7kmod(int x, int y, int refreshFlag)
 {
 	if( own_firm() && x+BUTTON_ACTION_WIDTH > INFO_X2+1 )
 	{
-		if( refreshFlag==INFO_REPAINT )
-		{
-			if( player_spy_count > 0 )
-			{
-				button_firm_spy_text.paint( INFO_X1, y+BUTTON_ACTION_HEIGHT+1, INFO_X2, INFO_Y2-1,
-					ButtonCustom::disp_text_button_func, ButtonCustomPara((void*)"Spy Menu",0) );
-			}
-			else
-			{
-				button_firm_spy_text.reset();
-			}
-		}
+		if( button_page()==1 )
+			disp_spy_button( INFO_X1, y, refreshFlag );
+
+		disp_button_page_arrows( y+BUTTON_ACTION_HEIGHT+1, refreshFlag );
 	}
 	else
 	{
-		if( refreshFlag==INFO_REPAINT )
-			button_firm_spy_text.reset();
-
 		disp_spy_button(x, y, refreshFlag);
 	}
 }
@@ -902,18 +890,31 @@ int Firm::detect_spy_button_7kmod(int x)
 {
 	if( own_firm() && x+BUTTON_ACTION_WIDTH > INFO_X2+1 )
 	{
-		if( player_spy_count > 0 && button_firm_spy_text.init_flag && button_firm_spy_text.detect() )
-		{
-			firm_menu_mode = FIRM_MENU_SPY;
-			info.disp();
+		if( detect_button_page_arrows() )
 			return 1;
-		}
+
+		if( button_page()==1 )
+			return detect_spy_button();
+
 		return 0;
 	}
 
 	return detect_spy_button();
 }
 //----------- End of function Firm::detect_spy_button_7kmod -----------//
+
+
+//--------- Begin of function Firm::reset_recruit_buttons ---------//
+//
+// 7kmod: hide the recruit buttons, when the second page of the button
+// row is displayed.
+//
+void Firm::reset_recruit_buttons()
+{
+	button_firm_recruit.reset();
+	button_firm_auto_recruit.reset();
+}
+//----------- End of function Firm::reset_recruit_buttons -----------//
 
 
 //--------- Begin of function Firm::get_recruit_town_list ---------//

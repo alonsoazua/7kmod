@@ -228,11 +228,24 @@ void FirmFactory::put_info(int refreshFlag)
 
 	if(own_firm())
 	{
+		//--- 7kmod: on the second page of the button row, only the spy button is displayed ---//
+
+		int buttonPage = button_page();
+
 		if (refreshFlag == INFO_REPAINT)
 		{
-			button_change_production.paint(INFO_X1, INFO_Y1 + 248, 'A', "CHGPROD");
-			button_vacate_firm.paint(INFO_X1 + BUTTON_ACTION_WIDTH, INFO_Y1 + 248, 'A', "RECRUIT");
-			button_vacate_firm.set_help_code("MOBILIZE");
+			if( buttonPage==0 )
+			{
+				button_change_production.paint(INFO_X1, INFO_Y1 + 248, 'A', "CHGPROD");
+				button_vacate_firm.paint(INFO_X1 + BUTTON_ACTION_WIDTH, INFO_Y1 + 248, 'A', "RECRUIT");
+				button_vacate_firm.set_help_code("MOBILIZE");
+			}
+			else
+			{
+				button_change_production.reset();
+				button_vacate_firm.reset();
+				reset_recruit_buttons();
+			}
 		}
 
 		if( have_own_workers() )
@@ -242,7 +255,9 @@ void FirmFactory::put_info(int refreshFlag)
 
 		x += (BUTTON_ACTION_WIDTH * 2);
 
-		disp_recruit_buttons(x, INFO_Y1+248, refreshFlag);		// 7kmod
+		if( buttonPage==0 )
+			disp_recruit_buttons(x, INFO_Y1+248, refreshFlag);		// 7kmod
+
 		x += BUTTON_ACTION_WIDTH*2;
 	}
 
