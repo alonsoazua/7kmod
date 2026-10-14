@@ -35,9 +35,13 @@ struct ModTechInfo
 
 static ModTechInfo mod_tech_info_array[MAX_MOD_TECH] =
 {
+	// The weapons use 20 to 100. The level 1 catapult uses 20, these take 3/4 of its time.
+
 	// MOD_TECH_ELITE_WARRIORS
-	// The complex level is very low for testing. The weapons use around 10 to 30.
-	{ "Elite Warriors", "Trained soldiers start with 30 combat", (float) 0.1, 1 },
+	{ "Elite Warriors", "Trained soldiers start with 30 combat", (float) 15, 1 },
+
+	// MOD_TECH_ELITE_WORKERS
+	{ "Elite Workers", "Trained workers start with 30 skill", (float) 15, 1 },
 };
 
 //------- Define the global object --------//
@@ -181,12 +185,17 @@ int ModTechRes::write_file(File* filePtr)
 
 //--------- Begin of function ModTechRes::read_file --------//
 //
-int ModTechRes::read_file(File* filePtr)
+// <int> techCount - the number of technologies in the saved game, older
+//                    saved games have fewer. The others are not researched.
+//
+int ModTechRes::read_file(File* filePtr, int techCount)
 {
-	if( !filePtr->file_read(nation_tech_level_array, sizeof(nation_tech_level_array)) )
+	reset();
+
+	if( !filePtr->file_read(nation_tech_level_array, sizeof(nation_tech_level_array[0]) * techCount) )
 		return 0;
 
-	if( !filePtr->file_read(nation_research_progress_array, sizeof(nation_research_progress_array)) )
+	if( !filePtr->file_read(nation_research_progress_array, sizeof(nation_research_progress_array[0]) * techCount) )
 		return 0;
 
 	return 1;
