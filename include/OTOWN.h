@@ -60,6 +60,14 @@
 #define TRAIN_SKILL_LEVEL        	20
 #define TOTAL_TRAIN_DAYS				 5		 // No. of days needed for training an unit
 
+//--- 7kmod-gameplay: captains trained in towns of the king's race ---//
+
+#define TRAIN_CAPTAIN_ID				100	 // pseudo skill id. in the training queue, the unit is trained in Leadership
+#define TRAIN_CAPTAIN_COST				150
+#define TRAIN_CAPTAIN_DAYS				(TOTAL_TRAIN_DAYS*4)
+#define CAPTAIN_LEADERSHIP_LEVEL		30
+#define CAPTAIN_COMBAT_LEVEL			20
+
 #define MIN_RECRUIT_LOYALTY			   30 	// only when loyalty > this, the unit can be recruited
 #define MIN_NATION_DEFEND_LOYALTY		50    // if the loyalty of the town people > this, they will defense against the attack
 #define MIN_INDEPENDENT_DEFEND_LOYALTY 30
@@ -233,6 +241,12 @@ public:
 	int           fort_train_count(short firmRecno);
 	void          reduce_mixed_race_resistance();		// 7kmod
 	void          disp_fort_train_count();
+
+	int           can_train_captain();			// 7kmod-gameplay
+	int           is_training_captain();
+	int           captain_train_count();
+	int           train_total_days();
+	void          disp_captain_train_count();
 
 public:
 	Town();
