@@ -183,6 +183,7 @@ static MsgProcessFP msg_process_function_array[] =
 	&RemoteMsg::market_switch_restock,
 	&RemoteMsg::town_train_for_firm,		// 7kmod
 	&RemoteMsg::harbor_trade_raw,			// 7kmod-gameplay
+	&RemoteMsg::harbor_hire_shipment,		// 7kmod-gameplay
 };
 
 //---------- Declare static functions ----------//
@@ -2368,6 +2369,31 @@ void RemoteMsg::harbor_trade_raw()
 	}
 }
 // ------- End of function RemoteMsg::harbor_trade_raw ---------//
+
+
+// ------- Begin of function RemoteMsg::harbor_hire_shipment ---------//
+//
+// 7kmod-gameplay: hire a shipment of raw materials for a harbor.
+//
+void RemoteMsg::harbor_hire_shipment()
+{
+	err_when( id != MSG_F_HARBOR_HIRE_SHIPMENT );
+	// packet structure : <firm recno>
+	short *shortPtr = (short *)data_buf;
+	if( validate_firm(*shortPtr) )
+	{
+		FirmHarbor *harbor = firm_array[*shortPtr]->cast_to_FirmHarbor();
+
+		if( harbor )
+		{
+			harbor->hire_shipment(COMMAND_REMOTE);
+
+			if( firm_array.selected_recno == *shortPtr )
+				info.update();
+		}
+	}
+}
+// ------- End of function RemoteMsg::harbor_hire_shipment ---------//
 
 
 // ------- Begin of function RemoteMsg::town_skip_recruit ---------//

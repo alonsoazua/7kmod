@@ -2620,6 +2620,7 @@ void FirmHarbor::write_derived_record(FirmHarborGF *r)
 	WriteFloat(trade_last_month_production);
 	WriteInt16(trade_next_output_link_id);
 	WriteInt16(trade_next_output_firm_recno);
+	WriteFloat(trade_supply_qty);
 }
 
 void FirmHarbor::read_derived_record(FirmHarborGF *r)
@@ -2645,6 +2646,7 @@ void FirmHarbor::read_derived_record(FirmHarborGF *r)
 	ReadFloat(trade_last_month_production);
 	ReadInt16(trade_next_output_link_id);
 	ReadInt16(trade_next_output_firm_recno);
+	ReadFloat(trade_supply_qty);
 }
 
 void InnUnit::write_record(InnUnitGF *r)

@@ -69,6 +69,7 @@ public:
 
 	short			 trade_raw_id;					// the raw material the harbor trades, 0 if not set yet
 	float			 trade_stock_qty;				// traded raw materials in stock
+	float			 trade_supply_qty;				// raw materials still to arrive from hired shipments
 	float			 trade_cur_month_production;
 	float			 trade_last_month_production;
 	short			 trade_next_output_link_id;
@@ -79,6 +80,8 @@ public:
 	void			 produce_trade_raw();
 	void			 set_next_trade_output_firm();
 	void			 rotate_trade_raw(char remoteAction);
+	void			 hire_shipment(char remoteAction);
+	int			 can_hire_shipment();
 	void			 set_trade_raw(int rawId);
 	void			 next_month();
 
