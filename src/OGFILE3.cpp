@@ -1077,8 +1077,14 @@ int FirmHarbor::read_derived_file(File* filePtr)
 {
 	//--- 7kmod-gameplay: saved games before the harbor trade don't have its fields ---//
 
-	int harborGFSize = game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_HARBOR_TRADE ?
-							 sizeof(FirmHarborGF) : HARBOR_GF_SIZE_BEFORE_TRADE;
+	int harborGFSize;
+
+	if( game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_HARBOR_SUPPLY )
+		harborGFSize = sizeof(FirmHarborGF);
+	else if( game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_HARBOR_TRADE )
+		harborGFSize = HARBOR_GF_SIZE_BEFORE_SUPPLY;
+	else
+		harborGFSize = HARBOR_GF_SIZE_BEFORE_TRADE;
 
 	memset(&gf_rec.firm_harbor, 0, sizeof(FirmHarborGF));
 

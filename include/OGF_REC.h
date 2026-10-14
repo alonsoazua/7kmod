@@ -1367,10 +1367,13 @@ struct FirmHarborGF
 	float                trade_last_month_production;
 	int16_t              trade_next_output_link_id;
 	int16_t              trade_next_output_firm_recno;
+	// only in saved games of version GAME_VERSION_7KMOD_HARBOR_SUPPLY or later. Keep it last.
+	float                trade_supply_qty;
 };
 
 // 7kmod-gameplay: size of FirmHarborGF in saved games before the harbor trade fields were added
-#define HARBOR_GF_SIZE_BEFORE_TRADE (sizeof(FirmHarborGF) - sizeof(int16_t)*3 - sizeof(float)*3)
+#define HARBOR_GF_SIZE_BEFORE_SUPPLY (sizeof(FirmHarborGF) - sizeof(float))
+#define HARBOR_GF_SIZE_BEFORE_TRADE  (HARBOR_GF_SIZE_BEFORE_SUPPLY - sizeof(int16_t)*3 - sizeof(float)*3)
 
 struct InnUnitGF
 {

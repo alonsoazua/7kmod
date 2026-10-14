@@ -77,6 +77,8 @@ enum { HARBOR_MENU_MAIN,
 
 #define HARBOR_TRADE_PRODUCE_QTY		10		// raw materials produced every PROCESS_GOODS_INTERVAL days, the same as a mine with 8 level 10 workers
 #define HARBOR_TRADE_MAX_STOCK_QTY	DEFAULT_MINE_MAX_STOCK_QTY
+#define HARBOR_SHIPMENT_COST			500	// cost of hiring a shipment
+#define HARBOR_SHIPMENT_QTY			500	// raw materials added to the supply by a shipment
 
 enum { TRADE_INFO_Y1 = INFO_Y1+54,
 		 TRADE_INFO_Y2 = TRADE_INFO_Y1+70,
@@ -96,7 +98,7 @@ enum { TRADE_INFO_Y1 = INFO_Y1+54,
 static VBrowseIF 		browse_ship;
 static Button3D		button_build, button_sail;
 static Button3D		button_cancel_build;
-static Button3D		button_trade, button_trade_rotate, button_trade_back;		// 7kmod-gameplay
+static Button3D		button_trade, button_trade_rotate, button_trade_back, button_trade_hire;		// 7kmod-gameplay
 static ButtonGroup	button_mode(2);
 // ###### begin Gilbert 20/9 #######//
 static short                 button_unit_id[MAX_SHIP_TYPE];
@@ -133,6 +135,16 @@ FirmHarbor::FirmHarbor()
 	memset(linked_mine_array, 0, sizeof(short)*MAX_LINKED_FIRM_FIRM);
 	memset(linked_factory_array, 0, sizeof(short)*MAX_LINKED_FIRM_FIRM);
 	memset(linked_market_array, 0, sizeof(short)*MAX_LINKED_FIRM_FIRM);
+
+	//------ 7kmod-gameplay: raw material trade ------//
+
+	trade_raw_id = 0;
+	trade_stock_qty = (float) 0;
+	trade_supply_qty = (float) 0;
+	trade_cur_month_production = (float) 0;
+	trade_last_month_production = (float) 0;
+	trade_next_output_link_id = 0;
+	trade_next_output_firm_recno = 0;
 }
 //----------- End of function FirmHarbor::FirmHarbor -----------//
 
@@ -506,8 +518,7 @@ void FirmHarbor::disp_trade_menu(int refreshFlag)
 		font_san.field( x, y, "Stock", x+126, str, INFO_X2-2, refreshFlag);
 		y+=16;
 
-		if( refreshFlag == INFO_REPAINT )
-			font_san.field( x, y, "Supply", x+126, "Unlimited", INFO_X2-2, refreshFlag);
+		font_san.field( x, y, "Supply", x+126, (int) trade_supply_qty, 1, INFO_X2-2, refreshFlag);
 	}
 
 	//------------ display buttons -------------//
@@ -518,8 +529,25 @@ void FirmHarbor::disp_trade_menu(int refreshFlag)
 	if( refreshFlag == INFO_REPAINT )
 	{
 		button_trade_rotate.paint( INFO_X1, TRADE_INFO_Y2+4, 'A', "CHGPROD" );
-		button_trade_back.paint( INFO_X1+BUTTON_ACTION_WIDTH, TRADE_INFO_Y2+4, 'A', "MAKESHIP" );
+		button_trade_hire.paint( INFO_X1+BUTTON_ACTION_WIDTH, TRADE_INFO_Y2+4, 'A', "GRANT" );
+		button_trade_back.paint( INFO_X2-BUTTON_ACTION_WIDTH, TRADE_INFO_Y2+4, 'A', "MAKESHIP" );
+
+		//------ display the cost of a shipment ------//
+
+		String str;
+		str  = "Hire a shipment of ";
+		str += HARBOR_SHIPMENT_QTY;
+		str += " for $";
+		str += HARBOR_SHIPMENT_COST;
+
+		font_san.d3_put( INFO_X1, TRADE_INFO_Y2+4+BUTTON_ACTION_HEIGHT+2, INFO_X2,
+							  TRADE_INFO_Y2+4+BUTTON_ACTION_HEIGHT+22, str );
 	}
+
+	if( can_hire_shipment() )
+		button_trade_hire.enable();
+	else
+		button_trade_hire.disable();
 }
 //----------- End of function FirmHarbor::disp_trade_menu -----------//
 
@@ -547,6 +575,18 @@ int FirmHarbor::detect_trade_menu()
 		return 1;
 	}
 
+	//------- detect the hire shipment button ---------//
+
+	if( button_trade_hire.detect() )
+	{
+		if( can_hire_shipment() )
+		{
+			se_ctrl.immediate_sound("TURN_ON");
+			hire_shipment(COMMAND_PLAYER);
+		}
+		return 1;
+	}
+
 	//------- detect the back button ---------//
 
 	if( button_trade_back.detect() )
@@ -564,17 +604,20 @@ int FirmHarbor::detect_trade_menu()
 
 //--------- Begin of function FirmHarbor::produce_trade_raw ---------//
 //
-// 7kmod-gameplay: produce raw materials from trade. The supply is
-// unlimited.
+// 7kmod-gameplay: produce raw materials from trade, taken from the
+// supply of the hired shipments.
 //
 void FirmHarbor::produce_trade_raw()
 {
-	if( !trade_raw_id || trade_stock_qty >= HARBOR_TRADE_MAX_STOCK_QTY )
+	if( !trade_raw_id || trade_stock_qty >= HARBOR_TRADE_MAX_STOCK_QTY || trade_supply_qty <= 0 )
 		return;
 
 	float produceQty = MIN( (float) HARBOR_TRADE_PRODUCE_QTY, HARBOR_TRADE_MAX_STOCK_QTY - trade_stock_qty );
 
-	trade_stock_qty += produceQty;
+	produceQty = MIN( produceQty, trade_supply_qty );
+
+	trade_supply_qty -= produceQty;
+	trade_stock_qty  += produceQty;
 	trade_cur_month_production += produceQty;
 }
 //----------- End of function FirmHarbor::produce_trade_raw -----------//
@@ -630,6 +673,42 @@ void FirmHarbor::rotate_trade_raw(char remoteAction)
 	set_trade_raw(newRawId);
 }
 //-------- End of function FirmHarbor::rotate_trade_raw -------//
+
+
+//------- Begin of function FirmHarbor::can_hire_shipment ------//
+//
+// 7kmod-gameplay: whether the owner nation can pay for a shipment.
+//
+int FirmHarbor::can_hire_shipment()
+{
+	return nation_recno && nation_array[nation_recno]->cash >= HARBOR_SHIPMENT_COST;
+}
+//-------- End of function FirmHarbor::can_hire_shipment -------//
+
+
+//------- Begin of function FirmHarbor::hire_shipment ------//
+//
+// 7kmod-gameplay: pay for a shipment of raw materials, which adds
+// HARBOR_SHIPMENT_QTY to the trade supply.
+//
+void FirmHarbor::hire_shipment(char remoteAction)
+{
+	if( !remoteAction && remote.is_enable() )
+	{
+		// packet structure : <firm recno>
+		short *shortPtr = (short *)remote.new_send_queue_msg(MSG_F_HARBOR_HIRE_SHIPMENT, sizeof(short) );
+		shortPtr[0] = firm_recno;
+		return;
+	}
+
+	if( !can_hire_shipment() )
+		return;
+
+	nation_array[nation_recno]->add_expense( EXPENSE_IMPORTS, (float) HARBOR_SHIPMENT_COST );
+
+	trade_supply_qty += HARBOR_SHIPMENT_QTY;
+}
+//-------- End of function FirmHarbor::hire_shipment -------//
 
 
 //------- Begin of function FirmHarbor::set_trade_raw ------//
