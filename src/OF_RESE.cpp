@@ -473,15 +473,22 @@ void FirmResearch::disp_research_info(int dispY1, int refreshFlag)
 
 	if( mod_tech_id )
 	{
-		int x=INFO_X1+6, y=dispY1+4;
+		int x=INFO_X1+4, y=dispY1+4;
+
+		//--- same layout as the weapons, with a "Tech" box in place of the icon, ---//
+		//--- as the indicator has a fixed width and must start at the same position ---//
 
 		if( refreshFlag == INFO_REPAINT )
 		{
-			font_san.put( x, y+4, mod_tech_res.name(mod_tech_id) );
-			font_san.put( x, y+38-16, "Technology" );
+			vga_util.d3_panel_down( x, y, x+TECH_LARGE_ICON_WIDTH+3, y+TECH_LARGE_ICON_HEIGHT+3, 2 );
+			font_san.center_put( x, y, x+TECH_LARGE_ICON_WIDTH+3, y+TECH_LARGE_ICON_HEIGHT+3, "Tech" );
+
+			font_san.put( x+TECH_LARGE_ICON_WIDTH+10, y+4, mod_tech_res.name(mod_tech_id) );
 		}
 
-		vga_front.indicator( 0, x+80, y+21, mod_tech_res.get_progress(mod_tech_id, nation_recno), (float)100, VGA_GRAY );
+		x += TECH_LARGE_ICON_WIDTH+10;
+
+		vga_front.indicator( 0, x-2, y+21, mod_tech_res.get_progress(mod_tech_id, nation_recno), (float)100, VGA_GRAY );
 		return;
 	}
 
