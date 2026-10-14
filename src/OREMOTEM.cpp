@@ -182,6 +182,7 @@ static MsgProcessFP msg_process_function_array[] =
 	&RemoteMsg::firm_request_builder,
 	&RemoteMsg::market_switch_restock,
 	&RemoteMsg::town_train_for_firm,		// 7kmod
+	&RemoteMsg::harbor_trade_raw,			// 7kmod-gameplay
 };
 
 //---------- Declare static functions ----------//
@@ -2342,6 +2343,31 @@ void RemoteMsg::town_train_for_firm()
 	}
 }
 // ------- End of function RemoteMsg::town_train_for_firm ---------//
+
+
+// ------- Begin of function RemoteMsg::harbor_trade_raw ---------//
+//
+// 7kmod-gameplay: set the raw material traded by a harbor.
+//
+void RemoteMsg::harbor_trade_raw()
+{
+	err_when( id != MSG_F_HARBOR_TRADE_RAW );
+	// packet structure : <firm recno> <raw id>
+	short *shortPtr = (short *)data_buf;
+	if( validate_firm(*shortPtr) && shortPtr[1] >= 1 && shortPtr[1] <= MAX_RAW )
+	{
+		FirmHarbor *harbor = firm_array[*shortPtr]->cast_to_FirmHarbor();
+
+		if( harbor )
+		{
+			harbor->set_trade_raw(shortPtr[1]);
+
+			if( firm_array.selected_recno == *shortPtr )
+				info.update();
+		}
+	}
+}
+// ------- End of function RemoteMsg::harbor_trade_raw ---------//
 
 
 // ------- Begin of function RemoteMsg::town_skip_recruit ---------//

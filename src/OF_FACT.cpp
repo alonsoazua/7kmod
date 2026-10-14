@@ -111,10 +111,14 @@ void FirmFactory::auto_set_product()
 													 center_x, center_y );
 
 		//----------- if the firm is a mine ----------//
+		//--- 7kmod-gameplay: or any other raw material supplier, such as a trading harbor ---//
 
-		if( firmPtr->firm_id == FIRM_MINE )
+		short  supplyRawId=0, supplyNextOutputFirmRecno=0;
+		float* supplyStockQty=NULL;
+
+		if( firmPtr->get_raw_supply(supplyRawId, supplyStockQty, supplyNextOutputFirmRecno) )
 		{
-			rawId = ((FirmMine*)firmPtr)->raw_id;
+			rawId = supplyRawId;
 
 			if( !rawId )
 				continue;
@@ -146,7 +150,7 @@ void FirmFactory::auto_set_product()
 
 			if( firmDistance < minDistance )
 			{
-				product_raw_id = ((FirmMine*)firmPtr)->raw_id;
+				product_raw_id = rawId;
 				minDistance    = firmDistance;
 			}
 		}
@@ -496,35 +500,38 @@ void FirmFactory::input_raw()
 		firmPtr = firm_array[linked_firm_array[i]];
 
 		//----------- check if the firm is a mine ----------//
+		//--- 7kmod-gameplay: or any other raw material supplier, such as a trading harbor ---//
 
-		if( firmPtr->firm_id != FIRM_MINE && firmPtr->firm_id != FIRM_MARKET )
+		short  supplyRawId=0, supplyNextOutputFirmRecno=0;
+		float* supplyStockQty=NULL;
+		int	 isRawSupply = firmPtr->get_raw_supply(supplyRawId, supplyStockQty, supplyNextOutputFirmRecno);
+
+		if( !isRawSupply && firmPtr->firm_id != FIRM_MARKET )
 			continue;
 
 		//--------- if the firm is a mine ------------//
 
-		if( firmPtr->firm_id == FIRM_MINE )
+		if( isRawSupply )
 		{
-			firmMine = (FirmMine*) firmPtr;
-
-			if( firmMine->next_output_firm_recno == firm_recno &&
-				 firmMine->raw_id==product_raw_id && firmMine->stock_qty > 0 )
+			if( supplyNextOutputFirmRecno == firm_recno &&
+				 supplyRawId==product_raw_id && *supplyStockQty > 0 )
 			{
-				inputQty = MIN( firmMine->stock_qty, max_raw_stock_qty - raw_stock_qty );
+				inputQty = MIN( *supplyStockQty, max_raw_stock_qty - raw_stock_qty );
 
-				if( firmMine->nation_recno != nation_recno )			// make sure it has the cash to pay for the raw materials
+				if( firmPtr->nation_recno != nation_recno )			// make sure it has the cash to pay for the raw materials
 					inputQty = MIN( inputQty, nationPtr->cash/RAW_PRICE );
 
 				if( inputQty > 0 )
 				{
-					firmMine->stock_qty  -= inputQty;
+					*supplyStockQty  -= inputQty;
 					raw_stock_qty			+= inputQty;
 
 					err_when( raw_stock_qty > max_raw_stock_qty );
 
 					//---- import from other nation -----//
 
-					if( firmMine->nation_recno != nation_recno )
-						nationPtr->import_goods(IMPORT_RAW, firmMine->nation_recno, inputQty*RAW_PRICE );
+					if( firmPtr->nation_recno != nation_recno )
+						nationPtr->import_goods(IMPORT_RAW, firmPtr->nation_recno, inputQty*RAW_PRICE );
 				}
 			}
 		}

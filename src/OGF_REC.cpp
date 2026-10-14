@@ -2614,6 +2614,12 @@ void FirmHarbor::write_derived_record(FirmHarborGF *r)
 	WriteInt16Array(linked_mine_array, MAX_LINKED_FIRM_FIRM);
 	WriteInt16Array(linked_factory_array, MAX_LINKED_FIRM_FIRM);
 	WriteInt16Array(linked_market_array, MAX_LINKED_FIRM_FIRM);
+	WriteInt16(trade_raw_id);		// 7kmod-gameplay
+	WriteFloat(trade_stock_qty);
+	WriteFloat(trade_cur_month_production);
+	WriteFloat(trade_last_month_production);
+	WriteInt16(trade_next_output_link_id);
+	WriteInt16(trade_next_output_firm_recno);
 }
 
 void FirmHarbor::read_derived_record(FirmHarborGF *r)
@@ -2633,6 +2639,12 @@ void FirmHarbor::read_derived_record(FirmHarborGF *r)
 	ReadInt16Array(linked_mine_array, MAX_LINKED_FIRM_FIRM);
 	ReadInt16Array(linked_factory_array, MAX_LINKED_FIRM_FIRM);
 	ReadInt16Array(linked_market_array, MAX_LINKED_FIRM_FIRM);
+	ReadInt16(trade_raw_id);		// 7kmod-gameplay
+	ReadFloat(trade_stock_qty);
+	ReadFloat(trade_cur_month_production);
+	ReadFloat(trade_last_month_production);
+	ReadInt16(trade_next_output_link_id);
+	ReadInt16(trade_next_output_firm_recno);
 }
 
 void InnUnit::write_record(InnUnitGF *r)

@@ -46,6 +46,7 @@
 #include <OREMOTE.h>
 #include <OF_CAMP.h>
 #include <OF_HARB.h>
+#include <OF_MINE.h>
 #include <OSERES.h>
 #include <OREBEL.h>
 // ###### begin Gilbert 2/10 ######//
@@ -4003,3 +4004,38 @@ int Firm::have_own_workers(int checkSpy)
 }
 //----------- End of function Firm::have_own_workers -----------//
 
+
+//------- Begin of function Firm::get_raw_supply -------//
+//
+// 7kmod-gameplay: if this firm supplies raw materials (a mine, or a
+// harbor trading raw materials), return its raw material, a pointer to
+// its stock and the firm it currently outputs to.
+//
+// return: <int> 1 - this firm supplies raw materials
+//               0 - it doesn't
+//
+int Firm::get_raw_supply(short& rawId, float*& stockQtyPtr, short& nextOutputFirmRecno)
+{
+	if( firm_id == FIRM_MINE )
+	{
+		FirmMine* firmMine = (FirmMine*) this;
+
+		rawId = firmMine->raw_id;
+		stockQtyPtr = &firmMine->stock_qty;
+		nextOutputFirmRecno = firmMine->next_output_firm_recno;
+		return rawId > 0;
+	}
+
+	if( firm_id == FIRM_HARBOR && !under_construction )
+	{
+		FirmHarbor* firmHarbor = (FirmHarbor*) this;
+
+		rawId = firmHarbor->trade_raw_id;
+		stockQtyPtr = &firmHarbor->trade_stock_qty;
+		nextOutputFirmRecno = firmHarbor->trade_next_output_firm_recno;
+		return rawId > 0;
+	}
+
+	return 0;
+}
+//-------- End of function Firm::get_raw_supply --------//

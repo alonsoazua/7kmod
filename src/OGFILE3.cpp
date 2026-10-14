@@ -1075,7 +1075,14 @@ int FirmHarbor::write_derived_file(File *filePtr)
 //--------- Begin of function FirmHarbor::read_derived_file ---------//
 int FirmHarbor::read_derived_file(File* filePtr)
 {
-	if( !filePtr->file_read(&gf_rec, sizeof(FirmHarborGF)) )
+	//--- 7kmod-gameplay: saved games before the harbor trade don't have its fields ---//
+
+	int harborGFSize = game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_HARBOR_TRADE ?
+							 sizeof(FirmHarborGF) : HARBOR_GF_SIZE_BEFORE_TRADE;
+
+	memset(&gf_rec.firm_harbor, 0, sizeof(FirmHarborGF));
+
+	if( !filePtr->file_read(&gf_rec, harborGFSize) )
 		return 0;
 	read_derived_record(&gf_rec.firm_harbor);
 	return 1;
@@ -1451,7 +1458,7 @@ int TownArray::read_file(File* filePtr)
 			{
 				//--- 7kmod: saved games before the mod don't have the 7kmod fields ---//
 
-				int townGFSize = game_file_array.load_file_game_version >= GAME_VERSION_7KMOD ?
+				int townGFSize = game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_TRAIN_FIRM ?
 									  sizeof(TownGF) : TOWN_GF_SIZE_BEFORE_7KMOD;
 
 				memset(&gf_rec.town, 0, sizeof(TownGF));

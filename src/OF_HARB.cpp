@@ -47,6 +47,9 @@
 #include <ONEWS.h>
 #include "gettext.h"
 #include <ConfigAdv.h>
+#include <ORAWRES.h>
+#include <OF_MINE.h>
+#include <vga_util.h>
 
 
 //------------- Define coordinations -----------//
@@ -67,6 +70,16 @@ enum { SHIP_DET_X1 = INFO_X1,
 
 enum { HARBOR_MENU_MAIN,
 		 HARBOR_MENU_BUILD,
+		 HARBOR_MENU_TRADE,		// 7kmod-gameplay
+	  };
+
+//------ 7kmod-gameplay: raw material trade ------//
+
+#define HARBOR_TRADE_PRODUCE_QTY		10		// raw materials produced every PROCESS_GOODS_INTERVAL days, the same as a mine with 8 level 10 workers
+#define HARBOR_TRADE_MAX_STOCK_QTY	DEFAULT_MINE_MAX_STOCK_QTY
+
+enum { TRADE_INFO_Y1 = INFO_Y1+54,
+		 TRADE_INFO_Y2 = TRADE_INFO_Y1+70,
 	  };
 
 // ######## begin Gilbert 22/9 #######//
@@ -83,6 +96,7 @@ enum { HARBOR_MENU_MAIN,
 static VBrowseIF 		browse_ship;
 static Button3D		button_build, button_sail;
 static Button3D		button_cancel_build;
+static Button3D		button_trade, button_trade_rotate, button_trade_back;		// 7kmod-gameplay
 static ButtonGroup	button_mode(2);
 // ###### begin Gilbert 20/9 #######//
 static short                 button_unit_id[MAX_SHIP_TYPE];
@@ -190,6 +204,8 @@ void FirmHarbor::init(int xLoc, int yLoc, int nationRecno, int firmId, const cha
 
 	region_id = land_region_id;		// set region_id to land_region_id
 
+	trade_raw_id = misc.random(MAX_RAW)+1;		// 7kmod-gameplay: the harbor starts trading a random raw material
+
 	//------- update the harbor count of the regions ------//
 
 	region_array.update_region_stat();
@@ -247,6 +263,17 @@ void FirmHarbor::next_day()
 	else
 		process_queue();
 
+	//------- 7kmod-gameplay: raw material trade -------//
+
+	if( !trade_raw_id )		// new harbors and harbors from saved games before the trade start with a random raw material
+		trade_raw_id = misc.random(MAX_RAW)+1;
+
+	if( info.game_date%PROCESS_GOODS_INTERVAL == firm_recno%PROCESS_GOODS_INTERVAL )		// produce raw materials once every 3 days, as mines do
+	{
+		produce_trade_raw();
+		set_next_trade_output_firm();
+	}
+
 	//-*********** simulate ship movement ************-//
 	//if(build_unit_id==0)
 	//	build_ship(UNIT_CARAVEL, 0);
@@ -271,6 +298,10 @@ void FirmHarbor::put_info(int refreshFlag)
 		case HARBOR_MENU_BUILD:
 			disp_build_menu(refreshFlag);
 			break;
+
+		case HARBOR_MENU_TRADE:
+			disp_trade_menu(refreshFlag);
+			break;
 	}
 }
 //----------- End of function FirmHarbor::put_info -----------//
@@ -287,6 +318,9 @@ int FirmHarbor::detect_info()
 
 		case HARBOR_MENU_BUILD:
 			return detect_build_menu();
+
+		case HARBOR_MENU_TRADE:
+			return detect_trade_menu();
 	}
 
 	return 0;
@@ -340,6 +374,7 @@ void FirmHarbor::disp_main_menu(int refreshFlag)
 	{
 		button_build.paint( SHIP_DET_X1, SHIP_DET_Y2+4, 'A', "MAKESHIP" );
 		button_sail.paint ( SHIP_DET_X1+BUTTON_ACTION_WIDTH, SHIP_DET_Y2+4, 'A', "SAILOUT" );
+		button_trade.paint( SHIP_DET_X1+BUTTON_ACTION_WIDTH*2, SHIP_DET_Y2+4, 'A', "COLLTAX" );		// 7kmod-gameplay
 	}
 
 	if( ship_count > 0 )
@@ -386,6 +421,18 @@ int FirmHarbor::detect_main_menu()
 		return 1;
 	}
 
+	//------- 7kmod-gameplay: detect the trade button ---------//
+
+	if( button_trade.detect() )
+	{
+		se_ctrl.immediate_sound("TURN_ON");
+		harbor_menu_mode = HARBOR_MENU_TRADE;
+		disable_refresh = 1;    // static var for disp_info() only
+		info.disp();
+		disable_refresh = 0;
+		return 1;
+	}
+
 	//-------- detect the sail button ---------//
 
 	if( button_sail.detect(GETKEY(KEYEVENT_FIRM_PATROL)) && browse_ship.recno() > 0 )
@@ -413,6 +460,203 @@ int FirmHarbor::detect_main_menu()
 	return 0;
 }
 //----------- End of function FirmHarbor::detect_main_menu -----------//
+
+
+//--------- Begin of function FirmHarbor::disp_trade_menu ---------//
+//
+// 7kmod-gameplay: display the raw material trade of the harbor, in the
+// same way as the mine interface.
+//
+void FirmHarbor::disp_trade_menu(int refreshFlag)
+{
+	disp_basic_info(INFO_Y1, refreshFlag);
+
+	if( !should_show_harbor_info() )
+		return;
+
+	//---------------- paint the panel --------------//
+
+	if( refreshFlag == INFO_REPAINT )
+		vga_util.d3_panel_up( INFO_X1, TRADE_INFO_Y1, INFO_X2, TRADE_INFO_Y2 );
+
+	int x=INFO_X1+4, y=TRADE_INFO_Y1+4;
+
+	if( trade_raw_id )
+	{
+		if( refreshFlag == INFO_REPAINT )
+		{
+			raw_res.put_small_raw_icon( x+1, y+1, trade_raw_id );
+
+			String str;
+			str  = "Trading ";
+			str += _(raw_res[trade_raw_id]->name);
+
+			font_san.disp( x+20, y, str, INFO_X2-2);
+		}
+		y+=16;
+
+		font_san.field( x, y, _("Monthly Production"), x+126, (int) trade_production_30days(), 1, INFO_X2-2, refreshFlag);
+		y+=16;
+
+		String str;
+		str  = (int) trade_stock_qty;
+		str += " / ";
+		str += (int) HARBOR_TRADE_MAX_STOCK_QTY;
+
+		font_san.field( x, y, "Stock", x+126, str, INFO_X2-2, refreshFlag);
+		y+=16;
+
+		if( refreshFlag == INFO_REPAINT )
+			font_san.field( x, y, "Supply", x+126, "Unlimited", INFO_X2-2, refreshFlag);
+	}
+
+	//------------ display buttons -------------//
+
+	if( !own_firm() )
+		return;
+
+	if( refreshFlag == INFO_REPAINT )
+	{
+		button_trade_rotate.paint( INFO_X1, TRADE_INFO_Y2+4, 'A', "CHGPROD" );
+		button_trade_back.paint( INFO_X1+BUTTON_ACTION_WIDTH, TRADE_INFO_Y2+4, 'A', "MAKESHIP" );
+	}
+}
+//----------- End of function FirmHarbor::disp_trade_menu -----------//
+
+
+//--------- Begin of function FirmHarbor::detect_trade_menu ---------//
+//
+int FirmHarbor::detect_trade_menu()
+{
+	if( detect_basic_info() )
+		return 1;
+
+	if( !own_firm() )
+		return 0;
+
+	//------- detect the rotate button ---------//
+
+	if( button_trade_rotate.detect() )
+	{
+		se_ctrl.immediate_sound("TURN_ON");
+		rotate_trade_raw(COMMAND_PLAYER);
+
+		disable_refresh = 1;    // static var for disp_info() only, stay in the trade menu
+		info.disp();
+		disable_refresh = 0;
+		return 1;
+	}
+
+	//------- detect the back button ---------//
+
+	if( button_trade_back.detect() )
+	{
+		se_ctrl.immediate_sound("TURN_OFF");
+		harbor_menu_mode = HARBOR_MENU_MAIN;
+		info.disp();
+		return 1;
+	}
+
+	return 0;
+}
+//----------- End of function FirmHarbor::detect_trade_menu -----------//
+
+
+//--------- Begin of function FirmHarbor::produce_trade_raw ---------//
+//
+// 7kmod-gameplay: produce raw materials from trade. The supply is
+// unlimited.
+//
+void FirmHarbor::produce_trade_raw()
+{
+	if( !trade_raw_id || trade_stock_qty >= HARBOR_TRADE_MAX_STOCK_QTY )
+		return;
+
+	float produceQty = MIN( (float) HARBOR_TRADE_PRODUCE_QTY, HARBOR_TRADE_MAX_STOCK_QTY - trade_stock_qty );
+
+	trade_stock_qty += produceQty;
+	trade_cur_month_production += produceQty;
+}
+//----------- End of function FirmHarbor::produce_trade_raw -----------//
+
+
+//------- Begin of function FirmHarbor::set_next_trade_output_firm ------//
+//
+// 7kmod-gameplay: set the next linked factory or market that receives
+// the traded raw materials, in the same way as mines.
+//
+void FirmHarbor::set_next_trade_output_firm()
+{
+	for( int i=0 ; i<linked_firm_count ; i++ )		// MAX tries
+	{
+		if( ++trade_next_output_link_id > linked_firm_count )    // next firm in the link
+			trade_next_output_link_id = 1;
+
+		if( linked_firm_enable_array[trade_next_output_link_id-1] == LINK_EE )
+		{
+			int firmRecno = linked_firm_array[trade_next_output_link_id-1];
+			int firmId 	  = firm_array[firmRecno]->firm_id;
+
+			if( firmId==FIRM_FACTORY || firmId==FIRM_MARKET )
+			{
+				trade_next_output_firm_recno = firmRecno;
+				return;
+			}
+		}
+	}
+
+	trade_next_output_firm_recno = 0;		// this harbor has no linked output firms
+}
+//-------- End of function FirmHarbor::set_next_trade_output_firm -------//
+
+
+//------- Begin of function FirmHarbor::rotate_trade_raw ------//
+//
+// 7kmod-gameplay: switch to the next raw material.
+//
+void FirmHarbor::rotate_trade_raw(char remoteAction)
+{
+	int newRawId = trade_raw_id >= MAX_RAW ? 1 : trade_raw_id+1;
+
+	if( !remoteAction && remote.is_enable() )
+	{
+		// packet structure : <firm recno> <raw id>
+		short *shortPtr = (short *)remote.new_send_queue_msg(MSG_F_HARBOR_TRADE_RAW, 2*sizeof(short) );
+		shortPtr[0] = firm_recno;
+		shortPtr[1] = newRawId;
+		return;
+	}
+
+	set_trade_raw(newRawId);
+}
+//-------- End of function FirmHarbor::rotate_trade_raw -------//
+
+
+//------- Begin of function FirmHarbor::set_trade_raw ------//
+//
+// 7kmod-gameplay: set the traded raw material. The stock of the previous
+// raw material is lost, as when a factory changes its production.
+//
+void FirmHarbor::set_trade_raw(int rawId)
+{
+	err_when( rawId < 1 || rawId > MAX_RAW );
+
+	trade_raw_id    = rawId;
+	trade_stock_qty = (float) 0;
+}
+//-------- End of function FirmHarbor::set_trade_raw -------//
+
+
+//------- Begin of function FirmHarbor::next_month ------//
+//
+void FirmHarbor::next_month()
+{
+	Firm::next_month();
+
+	trade_last_month_production = trade_cur_month_production;		// 7kmod-gameplay
+	trade_cur_month_production  = (float) 0;
+}
+//-------- End of function FirmHarbor::next_month -------//
 
 
 //------- Begin of function FirmHarbor::should_show_harbor_info -------//
