@@ -32,6 +32,15 @@
 #include <OCONFIG.h>
 #include <string.h>
 #include <stdlib.h>
+#include <OUNITRES.h>
+
+//--- 7kmod-gameplay: Fryhtans have no selection or command sounds ---//
+//
+// The Fryhtans were never controlled by the player, so the sound effect
+// table has no SEL (select) or ACK (acknowledge command) sounds for them.
+// Their DIE sound is used instead.
+
+static SEInfo* scan_monster_voice(SERes* seRes, char subjectType, short subjectId, const char *action);
 
 // ---------- Define constant ----------//
 #define SERES_DB "SOUNDRES"
@@ -425,8 +434,10 @@ void SERes::sound(short xLoc, short yLoc, short frame,
 	if( relVolume.rel_vol < 5)
 		return;
 
-	if( (seInfo=scan(subjectType, subjectId, action, objectType, objectId))
-		!= NULL && frame == seInfo->out_frame)
+	if( (seInfo=scan(subjectType, subjectId, action, objectType, objectId)) == NULL )
+		seInfo = scan_monster_voice(this, subjectType, subjectId, action);		// 7kmod-gameplay
+
+	if( seInfo != NULL && frame == seInfo->out_frame)
 	{
 		se_output->request(seInfo->effect_id, relVolume );
 	}
@@ -458,8 +469,10 @@ void SERes::far_sound(short xLoc, short yLoc, short frame,
 	if( relVolume.rel_vol < 80)
 		relVolume.rel_vol = 80;
 
-	if( (seInfo=scan(subjectType, subjectId, action, objectType, objectId))
-		!= NULL && frame == seInfo->out_frame)
+	if( (seInfo=scan(subjectType, subjectId, action, objectType, objectId)) == NULL )
+		seInfo = scan_monster_voice(this, subjectType, subjectId, action);		// 7kmod-gameplay
+
+	if( seInfo != NULL && frame == seInfo->out_frame)
 	{
 		se_output->request(seInfo->effect_id, relVolume );
 	}
@@ -509,3 +522,32 @@ unsigned SERes::random(unsigned bound)
 	return seed % bound;
 }
 //-------------- End Function SERes::random ---------//
+
+
+//-------- Begin of static function scan_monster_voice --------//
+//
+// 7kmod-gameplay: when a SEL or ACK sound of a sprite is not found and the
+// sprite is a Fryhtan, return its DIE sound instead.
+//
+static SEInfo* scan_monster_voice(SERes* seRes, char subjectType, short subjectId, const char *action)
+{
+	if( subjectType != 'S' || !action ||
+		 (strcmp(action, "SEL") != 0 && strcmp(action, "ACK") != 0) )
+	{
+		return NULL;
+	}
+
+	if( !unit_res.init_flag )
+		return NULL;
+
+	for( int unitId=1 ; unitId<=unit_res.unit_info_count ; unitId++ )
+	{
+		UnitInfo* unitInfo = unit_res[unitId];
+
+		if( unitInfo->sprite_id == subjectId && unitInfo->unit_class == UNIT_CLASS_MONSTER )
+			return seRes->scan(subjectType, subjectId, "DIE", 0, 0, 1);
+	}
+
+	return NULL;
+}
+//--------- End of static function scan_monster_voice ---------//
