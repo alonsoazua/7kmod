@@ -19,7 +19,7 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 ## [Sin publicar]
 
 ### Agregado
-- **Invocar Fryhtan (prueba):** botón nuevo en la Sede de Poder (icono de contratar unidad, último lugar de la fila) que invoca un **Rattus** de tu reino con combate 30.
+- **Invocar Fryhtan (prueba):** botón nuevo en la Sede de Poder (icono de contratar unidad, último lugar de la fila) que invoca un **Rattus** de tu reino con combate 50.
   - Cuesta el 10% de la barra de oración (40 puntos) y es permanente: no gasta puntos por día ni muere si la Sede es destruida.
   - Si tienes espías propios dentro de la Sede, ese lugar lo ocupa el botón de espías, como en el juego original.
   - Los Fryhtans de un reino no deambulan solos, atacan según su modo agresivo, no entran a guaridas Fryhtan, no dan reputación a quien los ataca y no cuentan para el objetivo de destruir a los Fryhtans.
