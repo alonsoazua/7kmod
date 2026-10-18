@@ -18,7 +18,7 @@ de 7kmod ni de 7kmod-gameplay modifica su funcionamiento, salvo la opción
   - Matar a un general Fryhtan deja oro, no pergaminos.
 - **Al inicio de la partida:**
   - Con la opción de 7kmod **Seats of Power Unlocked?** = Yes, el reino del jugador empieza con el pergamino de su raza (solo en partidas de un jugador).
-  - El juego original también tiene el ajuste avanzado `nation_start_god_level` en `config.txt`: 0 = ninguno (por defecto), 1 = cada reino empieza con el pergamino de su raza, 2 = todos los pergaminos. Este ajuste aplica a **todos** los reinos, incluida la IA, y sí funciona en multijugador.
+  - El juego original también tiene el ajuste avanzado `nation_start_god_level` en `config.txt`: 0 = ninguno (por defecto), 1 = cada reino empieza con el pergamino de su raza, 2 = todos los pergaminos. Este ajuste aplica a **todos** los reinos, incluida la IA. No se sincroniza en multijugador: todos los jugadores deben tener el mismo valor o la partida puede desincronizarse. Ver `ADVANCED_CONFIG.md`.
 
 ### La Sede de Poder (Seat of Power)
 - Solo acepta un supervisor y trabajadores (sacerdotes) **de la raza de la Sede**.
