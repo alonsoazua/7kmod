@@ -18,7 +18,8 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 
 ## [Sin publicar]
 
-(Nada todavía.)
+### Cambiado
+- **Versión en el menú principal:** se muestra la versión de esta rama y la de `7kmod` en la que está basada, por ejemplo "7kmod-gameplay 0.1.0 (7kmod 0.1.0)". La versión está en `include/ModVersion.h`.
 
 ---
 
