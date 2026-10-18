@@ -38,6 +38,7 @@
 #include <OHELP.h>
 #include <LocaleRes.h>
 #include <OFONT.h>
+#include <COLCODE.h>
 
 //--------------------------------------------------------//
 // A font resource file is composed of three parts :
@@ -1492,3 +1493,61 @@ void Font::put_paragraph_line(int x, int y, const char *textPtr, const char *tex
 	}
 }
 //--------- End of function Font::put_paragraph_line ---------//
+
+
+//--------- Begin of function Font::put_slanted ---------//
+//
+// 7kmod: put a text with the characters slanted to the right like italics,
+// for labels drawn next to the italic labels of the menu backgrounds.
+// Each row of a character is shifted right by (distance to the bottom of
+// the font) / slantDiv pixels. Only ASCII characters are supported.
+//
+// <char*> bufPtr, <int> bufPitch - the buffer to draw on, e.g. vga_back
+// <int>   x, y                   - where to put the text
+// <char*> textPtr                - the text
+// [int]   slantDiv               - the larger, the less slanted (default: 4)
+//
+// return : <int> the x position after the text
+//
+int Font::put_slanted(char* bufPtr, int bufPitch, int x, int y, const char* textPtr, int slantDiv)
+{
+	if( !init_flag )
+		return x;
+
+	for( ; *textPtr ; textPtr++ )
+	{
+		unsigned short textChar = (unsigned char) *textPtr;
+
+		if( textChar == ' ' || textChar < first_char || textChar > last_char )
+		{
+			x += space_width + inter_char_space;
+			continue;
+		}
+
+		FontInfo* fontInfo = font_info_array + textChar - first_char;
+		unsigned char* bitmapPtr = (unsigned char*) font_bitmap_buf + fontInfo->bitmap_offset;
+
+		int bitmapWidth  = bitmapPtr[0] + (bitmapPtr[1]<<8);
+		int bitmapHeight = bitmapPtr[2] + (bitmapPtr[3]<<8);
+		bitmapPtr += 4;
+
+		for( int j=0 ; j<bitmapHeight ; j++ )
+		{
+			int destY = y + fontInfo->offset_y + j;
+			int shift = (max_font_height - fontInfo->offset_y - j) / slantDiv;
+
+			for( int i=0 ; i<bitmapWidth ; i++ )
+			{
+				unsigned char colorCode = bitmapPtr[j*bitmapWidth+i];
+
+				if( colorCode != TRANSPARENT_CODE )
+					bufPtr[destY*bufPitch + x + i + shift] = colorCode;
+			}
+		}
+
+		x += fontInfo->width + inter_char_space;
+	}
+
+	return x;
+}
+//----------- End of function Font::put_slanted -----------//

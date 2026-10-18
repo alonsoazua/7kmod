@@ -137,6 +137,7 @@ public:
 	int  d3_put(int,int,const char*);
 	void d3_put(int,int,int,int,const char*);
 	int  center_put(int,int,int,int,const char*,char clearBack=0);
+	int  put_slanted(char* bufPtr, int bufPitch, int x, int y, const char* textPtr, int slantDiv=4);		// 7kmod
 
 	void put_paragraph(int,int,int,int,const char*,int=DEFAULT_LINE_SPACE,int=1,char=1,char=AUTO_JUSTIFY);
 

@@ -26,6 +26,8 @@
 #include <OSYS.h>
 #include <OMOUSE.h>
 #include <OFONT.h>
+#include <string.h>
+#include "gettext.h"
 #include <OIMGRES.h>
 #include <ORACERES.h>
 #include <OINFO.h>
@@ -141,6 +143,7 @@ static void disp_virtual_tick(ButtonCustom *, int);
 #define SGOPTION_TOWN_EMERGE    0x00100000
 #define SGOPTION_KINGDOM_EMERGE 0x00200000
 #define SGOPTION_RANDOM_EVENT   0x00400000
+#define SGOPTION_SEAT_OF_POWER  0x00800000		// 7kmod
 #define SGOPTION_CLEAR_ENEMY    0x01000000
 #define SGOPTION_CLEAR_MONSTER  0x02000000
 #define SGOPTION_ENOUGH_PEOPLE  0x04000000
@@ -416,6 +419,16 @@ static int select_option()
 			disp_virtual_button, ButtonCustomPara(&townEmergeGroup, 1-i), 0, 0);
 	}
 
+	// --------- 7kmod: initialize seat_of_power_unlocked button group --------//
+
+	ButtonCustomGroup seatOfPowerGroup(2);
+	for( i = 0; i < 2; ++i )
+	{
+		seatOfPowerGroup[i].create(332+i*BASIC_OPTION_X_SPACE, offsetY+324,
+			332+(i+1)*BASIC_OPTION_X_SPACE-1, offsetY+324+BASIC_OPTION_HEIGHT-1,
+			disp_virtual_button, ButtonCustomPara(&seatOfPowerGroup, 1-i), 0, 0);
+	}
+
 	// --------- initialize new_nation_emerge button group --------//
 
 	ButtonCustomGroup nationEmergeGroup(2);
@@ -591,6 +604,21 @@ static int select_option()
 				{
 					image_menu.put_to_buf( &vga_back, "SPG-O2");
 					image_menu.put_back( 234, 15, menuTitleBitmap);
+
+					//--- 7kmod: add the Seats of Power option below the last row of the background ---//
+					//
+					// Copy the Yes/No buttons of "New Kingdoms Emerge?" and draw the label in
+					// italic style like the labels of the background.
+
+					for( int copyY=0 ; copyY<BASIC_OPTION_HEIGHT ; copyY++ )
+					{
+						memcpy( vga_back.buf_ptr(332, offsetY+324+copyY),
+								  vga_back.buf_ptr(332, offsetY+260+copyY), BASIC_OPTION_X_SPACE*2 );
+					}
+
+					font_std.put_slanted( vga_back.buf_ptr(), vga_back.buf_pitch(), 141, offsetY+331,
+						_("Seats of Power Unlocked?") );
+
 					vga_util.blt_buf(0,0,VGA_WIDTH-1,VGA_HEIGHT-1,0);
 				}
 				if( refreshFlag & SGOPTION_RAW )
@@ -616,6 +644,8 @@ static int select_option()
 					nationEmergeGroup.paint(1-tempConfig.new_nation_emerge);
 				if( refreshFlag & SGOPTION_RANDOM_EVENT )
 					randomEventGroup.paint(tempConfig.random_event_frequency);
+				if( refreshFlag & SGOPTION_SEAT_OF_POWER )		// 7kmod
+					seatOfPowerGroup.paint(1-tempConfig.seat_of_power_unlocked);
 			}
 
 			// ------- display goal option ---------//
@@ -856,6 +886,10 @@ static int select_option()
 				tempConfig.difficulty_level = OPTION_CUSTOM;
 				// refreshFlag |= SGOPTION_TOWN_EMERGE;
 				refreshFlag |= SGOPTION_DIFFICULTY;
+			}
+			else if( seatOfPowerGroup.detect() >= 0)		// 7kmod, it doesn't change the difficulty
+			{
+				tempConfig.seat_of_power_unlocked = seatOfPowerGroup[seatOfPowerGroup()].custom_para.value;
 			}
 			else if( nationEmergeGroup.detect() >= 0)
 			{

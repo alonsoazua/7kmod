@@ -108,6 +108,7 @@ void Config::default_game_setting()
 	new_nation_emerge = 1;
 	start_up_has_mine_nearby = 0;
    random_start_up = 0;
+	seat_of_power_unlocked = 0;		// 7kmod
 
 	change_difficulty(OPTION_VERY_EASY);
 
@@ -407,6 +408,8 @@ int Config::save(const char *filename)
 
 	configFile.file_close();
 
+	save_7kmod();
+
 	return retFlag;
 
 }
@@ -439,9 +442,63 @@ int Config::load(const char *filename)
 
 	configFile.file_close();
 
+	if( retFlag )
+		load_7kmod();
+
 	return retFlag;
 }
 //--------- End of function Config::load -------------//
+
+
+//--------- Begin of function Config::save_7kmod -------------//
+//
+// 7kmod: save the settings of the mod that are not in ConfigGF to
+// 7KMOD.DAT, so CONFIG.DAT keeps the format of the original game.
+//
+// Format: <char> number of settings, followed by one char per setting.
+//
+void Config::save_7kmod()
+{
+	FilePath full_path(sys.dir_config);
+	File modFile;
+
+	full_path += "7KMOD.DAT";
+	if( full_path.error_flag )
+		return;
+
+	if( !modFile.file_create(full_path) )
+		return;
+
+	char settingArray[] = { 1, seat_of_power_unlocked };
+
+	modFile.file_write( settingArray, sizeof(settingArray) );
+	modFile.file_close();
+}
+//--------- End of function Config::save_7kmod -------------//
+
+
+//--------- Begin of function Config::load_7kmod -------------//
+//
+void Config::load_7kmod()
+{
+	FilePath full_path(sys.dir_config);
+	File modFile;
+
+	full_path += "7KMOD.DAT";
+	if( full_path.error_flag )
+		return;
+
+	if( !misc.is_file_exist(full_path) || !modFile.file_open(full_path) )
+		return;
+
+	char settingArray[2] = { 0, 0 };
+
+	if( modFile.file_size() >= 2 && modFile.file_read( settingArray, 2 ) && settingArray[0] >= 1 )
+		seat_of_power_unlocked = settingArray[1] ? 1 : 0;
+
+	modFile.file_close();
+}
+//--------- End of function Config::load_7kmod -------------//
 
 
 //--------- Begin of function Config::reset_game_setting ---------//

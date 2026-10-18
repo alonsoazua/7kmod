@@ -57,6 +57,8 @@ class Config
 public:
 	void			init();
 	void			deinit();
+	void			save_7kmod();
+	void			load_7kmod();
 
 	void			default_game_setting();
 	void			default_cheat_setting();
@@ -123,6 +125,8 @@ public:
 	char			monster_type;
 	char			start_up_has_mine_nearby;
 	char			random_start_up;
+	char			seat_of_power_unlocked;		// 7kmod: human kingdoms start knowing the Seat of Power of their race.
+														// Not in ConfigGF, it is only used when a game starts and saved in 7KMOD.DAT.
 
 	//--------- goal ----------//
 

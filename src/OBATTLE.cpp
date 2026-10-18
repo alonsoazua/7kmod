@@ -513,6 +513,20 @@ void Battle::create_pregame_object()
 		if( config.start_up_has_mine_nearby && !nationPtr->is_ai() )
 			site_array.create_raw_site(0, townRecno);
 
+		//--- 7kmod: human kingdoms start knowing the Seat of Power of their race ---//
+		//
+		// Only in single player games, the setting isn't synchronized in
+		// multiplayer games.
+
+		if( config.seat_of_power_unlocked && !nationPtr->is_ai() && !remote.is_enable() )
+		{
+			for( int godId=1 ; godId<=god_res.god_count ; godId++ )
+			{
+				if( god_res[godId]->race_id == nationPtr->race_id )
+					god_res[godId]->enable_know(nationRecno);
+			}
+		}
+
 		//------ set ai base town -----//
 
 		if( nationPtr->is_ai() )
