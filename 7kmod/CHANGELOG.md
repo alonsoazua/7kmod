@@ -1,0 +1,64 @@
+# Changelog de 7kmod
+
+Cambios de la rama `7kmod` (ejecutable `7kaa-mod.exe`) respecto a la versión original
+**Seven Kingdoms: Ancient Adversaries 2.15.7** (tag `v2.15.7`).
+
+La rama `7kmod` tiene mejoras de comodidad e interfaz y algunos ajustes de balance.
+Los cambios que modifican el estilo de juego están en la rama `7kmod-gameplay`, que
+incluye todo lo de `7kmod` y documenta lo suyo en `CHANGELOG-gameplay.md`.
+
+## Cómo se usa este archivo
+
+- Cada cambio nuevo se anota primero en **Sin publicar**.
+- Al publicar una versión, esa sección se renombra con el número y la fecha, y se crea
+  el tag `7kmod-X.Y.Z` en el commit correspondiente.
+- Versiones: el tercer número sube con correcciones, el segundo con funciones nuevas o
+  cambios de balance, y el primero queda en 0 mientras el mod siga en pruebas.
+- Secciones de cada versión: **Agregado**, **Cambiado**, **Corregido**, **Compatibilidad**.
+
+---
+
+## [Sin publicar]
+
+(Nada todavía.)
+
+---
+
+## [0.1.0] - 2026-10-18
+
+Primera versión documentada. Reúne todos los cambios hechos hasta ahora sobre la 2.15.7.
+
+### Agregado
+
+#### General
+- **Marca en el menú principal:** el texto "7kmod-test" aparece junto a la versión, para distinguir el mod del juego original.
+- **Carpeta de configuración y partidas propia (`7kaa-mod`):** el mod no mezcla sus partidas guardadas ni su configuración con las del juego oficial.
+
+#### Fuerte: reclutar y entrenar desde el fuerte
+- **Botón Recruit en el fuerte** (icono de Train):
+  - Si hay varios pueblos propios conectados al fuerte, muestra la lista para elegir uno; si hay uno solo, va directo.
+  - Abre el pueblo en "modo fuerte", con solo tres botones: Recruit, Train y "Back to Fort" en una línea. Tax y Grant se ocultan.
+- **Recruit en modo fuerte:** la unidad de la raza elegida entra directamente al fuerte.
+- **Train en modo fuerte:** pone en cola un soldado de Leadership sin pasar por el menú de entrenamiento. Shift + clic agrega 8.
+- **Los soldados entrenados desde el fuerte entran solos al fuerte** al terminar, si sigue siendo tuyo y tiene espacio. Si no, se quedan junto al pueblo como siempre.
+- **Contador en el botón Train:** muestra cuántos soldados se están entrenando para ese fuerte.
+- **Páginas de botones para el espía:** si tienes espías en tu propio fuerte, aparecen flechas "<" ">" bajo la fila de botones para cambiar a la página con el botón de espías.
+
+#### Opciones de partida
+- **Seats of Power Unlocked?** (página Advanced Options II, partida de un jugador):
+  - Con "Yes", tu reino empieza sabiendo construir la Sede de Poder (Seat of Power) de su raza, como si tuviera el pergamino.
+  - Solo aplica al reino del jugador, no a la IA, y no funciona en multijugador.
+  - La elección se guarda en `7KMOD.DAT`; `CONFIG.DAT` conserva el formato original.
+
+### Cambiado
+
+#### Pueblos independientes
+- **Población equilibrada al inicio:** todos los pueblos independientes iniciales tienen de 15 a 29 habitantes, sin importar cuántas razas tengan. Antes, los mixtos eran más pequeños (2 razas: 12–22, 3 razas: 11–19).
+- **Menor resistencia en pueblos mixtos:** −8 con 2 razas y −12 con 3 o más, con un mínimo de 10. Aplica a los pueblos iniciales y a los que aparecen después.
+
+#### Interfaz
+- El botón Cancel de la lista de pueblos es más alto, para que el texto quepa.
+
+### Compatibilidad
+- **Partidas guardadas:** versión de partida **290** (agrega el fuerte destino de las unidades en entrenamiento). El mod carga partidas del juego oficial 2.15.x; el juego oficial no carga las partidas del mod.
+- **Multijugador:** el entrenamiento para el fuerte usa el mensaje de red nuevo `MSG_TOWN_TRAIN_FOR_FIRM`. Todos los jugadores necesitan el mismo ejecutable del mod.
