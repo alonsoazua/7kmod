@@ -596,7 +596,8 @@ void Unit::disp_button(int dispY1)
 	//------ "Return Camp" button -------//
 
 	if( home_camp_firm_recno &&
-		 (unit_res[unit_id]->unit_class == UNIT_CLASS_HUMAN || unit_res[unit_id]->unit_class == UNIT_CLASS_WEAPON) &&
+		 (unit_res[unit_id]->unit_class == UNIT_CLASS_HUMAN || unit_res[unit_id]->unit_class == UNIT_CLASS_WEAPON ||
+		  (unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER && nation_recno)) &&		// 7kmod-gameplay: Fryhtans of a nation
 		 firm_array[home_camp_firm_recno]->region_id == region_id() )
 	{
 		button_return_camp.paint( x, dispY1, 'A', "RETCAMP" );

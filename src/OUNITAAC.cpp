@@ -745,7 +745,8 @@ void UnitArray::assign_to_camp(int destX, int destY, char remoteAction, short* s
 			err_when(unit_array.is_deleted(selectedUnitArray[i]));
 			unitPtr = operator[](selectedUnitArray[i]);
 			unitClass = unit_res[unitPtr->unit_id]->unit_class;
-			if(unitClass==UNIT_CLASS_HUMAN || unitClass==UNIT_CLASS_WEAPON)
+			if(unitClass==UNIT_CLASS_HUMAN || unitClass==UNIT_CLASS_WEAPON ||
+				(unitClass==UNIT_CLASS_MONSTER && unitPtr->nation_recno && unitPtr->rank_id==RANK_SOLDIER))		// 7kmod-gameplay: Fryhtans of a nation
 				assignArray[assignCount++] = selectedUnitArray[i];
 			else
 				moveArray[moveCount++] = selectedUnitArray[i];
