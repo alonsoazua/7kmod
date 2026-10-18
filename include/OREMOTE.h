@@ -172,6 +172,7 @@ enum { MSG_QUEUE_HEADER=FIRST_REMOTE_MSG_ID,
 		 MSG_F_HARBOR_HIRE_SHIPMENT,	// 7kmod-gameplay: hire a shipment of raw materials for a harbor
 		 MSG_FIRM_TOGGLE_AUTO_RECRUIT,	// 7kmod-gameplay: turn the automatic recruiting of a firm on or off
 		 MSG_F_RESEARCH_START_MOD_TECH,	// 7kmod-gameplay: start researching a mod technology
+		 MSG_F_BASE_INVOKE_FRYHTAN,		// 7kmod-gameplay: invoke a Fryhtan from a Seat of Power
 
 		 LAST_REMOTE_MSG_ID			// keep this item last
 	  };
@@ -326,6 +327,7 @@ public:
 	void	harbor_hire_shipment();		// 7kmod-gameplay
 	void	firm_toggle_auto_recruit();	// 7kmod-gameplay
 	void	research_start_mod_tech();		// 7kmod-gameplay
+	void	base_invoke_fryhtan();			// 7kmod-gameplay
 };
 
 //----------- Define class Remote -----------//

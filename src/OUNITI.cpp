@@ -253,7 +253,7 @@ void Unit::process_idle()
 
 	UnitInfo* unitInfo = unit_res[unit_id];
 
-	if( unitInfo->unit_class == UNIT_CLASS_MONSTER || aggressive_mode  )
+	if( (unitInfo->unit_class == UNIT_CLASS_MONSTER && !nation_recno) || aggressive_mode  )		// 7kmod-gameplay: Fryhtans of a nation follow their aggressive mode
 	{
 		//----------- detect target to attack -----------//
 
@@ -270,7 +270,7 @@ void Unit::process_idle()
 	// wander around for monster
 	//------------------------------------------------------------------//
 
-	if( unitInfo->unit_class == UNIT_CLASS_MONSTER )
+	if( unitInfo->unit_class == UNIT_CLASS_MONSTER && !nation_recno )		// 7kmod-gameplay: Fryhtans of a nation don't wander around
 	{
 		if(misc.random(500)==0)
 		{

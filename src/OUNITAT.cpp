@@ -282,7 +282,7 @@ void Unit::hit_target(Unit* parentUnit, Unit* targetUnit, float attackDamage, sh
 
 	//-------- increase battling fryhtan score --------//
 
-	if( parentNationPtr && targetUnitClass==UNIT_CLASS_MONSTER )
+	if( parentNationPtr && targetUnitClass==UNIT_CLASS_MONSTER && !targetNationRecno )		// 7kmod-gameplay: only wild Fryhtans
 	{
 		parentNationPtr->kill_monster_score += (float) 0.1;
 	}

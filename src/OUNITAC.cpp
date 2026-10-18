@@ -792,7 +792,7 @@ int Unit::firm_can_assign(short firmRecno)
 		break;
 
 	case UNIT_CLASS_MONSTER:
-		if(firmPtr->firm_id == FIRM_MONSTER && mobile_type == UNIT_LAND)
+		if(firmPtr->firm_id == FIRM_MONSTER && mobile_type == UNIT_LAND && !nation_recno)		// 7kmod-gameplay: Fryhtans of a nation don't go into lairs
 		{ 
 			// BUGHERE : suppose only land monster can assign
 			return rank_id == RANK_SOLDIER ? 1 : 2;

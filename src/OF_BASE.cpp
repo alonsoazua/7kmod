@@ -47,11 +47,15 @@
 #include <OREMOTE.h>
 #include <OSERES.h>
 #include <OSE.h>
+#include <OUNITRES.h>
+#include <OSPRTRES.h>
+#include <OMONSRES.h>
 #include "gettext.h"
 
 //----------- Define static vars -------------//
 
 static Button3D   button_invoke, button_reward;
+static Button3D   button_invoke_fryhtan;		// 7kmod-gameplay
 static Button3D	button_vacate_firm;
 
 //--------- Begin of function FirmBase::FirmBase ---------//
@@ -226,9 +230,34 @@ void FirmBase::put_info(int refreshFlag)
 			button_vacate_firm.disable();
 
 		x=INFO_X1+BUTTON_ACTION_WIDTH * 3;
+
+		//--- 7kmod-gameplay: the Invoke Fryhtan button uses the last slot of the row. ---//
+		//
+		// The row is full, so when the player has spies in this Seat of Power the
+		// slot is used by the spy menu button instead, as in the original game.
+
+		if( player_spy_count == 0 )
+		{
+			if( refreshFlag==INFO_REPAINT )
+				button_invoke_fryhtan.paint( x, y, 'A', "HIREUNIT" );
+
+			if( can_invoke_fryhtan() )
+				button_invoke_fryhtan.enable();
+			else
+				button_invoke_fryhtan.disable();
+		}
+		else if( refreshFlag==INFO_REPAINT )
+		{
+			button_invoke_fryhtan.reset();
+		}
 	}
 	else
+	{
 		x=INFO_X1;
+
+		if( refreshFlag==INFO_REPAINT )
+			button_invoke_fryhtan.reset();
+	}
 
 	disp_spy_button(x, y, refreshFlag);
 }
@@ -310,6 +339,16 @@ int FirmBase::detect_info()
 		{
 			invoke_god();
 		}
+		return 1;
+	}
+
+	//-------- 7kmod-gameplay: detect invoke Fryhtan --------//
+
+	if( player_spy_count == 0 && button_invoke_fryhtan.detect() )
+	{
+		if( invoke_fryhtan(COMMAND_PLAYER) )
+			se_ctrl.immediate_sound("TURN_ON");
+
 		return 1;
 	}
 
@@ -658,3 +697,74 @@ int FirmBase::can_invoke()
 			 pray_points >= MAX_PRAY_POINTS/10;		// there must be at least 10% of the maximum pray points to cast a creature
 }
 //----------- End of function FirmBase::can_invoke -----------//
+
+
+//--------- Begin of function FirmBase::can_invoke_fryhtan ---------//
+//
+// 7kmod-gameplay: whether the Seat of Power can invoke a Fryhtan now.
+//
+int FirmBase::can_invoke_fryhtan()
+{
+	return !under_construction && pray_points >= INVOKE_FRYHTAN_PRAY_POINTS;
+}
+//----------- End of function FirmBase::can_invoke_fryhtan -----------//
+
+
+//--------- Begin of function FirmBase::invoke_fryhtan ---------//
+//
+// 7kmod-gameplay: invoke a Fryhtan that belongs to the nation of this Seat
+// of Power. It costs INVOKE_FRYHTAN_PRAY_POINTS (10% of the maximum) and the
+// Fryhtan is permanent, it doesn't depend on the Seat of Power after it is
+// invoked.
+//
+// return: <int> recno of the Fryhtan unit, 0 if it can't be invoked now or
+//               the message has been sent to the other players
+//
+int FirmBase::invoke_fryhtan(char remoteAction)
+{
+	if( !can_invoke_fryhtan() )
+		return 0;
+
+	if( !remoteAction && remote.is_enable() )
+	{
+		// packet structure : <firm recno>
+		short *shortPtr = (short *)remote.new_send_queue_msg(MSG_F_BASE_INVOKE_FRYHTAN, sizeof(short));
+		shortPtr[0] = firm_recno;
+		return 0;
+	}
+
+	//------- locate a space next to the Seat of Power ------//
+
+	SpriteInfo* spriteInfo = sprite_res[unit_res[INVOKE_FRYHTAN_UNIT_ID]->sprite_id];
+
+	int xLoc=loc_x1, yLoc=loc_y1;		// xLoc & yLoc are used for returning results
+
+	if( !world.locate_space( &xLoc, &yLoc, loc_x2, loc_y2, spriteInfo->loc_width, spriteInfo->loc_height ) )
+		return 0;
+
+	//------------ add the Fryhtan unit -------------//
+
+	int unitRecno = unit_array.add_unit( INVOKE_FRYHTAN_UNIT_ID, nation_recno, RANK_SOLDIER, 0, xLoc, yLoc );
+
+	if( !unitRecno )
+		return 0;
+
+	Unit* unitPtr = unit_array[unitRecno];
+
+	unitPtr->set_monster_id( monster_res.get_monster_by_unit_id(INVOKE_FRYHTAN_UNIT_ID)->monster_id );	// normally set by the Fryhtan lair
+	unitPtr->set_combat_level( INVOKE_FRYHTAN_COMBAT_LEVEL );
+	unitPtr->hit_points = (float) unitPtr->max_hit_points;
+
+	//------------ consume the pray points ----------//
+
+	pray_points -= INVOKE_FRYHTAN_PRAY_POINTS;
+
+	if( pray_points < 0 )
+		pray_points = (float) 0;
+
+	if( firm_array.selected_recno == firm_recno )
+		info.disp();
+
+	return unitRecno;
+}
+//----------- End of function FirmBase::invoke_fryhtan -----------//

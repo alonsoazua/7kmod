@@ -301,7 +301,7 @@ void Unit::init_unit_id(int unitId)
 
 	//--------- increase monster count ----------//
 
-	if( unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER )
+	if( unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER && !nation_recno )		// 7kmod-gameplay: only wild Fryhtans, for the goal of destroying them
 		unit_res.mobile_monster_count++;
 }
 //----------- End of function Unit::init_unit_id -----------//
@@ -350,7 +350,7 @@ void Unit::deinit_unit_id()
 
 	//--------- decrease monster count ----------//
 
-	if( unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER )
+	if( unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER && !nation_recno )		// 7kmod-gameplay: only wild Fryhtans
 	{
 		unit_res.mobile_monster_count--;
 

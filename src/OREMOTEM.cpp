@@ -188,6 +188,7 @@ static MsgProcessFP msg_process_function_array[] =
 	&RemoteMsg::harbor_hire_shipment,		// 7kmod-gameplay
 	&RemoteMsg::firm_toggle_auto_recruit,	// 7kmod-gameplay
 	&RemoteMsg::research_start_mod_tech,	// 7kmod-gameplay
+	&RemoteMsg::base_invoke_fryhtan,		// 7kmod-gameplay
 };
 
 //---------- Declare static functions ----------//
@@ -2443,6 +2444,26 @@ void RemoteMsg::research_start_mod_tech()
 	}
 }
 // ------- End of function RemoteMsg::research_start_mod_tech ---------//
+
+
+// ------- Begin of function RemoteMsg::base_invoke_fryhtan ---------//
+//
+// 7kmod-gameplay: invoke a Fryhtan from a Seat of Power.
+//
+void RemoteMsg::base_invoke_fryhtan()
+{
+	err_when( id != MSG_F_BASE_INVOKE_FRYHTAN );
+	// packet structure : <firm recno>
+	short *shortPtr = (short *)data_buf;
+	if( validate_firm(*shortPtr) )
+	{
+		FirmBase *base = firm_array[*shortPtr]->cast_to_FirmBase();
+
+		if( base )
+			base->invoke_fryhtan(COMMAND_REMOTE);
+	}
+}
+// ------- End of function RemoteMsg::base_invoke_fryhtan ---------//
 
 
 // ------- Begin of function RemoteMsg::town_skip_recruit ---------//
