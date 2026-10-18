@@ -47,7 +47,7 @@ de 7kmod ni de 7kmod-gameplay modifica su funcionamiento, salvo la opción
 |---|---|---|---|---|---|---|
 | Normanda | Dragon | Ataque (fuego) | 1 | 10 por ataque | — | 9 |
 | China | Jing Nung | Ataque (3 ataques) | 1.5 | 10 por ataque | — | 9 |
-| Griega | Phoenix | Explorador | 2.5 | — | — | 10 |
+| Griega | Phoenix | Explorador, revela información | 2.5 | — | — | 10 |
 | Maya | Kukulcan | Poder: más combate | 1.5 | 100 | Área (radio 5) | 9 |
 | Persa | Lord of Healing | Poder: curar | 1.5 | 100 | Área (radio 5) | 9 |
 | Japonesa | Mind Turner | Poder: bajar lealtad | 1.5 | 100 | Área (radio 5) | 9 |
@@ -81,8 +81,12 @@ de 7kmod ni de 7kmod-gameplay modifica su funcionamiento, salvo la opción
 
 ### Griegos — Phoenix (Fénix)
 - **Qué hace:** no ataca ni tiene poderes. Es un explorador volador con la **mayor visión (10)** de todos los seres.
+- **Revela información:** todo lo que está a 10 casillas o menos del Fénix muestra su información completa al seleccionarlo, como si tuvieras un espía dentro:
+  - **Unidades enemigas:** su panel de información (combate, habilidad, lealtad) y su profesión real.
+  - **Edificios enemigos:** el panel interior, con la lista de trabajadores y sus niveles, la producción, la investigación, etc.
+- **No detecta espías.** El código original tenía una función para marcar a los espías enemigos con habilidad menor a 40 dentro de tus edificios cuando el Fénix volaba sobre ellos, pero está desactivada (comentada) en el código.
 - **Costo:** es el que más cuesta mantener (2.5 por día).
-- **Uso:** explorar el mapa y vigilar al enemigo; la IA lo manda a volar a puntos aleatorios del mapa.
+- **Uso:** explorar el mapa y espiar el interior de los edificios enemigos sin arriesgar espías; la IA lo manda a volar a puntos aleatorios del mapa.
 
 ### Mayas — Kukulcan
 - **Poder (botón de aumento de combate):** las unidades **mayas de tu reino** en el área ganan de **+15 a +24 de combate** al instante, con un máximo de 100.
