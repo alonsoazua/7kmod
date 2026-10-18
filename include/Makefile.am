@@ -10,6 +10,7 @@ noinst_HEADERS = \
 	IMGFUN.h \
 	KEY.h \
 	LocaleRes.h \
+	ModVersion.h \
 	MPTYPES.h \
 	OANLINE.h \
 	OAUDIO.h \

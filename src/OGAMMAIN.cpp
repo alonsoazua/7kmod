@@ -39,6 +39,7 @@
 #include <OVGALOCK.h>
 #include "gettext.h"
 #include <ConfigAdv.h>
+#include <ModVersion.h>
 
 #ifdef DEMO
 #define DISABLE_MULTI_PLAYER
@@ -396,9 +397,9 @@ void Game::disp_version()
 	else
 		font_news.right_put( VGA_WIDTH-10, VGA_HEIGHT-20, str );
 
-	//----------- 7kmod: mod marker on the main menu --------//
+	//----------- 7kmod: version of the mod on the main menu --------//
 
-	font_news.put( 10, VGA_HEIGHT-20, "7kmod-test" );
+	font_news.put( 10, VGA_HEIGHT-20, MOD_VERSION_TEXT );
 }
 //---------- End of function Game::disp_version ---------//
 

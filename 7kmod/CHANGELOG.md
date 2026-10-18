@@ -20,7 +20,8 @@ incluye todo lo de `7kmod` y documenta lo suyo en `CHANGELOG-gameplay.md`.
 
 ## [Sin publicar]
 
-(Nada todavía.)
+### Cambiado
+- **Versión en el menú principal:** en lugar de "7kmod-test" se muestra la versión del mod, por ejemplo "7kmod 0.1.0". La versión está en `include/ModVersion.h`.
 
 ---
 
