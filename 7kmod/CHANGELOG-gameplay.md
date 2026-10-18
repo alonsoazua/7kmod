@@ -19,11 +19,13 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 ## [Sin publicar]
 
 ### Agregado
-- **Invocar Fryhtan (prueba):** botón nuevo en la Sede de Poder (icono de contratar unidad, último lugar de la fila) que invoca un **Rattus** de tu reino con combate 50.
-  - Cuesta el 10% de la barra de oración (40 puntos) y es permanente: no gasta puntos por día ni muere si la Sede es destruida.
+- **Invocar Fryhtan:** botón nuevo en la Sede de Poder (icono de contratar unidad, último lugar de la fila) que invoca un Fryhtan de tu reino con combate 50. Cada raza tiene su Fryhtan aliado, según la raza de la Sede:
+  - Normandos → Holgh, Mayas → Deezboanz, Griegos → Sauroid, Vikingos → Haubudam, Persas → Rokken.
+  - Chinos → Wyrm, Japoneses → Rattus, Egipcios → Karrotten, Indios → Pfith, Zulúes → Broosken.
+  - Todos cuestan el 10% de la barra de oración (40 puntos) y son permanentes: no gastan puntos por día ni mueren si la Sede es destruida.
   - Si tienes espías propios dentro de la Sede, ese lugar lo ocupa el botón de espías, como en el juego original.
   - Los Fryhtans de un reino no deambulan solos, atacan según su modo agresivo, no entran a guaridas Fryhtan, no dan reputación a quien los ataca y no cuentan para el objetivo de destruir a los Fryhtans.
-  - Su gráfico no tiene zonas con el color del reino, así que se ve igual que un Rattus salvaje.
+  - Sus gráficos no tienen zonas con el color del reino, así que se ven igual que los Fryhtans salvajes.
 - **Fryhtans en el fuerte:** los Fryhtans de tu reino pueden entrar a tus fuertes como soldados, igual que las armas de asedio, y salir conservando su especie. En el panel del fuerte se muestra su combate. No entrenan con el general. Al salir del fuerte tienen el botón de regresar al fuerte.
 - **Retrato pequeño de los Fryhtans:** los datos del juego no tienen retratos pequeños para los Fryhtans (usaban uno persa). Ahora se generan al iniciar el juego reduciendo su retrato grande, y se ven en la lista de soldados del fuerte.
 

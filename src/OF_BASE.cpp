@@ -705,9 +705,38 @@ int FirmBase::can_invoke()
 //
 int FirmBase::can_invoke_fryhtan()
 {
-	return !under_construction && pray_points >= INVOKE_FRYHTAN_PRAY_POINTS;
+	return !under_construction && pray_points >= INVOKE_FRYHTAN_PRAY_POINTS &&
+			 invoke_fryhtan_unit_id();
 }
 //----------- End of function FirmBase::can_invoke_fryhtan -----------//
+
+
+//--------- Begin of function FirmBase::invoke_fryhtan_unit_id ---------//
+//
+// 7kmod-gameplay: the Fryhtan allied with the race of this Seat of Power.
+// All of them cost the same.
+//
+// return: <int> unit id. of the Fryhtan, 0 if the race has none
+//
+int FirmBase::invoke_fryhtan_unit_id()
+{
+	switch( race_id )
+	{
+		case RACE_NORMAN:		return UNIT_HEADLESS;		// Holgh
+		case RACE_MAYA:		return UNIT_SKELETON;		// Deezboanz
+		case RACE_GREEK:		return UNIT_LIZARDMAN;		// Sauroid
+		case RACE_VIKING:		return UNIT_GIANT_ETTIN;	// Haubudam
+		case RACE_PERSIAN:	return UNIT_ROCKMAN;			// Rokken
+		case RACE_CHINESE:	return UNIT_FIREKIN;			// Wyrm
+		case RACE_JAPANESE:	return UNIT_LYW;				// Rattus
+		case RACE_EGYPTIAN:	return UNIT_MAN;				// Karrotten
+		case RACE_INDIAN:		return UNIT_GITH;				// Pfith
+		case RACE_ZULU:		return UNIT_HOBGLOBLIN;		// Broosken
+	}
+
+	return 0;
+}
+//----------- End of function FirmBase::invoke_fryhtan_unit_id -----------//
 
 
 //--------- Begin of function FirmBase::invoke_fryhtan ---------//
@@ -735,7 +764,9 @@ int FirmBase::invoke_fryhtan(char remoteAction)
 
 	//------- locate a space next to the Seat of Power ------//
 
-	SpriteInfo* spriteInfo = sprite_res[unit_res[INVOKE_FRYHTAN_UNIT_ID]->sprite_id];
+	int fryhtanUnitId = invoke_fryhtan_unit_id();
+
+	SpriteInfo* spriteInfo = sprite_res[unit_res[fryhtanUnitId]->sprite_id];
 
 	int xLoc=loc_x1, yLoc=loc_y1;		// xLoc & yLoc are used for returning results
 
@@ -744,14 +775,14 @@ int FirmBase::invoke_fryhtan(char remoteAction)
 
 	//------------ add the Fryhtan unit -------------//
 
-	int unitRecno = unit_array.add_unit( INVOKE_FRYHTAN_UNIT_ID, nation_recno, RANK_SOLDIER, 0, xLoc, yLoc );
+	int unitRecno = unit_array.add_unit( fryhtanUnitId, nation_recno, RANK_SOLDIER, 0, xLoc, yLoc );
 
 	if( !unitRecno )
 		return 0;
 
 	Unit* unitPtr = unit_array[unitRecno];
 
-	unitPtr->set_monster_id( monster_res.get_monster_by_unit_id(INVOKE_FRYHTAN_UNIT_ID)->monster_id );	// normally set by the Fryhtan lair
+	unitPtr->set_monster_id( monster_res.get_monster_by_unit_id(fryhtanUnitId)->monster_id );	// normally set by the Fryhtan lair
 	unitPtr->set_combat_level( INVOKE_FRYHTAN_COMBAT_LEVEL );
 	unitPtr->hit_points = (float) unitPtr->max_hit_points;
 
