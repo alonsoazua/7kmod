@@ -22,7 +22,8 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 - **Invocar Fryhtan:** botón nuevo en la Sede de Poder (icono de contratar unidad, último lugar de la fila) que invoca un Fryhtan de tu reino con combate 50. Cada raza tiene su Fryhtan aliado, según la raza de la Sede:
   - Normandos → Holgh, Mayas → Deezboanz, Griegos → Sauroid, Vikingos → Haubudam, Persas → Rokken.
   - Chinos → Wyrm, Japoneses → Rattus, Egipcios → Karrotten, Indios → Pfith, Zulúes → Broosken.
-  - Todos cuestan el 10% de la barra de oración (40 puntos) y son permanentes: no gastan puntos por día ni mueren si la Sede es destruida.
+  - El costo en puntos de oración depende de la vida base del Fryhtan, de 40 (10% de la barra) a 80 (20%): Rokken 80, Wyrm 70, Sauroid y Haubudam 65, Holgh y Karrotten 60, Pfith 55, Deezboanz 50, Rattus y Broosken 40.
+  - Son permanentes: no gastan puntos por día ni mueren si la Sede es destruida.
   - Si tienes espías propios dentro de la Sede, ese lugar lo ocupa el botón de espías, como en el juego original.
   - Los Fryhtans de un reino no deambulan solos, atacan según su modo agresivo, no entran a guaridas Fryhtan, no dan reputación a quien los ataca y no cuentan para el objetivo de destruir a los Fryhtans.
   - Sus gráficos no tienen zonas con el color del reino, así que se ven igual que los Fryhtans salvajes.

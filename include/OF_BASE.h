@@ -44,7 +44,6 @@
 //--- 7kmod-gameplay: Fryhtans invoked from the Seat of Power ---//
 
 #define		INVOKE_FRYHTAN_COMBAT_LEVEL	50
-#define		INVOKE_FRYHTAN_PRAY_POINTS		(MAX_PRAY_POINTS/10)
 
 //------- Define class FirmBase --------//
 
@@ -82,6 +81,7 @@ public:
 
 	int		can_invoke_fryhtan();						// 7kmod-gameplay
 	int		invoke_fryhtan_unit_id();
+	int		invoke_fryhtan_pray_points();
 	int		invoke_fryhtan(char remoteAction);
 
 	virtual	FirmBase* cast_to_FirmBase() { return this; };

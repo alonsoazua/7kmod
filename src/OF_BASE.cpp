@@ -705,8 +705,8 @@ int FirmBase::can_invoke()
 //
 int FirmBase::can_invoke_fryhtan()
 {
-	return !under_construction && pray_points >= INVOKE_FRYHTAN_PRAY_POINTS &&
-			 invoke_fryhtan_unit_id();
+	return !under_construction && invoke_fryhtan_unit_id() &&
+			 pray_points >= invoke_fryhtan_pray_points();
 }
 //----------- End of function FirmBase::can_invoke_fryhtan -----------//
 
@@ -739,11 +739,39 @@ int FirmBase::invoke_fryhtan_unit_id()
 //----------- End of function FirmBase::invoke_fryhtan_unit_id -----------//
 
 
+//--------- Begin of function FirmBase::invoke_fryhtan_pray_points ---------//
+//
+// 7kmod-gameplay: the pray points needed for invoking the Fryhtan of this
+// Seat of Power. They go from 40 (10% of the maximum) to 80 (20%) in
+// proportion to the base hit points of the Fryhtan (150 to 400), rounded
+// to a multiple of 5.
+//
+int FirmBase::invoke_fryhtan_pray_points()
+{
+	switch( invoke_fryhtan_unit_id() )
+	{
+		case UNIT_ROCKMAN:		return 80;		// Rokken, 400 hit points
+		case UNIT_FIREKIN:		return 70;		// Wyrm, 330
+		case UNIT_LIZARDMAN:		return 65;		// Sauroid, 300
+		case UNIT_GIANT_ETTIN:	return 65;		// Haubudam, 300
+		case UNIT_HEADLESS:		return 60;		// Holgh, 280
+		case UNIT_MAN:				return 60;		// Karrotten, 270
+		case UNIT_GITH:			return 55;		// Pfith, 250
+		case UNIT_SKELETON:		return 50;		// Deezboanz, 200
+		case UNIT_LYW:				return 40;		// Rattus, 150
+		case UNIT_HOBGLOBLIN:	return 40;		// Broosken, 150
+	}
+
+	return MAX_PRAY_POINTS/10;
+}
+//----------- End of function FirmBase::invoke_fryhtan_pray_points -----------//
+
+
 //--------- Begin of function FirmBase::invoke_fryhtan ---------//
 //
 // 7kmod-gameplay: invoke a Fryhtan that belongs to the nation of this Seat
-// of Power. It costs INVOKE_FRYHTAN_PRAY_POINTS (10% of the maximum) and the
-// Fryhtan is permanent, it doesn't depend on the Seat of Power after it is
+// of Power. It costs invoke_fryhtan_pray_points() and the Fryhtan is
+// permanent, it doesn't depend on the Seat of Power after it is
 // invoked.
 //
 // return: <int> recno of the Fryhtan unit, 0 if it can't be invoked now or
@@ -788,7 +816,7 @@ int FirmBase::invoke_fryhtan(char remoteAction)
 
 	//------------ consume the pray points ----------//
 
-	pray_points -= INVOKE_FRYHTAN_PRAY_POINTS;
+	pray_points -= invoke_fryhtan_pray_points();
 
 	if( pray_points < 0 )
 		pray_points = (float) 0;
