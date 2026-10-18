@@ -1041,6 +1041,10 @@ void Firm::assign_worker(int workerUnitRecno)
 	{
 		workerPtr->extra_para = unitPtr->get_weapon_version();
 	}
+	else if( unit_res[unitPtr->unit_id]->unit_class == UNIT_CLASS_MONSTER )		// 7kmod-gameplay: Fryhtans of a nation in a Fort
+	{
+		workerPtr->extra_para = unitPtr->get_monster_id();
+	}
 	else if( unitPtr->race_id )
 	{
 		workerPtr->extra_para = unitPtr->cur_power;
@@ -2505,6 +2509,10 @@ int Firm::create_worker_unit(Worker& thisWorker)
 	if( unit_res[unitPtr->unit_id]->unit_class == UNIT_CLASS_WEAPON )
 	{
 		unitPtr->set_weapon_version( thisWorker.extra_para );	// restore nation contribution
+	}
+	else if( unit_res[unitPtr->unit_id]->unit_class == UNIT_CLASS_MONSTER )		// 7kmod-gameplay: restore the monster id. of a Fryhtan leaving a Fort
+	{
+		unitPtr->set_monster_id( thisWorker.extra_para );
 	}
 	else if( unitPtr->race_id )
 	{

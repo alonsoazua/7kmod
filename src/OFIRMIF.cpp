@@ -777,7 +777,8 @@ void Firm::disp_worker_info(int dispY1, int refreshFlag)
 
 		if( firm_id == FIRM_CAMP )
 		{
-			if( workerPtr->race_id )
+			if( workerPtr->race_id ||
+				 unit_res[workerPtr->unit_id]->unit_class == UNIT_CLASS_MONSTER )		// 7kmod-gameplay: show the combat of Fryhtans
 				str = misc.format(workerPtr->combat_level, 1);
 			else
 				str = _("N/A");
