@@ -21,14 +21,17 @@ incluye todo lo de `7kmod` y documenta lo suyo en `CHANGELOG-gameplay.md`.
 ## [Sin publicar]
 
 ### Agregado
-- **Documentación:** `GREATER_BEINGS.md` explica en detalle cómo funciona cada Greater Being (cómo se obtienen, costos, poderes y efectos exactos), según el código y los datos del juego.
-- **Documentación:** `ADVANCED_CONFIG.md` explica las opciones avanzadas ocultas de `config.txt` del juego original: dónde va el archivo, su formato y qué hace cada opción.
-
-### Corregido
-- **Nombres repetidos en las noticias:** en mensajes con dos nombres, como "El espía <nombre> del reino de <rey> ha sido descubierto y ejecutado", el nombre de la unidad salía igual al del rey. La función que arma los nombres usaba una sola memoria compartida, y con el compilador de los ejecutables del mod el segundo nombre sobrescribía al primero.
+- **Documentación:** `GREATER_BEINGS.md` explica en detalle cómo funciona cada Greater Being (cómo se obtienen, costos, poderes y efectos exactos), según el código y los datos del juego. Incluye lo que revela el Fénix (la información de unidades y edificios enemigos cercanos) y que su detección de espías está desactivada en el código original.
+- **Documentación:** `ADVANCED_CONFIG.md` explica las opciones avanzadas ocultas de `config.txt` del juego original: dónde va el archivo, su formato, qué hace cada opción y cómo se comporta en multijugador y en las partidas guardadas.
 
 ### Cambiado
 - **Versión en el menú principal:** en lugar de "7kmod-test" se muestra la versión del mod, por ejemplo "7kmod 0.1.0". La versión está en `include/ModVersion.h`.
+
+### Corregido
+- **Nombres repetidos en las noticias:** en mensajes con dos nombres, como "El espía <nombre> del reino de <rey> ha sido descubierto y ejecutado", el nombre de la unidad salía igual al del rey. La función que arma los nombres usaba una sola memoria compartida, y con el compilador de los ejecutables del mod el segundo nombre sobrescribía al primero. Es un error del juego original que no se nota en la versión oficial por el orden en que su compilador evalúa los nombres.
+
+### Compatibilidad
+- Sin cambios en las partidas guardadas ni en el multijugador.
 
 ---
 
