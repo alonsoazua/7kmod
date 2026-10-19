@@ -376,7 +376,21 @@ void RaceInfo::use_name_id(uint16_t nameId)
 //
 const char* RaceInfo::get_name(uint16_t nameId, int nameType)
 {
-	static String str;
+	//--- 7kmod: rotate between several buffers, so that the names returned ---//
+	//
+	// by a few calls can be used together. A news message like "Spy <name> from
+	// <King>'s Kingdom" calls this function for both names in the same
+	// snprintf(); with a single static buffer the second call overwrote the
+	// first name when the arguments were evaluated from left to right.
+
+	#define RACE_NAME_BUF_COUNT	4
+
+	static String strArray[RACE_NAME_BUF_COUNT];
+	static int    strIndex=0;
+
+	strIndex = (strIndex+1) % RACE_NAME_BUF_COUNT;
+
+	String& str = strArray[strIndex];
 
 	if( nameId==0 )
 	{
