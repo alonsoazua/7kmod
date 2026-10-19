@@ -34,6 +34,11 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 ### Cambiado
 - **Versión en el menú principal:** se muestra la versión de esta rama y la de `7kmod` en la que está basada, por ejemplo "7kmod-gameplay 0.1.0 (7kmod 0.1.0)". La versión está en `include/ModVersion.h`.
 
+### Compatibilidad
+- **Partidas guardadas:** sin cambios de formato (sigue siendo la versión 295). Los Fryhtans de un reino se guardan como unidades normales.
+- **Multijugador:** invocar un Fryhtan usa el mensaje de red nuevo `MSG_F_BASE_INVOKE_FRYHTAN`. Todos los jugadores necesitan el mismo ejecutable.
+- La IA no invoca Fryhtans.
+
 ---
 
 ## [0.1.0] - 2026-10-18
