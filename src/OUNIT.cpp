@@ -944,6 +944,18 @@ void Unit::next_day()
 	   err_when( unit_array.is_deleted(unitRecno) );
 	}
 
+	//--- 7kmod-gameplay: the Fryhtans of a nation regenerate, even when moving or fighting ---//
+
+	if( nation_recno && unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER &&
+		 info.game_date%FRYHTAN_REGEN_DAYS == sprite_recno%FRYHTAN_REGEN_DAYS &&
+		 hit_points > 0 && hit_points < max_hit_points )
+	{
+		hit_points += 1;
+
+		if( hit_points > max_hit_points )
+			hit_points = max_hit_points;
+	}
+
    //------- restore cur_power --------//
 
    cur_power += 5;

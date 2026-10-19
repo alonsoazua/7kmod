@@ -567,8 +567,10 @@ void UnitGod::persian_cast_power(int unitRecno, int divider)
 	Unit* unitPtr = unit_array[unitRecno];
 
 	//-- only heal human units belonging to our nation --//
+	//-- 7kmod-gameplay: and the Fryhtans of our nation --//
 
-	if( unitPtr->nation_recno == nation_recno && unitPtr->race_id > 0 )
+	if( unitPtr->nation_recno == nation_recno &&
+		 (unitPtr->race_id > 0 || unit_res[unitPtr->unit_id]->unit_class == UNIT_CLASS_MONSTER) )
 	{
 		float changePoints = (float) unitPtr->max_hit_points / (6+misc.random(4));	 // divided by (6 to 9)
 
@@ -630,8 +632,10 @@ void UnitGod::maya_cast_power(int unitRecno, int divider)
 void UnitGod::persian_cast_power(Worker* workerPtr, int nationRecno, int divider)
 {
 	//-- only heal human units belonging to our nation --//
+	//-- 7kmod-gameplay: and the Fryhtans of our nation in forts --//
 
-	if( nationRecno == nation_recno && workerPtr->race_id > 0 )
+	if( nationRecno == nation_recno &&
+		 (workerPtr->race_id > 0 || unit_res[workerPtr->unit_id]->unit_class == UNIT_CLASS_MONSTER) )
 	{
 		int changePoints = workerPtr->max_hit_points() / (4+misc.random(4));	 // divided by (4 to 7)
 

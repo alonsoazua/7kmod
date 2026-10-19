@@ -54,6 +54,12 @@
 
 #define GAME_FRAMES_PER_DAY 10
 
+//--- 7kmod-gameplay: the Fryhtans of a nation regenerate 1 hit point every this number of days ---//
+//
+// 7 days are about 6 seconds at the default game speed (12 frames per second).
+
+#define FRYHTAN_REGEN_DAYS	7
+
 //-------- action code for action_mode ---------//
 
 enum { ACTION_STOP,

@@ -239,12 +239,17 @@ void FirmBase::put_info(int refreshFlag)
 		if( player_spy_count == 0 )
 		{
 			if( refreshFlag==INFO_REPAINT )
+			{
 				button_invoke_fryhtan.paint( x, y, 'A', "HIREUNIT" );
+				button_invoke_fryhtan.set_help_code("");		// use the custom help below instead of the help of the Inn's hire button
+			}
 
 			if( can_invoke_fryhtan() )
 				button_invoke_fryhtan.enable();
 			else
 				button_invoke_fryhtan.disable();
+
+			disp_invoke_fryhtan_cost();
 		}
 		else if( refreshFlag==INFO_REPAINT )
 		{
@@ -666,8 +671,70 @@ void FirmBase::disp_god_info(int dispY1, int refreshFlag)
 	}
 
 	vga_front.indicator( 0x00, x-3, y+18, pray_points, (float) MAX_PRAY_POINTS, 0 );
+
+	//--- 7kmod-gameplay: display the pray points as a number ---//
+
+	String str;
+
+	str  = _("Points");
+	str += ": ";
+	str += (int) pray_points;
+	str += " / ";
+	str += MAX_PRAY_POINTS;
+
+	font_san.disp( x, y+31, str, INFO_X2-4 );
 }
 //----------- End of function FirmBase::disp_god_info -----------//
+
+
+//--------- Begin of function FirmBase::disp_invoke_fryhtan_cost ---------//
+//
+// 7kmod-gameplay: display the pray points cost on the Invoke Fryhtan button,
+// and the name of the Fryhtan and its cost in the help of the button.
+//
+void FirmBase::disp_invoke_fryhtan_cost()
+{
+	Button3D& b = button_invoke_fryhtan;
+
+	if( !b.init_flag )
+		return;
+
+	int cost = invoke_fryhtan_pray_points();
+
+	//------ the cost on the button -------//
+
+	vga_front.bar( b.x1+8, b.y2-19, b.x2-12, b.y2-6, V_WHITE );
+	vga_front.rect( b.x1+8, b.y2-19, b.x2-12, b.y2-6, 1, V_BLACK );
+
+	font_mid.center_put( b.x1+8, b.y2-19, b.x2-12, b.y2-6, misc.format(cost) );
+
+	//------ the help of the button -------//
+
+	int fryhtanUnitId = invoke_fryhtan_unit_id();
+
+	if( !fryhtanUnitId )
+		return;
+
+	static String title, detail;
+
+	title  = _("Invoke");
+	title += " ";
+	title += _(monster_res.get_monster_by_unit_id(fryhtanUnitId)->name);
+
+	detail  = _("Cost");
+	detail += ": ";
+	detail += cost;
+	detail += " ";
+	detail += _("points");
+	detail += ". ";
+	detail += _("You have");
+	detail += " ";
+	detail += (int) pray_points;
+	detail += ".";
+
+	help.set_custom_help( b.x1, b.y1, b.x2, b.y2, title, detail );
+}
+//----------- End of function FirmBase::disp_invoke_fryhtan_cost -----------//
 
 
 //--------- Begin of function FirmBase::invoke_god ---------//

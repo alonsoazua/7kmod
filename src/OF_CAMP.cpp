@@ -1312,6 +1312,22 @@ void FirmCamp::next_day()
 		recover_hit_point();
 	}
 
+	//--- 7kmod-gameplay: the Fryhtans in the fort regenerate as they do outside ---//
+
+	if( info.game_date%FRYHTAN_REGEN_DAYS == firm_recno%FRYHTAN_REGEN_DAYS )
+	{
+		Worker* workerPtr = worker_array;
+
+		for( int i=0 ; i<worker_count ; i++, workerPtr++ )
+		{
+			if( unit_res[workerPtr->unit_id]->unit_class == UNIT_CLASS_MONSTER &&
+				 workerPtr->hit_points < workerPtr->max_hit_points() )
+			{
+				workerPtr->hit_points++;
+			}
+		}
+	}
+
 	//--- if there are weapons in the firm, pay for their expenses ---//
 
 	pay_weapon_expense();

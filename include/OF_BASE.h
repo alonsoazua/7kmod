@@ -99,6 +99,7 @@ public:
 private:
 	void 		disp_base_info(int dispY1, int refreshFlag);
 	void 		disp_god_info(int dispY1, int refreshFlag);
+	void 		disp_invoke_fryhtan_cost();					// 7kmod-gameplay
 
 	void		train_unit();
 	void 		recover_hit_point();
