@@ -56,9 +56,9 @@
 
 //--- 7kmod-gameplay: the Fryhtans of a nation regenerate 1 hit point every this number of days ---//
 //
-// 7 days are about 6 seconds at the default game speed (12 frames per second).
+// 10 days are about 8 seconds at the default game speed (12 frames per second).
 
-#define FRYHTAN_REGEN_DAYS	7
+#define FRYHTAN_REGEN_DAYS	10
 
 //-------- action code for action_mode ---------//
 

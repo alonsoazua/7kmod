@@ -26,7 +26,7 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
   - Son permanentes: no gastan puntos por día ni mueren si la Sede es destruida.
   - Si tienes espías propios dentro de la Sede, ese lugar lo ocupa el botón de espías, como en el juego original.
   - Los Fryhtans de un reino no deambulan solos, atacan según su modo agresivo, no entran a guaridas Fryhtan, no dan reputación a quien los ataca y no cuentan para el objetivo de destruir a los Fryhtans.
-  - **Regeneración:** recuperan 1 punto de vida cada 7 días de juego (unos 6 segundos a la velocidad normal), aunque se estén moviendo o peleando. Dentro del fuerte también, además de la recuperación normal de los soldados.
+  - **Regeneración:** recuperan 1 punto de vida cada 10 días de juego (unos 8 segundos a la velocidad normal), aunque se estén moviendo o peleando. Dentro del fuerte también, además de la recuperación normal de los soldados.
   - **Curación del Greater Being persa:** su poder ahora cura también a los Fryhtans de tu reino, tanto en el mapa como dentro de los fuertes. Antes solo curaba unidades humanas.
   - **Costo visible:** el botón muestra el costo en puntos. Al pasar el ratón aparece el nombre del Fryhtan, su costo y los puntos que tienes.
   - Sus gráficos no tienen zonas con el color del reino, así que se ven igual que los Fryhtans salvajes.
