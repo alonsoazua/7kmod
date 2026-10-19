@@ -33,6 +33,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <OUNITRES.h>
+#include <OSPRTRES.h>
+#include <OAUDIO.h>
+#include <OFILE.h>
+#include <OMISC.h>
+#include <OSTR.h>
 
 //--- 7kmod-gameplay: Fryhtans have no selection or command sounds ---//
 //
@@ -41,6 +46,19 @@
 // Their DIE sound is used instead.
 
 static SEInfo* scan_monster_voice(SERes* seRes, char subjectType, short subjectId, const char *action);
+static char*   get_mod_voice(char subjectType, short subjectId, const char *action);
+
+//--- 7kmod-gameplay: voices of Fryhtans in the MODSOUND folder ---//
+//
+// MODSOUND\<sprite code>.WAV (for example MODSOUND\ROCKMAN.WAV for the
+// Rokken) is used as the select and command voice of a Fryhtan when it
+// exists. The files are loaded the first time they are needed.
+
+#define DIR_MOD_SOUND	"MODSOUND" PATH_DELIM
+
+static char** mod_voice_buf_array;		// the WAV data of each sprite, NULL if there is none
+static char*  mod_voice_loaded_array;	// whether the file of each sprite has been looked for
+static int    mod_voice_sprite_count;
 
 // ---------- Define constant ----------//
 #define SERES_DB "SOUNDRES"
@@ -434,6 +452,17 @@ void SERes::sound(short xLoc, short yLoc, short frame,
 	if( relVolume.rel_vol < 5)
 		return;
 
+	//--- 7kmod-gameplay: voice of a Fryhtan in the MODSOUND folder ---//
+
+	char* modVoicePtr = get_mod_voice(subjectType, subjectId, action);
+
+	if( modVoicePtr )
+	{
+		if( frame == 1 )
+			audio.play_resided_wav( modVoicePtr, relVolume );
+		return;
+	}
+
 	if( (seInfo=scan(subjectType, subjectId, action, objectType, objectId)) == NULL )
 		seInfo = scan_monster_voice(this, subjectType, subjectId, action);		// 7kmod-gameplay
 
@@ -468,6 +497,17 @@ void SERes::far_sound(short xLoc, short yLoc, short frame,
 
 	if( relVolume.rel_vol < 80)
 		relVolume.rel_vol = 80;
+
+	//--- 7kmod-gameplay: voice of a Fryhtan in the MODSOUND folder ---//
+
+	char* modVoicePtr = get_mod_voice(subjectType, subjectId, action);
+
+	if( modVoicePtr )
+	{
+		if( frame == 1 )
+			audio.play_resided_wav( modVoicePtr, relVolume );
+		return;
+	}
 
 	if( (seInfo=scan(subjectType, subjectId, action, objectType, objectId)) == NULL )
 		seInfo = scan_monster_voice(this, subjectType, subjectId, action);		// 7kmod-gameplay
@@ -551,3 +591,98 @@ static SEInfo* scan_monster_voice(SERes* seRes, char subjectType, short subjectI
 	return NULL;
 }
 //--------- End of static function scan_monster_voice ---------//
+
+
+//-------- Begin of static function get_mod_voice --------//
+//
+// 7kmod-gameplay: return the WAV data of the voice of a Fryhtan from the
+// MODSOUND folder for a SEL or ACK sound, NULL if there is none.
+//
+static char* get_mod_voice(char subjectType, short subjectId, const char *action)
+{
+	if( subjectType != 'S' || !action ||
+		 (strcmp(action, "SEL") != 0 && strcmp(action, "ACK") != 0) )
+	{
+		return NULL;
+	}
+
+	if( !unit_res.init_flag || !sprite_res.init_flag ||
+		 subjectId < 1 || subjectId > sprite_res.sprite_info_count )
+	{
+		return NULL;
+	}
+
+	//------ allocate the cache the first time ------//
+
+	if( !mod_voice_buf_array || mod_voice_sprite_count != sprite_res.sprite_info_count )
+	{
+		mod_voice_sprite_count = sprite_res.sprite_info_count;
+
+		mod_voice_buf_array = (char**) mem_add( sizeof(char*) * (mod_voice_sprite_count+1) );
+		mod_voice_loaded_array = mem_add( mod_voice_sprite_count+1 );
+
+		memset( mod_voice_buf_array, 0, sizeof(char*) * (mod_voice_sprite_count+1) );
+		memset( mod_voice_loaded_array, 0, mod_voice_sprite_count+1 );
+	}
+
+	if( mod_voice_loaded_array[subjectId] )
+		return mod_voice_buf_array[subjectId];
+
+	mod_voice_loaded_array[subjectId] = 1;
+
+	//------ only for Fryhtans ------//
+
+	int isMonster = 0;
+
+	for( int unitId=1 ; unitId<=unit_res.unit_info_count ; unitId++ )
+	{
+		UnitInfo* unitInfo = unit_res[unitId];
+
+		if( unitInfo->sprite_id == subjectId && unitInfo->unit_class == UNIT_CLASS_MONSTER )
+		{
+			isMonster = 1;
+			break;
+		}
+	}
+
+	if( !isMonster )
+		return NULL;
+
+	//------ load MODSOUND\<sprite code>.WAV ------//
+
+	String fileName;
+
+	fileName  = DIR_MOD_SOUND;
+	fileName += sprite_res[subjectId]->sprite_code;
+	fileName += ".WAV";
+
+	if( !misc.is_file_exist(fileName) )
+		return NULL;
+
+	File file;
+
+	if( !file.file_open(fileName, 0) )		// 0-don't handle the error
+		return NULL;
+
+	int fileSize = file.file_size();
+
+	if( fileSize > 12 && fileSize < 4000000 )
+	{
+		char* bufPtr = mem_add( fileSize );
+
+		if( file.file_read(bufPtr, fileSize) &&
+			 memcmp(bufPtr, "RIFF", 4)==0 && memcmp(bufPtr+8, "WAVE", 4)==0 )
+		{
+			mod_voice_buf_array[subjectId] = bufPtr;
+		}
+		else
+		{
+			mem_del(bufPtr);
+		}
+	}
+
+	file.file_close();
+
+	return mod_voice_buf_array[subjectId];
+}
+//--------- End of static function get_mod_voice ---------//
