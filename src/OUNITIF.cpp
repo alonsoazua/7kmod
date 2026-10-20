@@ -47,6 +47,7 @@
 
 #include <OU_MARI.h>
 #include <OSPRTRES.h>
+#include <OF_BASE.h>
 #include <OUNITRES.h>
 #include <OHONORS.h>
 #include <OUNITLST.h>
@@ -1402,6 +1403,8 @@ int Unit::get_attack_power(int rangeAttack, int leadership)
 	if( pierceRange < 1 )
 		pierceRange = 1;
 
+	int invokedFryhtan = nation_recno && unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER;		// 7kmod-gameplay
+
 	float totalDamage = 0;
 
 	for( int r1=0 ; r1<3 ; r1++ )
@@ -1410,6 +1413,9 @@ int Unit::get_attack_power(int rangeAttack, int leadership)
 		{
 			int attackDamage = attackInfo->attack_damage + r1 +
 									 attackInfo->pierce_damage * r2 / (100-attackInfo->combat_level);
+
+			if( invokedFryhtan )		// 7kmod-gameplay: damage bonus of the invoked Fryhtans
+				attackDamage += attackDamage * INVOKED_FRYHTAN_DAMAGE_BONUS / 100;
 
 			attackDamage += attackDamage * leadership / 100;
 
