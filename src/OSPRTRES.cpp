@@ -22,6 +22,7 @@
 //Description : Object Sprite resource
 
 #include <ALL.h>
+#include <string.h>
 #include <OSYS.h>
 #include <OWORLD.h>
 #include <OGAMESET.h>
@@ -44,6 +45,19 @@ void SpriteRes::init()
 
 	load_sprite_info();
 	load_sub_sprite_info();
+
+	//--- 7kmod-gameplay: Zulu units move faster (speed 4 -> 5) ---//
+
+	for( int i=0 ; i<sprite_info_count ; i++ )
+	{
+		SpriteInfo* spriteInfo = sprite_info_array+i;
+
+		if( strcmp(spriteInfo->sprite_code, "ZULU")==0 )
+		{
+			spriteInfo->speed++;
+			spriteInfo->max_speed++;
+		}
+	}
 
 	init_flag=1;
 }

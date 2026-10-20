@@ -38,12 +38,21 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 - **Retrato pequeño de los Fryhtans:** los datos del juego no tienen retratos pequeños para los Fryhtans (usaban uno persa). Ahora se generan al iniciar el juego reduciendo su retrato grande, y se ven en la lista de soldados del fuerte.
 
 ### Cambiado
+- **Balance de razas:**
+  - **Armadura por raza:** el juego original usa armadura 4 para todas las unidades e ignora la de los datos. Ahora los Normandos tienen 5, los Griegos 6 y los Mayas 3 mientras su combate es menor a 50 (4 desde 50). Las demás razas, los Fryhtans, las armas y los barcos siguen con 4. Cada punto de armadura quita 0.25 de daño a cada golpe recibido.
+  - **Chinos:** el ataque a distancia se aprende con combate 40 (antes 30).
+  - **Egipcios:** el ataque a distancia se aprende con combate 30 (antes 40).
+  - **Japoneses:** el ataque especial se aprende con combate 50 (antes 55).
+  - **Mughules:** el segundo ataque especial se aprende con combate 50 (antes 60).
+  - **Zulúes:** velocidad de movimiento 5 (antes 4), un 25% más rápidos.
+  - Los cambios se aplican al cargar los datos; los archivos del juego no se modifican. El efecto en los combates está en la sección 8 de `COMBAT_ANALYSIS.md`.
 - **Versión en el menú principal:** se muestra la versión de esta rama y la de `7kmod` en la que está basada, por ejemplo "7kmod-gameplay 0.1.0 (7kmod 0.1.0)". La versión está en `include/ModVersion.h`.
 
 ### Compatibilidad
 - **Partidas guardadas:** sin cambios de formato (sigue siendo la versión 295). Los Fryhtans de un reino se guardan como unidades normales.
 - **Multijugador:** invocar un Fryhtan usa el mensaje de red nuevo `MSG_F_BASE_INVOKE_FRYHTAN`. Todos los jugadores necesitan el mismo ejecutable.
 - La IA no invoca Fryhtans.
+- **Balance de razas:** no cambia el formato de las partidas guardadas; al cargar una partida se aplican las reglas nuevas. En multijugador, todos necesitan el mismo ejecutable.
 
 ---
 

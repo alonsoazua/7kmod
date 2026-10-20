@@ -39,6 +39,7 @@
 #include <OSYS.h>
 #include <OWARPT.h>
 #include <OHONORS.h>
+#include <ORACERES.h>
 
 #ifdef NO_DEBUG_UNIT
 #undef err_when
@@ -89,6 +90,35 @@ int Unit::update_attack_path_dist()
 	return 0;
 }
 //---------- End of function Unit::update_attack_path_dist ----------//
+
+//--------- Begin of static function mod_armor ---------//
+//
+// 7kmod-gameplay: the armor used for reducing the damage a unit receives.
+// The original game uses 4 for all units and ignores the armor in the game
+// data. The mod changes it for some races:
+//
+//  - Normans: 5
+//  - Greeks : 6
+//  - Mayas  : 3 while their combat level is below 50, 4 after that
+//
+static int mod_armor(Unit* unitPtr)
+{
+	switch( unitPtr->race_id )
+	{
+		case RACE_NORMAN:
+			return 5;
+
+		case RACE_GREEK:
+			return 6;
+
+		case RACE_MAYA:
+			return unitPtr->skill.combat_level < 50 ? 3 : 4;
+	}
+
+	return 4;
+}
+//----------- End of static function mod_armor ---------//
+
 
 //##### begin trevor 15/8 #######//
 
@@ -142,18 +172,20 @@ void Unit::hit_target(Unit* parentUnit, Unit* targetUnit, float attackDamage, sh
 	//-----------------------------------------------------------------------//
 	// decrease the hit points of the target Unit
 	//-----------------------------------------------------------------------//
-	#define DEFAULT_ARMOR		4
-	#define DEFAULT_ARMOR_OVER_ATTACK_SLOW_DOWN	(float) DEFAULT_ARMOR / ATTACK_SLOW_DOWN
 	#define ONE_OVER_ATTACK_SLOW_DOWN				(float) 1/ATTACK_SLOW_DOWN
-	#define COMPARE_POINT								DEFAULT_ARMOR_OVER_ATTACK_SLOW_DOWN + ONE_OVER_ATTACK_SLOW_DOWN
+
+	//--- 7kmod-gameplay: the armor depends on the race (it was 4 for all units) ---//
+
+	float armorOverAttackSlowDown = (float) mod_armor(targetUnit) / ATTACK_SLOW_DOWN;
+	float comparePoint = armorOverAttackSlowDown + ONE_OVER_ATTACK_SLOW_DOWN;
 
 	//-*********** simulate aat ************-//
 #ifdef DEBUG
 		if(!debug_sim_game_type)
 		{
 #endif
-			if( attackDamage >= COMPARE_POINT )
-				targetUnit->hit_points -= attackDamage - DEFAULT_ARMOR_OVER_ATTACK_SLOW_DOWN;
+			if( attackDamage >= comparePoint )
+				targetUnit->hit_points -= attackDamage - armorOverAttackSlowDown;
 			else
 				targetUnit->hit_points -= MIN(attackDamage,ONE_OVER_ATTACK_SLOW_DOWN);  // in case attackDamage = 0, no hit_point is reduced
 #ifdef DEBUG

@@ -1,8 +1,9 @@
 # Análisis de combate: soldados y Fryhtans
 
-Cómo funciona el combate entre unidades en `7kaa-gameplay.exe`, con los números de
-cada raza y de cada Fryhtan, tal como están hoy (antes de cualquier ajuste de
-balance). Sirve como referencia para comparar después de hacer cambios.
+Cómo funciona el combate entre unidades, con los números de cada raza y de cada
+Fryhtan. Las secciones 1 a 6 describen las reglas y datos del **juego original**
+(sin el balance del mod) y sirven como referencia para comparar. La sección 8
+describe el **balance de razas de `7kmod-gameplay`** y sus resultados.
 
 Las reglas salen del código (`src/OUNITAT.cpp`, `src/OUNITAT2.cpp`,
 `src/OSPRITE2.cpp`, `src/OSPRITEA.cpp`) y los números de los datos del juego
@@ -53,7 +54,8 @@ desde el juego original, no es un cambio del mod. Consecuencias:
   resistentes con poco daño, pierden esa ventaja.
 - Los Mayas y Persas (3) no sufren su armadura baja.
 
-La sección 4 compara los resultados si la armadura funcionara.
+La sección 4 compara los resultados si la armadura funcionara. `7kmod-gameplay` usa
+una armadura propia para algunas razas (sección 8).
 
 ### Velocidad de ataque
 
@@ -333,12 +335,135 @@ tiene la misma fuerza que el Karrotten, que cuesta 60.
 El simulador lee los datos del juego y aplica las mismas reglas que el código:
 
 ```
-python3 7kmod/tools/combat_sim.py                       # usa data/RESOURCE/STD.SET del repositorio
+python3 7kmod/tools/combat_sim.py                       # reglas de 7kmod-gameplay, data/RESOURCE/STD.SET
+python3 7kmod/tools/combat_sim.py --original            # reglas del juego original (secciones 3 a 5)
 python3 7kmod/tools/combat_sim.py ruta/a/STD.SET        # otro archivo de datos
 python3 7kmod/tools/combat_sim.py --armor               # usando la armadura de los datos
 python3 7kmod/tools/combat_sim.py --seed 5              # otra semilla de azar
 ```
 
-Imprime las tablas de las secciones 3, 4 y 5. Si se cambian las reglas en el código
-(por ejemplo un bono de daño para los Fryhtans invocados o la armadura), hay que
-aplicar el mismo cambio en la clase `Fighter` del simulador.
+Imprime las tablas de daño por segundo, duelos entre razas y Fryhtans contra
+soldados. Los cambios de balance del mod están al principio del simulador
+(`MOD_ARMOR`, `MOD_ATTACK_LEVEL` y `MOD_SPEED`), con los mismos valores que el
+código. Si se cambian las reglas en el código, hay que aplicar el mismo cambio ahí
+o en la clase `Fighter`.
+
+---
+
+## 8. Balance de razas de 7kmod-gameplay
+
+### Cambios
+
+| Raza | Cambio | Original |
+|---|---|---|
+| Normando | Armadura 5 | 4 (fija para todos) |
+| Griego | Armadura 6 | 4 |
+| Maya | Armadura 3 mientras su combate es menor a 50; 4 desde 50 | 4 |
+| Chino | Ataque a distancia desde combate 40 | 30 |
+| Egipcio | Ataque a distancia desde combate 30 | 40 |
+| Japonés | Ataque especial desde combate 50 | 55 |
+| Mughul | Segundo ataque especial (30 de daño) desde combate 50 | 60 |
+| Zulú | Velocidad de movimiento 5 (1.9 casillas por segundo) | 4 (1.5) |
+
+- **Armadura:** la armadura aplica a todas las unidades de esa raza (soldados,
+  generales, rey, civiles y espías). Las demás razas, los Fryhtans, las armas y los
+  barcos siguen con 4. Cada punto arriba de 4 quita 0.25 más a cada golpe recibido, y
+  un golpe que no supera la armadura + 0.25 quita como máximo 0.25.
+- **Ataques:** los niveles se cambian al cargar los datos (`UnitRes::apply_mod_attack_balance()`),
+  sin modificar los archivos del juego.
+- **Velocidad:** se cambia al cargar los datos de los sprites. La lluvia y la nieve
+  la siguen reduciendo igual.
+
+### Efecto de la armadura en cada golpe
+
+Daño promedio de un golpe cuerpo a cuerpo con combate 20, después de la reducción:
+
+| Atacante | Contra armadura 4 | Contra 5 (Normando) | Contra 6 (Griego) |
+|---|---|---|---|
+| Maya | 1.39 | 1.14 | 0.89 |
+| Chino | 0.99 | 0.74 | 0.49 |
+| Vikingo | 0.89 | 0.64 | 0.39 |
+| Normando | 0.62 | 0.37 | 0.25 |
+
+Con combate bajo, los golpes son débiles y la armadura 6 les quita más de la mitad.
+Con combate alto los golpes son más fuertes y la armadura pesa menos.
+
+### Soldados contra soldados con el balance del mod
+
+Porcentaje promedio de victorias contra las otras 9 razas (mismo método de la
+sección 4), comparado con el original:
+
+| Raza | Combate 20 | Combate 30 | Combate 40 | Combate 50 | Combate 100 |
+|---|---|---|---|---|---|
+| Maya | 83 (100) | 79 (100) | 78 (100) | 94 (93) | 86 (86) |
+| Vikingo | 56 (75) | 55 (76) | 55 (78) | 88 (88) | 81 (81) |
+| Mughul | 34 (35) | 45 (55) | 45 (58) | **67** (57) | 66 (67) |
+| Griego | **100** (68) | **100** (64) | **96** (62) | 46 (50) | **57** (37) |
+| Chino | 84 (89) | **87** (67) | 60 (56) | 39 (40) | 56 (56) |
+| Normando | 67 (48) | 67 (49) | 67 (48) | 44 (64) | **46** (20) |
+| Japonés | 42 (48) | 29 (31) | 28 (27) | **55** (31) | 43 (56) |
+| Persa | 0 (0) | 14 (15) | 32 (32) | 32 (35) | 26 (37) |
+| Egipcio | 24 (24) | 5 (24) | 16 (16) | 11 (14) | 27 (38) |
+| Zulú | 11 (11) | 18 (19) | 23 (23) | 24 (25) | 14 (23) |
+
+Entre paréntesis, el resultado original. Victorias con combate 100, fila contra
+columna:
+
+| | Nor | May | Gri | Vik | Per | Chi | Jap | Egi | Mug | Zul |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Normando | — | 0 | 0 | 0 | 100 | 100 | 14 | 100 | 0 | 93 |
+| Maya | 100 | — | 100 | 70 | 100 | 0 | 100 | 100 | 100 | 100 |
+| Griego | 100 | 0 | — | 0 | 100 | 0 | 100 | 100 | 12 | 100 |
+| Vikingo | 100 | 26 | 100 | — | 100 | 0 | 100 | 100 | 96 | 100 |
+| Persa | 0 | 0 | 0 | 0 | — | 100 | 0 | 44 | 0 | 88 |
+| Chino | 0 | 100 | 100 | 100 | 0 | — | 100 | 0 | 100 | 0 |
+| Japonés | 82 | 0 | 0 | 0 | 100 | 0 | — | 100 | 0 | 100 |
+| Egipcio | 0 | 0 | 0 | 0 | 53 | 100 | 0 | — | 0 | 92 |
+| Mughul | 100 | 1 | 88 | 2 | 100 | 0 | 100 | 100 | — | 100 |
+| Zulú | 6 | 0 | 0 | 0 | 14 | 100 | 0 | 8 | 0 | — |
+
+**Lectura:**
+
+- **Normandos y Griegos** mejoran mucho con combate 100 (Normandos de 20% a 46%,
+  Griegos de 37% a 57%).
+- **Los Griegos con armadura 6 quedan casi imbatibles con combate bajo** (100% con
+  combate 20 y 30, 96% con 40). Sus rivales todavía pegan débil y la armadura les
+  quita más de la mitad del daño. Con armadura 5 quedarían en 83%, 80% y 79%, pero
+  bajarían a 36% con combate 50 y 34% con 100.
+- **Mayas:** la armadura 3 les quita la ventaja total que tenían al principio (de
+  100% a 78–83%) sin tocarlos desde combate 50.
+- **Japoneses y Mughules** mejoran con combate 50 por sus especiales más tempranos
+  (Japoneses de 31% a 55%, Mughules de 57% a 67%).
+- **Chinos:** con combate 30 ya no cambian su ataque fuerte cuerpo a cuerpo por
+  flechas débiles (de 67% a 87%); desde 40 quedan como antes.
+- **Egipcios:** en duelos no mejoran. Con flechas desde combate 30 se quedan
+  disparando flechas débiles en vez de acercarse a pelear cuerpo a cuerpo, y pierden
+  contra otros arqueros. En batallas con una línea cuerpo a cuerpo delante, disparar
+  antes sí les ayuda; los duelos no lo reflejan.
+- **Zulúes:** la velocidad casi no influye en los duelos, porque pelean a distancia
+  y casi no caminan. Les ayuda a alcanzar, huir y llegar antes a la batalla. Bajan con
+  combate 100 porque ahora pierden contra los Normandos.
+- **Persas, Egipcios y Zulúes** siguen siendo los más débiles en duelos. Son
+  arqueros: su valor está en batallas de grupo, que este simulador no mide.
+
+### Fryhtans contra soldados con el balance del mod
+
+Combate que necesita un soldado para ganarle la mitad de los duelos cuerpo a cuerpo a
+un Fryhtan invocado (combate 50):
+
+| Fryhtan (costo) | Nor | May | Gri | Vik | Per | Chi | Jap | Egi | Mug | Zul |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Rattus (40) | 60 | 49 | 50 | 50 | >100 | 46 | 52 | 79 | 50 | >100 |
+| Broosken (40) | 52 | 35 | 47 | 50 | >100 | 37 | 50 | 63 | 50 | 97 |
+| Deezboanz (50) | 52 | 41 | 46 | 50 | >100 | 40 | 50 | 69 | 50 | >100 |
+| Pfith (55) | 43 | 41 | 32 | 49 | >100 | 37 | 50 | 63 | 50 | 94 |
+| Karrotten (60) | 58 | 50 | 47 | 50 | >100 | 46 | 52 | 79 | 50 | >100 |
+| Holgh (60) | 69 | 52 | 60 | 52 | >100 | 53 | 60 | 92 | 57 | >100 |
+| Sauroid (65) | 77 | 60 | 66 | 61 | >100 | 60 | 69 | >100 | 64 | >100 |
+| Haubudam (65) | 80 | 63 | 68 | 66 | >100 | 63 | 74 | >100 | 69 | >100 |
+| Wyrm (70) | 77 | 60 | 66 | 61 | >100 | 61 | 71 | >100 | 68 | >100 |
+| Rokken (80) | 85 | 64 | 75 | 68 | >100 | 64 | 77 | >100 | 71 | >100 |
+
+Los Normandos y Griegos necesitan unos 10 a 25 puntos menos de combate que antes;
+los Japoneses y Mughules, unos 5. Los Mayas con combate bajo necesitan un poco más
+por su armadura 3.

@@ -17,8 +17,14 @@ the game code (src/OUNITAT.cpp, src/OUNITAT2.cpp, src/OSPRITE2.cpp):
   - Close attacks are forced when the target is adjacent; otherwise the unit
     uses the strongest attack that reaches the target.
 
+By default it uses the rules of 7kmod-gameplay, including its balance changes
+(MOD_ARMOR, MOD_ATTACK_LEVEL and MOD_SPEED below, the same as in the code).
+
 Usage:
-  python3 combat_sim.py [path/to/STD.SET] [--armor] [--seed N]
+  python3 combat_sim.py [path/to/STD.SET] [--original] [--armor] [--seed N]
+
+  --original  rules of the original game (armor 4 for all, original data)
+  --armor     use the ARMOR value of the game data for every unit
 
 Without arguments it prints all the tables of 7kmod/COMBAT_ANALYSIS.md.
 """
@@ -54,9 +60,27 @@ def ii(x): return int(x) if x else 0
 
 UNITS = {}
 
-def load_units(path):
+# --- 7kmod-gameplay balance changes (src/OUNITAT.cpp mod_armor(),
+#     src/OUNITRES.cpp apply_mod_attack_balance(), src/OSPRTRES.cpp) ---
+
+def MOD_ARMOR(name, combat):
+    if name == 'Norman': return 5
+    if name == 'Greek': return 6
+    if name == 'Maya': return 3 if combat < 50 else 4
+    return 4
+
+MOD_ATTACK_LEVEL = {('Chinese', 1): 40, ('Egyptian', 1): 30, ('Japanese', 1): 50, ('Mughul', 2): 50}
+MOD_SPEED = {'Zulu': 1}
+
+ORIGINAL = False
+
+def load_units(path, original=False):
+    global ORIGINAL
+    ORIGINAL = original
+    UNITS.clear()
     s = load_set(path)
     sa = dbf(s['SACTION']); atk_db = dbf(s['UNITATTK']); unit_db = dbf(s['UNIT'])
+    speed = {r['NAME']: int(r['SPEED']) for r in dbf(s['SPRITE'])}
     frames = {}
     for r in sa:
         if r['ACTION'].startswith('A'):
@@ -71,7 +95,11 @@ def load_units(path):
                             dmg=ii(x['BASIC_DMG']), pierce=ii(x['PIERCE_DMG']), minp=ii(x['MIN_POWER']),
                             cons=ii(x['CONSUME_P']), nxt=ii(x['NEXT_ATKID']), out=ii(x['OUT_FRAME']),
                             frames=frames[(r['SPRITE'], 'A%d' % (k + 1))]))
-        UNITS[r['NAME']] = dict(hp=int(r['HIT_PT']), armor=int(r['ARMOR']), atk=atk, cls=r['CLASS'])
+        if not original:
+            for k, a in enumerate(atk):
+                a['lvl'] = MOD_ATTACK_LEVEL.get((r['NAME'], k), a['lvl'])
+        spd = speed[r['SPRITE']] + (0 if original else MOD_SPEED.get(r['NAME'], 0))
+        UNITS[r['NAME']] = dict(hp=int(r['HIT_PT']), armor=int(r['ARMOR']), atk=atk, cls=r['CLASS'], speed=spd)
 
 # --------------------------------------------------------------- the rules --
 
@@ -84,7 +112,8 @@ class Fighter:
         s.maxhp = u['hp'] * combat / 100; s.hp = s.maxhp
         s.maxp = combat + 50; s.p = s.maxp
         s.cur = None; s.frame = 1; s.wait = 0
-        s.armor = u['armor'] if armor_on else 4
+        s.armor = u['armor'] if armor_on else (4 if ORIGINAL else MOD_ARMOR(name, combat))
+        s.speed = u['speed']
         s.lead = leadership
 
     def can(s, a): return s.c >= a['lvl'] and s.p >= a['minp']
@@ -158,7 +187,7 @@ def dps(name, combat, ranged=False, armor_on=False, runs=20, frames=1200):
 
 def duel(a, ca, b, cb, n=300, start=6, armor_on=False, lead_a=0, lead_b=0):
     """Win rate of a over b. They start 'start' tiles apart; a unit that can't
-    reach walks (8 frames per tile, speed 4 px/frame, tiles of 32 px)."""
+    reach walks 'speed' pixels per frame (tiles of 32 px)."""
     win = 0
     for _ in range(n):
         x = Fighter(a, ca, armor_on, lead_a); y = Fighter(b, cb, armor_on, lead_b)
@@ -166,13 +195,13 @@ def duel(a, ca, b, cb, n=300, start=6, armor_on=False, lead_a=0, lead_b=0):
         while x.hp > 0 and y.hp > 0 and fr < 20000:
             fr += 1
             order = [(x, y), (y, x)] if random.random() < .5 else [(y, x), (x, y)]
-            moving = False
+            walk = 0
             for p, q in order:
                 if p.hp > 0 and q.hp > 0 and not p.step(q, fr, dist):
-                    moving = True
-            if moving:
-                mv += 1
-                if mv >= 8: dist -= 1; mv = 0
+                    walk += p.speed           # pixels walked this frame
+            if walk:
+                mv += walk
+                if mv >= 32: dist -= 1; mv -= 32
         if x.hp > 0 >= y.hp: win += 1
         elif x.hp > 0 and y.hp > 0: win += .5
     return win / n
@@ -195,13 +224,13 @@ INVOKE_COST = dict(Rattus=40, Broosken=40, Deezboanz=50, Pfith=55, Karrotten=60,
                    Sauroid=65, Haubudam=65, Wyrm=70, Rokken=80)
 
 def main():
-    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+    args = [a for a in sys.argv[1:] if not a.startswith('--') and not a.isdigit()]
     armor_on = '--armor' in sys.argv
     seed = 1
     if '--seed' in sys.argv: seed = int(sys.argv[sys.argv.index('--seed') + 1])
     random.seed(seed)
     path = args[0] if args else os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'RESOURCE', 'STD.SET')
-    load_units(path)
+    load_units(path, '--original' in sys.argv)
 
     print('## Soldiers: HP and damage/s (melee / ranged)')
     print('| Race | ' + ' | '.join('Combat %d' % c for c in (20, 50, 100)) + ' |')

@@ -104,6 +104,7 @@ void UnitRes::init()
 
 	load_info();
 	load_attack_info();
+	apply_mod_attack_balance();		// 7kmod-gameplay
 
 	//---------- set vars -----------//
 
@@ -325,6 +326,37 @@ void UnitRes::load_attack_info()
 	}
 }
 //-------- End of function UnitRes::load_attack_info ---------//
+
+
+//-------- Begin of function UnitRes::apply_mod_attack_balance ---------//
+//
+// 7kmod-gameplay: balance changes of the human races. They change the
+// combat level needed for some attacks, after loading them from the game
+// data, so the original data files are not modified.
+//
+void UnitRes::apply_mod_attack_balance()
+{
+	static const struct { short unit_id; char attack_index; uint8_t combat_level; } changes[] =
+	{
+		{ UNIT_CHINESE,  1, 40 },		// Chinese range attack: 30 -> 40
+		{ UNIT_EGYPTIAN, 1, 30 },		// Egyptian range attack: 40 -> 30
+		{ UNIT_JAPANESE, 1, 50 },		// Japanese special attack: 55 -> 50
+		{ UNIT_INDIAN,   2, 50 },		// Mughul second special attack: 60 -> 50
+	};
+
+	for( int i=0 ; i<(int)(sizeof(changes)/sizeof(changes[0])) ; i++ )
+	{
+		UnitInfo* unitInfo = unit_info_array + changes[i].unit_id - 1;
+
+		if( changes[i].attack_index >= unitInfo->attack_count )
+			continue;
+
+		AttackInfo* attackInfo = attack_info_array + unitInfo->first_attack - 1 + changes[i].attack_index;
+
+		attackInfo->combat_level = changes[i].combat_level;
+	}
+}
+//-------- End of function UnitRes::apply_mod_attack_balance ---------//
 
 
 //-------- Begin of function UnitRes::mobile_type_to_mask --------//

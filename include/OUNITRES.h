@@ -382,6 +382,7 @@ public:
 private:
 	void  load_info();
 	void  load_attack_info();
+	void  apply_mod_attack_balance();		// 7kmod-gameplay
 };
 
 extern UnitRes unit_res;
