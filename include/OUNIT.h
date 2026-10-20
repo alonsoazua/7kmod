@@ -716,6 +716,12 @@ protected:
 	void  disp_settle(int);
 	void  detect_settle();
 	void  disp_unit_info(int dispY1, int refreshFlag);
+	int   has_unit_info();					// 7kmod
+	int   unit_info_height();
+	int   show_attack_info();
+	int   attack_info_lines();
+	int   get_attack_stats(int rangeAttack, float& damage, float& attacksPerSecond);
+	void  disp_attack_info(int x, int y, int refreshFlag);
 	void  disp_basic_info(int dispY1, int refreshFlag);
 	int   detect_basic_info();
 	void  disp_spy_menu(int dispY1, int refreshFlag);

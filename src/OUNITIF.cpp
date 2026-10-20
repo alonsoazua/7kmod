@@ -46,6 +46,9 @@
 #include <OBUTTCUS.h>
 
 #include <OU_MARI.h>
+#include <OSPRTRES.h>
+#include <OUNITRES.h>
+#include <stdio.h>
 #include "gettext.h"
 
 #ifdef NO_DEBUG_UNIT
@@ -229,10 +232,27 @@ void Unit::disp_main_menu(int refreshFlag)
 
 	int y=INFO_Y1+98;
 
-	if( race_id )
+	if( has_unit_info() )		// 7kmod: also for Fryhtans
 	{
+		//--- 7kmod: the panel height changes with the lines shown (e.g. when a range attack is learned), repaint all then ---//
+
+		static short lastUnitRecno, lastInfoHeight;
+
+		int infoHeight = unit_info_height();
+
+		if( refreshFlag == INFO_UPDATE && (lastUnitRecno != sprite_recno || lastInfoHeight != infoHeight) )
+		{
+			lastUnitRecno  = sprite_recno;
+			lastInfoHeight = infoHeight;
+			info.disp();
+			return;
+		}
+
+		lastUnitRecno  = sprite_recno;
+		lastInfoHeight = infoHeight;
+
 		disp_unit_info( y, refreshFlag );
-		y += 89;
+		y += infoHeight+2;
 	}
 
 	//---------------------------------//
@@ -290,7 +310,7 @@ void Unit::detect_main_menu()
 		return;
 
 	if( is_own_spy() )
-		detect_spy_menu(INFO_Y1+187);
+		detect_spy_menu(INFO_Y1+98+unit_info_height()+2);		// 7kmod: the height of the unit info panel changes
 
 	if( is_own() )
 		detect_button();
@@ -1136,18 +1156,18 @@ void Unit::disp_unit_info(int dispY1, int refreshFlag)
 
 	//--------------------------------------------//
 
-	if( !race_id )		// if it's not a human unit, don't display anything
+	if( !has_unit_info() )		// if it's not a human unit or a Fryhtan, don't display anything
 		return;
 
 	if( refreshFlag==INFO_REPAINT )
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+87 );
+		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+unit_info_height()-2 );
 
 	int 	 x=INFO_X1+4, y=dispY1+4;
 	String str;
 
 	//--------- display loyalty ---------//
 
-	if( rank_id != RANK_KING && (nation_recno || spy_recno) )
+	if( race_id && rank_id != RANK_KING && (nation_recno || spy_recno) )
 	{
 		if( spy_recno &&			// only display spy loyalty instead of unit loyalty if this is a spy and this spy is ours
 			 true_nation_recno() == nation_array.player_recno )
@@ -1189,12 +1209,271 @@ void Unit::disp_unit_info(int dispY1, int refreshFlag)
 		y+=16;
 	}
 
+	//--------- 7kmod: display damage and attack speed ---------//
+
+	if( show_attack_info() )
+	{
+		disp_attack_info(x, y, refreshFlag);
+		y += 16 * attack_info_lines();
+	}
+
 	//--------- display debug info ---------//
 
-	if( !is_civilian() && rank_id != RANK_KING )
+	if( race_id && !is_civilian() && rank_id != RANK_KING )		// 7kmod: nation_contribution keeps the monster id. of Fryhtans
 		font_san.field( x, y, _("Contribution"), x+92, nation_contribution, 1, INFO_X2-2, refreshFlag);
 }
 //----------- End of function Unit::disp_unit_info -----------//
+
+
+//--------- Begin of function Unit::has_unit_info ---------//
+//
+// 7kmod: whether the unit has the info panel with combat, skills, etc.
+// Human units and Fryhtans have it.
+//
+int Unit::has_unit_info()
+{
+	return race_id || unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER;
+}
+//----------- End of function Unit::has_unit_info -----------//
+
+
+//--------- Begin of function Unit::unit_info_height ---------//
+//
+// 7kmod: the height of the unit info panel. It has 16 pixels for each line,
+// at least the 5 lines of the original panel.
+//
+int Unit::unit_info_height()
+{
+	int lineCount = 1;		// combat
+
+	if( race_id && rank_id != RANK_KING && (nation_recno || spy_recno) )		// loyalty
+		lineCount++;
+
+	if( skill.skill_id )
+		lineCount++;
+
+	if( spy_recno && spy_array[spy_recno]->true_nation_recno == nation_array.player_recno )
+		lineCount++;
+
+	if( show_attack_info() )
+		lineCount += attack_info_lines();
+
+	if( race_id && !is_civilian() && rank_id != RANK_KING )		// contribution
+		lineCount++;
+
+	return 4 + 16 * MAX(5, lineCount) + 3;		// 89 for 5 lines, as the original panel
+}
+//----------- End of function Unit::unit_info_height -----------//
+
+
+//--------- Begin of function Unit::show_attack_info ---------//
+//
+// 7kmod: whether the damage and attack speed are displayed. They are not
+// displayed for civilians and for the player's own spies (the spy menu needs
+// the space below the panel).
+//
+int Unit::show_attack_info()
+{
+	if( is_civilian() )
+		return 0;
+
+	if( is_own_spy() )
+		return 0;
+
+	return attack_info_lines() > 0;
+}
+//----------- End of function Unit::show_attack_info -----------//
+
+
+//--------- Begin of function Unit::get_attack_stats ---------//
+//
+// 7kmod: average damage per hit and attacks per second of the strongest
+// normal attack of the unit (close or range). Special attacks that need
+// power are not included.
+//
+// The damage is the hit points that each hit takes from a target with the
+// normal armor (4), calculated with the same formula as actual_damage() and
+// hit_target(), including the bonus of the general if he is in range. The attacks per second are at
+// the normal game speed (12 frames per second).
+//
+// <int>    rangeAttack     - 0: close attack, 1: range attack
+// <float&> damage          - for returning the damage
+// <float&> attacksPerSecond - for returning the attack speed
+//
+// return: <int> 1 - the unit has this kind of attack, 0 - it doesn't
+//
+int Unit::get_attack_stats(int rangeAttack, float& damage, float& attacksPerSecond)
+{
+	int bestAttack = -1;
+
+	for( int i=0 ; i<attack_count ; i++ )
+	{
+		AttackInfo* attackInfo = attack_info_array+i;
+
+		if( (attackInfo->attack_range > 1) != (rangeAttack != 0) )
+			continue;
+
+		if( attackInfo->min_power > 0 )		// special attacks
+			continue;
+
+		if( skill.combat_level < attackInfo->combat_level )
+			continue;
+
+		if( bestAttack < 0 || attackInfo->attack_damage > attack_info_array[bestAttack].attack_damage )
+			bestAttack = i;
+	}
+
+	if( bestAttack < 0 )
+		return 0;
+
+	AttackInfo* attackInfo = attack_info_array+bestAttack;
+
+	//------ average damage, going through all the random values ------//
+
+	int pierceRange = skill.combat_level - attackInfo->combat_level;		// misc.random(pierceRange) gives 0 to pierceRange-1
+
+	if( pierceRange < 1 )
+		pierceRange = 1;
+
+	int leadership = 0;
+
+	if( is_leader_in_range() )
+		leadership = unit_array[leader_unit_recno]->skill.skill_level;
+
+	const float armorOverSlowDown = (float) 4 / ATTACK_SLOW_DOWN;
+	const float oneOverSlowDown   = (float) 1 / ATTACK_SLOW_DOWN;
+	float totalDamage = 0;
+
+	for( int r1=0 ; r1<3 ; r1++ )
+	{
+		for( int r2=0 ; r2<pierceRange ; r2++ )
+		{
+			int attackDamage = attackInfo->attack_damage + r1 +
+									 attackInfo->pierce_damage * r2 / (100-attackInfo->combat_level);
+
+			attackDamage += attackDamage * leadership / 100;
+
+			float hitDamage = (float) attackDamage / ATTACK_SLOW_DOWN;
+
+			if( hitDamage >= armorOverSlowDown + oneOverSlowDown )
+				totalDamage += hitDamage - armorOverSlowDown;
+			else
+				totalDamage += MIN(hitDamage, oneOverSlowDown);
+		}
+	}
+
+	damage = totalDamage / (3 * pierceRange);
+
+	//------ attack cycle: animation frames + delay - 1 ------//
+
+	int frameCount = sprite_info->attack_array[bestAttack][0].frame_count;
+	int cycleFrames = frameCount + MAX(attackInfo->attack_delay, 1) - 1;
+
+	if( cycleFrames < 1 )
+		cycleFrames = 1;
+
+	attacksPerSecond = (float) 12 / cycleFrames;
+
+	return 1;
+}
+//----------- End of function Unit::get_attack_stats -----------//
+
+
+//--------- Begin of function Unit::attack_info_lines ---------//
+//
+// 7kmod: the number of lines of the damage and attack speed info:
+// 2 for the close attack (or the range attack if the unit has no close
+// attack) and 1 more for the range attack.
+//
+int Unit::attack_info_lines()
+{
+	float damage, attacksPerSecond;
+
+	int hasClose = get_attack_stats(0, damage, attacksPerSecond);
+	int hasRange = get_attack_stats(1, damage, attacksPerSecond);
+
+	if( hasClose )
+		return hasRange ? 3 : 2;
+
+	return hasRange ? 2 : 0;
+}
+//----------- End of function Unit::attack_info_lines -----------//
+
+
+//--------- Begin of static function format_one_decimal ---------//
+//
+// 7kmod: a number with one decimal, like "2.6".
+//
+static const char* format_one_decimal(float value)
+{
+	static char buf[16];
+
+	snprintf(buf, sizeof(buf), "%.1f", value);
+
+	return buf;
+}
+//----------- End of static function format_one_decimal ---------//
+
+
+//--------- Begin of function Unit::disp_attack_info ---------//
+//
+// 7kmod: display the damage and attack speed of the unit, with the bonus
+// of its general when he is in range.
+//
+void Unit::disp_attack_info(int x, int y, int refreshFlag)
+{
+	float damage, attacksPerSecond, rangeDamage, rangeAttacksPerSecond;
+
+	int hasClose = get_attack_stats(0, damage, attacksPerSecond);
+	int hasRange = get_attack_stats(1, rangeDamage, rangeAttacksPerSecond);
+
+	if( !hasClose )			// units with only a range attack
+	{
+		damage = rangeDamage;
+		attacksPerSecond = rangeAttacksPerSecond;
+	}
+
+	int leaderBonus = is_leader_in_range() ? unit_array[leader_unit_recno]->skill.skill_level : 0;
+
+	String str;
+
+	//------- damage -------//
+
+	str = format_one_decimal(damage);
+
+	if( leaderBonus > 0 )
+	{
+		str += "  (+";
+		str += leaderBonus;
+		str += "%)";
+	}
+
+	str += "      ";		// clear the rest of the field when the bonus disappears
+
+	font_san.field( x, y, hasClose ? _("Damage") : _("Damage (range)"), x+92, str, INFO_X2-2, refreshFlag);
+	y += 16;
+
+	//------- attack speed -------//
+
+	str  = format_one_decimal(attacksPerSecond);
+	str += "/s";
+
+	font_san.field( x, y, _("Attack speed"), x+92, str, INFO_X2-2, refreshFlag);
+	y += 16;
+
+	//------- range attack -------//
+
+	if( hasClose && hasRange )
+	{
+		str  = format_one_decimal(rangeDamage);
+		str += " at ";
+		str += format_one_decimal(rangeAttacksPerSecond);
+		str += "/s";
+
+		font_san.field( x, y, _("Range attack"), x+92, str, INFO_X2-2, refreshFlag);
+	}
+}
+//----------- End of function Unit::disp_attack_info -----------//
 
 
 //--------- Begin of function Unit::disp_unit_profile ---------//
