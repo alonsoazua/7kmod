@@ -318,6 +318,8 @@ void Unit::detect_main_menu()
 //----------- End of function Unit::detect_main_menu -----------//
 
 
+static short last_selected_count;		// 7kmod: number of selected units displayed in disp_basic_info()
+
 //--------- Begin of function Unit::disp_basic_info ---------//
 //
 void Unit::disp_basic_info(int dispY1, int refreshFlag)
@@ -350,6 +352,19 @@ void Unit::disp_basic_info(int dispY1, int refreshFlag)
 			if( dispName )
 				font_san.center_put( INFO_X1, dispY1, INFO_X2-2, dispY1+21, unit_name() );
 		}
+
+		//--- 7kmod: the number of selected units, at the right of the name bar ---//
+
+		if( unit_array.selected_count > 1 )
+			font_san.right_put( INFO_X2-6, dispY1+5, misc.format(unit_array.selected_count) );
+
+		last_selected_count = unit_array.selected_count;
+	}
+	else if( last_selected_count != unit_array.selected_count )	// 7kmod: repaint when the number of selected units changes
+	{
+		last_selected_count = unit_array.selected_count;
+		info.disp();
+		return;
 	}
 
 	dispY1+=23;
@@ -1450,7 +1465,7 @@ void Unit::disp_attack_info(int x, int y, int refreshFlag)
 
 	str += "      ";		// clear the rest of the field when the bonus disappears
 
-	font_san.field( x, y, hasClose ? _("Damage") : _("Damage (range)"), x+92, str, INFO_X2-2, refreshFlag);
+	font_san.field( x, y, hasClose ? _("Melee") : _("Ranged"), x+92, str, INFO_X2-2, refreshFlag);
 	y += 16;
 
 	//------- attack speed -------//
@@ -1470,7 +1485,7 @@ void Unit::disp_attack_info(int x, int y, int refreshFlag)
 		str += format_one_decimal(rangeAttacksPerSecond);
 		str += "/s";
 
-		font_san.field( x, y, _("Range attack"), x+92, str, INFO_X2-2, refreshFlag);
+		font_san.field( x, y, _("Ranged"), x+92, str, INFO_X2-2, refreshFlag);
 	}
 }
 //----------- End of function Unit::disp_attack_info -----------//

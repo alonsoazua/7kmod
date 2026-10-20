@@ -21,10 +21,11 @@ incluye todo lo de `7kmod` y documenta lo suyo en `CHANGELOG-gameplay.md`.
 ## [Sin publicar]
 
 ### Agregado
+- **Unidades seleccionadas:** al seleccionar varias unidades, el número de unidades seleccionadas aparece a la derecha de la barra superior del panel de la unidad.
 - **Daño y velocidad de ataque en el panel de las unidades:** debajo del combate (y arriba de la contribución) se muestran:
-  - **Damage:** el daño promedio que cada golpe le quita a un enemigo con la armadura normal (4), con el mismo cálculo del juego. Si el general de la unidad está a 10 casillas o menos, el daño incluye su bono y se muestra entre paréntesis, por ejemplo "2.6 (+60%)".
+  - **Melee:** el daño promedio que cada golpe le quita a un enemigo con la armadura normal (4), con el mismo cálculo del juego. Si el general de la unidad está a 10 casillas o menos, el daño incluye su bono y se muestra entre paréntesis, por ejemplo "2.6 (+60%)".
   - **Attack speed:** golpes por segundo a la velocidad normal del juego.
-  - **Range attack:** para las unidades que también tienen ataque a distancia, su daño y golpes por segundo. Las unidades que solo atacan a distancia muestran "Damage (range)".
+  - **Ranged:** para las unidades que también tienen ataque a distancia, su daño y golpes por segundo, por ejemplo "1.1 at 0.9/s". Las unidades que solo atacan a distancia muestran su daño en "Ranged" en lugar de "Melee".
   - No incluye los ataques especiales que gastan poder. No se muestra en civiles ni en tus propios espías (el menú de espía necesita ese espacio).
   - El panel crece según las líneas que muestra y los botones se recorren hacia abajo.
 - **Panel de los Fryhtans:** al seleccionar un Fryhtan se muestra su combate, daño y velocidad de ataque. Antes no mostraba ningún dato.
