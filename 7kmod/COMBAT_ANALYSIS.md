@@ -356,8 +356,8 @@ o en la clase `Fighter`.
 
 | Raza | Cambio | Original |
 |---|---|---|
-| Normando | Armadura 5 | 4 (fija para todos) |
-| Griego | Armadura 6 | 4 |
+| Normando | Armadura 4; 5 desde combate 50 | 4 (fija para todos) |
+| Griego | Armadura 4; 5 desde combate 30; 6 desde combate 50 | 4 |
 | Maya | Armadura 3 mientras su combate es menor a 50; 4 desde 50 | 4 |
 | Chino | Ataque a distancia desde combate 40 | 30 |
 | Egipcio | Ataque a distancia desde combate 30 | 40 |
@@ -376,9 +376,10 @@ o en la clase `Fighter`.
 
 ### Efecto de la armadura en cada golpe
 
-Daño promedio de un golpe cuerpo a cuerpo con combate 20, después de la reducción:
+Daño promedio de un golpe cuerpo a cuerpo de un atacante con combate 20, después de la
+reducción:
 
-| Atacante | Contra armadura 4 | Contra 5 (Normando) | Contra 6 (Griego) |
+| Atacante | Contra armadura 4 | Contra armadura 5 | Contra armadura 6 |
 |---|---|---|---|
 | Maya | 1.39 | 1.14 | 0.89 |
 | Chino | 0.99 | 0.74 | 0.49 |
@@ -395,16 +396,16 @@ sección 4), comparado con el original:
 
 | Raza | Combate 20 | Combate 30 | Combate 40 | Combate 50 | Combate 100 |
 |---|---|---|---|---|---|
-| Maya | 83 (100) | 79 (100) | 78 (100) | 94 (93) | 86 (86) |
-| Vikingo | 56 (75) | 55 (76) | 55 (78) | 88 (88) | 81 (81) |
-| Mughul | 34 (35) | 45 (55) | 45 (58) | **67** (57) | 66 (67) |
-| Griego | **100** (68) | **100** (64) | **96** (62) | 46 (50) | **57** (37) |
-| Chino | 84 (89) | **87** (67) | 60 (56) | 39 (40) | 56 (56) |
-| Normando | 67 (48) | 67 (49) | 67 (48) | 44 (64) | **46** (20) |
-| Japonés | 42 (48) | 29 (31) | 28 (27) | **55** (31) | 43 (56) |
-| Persa | 0 (0) | 14 (15) | 32 (32) | 32 (35) | 26 (37) |
-| Egipcio | 24 (24) | 5 (24) | 16 (16) | 11 (14) | 27 (38) |
-| Zulú | 11 (11) | 18 (19) | 23 (23) | 24 (25) | 14 (23) |
+| Maya | 95 (100) | 87 (100) | 88 (100) | 95 (93) | 86 (86) |
+| Vikingo | 75 (75) | 66 (76) | 66 (78) | 87 (88) | 81 (81) |
+| Mughul | 36 (35) | 53 (55) | 54 (58) | **67** (57) | 65 (67) |
+| Griego | 68 (68) | **80** (64) | **78** (62) | 46 (50) | **57** (37) |
+| Chino | 95 (89) | **98** (67) | 67 (56) | 39 (40) | 56 (56) |
+| Normando | 48 (48) | 48 (49) | 47 (48) | 44 (64) | **46** (20) |
+| Japonés | 47 (48) | 29 (31) | 28 (27) | **56** (31) | 42 (56) |
+| Persa | 0 (0) | 15 (15) | 32 (32) | 32 (35) | 26 (37) |
+| Egipcio | 24 (24) | 5 (24) | 16 (16) | 11 (14) | 28 (38) |
+| Zulú | 11 (11) | 19 (19) | 23 (23) | 24 (25) | 14 (23) |
 
 Entre paréntesis, el resultado original. Victorias con combate 100, fila contra
 columna:
@@ -426,10 +427,11 @@ columna:
 
 - **Normandos y Griegos** mejoran mucho con combate 100 (Normandos de 20% a 46%,
   Griegos de 37% a 57%).
-- **Los Griegos con armadura 6 quedan casi imbatibles con combate bajo** (100% con
-  combate 20 y 30, 96% con 40). Sus rivales todavía pegan débil y la armadura les
-  quita más de la mitad del daño. Con armadura 5 quedarían en 83%, 80% y 79%, pero
-  bajarían a 36% con combate 50 y 34% con 100.
+- **La armadura sube con el combate:** con combate bajo los golpes son débiles y una
+  armadura alta los anula casi por completo. Con armadura 6 desde el principio, los
+  Griegos ganaban el 96% al 100% de los duelos con combate 20 a 40. Con la armadura
+  escalonada quedan en 68% a 80%: fuertes, pero no imbatibles. Los Normandos no
+  cambian hasta combate 50.
 - **Mayas:** la armadura 3 les quita la ventaja total que tenían al principio (de
   100% a 78–83%) sin tocarlos desde combate 50.
 - **Japoneses y Mughules** mejoran con combate 50 por sus especiales más tempranos
@@ -464,7 +466,10 @@ un Fryhtan invocado (combate 50):
 | Wyrm (70) | 77 | 60 | 66 | 61 | >100 | 61 | 71 | >100 | 68 | >100 |
 | Rokken (80) | 85 | 64 | 75 | 68 | >100 | 64 | 77 | >100 | 71 | >100 |
 
-Los Normandos y Griegos necesitan unos 10 a 25 puntos menos de combate que antes;
+Esta tabla se calculó con la primera versión del balance (Normandos con armadura 5 y
+Griegos con 6 en todos los niveles). Con la armadura escalonada, los valores de
+Normandos y Griegos por debajo de combate 50 serían algo más altos; los de 50 o más no
+cambian. Los Normandos y Griegos necesitan unos 10 a 25 puntos menos de combate que antes;
 los Japoneses y Mughules, unos 5. Los Mayas con combate bajo necesitan un poco más
 por su armadura 3.
 

@@ -42,7 +42,7 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 
 ### Cambiado
 - **Balance de razas:**
-  - **Armadura por raza:** el juego original usa armadura 4 para todas las unidades e ignora la de los datos. Ahora los Normandos tienen 5, los Griegos 6 y los Mayas 3 mientras su combate es menor a 50 (4 desde 50). Las demás razas, los Fryhtans, las armas y los barcos siguen con 4. Cada punto de armadura quita 0.25 de daño a cada golpe recibido.
+  - **Armadura por raza:** el juego original usa armadura 4 para todas las unidades e ignora la de los datos. Ahora la armadura sube con el combate en algunas razas: los Normandos tienen 4 y suben a 5 con combate 50; los Griegos tienen 4, suben a 5 con combate 30 y a 6 con combate 50; los Mayas tienen 3 mientras su combate es menor a 50 y 4 desde 50. Las demás razas, los Fryhtans, las armas y los barcos siguen con 4. Cada punto de armadura quita 0.25 de daño a cada golpe recibido.
   - **Chinos:** el ataque a distancia se aprende con combate 40 (antes 30).
   - **Egipcios:** el ataque a distancia se aprende con combate 30 (antes 40).
   - **Japoneses:** el ataque especial se aprende con combate 50 (antes 55).

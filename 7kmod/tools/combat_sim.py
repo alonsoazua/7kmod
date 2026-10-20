@@ -66,8 +66,8 @@ UNITS = {}
 #     src/OUNITRES.cpp apply_mod_attack_balance(), src/OSPRTRES.cpp) ---
 
 def MOD_ARMOR(name, combat):
-    if name == 'Norman': return 5
-    if name == 'Greek': return 6
+    if name == 'Norman': return 5 if combat >= 50 else 4
+    if name == 'Greek': return 6 if combat >= 50 else (5 if combat >= 30 else 4)
     if name == 'Maya': return 3 if combat < 50 else 4
     return 4
 

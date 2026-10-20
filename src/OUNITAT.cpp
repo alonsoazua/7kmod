@@ -98,19 +98,21 @@ int Unit::update_attack_path_dist()
 // The original game uses 4 for all units and ignores the armor in the game
 // data. The mod changes it for some races:
 //
-//  - Normans: 5
-//  - Greeks : 6
+//  - Normans: 4, 5 from combat level 50
+//  - Greeks : 4, 5 from combat level 30, 6 from combat level 50
 //  - Mayas  : 3 while their combat level is below 50, 4 after that
 //
 static int mod_armor(Unit* unitPtr)
 {
+	int combatLevel = unitPtr->skill.combat_level;
+
 	switch( unitPtr->race_id )
 	{
 		case RACE_NORMAN:
-			return 5;
+			return combatLevel >= 50 ? 5 : 4;
 
 		case RACE_GREEK:
-			return 6;
+			return combatLevel >= 50 ? 6 : (combatLevel >= 30 ? 5 : 4);
 
 		case RACE_MAYA:
 			return unitPtr->skill.combat_level < 50 ? 3 : 4;
