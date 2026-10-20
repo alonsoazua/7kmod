@@ -40,6 +40,7 @@
 #include <OWARPT.h>
 #include <OHONORS.h>
 #include <ORACERES.h>
+#include <OF_BASE.h>
 
 #ifdef NO_DEBUG_UNIT
 #undef err_when
@@ -863,6 +864,11 @@ float Unit::actual_damage()
 	attackDamage += misc.random(3) + attackInfo->pierce_damage
 						 * misc.random(skill.combat_level-attackInfo->combat_level)
 						 / (100-attackInfo->combat_level);
+
+	//--- 7kmod-gameplay: the Fryhtans of a nation (invoked) do 25% more damage ---//
+
+	if( nation_recno && unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER )
+		attackDamage += attackDamage * INVOKED_FRYHTAN_DAMAGE_BONUS / 100;
 
 	//--- if this unit is led by a general, its attacking ability is influenced by the general ---//
 	//

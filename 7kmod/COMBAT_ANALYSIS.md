@@ -467,3 +467,43 @@ un Fryhtan invocado (combate 50):
 Los Normandos y Griegos necesitan unos 10 a 25 puntos menos de combate que antes;
 los Japoneses y Mughules, unos 5. Los Mayas con combate bajo necesitan un poco más
 por su armadura 3.
+
+### Fryhtans invocados con el balance del mod
+
+La tabla anterior (Fryhtans contra soldados) es sin estos cambios: solo incluye el
+balance de razas. Cambios de los Fryhtans invocados:
+
+- **+25% de daño** para los Fryhtans invocados (los de un reino); los salvajes no
+  cambian. Se aplica antes del bono del general, en `Unit::actual_damage()`.
+- **Los Mughules invocan al Doink** en lugar del Pfith. Es el único Fryhtan con ataque
+  a distancia; su alcance sube de 5 a 6, igual que los arqueros humanos.
+- **Broosken:** velocidad 4 (antes 3), la normal.
+- **Costos** según la fuerza (vida × daño por segundo con combate 50 y el +25%), de 40
+  a 80 redondeado a 5, con −5 para los lentos (velocidad 3). El Haubudam queda en 75 y
+  el Doink, un arquero débil, en 30.
+
+| Raza | Fryhtan | Costo original → mod | Velocidad | Vida (combate 50) | Daño/s con +25% |
+|---|---|---|---|---|---|
+| Mughul | Pfith → **Doink** | 55 → 30 | 5 | 90 | ~1.0 (alcance 6) |
+| Zulú | Broosken | 40 → 40 | 3 → 4 | 75 | 2.26 |
+| Maya | Deezboanz | 50 → 45 | 4 | 100 | 1.99 |
+| Japonés | Rattus | 40 → 55 | 5 | 75 | 3.32 |
+| Egipcio | Karrotten | 60 → 55 | 4 | 135 | 1.88 |
+| Normando | Holgh | 60 → 60 | 3 | 140 | 2.20 |
+| Griego | Sauroid | 65 → 75 | 5 | 150 | 2.48 |
+| Chino | Wyrm | 70 → 75 | 4 | 165 | 2.36 |
+| Vikingo | Haubudam | 65 → 75 | 4 | 150 | 2.75 |
+| Persa | Rokken | 80 → 75 | 3 | 200 | 2.06 |
+
+- El daño por segundo con +25% viene de la misma simulación de la sección 3, con el
+  bono aplicado. El del Doink está calculado a mano desde sus datos.
+- **El bono rinde más de 25% en daño por segundo** (de 30% a 45%), porque se aplica
+  antes de la reducción fija de la armadura. Los que tienen daño básico bajo, como el
+  Rattus, son los que más ganan; por eso su costo sube más.
+- Combate que necesita un Maya para ganarle la mitad de los duelos (simulación
+  anterior): Rattus 49 → 55, Holgh 52 → 66, Rokken 64 → 80.
+- **Doink:** con +25% hace un daño parecido al de un arquero persa o zulú con combate
+  50, con menos vida. Su papel es apoyo barato y rápido desde atrás de la línea.
+
+Los números de las secciones 3 y 5 son del juego original; para recalcularlos con
+estos cambios se puede correr el simulador sin `--original`.

@@ -797,7 +797,7 @@ int FirmBase::invoke_fryhtan_unit_id()
 		case RACE_CHINESE:	return UNIT_FIREKIN;			// Wyrm
 		case RACE_JAPANESE:	return UNIT_LYW;				// Rattus
 		case RACE_EGYPTIAN:	return UNIT_MAN;				// Karrotten
-		case RACE_INDIAN:		return UNIT_GITH;				// Pfith
+		case RACE_INDIAN:		return UNIT_GREMJERM;		// Doink
 		case RACE_ZULU:		return UNIT_HOBGLOBLIN;		// Broosken
 	}
 
@@ -809,24 +809,26 @@ int FirmBase::invoke_fryhtan_unit_id()
 //--------- Begin of function FirmBase::invoke_fryhtan_pray_points ---------//
 //
 // 7kmod-gameplay: the pray points needed for invoking the Fryhtan of this
-// Seat of Power. They go from 40 (10% of the maximum) to 80 (20%) in
-// proportion to the base hit points of the Fryhtan (150 to 400), rounded
-// to a multiple of 5.
+// Seat of Power. They are based on the strength of each Fryhtan (hit points
+// x damage per second at combat 50, with the damage bonus of the invoked
+// Fryhtans), from 40 to 80 and rounded to a multiple of 5, with -5 for the
+// slow ones (speed 3). The Haubudam is limited to 75 and the Doink, a weak
+// archer, costs 30. See 7kmod/COMBAT_ANALYSIS.md.
 //
 int FirmBase::invoke_fryhtan_pray_points()
 {
 	switch( invoke_fryhtan_unit_id() )
 	{
-		case UNIT_ROCKMAN:		return 80;		// Rokken, 400 hit points
-		case UNIT_FIREKIN:		return 70;		// Wyrm, 330
-		case UNIT_LIZARDMAN:		return 65;		// Sauroid, 300
-		case UNIT_GIANT_ETTIN:	return 65;		// Haubudam, 300
-		case UNIT_HEADLESS:		return 60;		// Holgh, 280
-		case UNIT_MAN:				return 60;		// Karrotten, 270
-		case UNIT_GITH:			return 55;		// Pfith, 250
-		case UNIT_SKELETON:		return 50;		// Deezboanz, 200
-		case UNIT_LYW:				return 40;		// Rattus, 150
-		case UNIT_HOBGLOBLIN:	return 40;		// Broosken, 150
+		case UNIT_ROCKMAN:		return 75;		// Rokken (slow)
+		case UNIT_FIREKIN:		return 75;		// Wyrm
+		case UNIT_LIZARDMAN:		return 75;		// Sauroid
+		case UNIT_GIANT_ETTIN:	return 75;		// Haubudam
+		case UNIT_HEADLESS:		return 60;		// Holgh (slow)
+		case UNIT_MAN:				return 55;		// Karrotten
+		case UNIT_LYW:				return 55;		// Rattus
+		case UNIT_SKELETON:		return 45;		// Deezboanz
+		case UNIT_HOBGLOBLIN:	return 40;		// Broosken
+		case UNIT_GREMJERM:		return 30;		// Doink
 	}
 
 	return MAX_PRAY_POINTS/10;

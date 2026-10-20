@@ -21,8 +21,11 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 ### Agregado
 - **Invocar Fryhtan:** botón nuevo en la Sede de Poder (icono de contratar unidad, último lugar de la fila) que invoca un Fryhtan de tu reino con combate 50. Cada raza tiene su Fryhtan aliado, según la raza de la Sede:
   - Normandos → Holgh, Mayas → Deezboanz, Griegos → Sauroid, Vikingos → Haubudam, Persas → Rokken.
-  - Chinos → Wyrm, Japoneses → Rattus, Egipcios → Karrotten, Indios → Pfith, Zulúes → Broosken.
-  - El costo en puntos de oración depende de la vida base del Fryhtan, de 40 (10% de la barra) a 80 (20%): Rokken 80, Wyrm 70, Sauroid y Haubudam 65, Holgh y Karrotten 60, Pfith 55, Deezboanz 50, Rattus y Broosken 40.
+  - Chinos → Wyrm, Japoneses → Rattus, Egipcios → Karrotten, Mughules → Doink, Zulúes → Broosken.
+  - **Costo en puntos de oración,** según la fuerza de cada Fryhtan (vida × daño por segundo con combate 50, ver `COMBAT_ANALYSIS.md`), con −5 para los lentos: Rokken, Wyrm, Sauroid y Haubudam 75; Holgh 60; Rattus y Karrotten 55; Deezboanz 45; Broosken 40; Doink 30. La barra tiene 400 puntos.
+  - **Daño:** los Fryhtans invocados hacen 25% más daño que los salvajes, para compensar que su daño por golpe es bajo para su tamaño. Se suma al bono del general si salen del fuerte con uno.
+  - **Doink:** el único Fryhtan con ataque a distancia. Su alcance sube de 5 a 6, igual que los arqueros humanos (también para los Doink salvajes).
+  - **Broosken:** su velocidad sube de 3 a 4, la normal de las demás unidades (también para los salvajes).
   - Son permanentes: no gastan puntos por día ni mueren si la Sede es destruida.
   - Si tienes espías propios dentro de la Sede, ese lugar lo ocupa el botón de espías, como en el juego original.
   - Los Fryhtans de un reino no deambulan solos, atacan según su modo agresivo, no entran a guaridas Fryhtan, no dan reputación a quien los ataca y no cuentan para el objetivo de destruir a los Fryhtans.
@@ -31,7 +34,7 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
   - **Costo visible:** el botón muestra el costo en puntos. Al pasar el ratón aparece el nombre del Fryhtan, su costo y los puntos que tienes.
   - Sus gráficos no tienen zonas con el color del reino, así que se ven igual que los Fryhtans salvajes.
   - Los Fryhtans no tienen sonidos de selección ni de orden en los datos del juego; usan su sonido de muerte en su lugar.
-  - **Voces propias:** si existe `MODSOUND\<código>.WAV` en la carpeta del juego, el Fryhtan lo usa como sonido de selección y de orden. El código es el nombre interno del Fryhtan, el mismo de su archivo en `SPRITE`. El Rokken tiene su voz en `MODSOUND\ROCKMAN.WAV`; los archivos de voces del mod están en `7kmod/MODSOUND` del repositorio.
+  - **Voces propias:** si existe `MODSOUND\<código>.WAV` en la carpeta del juego, el Fryhtan lo usa como sonido de selección y de orden. El código es el nombre interno del Fryhtan, el mismo de su archivo en `SPRITE` (el del Doink es `GREMJERM`). El Rokken tiene su voz en `MODSOUND\ROCKMAN.WAV`; los archivos de voces del mod están en `7kmod/MODSOUND` del repositorio.
 - **Puntos de la Sede de Poder:** el panel de la Sede muestra los puntos de oración como número ("Points: 123 / 400") debajo de la barra.
 - **Documentación:** `COMBAT_ANALYSIS.md` explica cómo funciona el combate (vida, fórmula de daño, velocidad de ataque, poder y ataques especiales) y compara a los soldados de cada raza y a los Fryhtans con tablas de daño por segundo y duelos simulados. Incluye que la armadura de los datos no se usa en el código. El simulador está en `7kmod/tools/combat_sim.py` para volver a calcular los números después de un cambio.
 - **Fryhtans en el fuerte:** los Fryhtans de tu reino pueden entrar a tus fuertes como soldados, igual que las armas de asedio, y salir conservando su especie. En el panel del fuerte se muestra su combate. No entrenan con el general. Al salir del fuerte tienen el botón de regresar al fuerte.

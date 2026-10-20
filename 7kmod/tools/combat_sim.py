@@ -18,7 +18,9 @@ the game code (src/OUNITAT.cpp, src/OUNITAT2.cpp, src/OSPRITE2.cpp):
     uses the strongest attack that reaches the target.
 
 By default it uses the rules of 7kmod-gameplay, including its balance changes
-(MOD_ARMOR, MOD_ATTACK_LEVEL and MOD_SPEED below, the same as in the code).
+(MOD_ARMOR, MOD_ATTACK_LEVEL, MOD_ATTACK_RANGE, MOD_SPEED and
+INVOKED_FRYHTAN_DAMAGE_BONUS below, the same as in the code). With the mod
+rules, Fryhtans are simulated as invoked Fryhtans (with the damage bonus).
 
 Usage:
   python3 combat_sim.py [path/to/STD.SET] [--original] [--armor] [--seed N]
@@ -70,7 +72,9 @@ def MOD_ARMOR(name, combat):
     return 4
 
 MOD_ATTACK_LEVEL = {('Chinese', 1): 40, ('Egyptian', 1): 30, ('Japanese', 1): 50, ('Mughul', 2): 50}
-MOD_SPEED = {'Zulu': 1}
+MOD_ATTACK_RANGE = {('Doink', 0): 6}
+MOD_SPEED = {'Zulu': 1, 'Broosken': 1}
+INVOKED_FRYHTAN_DAMAGE_BONUS = 25      # src/OUNITAT.cpp Unit::actual_damage(), for Fryhtans of a nation
 
 ORIGINAL = False
 
@@ -98,6 +102,7 @@ def load_units(path, original=False):
         if not original:
             for k, a in enumerate(atk):
                 a['lvl'] = MOD_ATTACK_LEVEL.get((r['NAME'], k), a['lvl'])
+                a['rng'] = MOD_ATTACK_RANGE.get((r['NAME'], k), a['rng'])
         spd = speed[r['SPRITE']] + (0 if original else MOD_SPEED.get(r['NAME'], 0))
         UNITS[r['NAME']] = dict(hp=int(r['HIT_PT']), armor=int(r['ARMOR']), atk=atk, cls=r['CLASS'], speed=spd)
 
@@ -115,6 +120,8 @@ class Fighter:
         s.armor = u['armor'] if armor_on else (4 if ORIGINAL else MOD_ARMOR(name, combat))
         s.speed = u['speed']
         s.lead = leadership
+        # with the mod rules, the Fryhtans are simulated as invoked (Fryhtans of a nation)
+        s.invoked = u['cls'] == 'MONSTER' and not ORIGINAL
 
     def can(s, a): return s.c >= a['lvl'] and s.p >= a['minp']
 
@@ -131,6 +138,8 @@ class Fighter:
     def damage(s, target):
         a = s.atk[s.cur]
         d = a['dmg'] + rnd(3) + a['pierce'] * rnd(s.c - a['lvl']) // (100 - a['lvl'])
+        if s.invoked:
+            d += d * INVOKED_FRYHTAN_DAMAGE_BONUS // 100
         d += d * s.lead // 100
         x = d / 4; ar = target.armor / 4
         return x - ar if x >= ar + 0.25 else min(x, 0.25)
@@ -219,9 +228,9 @@ def break_even(race, fryhtan, fry_combat=50, n=300):
 # ---------------------------------------------------------------- reports --
 
 RACES = ['Norman', 'Maya', 'Greek', 'Viking', 'Persian', 'Chinese', 'Japanese', 'Egyptian', 'Mughul', 'Zulu']
-FRYHTANS = ['Rattus', 'Broosken', 'Deezboanz', 'Pfith', 'Karrotten', 'Holgh', 'Sauroid', 'Haubudam', 'Wyrm', 'Rokken']
-INVOKE_COST = dict(Rattus=40, Broosken=40, Deezboanz=50, Pfith=55, Karrotten=60, Holgh=60,
-                   Sauroid=65, Haubudam=65, Wyrm=70, Rokken=80)
+FRYHTANS = ['Doink', 'Broosken', 'Deezboanz', 'Rattus', 'Karrotten', 'Holgh', 'Sauroid', 'Haubudam', 'Wyrm', 'Rokken']
+INVOKE_COST = dict(Doink=30, Broosken=40, Deezboanz=45, Rattus=55, Karrotten=55, Holgh=60,
+                   Sauroid=75, Haubudam=75, Wyrm=75, Rokken=75)          # src/OF_BASE.cpp
 
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--') and not a.isdigit()]
@@ -242,9 +251,9 @@ def main():
         print('| %s | %s |' % (r, ' | '.join(cells)))
 
     print('\n## Fryhtans at combat 50 and 100: HP, melee damage/s, HP x damage/s')
-    for f in FRYHTANS + ['Droog', 'Ick']:
+    for f in FRYHTANS + ['Pfith', 'Droog', 'Ick']:
         for c in (50, 100):
-            d = dps(f, c, False, armor_on)
+            d = dps(f, c, False, armor_on) or dps(f, c, True, armor_on)
             print('| %s | %d | %.0f | %.2f | %.0f |' % (f, c, UNITS[f]['hp'] * c / 100, d, d * UNITS[f]['hp'] * c / 100))
 
     print('\n## Race vs race, average win rate against the other 9 races')
@@ -257,6 +266,8 @@ def main():
     print('\n## Combat level a soldier needs to beat a combat-50 Fryhtan in melee')
     print('| Fryhtan | ' + ' | '.join(RACES) + ' |')
     for f in FRYHTANS:
+        if f == 'Doink':        # range unit, the melee table doesn't apply
+            continue
         print('| %s (%d) | %s |' % (f, INVOKE_COST[f], ' | '.join(break_even(r, f) for r in RACES)))
 
 if __name__ == '__main__':

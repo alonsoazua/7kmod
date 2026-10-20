@@ -46,13 +46,15 @@ void SpriteRes::init()
 	load_sprite_info();
 	load_sub_sprite_info();
 
-	//--- 7kmod-gameplay: Zulu units move faster (speed 4 -> 5) ---//
+	//--- 7kmod-gameplay: Zulu units move faster (speed 4 -> 5) and the ---//
+	//--- Broosken has the normal speed of the other units (3 -> 4)  ---//
 
 	for( int i=0 ; i<sprite_info_count ; i++ )
 	{
 		SpriteInfo* spriteInfo = sprite_info_array+i;
 
-		if( strcmp(spriteInfo->sprite_code, "ZULU")==0 )
+		if( strcmp(spriteInfo->sprite_code, "ZULU")==0 ||
+			 strcmp(spriteInfo->sprite_code, "HOBGLOB")==0 )
 		{
 			spriteInfo->speed++;
 			spriteInfo->max_speed++;

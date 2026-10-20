@@ -44,6 +44,7 @@
 //--- 7kmod-gameplay: Fryhtans invoked from the Seat of Power ---//
 
 #define		INVOKE_FRYHTAN_COMBAT_LEVEL	50
+#define		INVOKED_FRYHTAN_DAMAGE_BONUS	25		// % of extra damage of the Fryhtans of a nation
 
 //------- Define class FirmBase --------//
 

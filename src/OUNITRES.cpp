@@ -330,18 +330,22 @@ void UnitRes::load_attack_info()
 
 //-------- Begin of function UnitRes::apply_mod_attack_balance ---------//
 //
-// 7kmod-gameplay: balance changes of the human races. They change the
-// combat level needed for some attacks, after loading them from the game
-// data, so the original data files are not modified.
+// 7kmod-gameplay: balance changes of the human races and the Doink. They
+// change the combat level needed for some attacks and the range of the Doink,
+// after loading them from the game data, so the original data files are not
+// modified.
 //
 void UnitRes::apply_mod_attack_balance()
 {
-	static const struct { short unit_id; char attack_index; uint8_t combat_level; } changes[] =
+	// combat_level / attack_range: 0 - no change
+
+	static const struct { short unit_id; char attack_index; uint8_t combat_level; uint8_t attack_range; } changes[] =
 	{
-		{ UNIT_CHINESE,  1, 40 },		// Chinese range attack: 30 -> 40
-		{ UNIT_EGYPTIAN, 1, 30 },		// Egyptian range attack: 40 -> 30
-		{ UNIT_JAPANESE, 1, 50 },		// Japanese special attack: 55 -> 50
-		{ UNIT_INDIAN,   2, 50 },		// Mughul second special attack: 60 -> 50
+		{ UNIT_CHINESE,  1, 40, 0 },		// Chinese range attack: 30 -> 40
+		{ UNIT_EGYPTIAN, 1, 30, 0 },		// Egyptian range attack: 40 -> 30
+		{ UNIT_JAPANESE, 1, 50, 0 },		// Japanese special attack: 55 -> 50
+		{ UNIT_INDIAN,   2, 50, 0 },		// Mughul second special attack: 60 -> 50
+		{ UNIT_GREMJERM, 0,  0, 6 },		// Doink range: 5 -> 6
 	};
 
 	for( int i=0 ; i<(int)(sizeof(changes)/sizeof(changes[0])) ; i++ )
@@ -353,7 +357,11 @@ void UnitRes::apply_mod_attack_balance()
 
 		AttackInfo* attackInfo = attack_info_array + unitInfo->first_attack - 1 + changes[i].attack_index;
 
-		attackInfo->combat_level = changes[i].combat_level;
+		if( changes[i].combat_level )
+			attackInfo->combat_level = changes[i].combat_level;
+
+		if( changes[i].attack_range )
+			attackInfo->attack_range = changes[i].attack_range;
 	}
 }
 //-------- End of function UnitRes::apply_mod_attack_balance ---------//
