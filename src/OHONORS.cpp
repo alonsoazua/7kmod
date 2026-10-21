@@ -491,26 +491,20 @@ void HonorsRequest::disp_report(int x1, int y1, int x2, int lineHeight)
 
 	//------- the request -------//
 
-	// TRANSLATORS: General <Name> asks to be honored for his service to the kingdom.
-	snprintf( str, MAX_STR_LEN+1, _("General %s asks to be honored for his service to the kingdom."), unitPtr->unit_name(0) );
-
-	font_san.put( x1+3, y, str );
-	y += lineHeight;
-
 	int cost   = honors_cost(unitPtr);
 	int canPay = nation_array[unitPtr->nation_recno]->cash >= cost;
 
-	// TRANSLATORS: Loyalty <loyalty>, penalty -<penalty>. Honors: $<cost>.
-	snprintf( str, MAX_STR_LEN+1, _("Loyalty %d, penalty -%d. Honors: $%d."), (int) unitPtr->loyalty, honors_penalty(unitPtr), cost );
-
-	if( !canPay )
-	{
-		str += " ";
-		str += _("(Not enough money)");
-	}
+	// TRANSLATORS: General <Name> asks $<cost> to be honored for his service to the kingdom.
+	snprintf( str, MAX_STR_LEN+1, _("General %s asks $%d to be honored for his service to the kingdom."), unitPtr->unit_name(0), cost );
 
 	font_san.put( x1+3, y, str );
 	y += lineHeight;
+
+	if( !canPay )		// a second line when the kingdom can't pay
+	{
+		font_san.put( x1+3, y, _("Your treasury does not have enough money.") );
+		y += lineHeight;
+	}
 
 	//------- the choices -------//
 
@@ -545,7 +539,7 @@ void HonorsRequest::detect_report(int x1, int y1, int x2, int lineHeight)
 	int cost        = honors_cost(unitPtr);
 	int canPay      = nation_array[unitPtr->nation_recno]->cash >= cost;
 	int choiceCount = canPay ? 2 : 1;
-	int y           = y1 + lineHeight*2;		// below the two lines of the request
+	int y           = y1 + lineHeight * (canPay ? 1 : 2);		// below the lines of the request
 
 	cur_choice_id = 0;
 
