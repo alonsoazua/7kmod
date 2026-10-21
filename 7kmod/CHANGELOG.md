@@ -22,13 +22,14 @@ incluye todo lo de `7kmod` y documenta lo suyo en `CHANGELOG-gameplay.md`.
 
 ### Agregado
 - **Unidades seleccionadas:** al seleccionar varias unidades, el número de unidades seleccionadas aparece a la derecha de la barra superior del panel de la unidad.
-- **Daño y velocidad de ataque en el panel de las unidades:** debajo del combate (y arriba de la contribución) se muestran:
-  - **Melee:** el daño promedio que cada golpe le quita a un enemigo con la armadura normal (4), con el mismo cálculo del juego. Si el general de la unidad está a 10 casillas o menos, el daño incluye su bono y se muestra entre paréntesis, por ejemplo "2.6 (+60%)".
-  - **Attack speed:** golpes por segundo a la velocidad normal del juego.
-  - **Ranged:** para las unidades que también tienen ataque a distancia, su daño y golpes por segundo, por ejemplo "1.1 at 0.9/s". Las unidades que solo atacan a distancia muestran su daño en "Ranged" en lugar de "Melee".
+- **Poder de ataque y armadura en el panel de las unidades:** debajo del combate (y arriba de la contribución) se muestran:
+  - **Melee pwr:** el poder del ataque cuerpo a cuerpo: el daño promedio por minuto que le hace a un enemigo con la armadura normal (4), a la velocidad normal del juego, con el mismo cálculo del juego. Combina el daño de cada golpe y la velocidad de ataque. Por ejemplo, un soldado con combate 50 tiene 100 de vida, así que un Melee pwr de 134 lo mata en menos de un minuto.
+  - **Ranged pwr:** lo mismo para el ataque a distancia, si la unidad lo tiene.
+  - **Bono del general:** si el general de la unidad está a 10 casillas o menos, el poder incluye su bono y se muestra con una flecha hacia arriba, como en la lealtad, y el porcentaje: por ejemplo "62 ↑ (+100%)".
+  - **Armor:** la armadura de la unidad. En `7kaa-mod.exe` es 4 para todas, como en el juego original.
   - No incluye los ataques especiales que gastan poder. No se muestra en civiles ni en tus propios espías (el menú de espía necesita ese espacio).
   - El panel crece según las líneas que muestra y los botones se recorren hacia abajo.
-- **Panel de los Fryhtans:** al seleccionar un Fryhtan se muestra su combate, daño y velocidad de ataque. Antes no mostraba ningún dato.
+- **Panel de los Fryhtans:** al seleccionar un Fryhtan se muestra su combate, poder de ataque y armadura. Antes no mostraba ningún dato.
 - **Documentación:** `GREATER_BEINGS.md` explica en detalle cómo funciona cada Greater Being (cómo se obtienen, costos, poderes y efectos exactos), según el código y los datos del juego. Incluye lo que revela el Fénix (la información de unidades y edificios enemigos cercanos) y que su detección de espías está desactivada en el código original.
 - **Documentación:** `ADVANCED_CONFIG.md` explica las opciones avanzadas ocultas de `config.txt` del juego original: dónde va el archivo, su formato, qué hace cada opción y cómo se comporta en multijugador y en las partidas guardadas.
 - **Documentación:** `KEYBINDINGS.md` lista todas las teclas y combinaciones con el ratón del juego y del mod: generales, mapa, grupos, paneles de unidades, edificios y pueblos, colas de producción, menús y trucos, con el nombre de cada acción para cambiarla con `bindkey`.

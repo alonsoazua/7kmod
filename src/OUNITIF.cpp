@@ -1300,24 +1300,22 @@ int Unit::show_attack_info()
 //----------- End of function Unit::show_attack_info -----------//
 
 
-//--------- Begin of function Unit::get_attack_stats ---------//
+//--------- Begin of function Unit::get_attack_power ---------//
 //
-// 7kmod: average damage per hit and attacks per second of the strongest
-// normal attack of the unit (close or range). Special attacks that need
-// power are not included.
+// 7kmod: the attack power of the strongest normal attack of the unit
+// (close or range): the average hit points it takes per minute from a
+// target with the normal armor (4), at the normal game speed (12 frames per
+// second). Special attacks that need power are not included.
 //
-// The damage is the hit points that each hit takes from a target with the
-// normal armor (4), calculated with the same formula as actual_damage() and
-// hit_target(), including the bonus of the general if he is in range. The attacks per second are at
-// the normal game speed (12 frames per second).
+// The damage of each hit is calculated with the same formula as
+// actual_damage() and hit_target(), going through all its random values.
 //
-// <int>    rangeAttack     - 0: close attack, 1: range attack
-// <float&> damage          - for returning the damage
-// <float&> attacksPerSecond - for returning the attack speed
+// <int> rangeAttack - 0: close attack, 1: range attack
+// <int> leadership  - the leadership bonus (%) to include, 0 for none
 //
-// return: <int> 1 - the unit has this kind of attack, 0 - it doesn't
+// return: <int> the attack power, -1 if the unit doesn't have this kind of attack
 //
-int Unit::get_attack_stats(int rangeAttack, float& damage, float& attacksPerSecond)
+int Unit::get_attack_power(int rangeAttack, int leadership)
 {
 	int bestAttack = -1;
 
@@ -1339,21 +1337,16 @@ int Unit::get_attack_stats(int rangeAttack, float& damage, float& attacksPerSeco
 	}
 
 	if( bestAttack < 0 )
-		return 0;
+		return -1;
 
 	AttackInfo* attackInfo = attack_info_array+bestAttack;
 
-	//------ average damage, going through all the random values ------//
+	//------ average damage per hit, going through all the random values ------//
 
 	int pierceRange = skill.combat_level - attackInfo->combat_level;		// misc.random(pierceRange) gives 0 to pierceRange-1
 
 	if( pierceRange < 1 )
 		pierceRange = 1;
-
-	int leadership = 0;
-
-	if( is_leader_in_range() )
-		leadership = unit_array[leader_unit_recno]->skill.skill_level;
 
 	const float armorOverSlowDown = (float) 4 / ATTACK_SLOW_DOWN;
 	const float oneOverSlowDown   = (float) 1 / ATTACK_SLOW_DOWN;
@@ -1377,116 +1370,111 @@ int Unit::get_attack_stats(int rangeAttack, float& damage, float& attacksPerSeco
 		}
 	}
 
-	damage = totalDamage / (3 * pierceRange);
+	float damagePerHit = totalDamage / (3 * pierceRange);
 
 	//------ attack cycle: animation frames + delay - 1 ------//
 
-	int frameCount = sprite_info->attack_array[bestAttack][0].frame_count;
+	int frameCount  = sprite_info->attack_array[bestAttack][0].frame_count;
 	int cycleFrames = frameCount + MAX(attackInfo->attack_delay, 1) - 1;
 
 	if( cycleFrames < 1 )
 		cycleFrames = 1;
 
-	attacksPerSecond = (float) 12 / cycleFrames;
+	float hitsPerMinute = (float) 12 * 60 / cycleFrames;
 
-	return 1;
+	return (int) (damagePerHit * hitsPerMinute + 0.5f);
 }
-//----------- End of function Unit::get_attack_stats -----------//
+//----------- End of function Unit::get_attack_power -----------//
+
+
+//--------- Begin of function Unit::get_armor ---------//
+//
+// 7kmod: the armor of the unit used for reducing the damage it receives
+// (see Unit::hit_target()). The original game uses 4 for all units.
+//
+int Unit::get_armor()
+{
+	return 4;
+}
+//----------- End of function Unit::get_armor -----------//
 
 
 //--------- Begin of function Unit::attack_info_lines ---------//
 //
-// 7kmod: the number of lines of the damage and attack speed info:
-// 2 for the close attack (or the range attack if the unit has no close
-// attack) and 1 more for the range attack.
+// 7kmod: the number of lines of the attack info: one for the close attack,
+// one for the range attack and one for the armor.
 //
 int Unit::attack_info_lines()
 {
-	float damage, attacksPerSecond;
+	int lineCount = 0;
 
-	int hasClose = get_attack_stats(0, damage, attacksPerSecond);
-	int hasRange = get_attack_stats(1, damage, attacksPerSecond);
+	if( get_attack_power(0, 0) >= 0 )
+		lineCount++;
 
-	if( hasClose )
-		return hasRange ? 3 : 2;
+	if( get_attack_power(1, 0) >= 0 )
+		lineCount++;
 
-	return hasRange ? 2 : 0;
+	if( lineCount == 0 )		// units that can't attack
+		return 0;
+
+	return lineCount + 1;		// + armor
 }
 //----------- End of function Unit::attack_info_lines -----------//
 
 
-//--------- Begin of static function format_one_decimal ---------//
+//--------- Begin of function Unit::disp_attack_power ---------//
 //
-// 7kmod: a number with one decimal, like "2.6".
+// 7kmod: display one line of attack power. With the bonus of the general,
+// it displays the power with the bonus, an arrow up and the bonus, like
+// "62 ^ (+100%)".
 //
-static const char* format_one_decimal(float value)
+void Unit::disp_attack_power(int x, int y, const char* label, int rangeAttack, int leaderBonus, int refreshFlag)
 {
-	static char buf[16];
+	int power = get_attack_power(rangeAttack, leaderBonus);
 
-	snprintf(buf, sizeof(buf), "%.1f", value);
+	font_san.field( x, y, label, x+92, power, 1, INFO_X2-2, refreshFlag);
 
-	return buf;
+	if( leaderBonus > 0 )
+	{
+		int tx = x+92+6+font_san.text_width( misc.format(power) );
+
+		image_icon.put_front( tx, y+2, "ARROWUP" );
+
+		String str;
+
+		str  = "(+";
+		str += leaderBonus;
+		str += "%)";
+
+		font_san.put( tx+12, y+2, str, 1, INFO_X2-2 );
+	}
 }
-//----------- End of static function format_one_decimal ---------//
+//----------- End of function Unit::disp_attack_power -----------//
 
 
 //--------- Begin of function Unit::disp_attack_info ---------//
 //
-// 7kmod: display the damage and attack speed of the unit, with the bonus
-// of its general when he is in range.
+// 7kmod: display the attack power of the unit (close and range attacks)
+// and its armor. The attack power includes the bonus of the general when
+// he is in range.
 //
 void Unit::disp_attack_info(int x, int y, int refreshFlag)
 {
-	float damage, attacksPerSecond, rangeDamage, rangeAttacksPerSecond;
-
-	int hasClose = get_attack_stats(0, damage, attacksPerSecond);
-	int hasRange = get_attack_stats(1, rangeDamage, rangeAttacksPerSecond);
-
-	if( !hasClose )			// units with only a range attack
-	{
-		damage = rangeDamage;
-		attacksPerSecond = rangeAttacksPerSecond;
-	}
-
 	int leaderBonus = is_leader_in_range() ? unit_array[leader_unit_recno]->skill.skill_level : 0;
 
-	String str;
-
-	//------- damage -------//
-
-	str = format_one_decimal(damage);
-
-	if( leaderBonus > 0 )
+	if( get_attack_power(0, 0) >= 0 )
 	{
-		str += "  (+";
-		str += leaderBonus;
-		str += "%)";
+		disp_attack_power( x, y, _("Melee pwr"), 0, leaderBonus, refreshFlag );
+		y += 16;
 	}
 
-	str += "      ";		// clear the rest of the field when the bonus disappears
-
-	font_san.field( x, y, hasClose ? _("Melee") : _("Ranged"), x+92, str, INFO_X2-2, refreshFlag);
-	y += 16;
-
-	//------- attack speed -------//
-
-	str  = format_one_decimal(attacksPerSecond);
-	str += "/s";
-
-	font_san.field( x, y, _("Attack speed"), x+92, str, INFO_X2-2, refreshFlag);
-	y += 16;
-
-	//------- range attack -------//
-
-	if( hasClose && hasRange )
+	if( get_attack_power(1, 0) >= 0 )
 	{
-		str  = format_one_decimal(rangeDamage);
-		str += " at ";
-		str += format_one_decimal(rangeAttacksPerSecond);
-		str += "/s";
-
-		font_san.field( x, y, _("Ranged"), x+92, str, INFO_X2-2, refreshFlag);
+		disp_attack_power( x, y, _("Ranged pwr"), 1, leaderBonus, refreshFlag );
+		y += 16;
 	}
+
+	font_san.field( x, y, _("Armor"), x+92, get_armor(), 1, INFO_X2-2, refreshFlag);
 }
 //----------- End of function Unit::disp_attack_info -----------//
 
