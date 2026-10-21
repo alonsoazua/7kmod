@@ -48,6 +48,7 @@
 #include <OSYS.h>
 #include "gettext.h"
 #include <ConfigAdv.h>
+#include <OHONORS.h>
 
 #if(GAME_FRAMES_PER_DAY!=FRAMES_PER_DAY)
 #error
@@ -436,6 +437,11 @@ void Unit::deinit()
 
    if( !unit_id )
       return;
+
+	//--- 7kmod: remove the request for honors of a general ---//
+
+	if( !sys.signal_exit_flag && rank_id == RANK_GENERAL && nation_recno )
+		remove_honors_request(this);
 
    //-------- if this is a king --------//
 
@@ -1531,6 +1537,9 @@ void Unit::change_nation(int newNationRecno)
 	int oldAiUnit = ai_unit;
 	int oldNationRecno = nation_recno;
 
+	if( rank_id == RANK_GENERAL && nation_recno )		// 7kmod: the request for honors is no longer valid
+		remove_honors_request(this);
+
 	group_select_id = 0; // clear group select id
 	if(way_point_count)
 		reset_way_point_array();
@@ -1991,6 +2000,16 @@ void Unit::set_rank(int rankId)
       rank_id = rankId;
    }
 
+	//--- 7kmod: a promoted general may ask for honors, other ranks don't ---//
+
+	if( nation_recno )
+	{
+		if( rank_id == RANK_GENERAL )
+			check_honors_request(this, 1);
+		else
+			remove_honors_request(this);
+	}
+
    //----- if this is a general/king ------//
 
    if( rank_id == RANK_GENERAL || rank_id == RANK_KING )
@@ -2093,6 +2112,9 @@ void Unit::reward(int rewardNationRecno)
 		total_reward += REWARD_COST;
 
 		change_loyalty(REWARD_LOYALTY_INCREASE);
+
+		if( rank_id == RANK_GENERAL && honors_penalty(this) == 0 )		// 7kmod: the request for honors is answered
+			remove_honors_request(this);
 	}
 
    nation_array[rewardNationRecno]->add_expense(EXPENSE_REWARD_UNIT, (float)REWARD_COST);

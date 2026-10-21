@@ -38,6 +38,7 @@
 #include <OSERES.h>
 #include <OSYS.h>
 #include <OWARPT.h>
+#include <OHONORS.h>
 
 #ifdef NO_DEBUG_UNIT
 #undef err_when
@@ -862,6 +863,9 @@ void Unit::gain_experience()
 		nation_contribution++;
 
 		err_when( nation_contribution < 0 );		// overflow
+
+		if( rank_id == RANK_GENERAL )
+			check_honors_request(this);		// 7kmod: the general may ask for honors
 	}
 
 	//------ increase combat skill -------//

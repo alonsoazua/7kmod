@@ -48,6 +48,7 @@
 #include <OU_MARI.h>
 #include <OSPRTRES.h>
 #include <OUNITRES.h>
+#include <OHONORS.h>
 #include <stdio.h>
 #include "gettext.h"
 
@@ -1192,6 +1193,7 @@ void Unit::disp_unit_info(int dispY1, int refreshFlag)
 		else if( nation_recno )
 		{
 			info.disp_loyalty( x, y, x+92, loyalty, target_loyalty, nation_recno, refreshFlag );
+			set_unit_loyalty_help( this, x, y, INFO_X2-2, y+15 );		// 7kmod: loyalty breakdown
 		}
 
 		y+=16;

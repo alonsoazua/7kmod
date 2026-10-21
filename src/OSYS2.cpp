@@ -63,6 +63,7 @@
 #include <OOPTMENU.h>
 #include <OINGMENU.h>
 #include <CmdLine.h>
+#include <OHONORS.h>
 #include <gettext.h>
 
 
@@ -100,6 +101,9 @@ void Sys::detect()
 		in_game_menu.detect();
 		return;
 	}
+
+	if( honors_request.detect() )		// 7kmod: the window of a request for honors
+		return;
 
 	if( mouse.is_key_event() )
 	{
@@ -544,6 +548,13 @@ void Sys::disp_frame()
 			world.refresh();
 			disp_view();
 
+			if( honors_request.is_active() )		// 7kmod
+			{
+				vga.use_back();
+				honors_request.disp();
+				vga.use_front();
+			}
+
 			if( in_game_menu.is_active() )
 			{
 				vga.use_back();
@@ -702,6 +713,13 @@ void Sys::update_view()
 			vga.use_front();
 		}
 
+		if( honors_request.is_active() )		// 7kmod
+		{
+			vga.use_back();
+			honors_request.disp();
+			vga.use_front();
+		}
+
 		if( in_game_menu.is_active() )
 		{
 			vga.use_back();
@@ -775,6 +793,9 @@ void Sys::update_view()
 					info.disp_ai_action(INFO_UPDATE);
 					break;
 			}
+
+			if( honors_request.is_active() )		// 7kmod
+				honors_request.disp();
 
 			if( in_game_menu.is_active() )
 			{

@@ -715,6 +715,35 @@ void NewsArray::general_die(int unitRecno)
 //------- End of function NewsArray::general_die -----//
 
 
+//------ Begin of function NewsArray::general_honors -----//
+//
+// 7kmod: a general of the player asks for honors.
+//
+// short_para1 - recno of the general
+// short_para2 - name id. of the general
+// short_para3 - race id. of the general
+//
+void NewsArray::general_honors(int unitRecno)
+{
+	Unit* unitPtr = unit_array[unitRecno];
+
+	News* newsPtr = add_news( NEWS_GENERAL_HONORS, NEWS_NORMAL, unitPtr->nation_recno );
+
+	if( !newsPtr )
+		return;
+
+	newsPtr->short_para1 = unitRecno;
+	newsPtr->short_para2 = unitPtr->name_id;
+	newsPtr->short_para3 = unitPtr->race_id;
+
+	short xLoc, yLoc;
+
+	if( unitPtr->get_cur_loc(xLoc, yLoc) )
+		newsPtr->set_loc( xLoc, yLoc, NEWS_LOC_ANY );
+}
+//------- End of function NewsArray::general_honors -----//
+
+
 //------ Begin of function NewsArray::raw_exhaust -----//
 //
 // short_para1 - raw id.

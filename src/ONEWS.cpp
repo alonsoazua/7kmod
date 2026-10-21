@@ -34,6 +34,7 @@
 #include <ONATION.h>
 #include <OTALKRES.h>
 #include <ONEWS.h>
+#include <OHONORS.h>
 
 //------- define screen coordinations -------//
 
@@ -399,6 +400,11 @@ int News::put(int y, int detectAction, int& newsHeight)
 					info.player_reply_chat(fromNationRecno);
 					return 1;
 				}
+			}
+			else if( id == NEWS_GENERAL_HONORS )		// 7kmod: open the window of the request for honors
+			{
+				honors_request.open( short_para1, short_para2 );
+				return 1;
 			}
 			else if( is_loc_valid() )
 			{

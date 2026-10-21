@@ -93,6 +93,7 @@ enum { NEWS_DIPLOMACY=1,
 		 NEWS_FIRM_CONSTRUCTED,
 		 NEWS_UNIT_TRAINED,
 		 NEWS_WEAPON_SHIP_BUILT,
+		 NEWS_GENERAL_HONORS,		// 7kmod: a general of the player asks for honors
 	  };
 
 //------- Define struct News ---------//
@@ -185,6 +186,7 @@ public:
 	void  firm_constructed();
 	void  unit_trained();
 	void  weapon_ship_built();
+	void  general_honors();
 
 	void  write_record(NewsGF *r);
 	void  read_record(NewsGF *r);
@@ -254,6 +256,7 @@ public:
 	void  unit_assassinated(int unitRecno, int spyKilled);
 	void  assassinator_caught(int spyRecno, int targetRankId);
 	void  general_die(int unitRecno);
+	void  general_honors(int unitRecno);		// 7kmod
 	void  raw_exhaust(int rawId, int xLoc, int yLoc);
 	void  tech_researched(int techId, int techVersion);
 	void  lightning_damage(int xLoc, int yLoc, int objectId, int recno, int objectDie);

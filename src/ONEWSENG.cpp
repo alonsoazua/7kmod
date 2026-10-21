@@ -36,6 +36,8 @@
 #include <ORACERES.h>
 #include <OTALKRES.h>
 #include <ONEWS.h>
+#include <OHONORS.h>
+#include <OUNIT.h>
 #include "gettext.h"
 
 //--------- Define variable type ----------//
@@ -92,6 +94,7 @@ static NewsInfo news_info_array[] =
 	{ &News::firm_constructed, 0 },
 	{ &News::unit_trained, 0 },
 	{ &News::weapon_ship_built, 0 },
+	{ &News::general_honors, 1 },			// 7kmod
 };
 
 //------- Define static variables --------//
@@ -1139,6 +1142,38 @@ void News::general_die()
 	snprintf(str, MAX_STR_LEN+1, _("Your general, %s, has been slain."), race_res[short_para1]->get_single_name( static_cast<uint16_t>(short_para2) ));
 }
 //------- End of function News::general_die -----//
+
+
+//------ Begin of function News::general_honors -----//
+//
+// 7kmod: a general of the player asks for honors.
+//
+// short_para1 - recno of the general
+// short_para2 - name id. of the general
+// short_para3 - race id. of the general
+//
+void News::general_honors()
+{
+	//---------------- Text Format -----------------//
+	//
+	// Your general, <general name>, asks to be honored for his service: $<cost>.
+	//
+	//----------------------------------------------//
+
+	const char* name = race_res[short_para3]->get_single_name( static_cast<uint16_t>(short_para2) );
+
+	if( !unit_array.is_deleted(short_para1) && unit_array[short_para1]->name_id == (uint16_t) short_para2 )
+	{
+		// TRANSLATORS: Your general, <Name>, asks to be honored for his service: $<cost>.
+		snprintf(str, MAX_STR_LEN+1, _("Your general, %s, asks to be honored for his service: $%d."), name, honors_cost(unit_array[short_para1]));
+	}
+	else
+	{
+		// TRANSLATORS: Your general, <Name>, asks to be honored for his service.
+		snprintf(str, MAX_STR_LEN+1, _("Your general, %s, asks to be honored for his service."), name);
+	}
+}
+//------- End of function News::general_honors -----//
 
 
 //------ Begin of function News::unit_assassinated -----//

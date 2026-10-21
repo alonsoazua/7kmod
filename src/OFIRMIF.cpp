@@ -43,6 +43,7 @@
 #include <OIMGRES.h>
 #include <OGAME.h>
 #include <OSYS.h>
+#include <OHONORS.h>
 #include "gettext.h"
 
 //---------- Define static variables ------------//
@@ -689,7 +690,10 @@ void Firm::disp_worker_info(int dispY1, int refreshFlag)
 		else										// FirmInfo::live_in_town is 0
 		{
 			if( workerPtr->race_id )
+			{
 				info.disp_loyalty( x, y, x+100, workerPtr->loyalty(), workerPtr->target_loyalty(firm_recno), nation_recno, refreshFlag );
+				set_worker_loyalty_help( workerPtr, firm_recno, x, y, INFO_X2-2, y+15 );		// 7kmod: loyalty breakdown
+			}
 			else
 				font_san.field( x, y, _("Loyalty"), x+100, _("N/A"), INFO_X2-2, refreshFlag );		// no loyalty because it does not belong to your empire
 		}
@@ -757,6 +761,7 @@ void Firm::disp_overseer_info(int dispY1, int refreshFlag)
 	if( unitPtr->rank_id != RANK_KING )
 	{
 		info.disp_loyalty( x, y, x+100, unitPtr->loyalty, unitPtr->target_loyalty, nation_recno, refreshFlag );
+		set_unit_loyalty_help( unitPtr, x, y, INFO_X2-2, y+15 );		// 7kmod: loyalty breakdown
 		y+=16;
 	}
 

@@ -43,6 +43,7 @@
 #include <OTERRAIN.h>
 #include <OWORLD.h>
 #include <OF_CAMP.h>
+#include <OHONORS.h>
 #include <OREMOTE.h>
 #include <OSERES.h>
 #include <OSE.h>
@@ -936,6 +937,8 @@ void FirmCamp::disp_camp_info(int dispY1, int refreshFlag)
 		x1 = font_san.put( x1, y, str );
 
 		int x2 = info.disp_loyalty( x1, y-1, x1, overseerUnit->loyalty, overseerUnit->target_loyalty, nation_recno, refreshFlag );
+
+		set_unit_loyalty_help( overseerUnit, INFO_X1+4, y-1, INFO_X2-2, y+13 );		// 7kmod: loyalty breakdown
 
 		if( overseerUnit->spy_recno )
 		{
