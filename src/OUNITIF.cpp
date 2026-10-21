@@ -1303,12 +1303,15 @@ int Unit::show_attack_info()
 //--------- Begin of function Unit::get_attack_power ---------//
 //
 // 7kmod: the attack power of the strongest normal attack of the unit
-// (close or range): the average hit points it takes per minute from a
-// target with the normal armor (4), at the normal game speed (12 frames per
-// second). Special attacks that need power are not included.
+// (close or range): the average damage per minute before the armor of the
+// target, at the normal game speed (12 frames per second). Special attacks
+// that need power are not included.
 //
 // The damage of each hit is calculated with the same formula as
-// actual_damage() and hit_target(), going through all its random values.
+// actual_damage(), going through all its random values. The armor of the
+// target is not subtracted, so a damage bonus of X% increases the attack
+// power by exactly X%. Against a real target, hit_target() subtracts
+// armor/4 from each hit.
 //
 // <int> rangeAttack - 0: close attack, 1: range attack
 // <int> leadership  - the leadership bonus (%) to include, 0 for none
@@ -1348,8 +1351,6 @@ int Unit::get_attack_power(int rangeAttack, int leadership)
 	if( pierceRange < 1 )
 		pierceRange = 1;
 
-	const float armorOverSlowDown = (float) 4 / ATTACK_SLOW_DOWN;
-	const float oneOverSlowDown   = (float) 1 / ATTACK_SLOW_DOWN;
 	float totalDamage = 0;
 
 	for( int r1=0 ; r1<3 ; r1++ )
@@ -1361,12 +1362,7 @@ int Unit::get_attack_power(int rangeAttack, int leadership)
 
 			attackDamage += attackDamage * leadership / 100;
 
-			float hitDamage = (float) attackDamage / ATTACK_SLOW_DOWN;
-
-			if( hitDamage >= armorOverSlowDown + oneOverSlowDown )
-				totalDamage += hitDamage - armorOverSlowDown;
-			else
-				totalDamage += MIN(hitDamage, oneOverSlowDown);
+			totalDamage += (float) attackDamage / ATTACK_SLOW_DOWN;
 		}
 	}
 
@@ -1390,13 +1386,50 @@ int Unit::get_attack_power(int rangeAttack, int leadership)
 //--------- Begin of function Unit::get_armor ---------//
 //
 // 7kmod: the armor of the unit used for reducing the damage it receives
-// (see Unit::hit_target()). The original game uses 4 for all units.
+// (see Unit::hit_target()): the base armor + the armor bonus.
 //
 int Unit::get_armor()
 {
-	return 4;
+	return get_base_armor() + get_armor_bonus();
 }
 //----------- End of function Unit::get_armor -----------//
+
+
+//--------- Begin of function Unit::get_base_armor ---------//
+//
+// 7kmod: the base armor of the unit. The original game uses 4 for all units.
+//
+int Unit::get_base_armor()
+{
+	return 4;
+}
+//----------- End of function Unit::get_base_armor -----------//
+
+
+//--------- Begin of function Unit::get_armor_bonus ---------//
+//
+// 7kmod: temporary armor bonus of the unit. None in the original game.
+//
+int Unit::get_armor_bonus()
+{
+	return 0;
+}
+//----------- End of function Unit::get_armor_bonus -----------//
+
+
+//--------- Begin of function Unit::leadership_bonus ---------//
+//
+// 7kmod: the damage bonus (%) of the unit for being led by a general: the
+// leadership of its general if he is in range (see actual_damage()).
+//
+int Unit::leadership_bonus()
+{
+	if( is_leader_in_range() )
+		return unit_array[leader_unit_recno]->skill.skill_level;
+
+	return 0;
+}
+//----------- End of function Unit::leadership_bonus -----------//
 
 
 //--------- Begin of function Unit::attack_info_lines ---------//
@@ -1432,35 +1465,48 @@ void Unit::disp_attack_power(int x, int y, const char* label, int rangeAttack, i
 {
 	int power = get_attack_power(rangeAttack, leaderBonus);
 
-	font_san.field( x, y, label, x+92, power, 1, INFO_X2-2, refreshFlag);
+	disp_value_with_bonus(x, y, label, power, leaderBonus, "%", refreshFlag);
+}
+//----------- End of function Unit::disp_attack_power -----------//
 
-	if( leaderBonus > 0 )
+
+//--------- Begin of function Unit::disp_value_with_bonus ---------//
+//
+// 7kmod: display a field with a value. If there is a bonus, it adds an
+// arrow up and the bonus after the value, like the loyalty: "62 ^ (+100%)".
+//
+void Unit::disp_value_with_bonus(int x, int y, const char* label, int value, int bonus, const char* bonusUnit, int refreshFlag)
+{
+	font_san.field( x, y, label, x+92, value, 1, INFO_X2-2, refreshFlag);
+
+	if( bonus > 0 )
 	{
-		int tx = x+92+6+font_san.text_width( misc.format(power) );
+		int tx = x+92+6+font_san.text_width( misc.format(value) );
 
 		image_icon.put_front( tx, y+2, "ARROWUP" );
 
 		String str;
 
 		str  = "(+";
-		str += leaderBonus;
-		str += "%)";
+		str += bonus;
+		str += bonusUnit;
+		str += ")";
 
 		font_san.put( tx+12, y+2, str, 1, INFO_X2-2 );
 	}
 }
-//----------- End of function Unit::disp_attack_power -----------//
+//----------- End of function Unit::disp_value_with_bonus -----------//
 
 
 //--------- Begin of function Unit::disp_attack_info ---------//
 //
 // 7kmod: display the attack power of the unit (close and range attacks)
 // and its armor. The attack power includes the bonus of the general when
-// he is in range.
+// he is in range, and the armor its temporary bonus.
 //
 void Unit::disp_attack_info(int x, int y, int refreshFlag)
 {
-	int leaderBonus = is_leader_in_range() ? unit_array[leader_unit_recno]->skill.skill_level : 0;
+	int leaderBonus = leadership_bonus();
 
 	if( get_attack_power(0, 0) >= 0 )
 	{
@@ -1474,7 +1520,7 @@ void Unit::disp_attack_info(int x, int y, int refreshFlag)
 		y += 16;
 	}
 
-	font_san.field( x, y, _("Armor"), x+92, get_armor(), 1, INFO_X2-2, refreshFlag);
+	disp_value_with_bonus( x, y, _("Armor"), get_armor(), get_armor_bonus(), "", refreshFlag );
 }
 //----------- End of function Unit::disp_attack_info -----------//
 

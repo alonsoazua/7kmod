@@ -722,7 +722,11 @@ protected:
 	int   attack_info_lines();
 	int   get_attack_power(int rangeAttack, int leadership);
 	int   get_armor();
+	int   get_base_armor();
+	int   get_armor_bonus();
+	int   leadership_bonus();
 	void  disp_attack_power(int x, int y, const char* label, int rangeAttack, int leaderBonus, int refreshFlag);
+	void  disp_value_with_bonus(int x, int y, const char* label, int value, int bonus, const char* bonusUnit, int refreshFlag);
 	void  disp_attack_info(int x, int y, int refreshFlag);
 	void  disp_basic_info(int dispY1, int refreshFlag);
 	int   detect_basic_info();

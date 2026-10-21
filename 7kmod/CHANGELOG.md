@@ -23,9 +23,9 @@ incluye todo lo de `7kmod` y documenta lo suyo en `CHANGELOG-gameplay.md`.
 ### Agregado
 - **Unidades seleccionadas:** al seleccionar varias unidades, el número de unidades seleccionadas aparece a la derecha de la barra superior del panel de la unidad.
 - **Poder de ataque y armadura en el panel de las unidades:** debajo del combate (y arriba de la contribución) se muestran:
-  - **Melee pwr:** el poder del ataque cuerpo a cuerpo: el daño promedio por minuto que le hace a un enemigo con la armadura normal (4), a la velocidad normal del juego, con el mismo cálculo del juego. Combina el daño de cada golpe y la velocidad de ataque. Por ejemplo, un soldado con combate 50 tiene 100 de vida, así que un Melee pwr de 134 lo mata en menos de un minuto.
+  - **Melee pwr:** el poder del ataque cuerpo a cuerpo: el daño promedio por minuto antes de la armadura del enemigo, a la velocidad normal del juego, con el mismo cálculo del juego. Combina el daño de cada golpe y la velocidad de ataque. Contra un enemigo real, la armadura le quita armadura ÷ 4 a cada golpe (1 con la armadura normal), así que el daño real es menor, sobre todo en unidades de golpes débiles. Se muestra sin armadura para que los bonos se lean exactos: un bono de +100% duplica el poder.
   - **Ranged pwr:** lo mismo para el ataque a distancia, si la unidad lo tiene.
-  - **Bono del general:** si el general de la unidad está a 10 casillas o menos, el poder incluye su bono y se muestra con una flecha hacia arriba, como en la lealtad, y el porcentaje: por ejemplo "62 ↑ (+100%)".
+  - **Bono del general:** si el general de la unidad está a 10 casillas o menos, el poder incluye su bono y se muestra con una flecha hacia arriba, como en la lealtad, y el porcentaje: por ejemplo "62 ↑ (+100%)". El porcentaje es el liderazgo del general y es exactamente lo que sube el poder.
   - **Armor:** la armadura de la unidad. En `7kaa-mod.exe` es 4 para todas, como en el juego original.
   - No incluye los ataques especiales que gastan poder. No se muestra en civiles ni en tus propios espías (el menú de espía necesita ese espacio).
   - El panel crece según las líneas que muestra y los botones se recorren hacia abajo.
