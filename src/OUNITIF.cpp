@@ -1416,7 +1416,12 @@ int Unit::get_attack_power(int rangeAttack, int leadership)
 									 attackInfo->pierce_damage * r2 / (100-attackInfo->combat_level);
 
 			if( invokedFryhtan )		// 7kmod-gameplay: damage bonus of the invoked Fryhtans
+			{
+				if( unit_id == UNIT_GREMJERM )		// the invoked Doink has +1 base damage
+					attackDamage += INVOKED_DOINK_EXTRA_DAMAGE;
+
 				attackDamage += attackDamage * INVOKED_FRYHTAN_DAMAGE_BONUS / 100;
+			}
 
 			attackDamage += attackDamage * leadership / 100;
 
@@ -1463,10 +1468,14 @@ int Unit::get_armor()
 //  - Normans: 4, 5 from combat level 50
 //  - Greeks : 4, 5 from combat level 30, 6 from combat level 50
 //  - Mayas  : 3 while their combat level is below 50, 4 after that
+//  - invoked Rokken: 5
 //
 int Unit::get_base_armor()
 {
 	int combatLevel = skill.combat_level;
+
+	if( unit_id == UNIT_ROCKMAN && nation_recno )		// invoked Rokken
+		return INVOKED_ROKKEN_ARMOR;
 
 	switch( race_id )
 	{

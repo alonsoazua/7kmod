@@ -66,6 +66,7 @@ UNITS = {}
 #     src/OUNITRES.cpp apply_mod_attack_balance(), src/OSPRTRES.cpp) ---
 
 def MOD_ARMOR(name, combat):
+    if name == 'Rokken': return 5          # invoked Rokken (Fryhtans are simulated as invoked)
     if name == 'Norman': return 5 if combat >= 50 else 4
     if name == 'Greek': return 6 if combat >= 50 else (5 if combat >= 30 else 4)
     if name == 'Maya': return 3 if combat < 50 else 4
@@ -75,6 +76,7 @@ MOD_ATTACK_LEVEL = {('Chinese', 1): 40, ('Egyptian', 1): 30, ('Japanese', 1): 50
 MOD_ATTACK_RANGE = {('Doink', 0): 6}
 MOD_SPEED = {'Zulu': 1, 'Broosken': 1}
 INVOKED_FRYHTAN_DAMAGE_BONUS = 25      # src/OUNITAT.cpp Unit::actual_damage(), for Fryhtans of a nation
+INVOKED_DOINK_EXTRA_DAMAGE = 1         # extra base damage of the invoked Doink
 
 ORIGINAL = False
 
@@ -125,8 +127,15 @@ class Fighter:
 
     def can(s, a): return s.c >= a['lvl'] and s.p >= a['minp']
 
+    def has_close(s):
+        return any(s.can(a) and a['rng'] == 1 for a in s.atk)
+
     def usable(s, a, dist):
-        return s.can(a) and a['rng'] >= dist and not (dist == 1 and a['rng'] != 1)
+        # next to the target, close attacks are forced if the unit has one
+        # (Unit::choose_best_attack_mode); range attacks also reach it
+        if not s.can(a) or a['rng'] < dist:
+            return False
+        return not (dist == 1 and a['rng'] != 1 and s.has_close())
 
     def choose(s, dist):
         best = None
@@ -139,6 +148,8 @@ class Fighter:
         a = s.atk[s.cur]
         d = a['dmg'] + rnd(3) + a['pierce'] * rnd(s.c - a['lvl']) // (100 - a['lvl'])
         if s.invoked:
+            if s.name == 'Doink':
+                d += INVOKED_DOINK_EXTRA_DAMAGE
             d += d * INVOKED_FRYHTAN_DAMAGE_BONUS // 100
         d += d * s.lead // 100
         x = d / 4; ar = target.armor / 4
@@ -229,8 +240,8 @@ def break_even(race, fryhtan, fry_combat=50, n=300):
 
 RACES = ['Norman', 'Maya', 'Greek', 'Viking', 'Persian', 'Chinese', 'Japanese', 'Egyptian', 'Mughul', 'Zulu']
 FRYHTANS = ['Doink', 'Broosken', 'Deezboanz', 'Rattus', 'Karrotten', 'Holgh', 'Sauroid', 'Haubudam', 'Wyrm', 'Rokken']
-INVOKE_COST = dict(Doink=30, Broosken=40, Deezboanz=45, Rattus=55, Karrotten=55, Holgh=60,
-                   Sauroid=75, Haubudam=75, Wyrm=75, Rokken=75)          # src/OF_BASE.cpp
+INVOKE_COST = dict(Doink=30, Broosken=40, Deezboanz=45, Rattus=55, Karrotten=50, Holgh=60,
+                   Sauroid=80, Haubudam=75, Wyrm=75, Rokken=80)          # src/OF_BASE.cpp
 
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--') and not a.isdigit()]

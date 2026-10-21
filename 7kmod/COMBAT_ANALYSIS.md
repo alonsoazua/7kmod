@@ -493,16 +493,16 @@ balance de razas. Cambios de los Fryhtans invocados:
 
 | Raza | Fryhtan | Costo original → mod | Velocidad | Vida (combate 50) | Daño/s con +25% |
 |---|---|---|---|---|---|
-| Mughul | Pfith → **Doink** | 55 → 30 | 5 | 90 | ~1.0 (alcance 6) |
+| Mughul | Pfith → **Doink** | 55 → 30 | 5 | 90 | ~1.2 (alcance 6, +1 de daño base) |
 | Zulú | Broosken | 40 → 40 | 3 → 4 | 75 | 2.26 |
 | Maya | Deezboanz | 50 → 45 | 4 | 100 | 1.99 |
 | Japonés | Rattus | 40 → 55 | 5 | 75 | 3.32 |
-| Egipcio | Karrotten | 60 → 55 | 4 | 135 | 1.88 |
+| Egipcio | Karrotten | 60 → 50 | 4 | 135 | 1.88 |
 | Normando | Holgh | 60 → 60 | 3 | 140 | 2.20 |
-| Griego | Sauroid | 65 → 75 | 5 | 150 | 2.48 |
+| Griego | Sauroid | 65 → 80 | 5 | 150 | 2.48 |
 | Chino | Wyrm | 70 → 75 | 4 | 165 | 2.36 |
 | Vikingo | Haubudam | 65 → 75 | 4 | 150 | 2.75 |
-| Persa | Rokken | 80 → 75 | 3 | 200 | 2.06 |
+| Persa | Rokken | 80 → 80 (armadura 5) | 3 | 200 | 2.06 |
 
 - El daño por segundo con +25% viene de la misma simulación de la sección 3, con el
   bono aplicado. El del Doink está calculado a mano desde sus datos.
@@ -513,6 +513,27 @@ balance de razas. Cambios de los Fryhtans invocados:
   anterior): Rattus 49 → 55, Holgh 52 → 66, Rokken 64 → 80.
 - **Doink:** con +25% hace un daño parecido al de un arquero persa o zulú con combate
   50, con menos vida. Su papel es apoyo barato y rápido desde atrás de la línea.
+
+**Ajuste con duelos:** después se simularon duelos de cada Fryhtan invocado contra
+Griegos y Mayas de combate 30 a 100, con y sin general. Combate más alto de soldado
+que cada uno vence sin generales:
+
+| Nivel | Fryhtans | Costo | Vence Griegos hasta | Vence Mayas hasta |
+|---|---|---|---|---|
+| Fuerte | Haubudam, Wyrm | 75 | 80 | 70 |
+| Fuerte | Sauroid (rápido) | 80 | 80 | 70 |
+| Tanque | Rokken (armadura 5) | 80 | 100 | 80 |
+| Medio-alto | Holgh | 60 | 70 | 60 |
+| Medio | Rattus | 55 | 60 | 50 |
+| Medio | Karrotten | 50 | 60 | 50 |
+| Medio-bajo | Deezboanz | 45 | 50–60 | 40 |
+| Bajo | Broosken | 40 | 50 | 40 |
+| Apoyo | Doink | 30 | 30 | — |
+
+- Con un general de 60 de liderazgo a favor del soldado, casi todos pierden desde
+  combate 40–50; el Rokken con armadura 5 aguanta hasta 60 contra Griegos y 50 contra
+  Mayas. El general es el factor que más decide estos duelos.
+- El Doink no está pensado para duelos: su valor es disparar detrás de una línea.
 
 Los números de las secciones 3 y 5 son del juego original; para recalcularlos con
 estos cambios se puede correr el simulador sin `--original`.

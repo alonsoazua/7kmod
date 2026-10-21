@@ -22,10 +22,11 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 - **Invocar Fryhtan:** botón nuevo en la Sede de Poder (icono de contratar unidad, último lugar de la fila) que invoca un Fryhtan de tu reino con combate 50. Cada raza tiene su Fryhtan aliado, según la raza de la Sede:
   - Normandos → Holgh, Mayas → Deezboanz, Griegos → Sauroid, Vikingos → Haubudam, Persas → Rokken.
   - Chinos → Wyrm, Japoneses → Rattus, Egipcios → Karrotten, Mughules → Doink, Zulúes → Broosken.
-  - **Costo en puntos de oración,** según la fuerza de cada Fryhtan (vida × daño por segundo con combate 50, ver `COMBAT_ANALYSIS.md`), con −5 para los lentos: Rokken, Wyrm, Sauroid y Haubudam 75; Holgh 60; Rattus y Karrotten 55; Deezboanz 45; Broosken 40; Doink 30. La barra tiene 400 puntos.
+  - **Costo en puntos de oración,** según la fuerza de cada Fryhtan (vida × daño por segundo con combate 50, ver `COMBAT_ANALYSIS.md`), con −5 para los lentos: Rokken y Sauroid 80; Wyrm y Haubudam 75; Holgh 60; Rattus 55; Karrotten 50; Deezboanz 45; Broosken 40; Doink 30. Ajustados con duelos simulados contra soldados (ver `COMBAT_ANALYSIS.md`). La barra tiene 400 puntos.
   - **Daño:** los Fryhtans invocados hacen 25% más daño que los salvajes, para compensar que su daño por golpe es bajo para su tamaño. Se suma al bono del general si salen del fuerte con uno.
   - El poder de ataque que muestra el panel del Fryhtan (ver `CHANGELOG.md`) incluye este bono.
-  - **Doink:** el único Fryhtan con ataque a distancia. Su alcance sube de 5 a 6, igual que los arqueros humanos (también para los Doink salvajes).
+  - **Doink:** el único Fryhtan con ataque a distancia. Su alcance sube de 5 a 6, igual que los arqueros humanos (también para los Doink salvajes). El Doink invocado tiene +1 de daño base por golpe (6 en lugar de 5), antes del +25%.
+  - **Rokken:** el Rokken invocado tiene armadura 5 (los salvajes y los demás Fryhtans, 4). Con eso es el tanque de los Fryhtans: aguanta mejor contra soldados con general.
   - **Broosken:** su velocidad sube de 3 a 4, la normal de las demás unidades (también para los salvajes).
   - Son permanentes: no gastan puntos por día ni mueren si la Sede es destruida.
   - Si tienes espías propios dentro de la Sede, ese lugar lo ocupa el botón de espías, como en el juego original.

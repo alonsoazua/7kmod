@@ -841,7 +841,12 @@ float Unit::actual_damage()
 	//--- 7kmod-gameplay: the Fryhtans of a nation (invoked) do 25% more damage ---//
 
 	if( nation_recno && unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER )
+	{
+		if( unit_id == UNIT_GREMJERM )		// the invoked Doink has +1 base damage
+			attackDamage += INVOKED_DOINK_EXTRA_DAMAGE;
+
 		attackDamage += attackDamage * INVOKED_FRYHTAN_DAMAGE_BONUS / 100;
+	}
 
 	//--- if this unit is led by a general, its attacking ability is influenced by the general ---//
 	//

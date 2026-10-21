@@ -45,6 +45,8 @@
 
 #define		INVOKE_FRYHTAN_COMBAT_LEVEL	50
 #define		INVOKED_FRYHTAN_DAMAGE_BONUS	25		// % of extra damage of the Fryhtans of a nation
+#define		INVOKED_ROKKEN_ARMOR				5		// armor of the invoked Rokken (4 for the other units)
+#define		INVOKED_DOINK_EXTRA_DAMAGE		1		// extra base damage per hit of the invoked Doink
 
 //------- Define class FirmBase --------//
 
