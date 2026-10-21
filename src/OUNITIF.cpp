@@ -48,6 +48,7 @@
 #include <OU_MARI.h>
 #include <OSPRTRES.h>
 #include <OF_BASE.h>
+#include <ORACERES.h>
 #include <OUNITRES.h>
 #include <OHONORS.h>
 #include <OUNITLST.h>
@@ -1456,8 +1457,29 @@ int Unit::get_armor()
 //
 // 7kmod: the base armor of the unit. The original game uses 4 for all units.
 //
+// 7kmod-gameplay: the armor depends on the race and grows with the combat
+// level for some races:
+//
+//  - Normans: 4, 5 from combat level 50
+//  - Greeks : 4, 5 from combat level 30, 6 from combat level 50
+//  - Mayas  : 3 while their combat level is below 50, 4 after that
+//
 int Unit::get_base_armor()
 {
+	int combatLevel = skill.combat_level;
+
+	switch( race_id )
+	{
+		case RACE_NORMAN:
+			return combatLevel >= 50 ? 5 : 4;
+
+		case RACE_GREEK:
+			return combatLevel >= 50 ? 6 : (combatLevel >= 30 ? 5 : 4);
+
+		case RACE_MAYA:
+			return combatLevel < 50 ? 3 : 4;
+	}
+
 	return 4;
 }
 //----------- End of function Unit::get_base_armor -----------//

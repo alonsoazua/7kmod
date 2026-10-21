@@ -92,35 +92,6 @@ int Unit::update_attack_path_dist()
 }
 //---------- End of function Unit::update_attack_path_dist ----------//
 
-//--------- Begin of static function mod_armor ---------//
-//
-// 7kmod-gameplay: the armor used for reducing the damage a unit receives.
-// The original game uses 4 for all units and ignores the armor in the game
-// data. The mod changes it for some races:
-//
-//  - Normans: 4, 5 from combat level 50
-//  - Greeks : 4, 5 from combat level 30, 6 from combat level 50
-//  - Mayas  : 3 while their combat level is below 50, 4 after that
-//
-static int mod_armor(Unit* unitPtr)
-{
-	int combatLevel = unitPtr->skill.combat_level;
-
-	switch( unitPtr->race_id )
-	{
-		case RACE_NORMAN:
-			return combatLevel >= 50 ? 5 : 4;
-
-		case RACE_GREEK:
-			return combatLevel >= 50 ? 6 : (combatLevel >= 30 ? 5 : 4);
-
-		case RACE_MAYA:
-			return unitPtr->skill.combat_level < 50 ? 3 : 4;
-	}
-
-	return 4;
-}
-//----------- End of static function mod_armor ---------//
 
 
 //##### begin trevor 15/8 #######//
@@ -179,7 +150,7 @@ void Unit::hit_target(Unit* parentUnit, Unit* targetUnit, float attackDamage, sh
 
 	//--- 7kmod-gameplay: the armor depends on the race (it was 4 for all units) ---//
 
-	float armorOverAttackSlowDown = (float) mod_armor(targetUnit) / ATTACK_SLOW_DOWN;
+	float armorOverAttackSlowDown = (float) targetUnit->get_armor() / ATTACK_SLOW_DOWN;
 	float comparePoint = armorOverAttackSlowDown + ONE_OVER_ATTACK_SLOW_DOWN;
 
 	//-*********** simulate aat ************-//
