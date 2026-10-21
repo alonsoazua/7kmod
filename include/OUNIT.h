@@ -60,6 +60,11 @@
 
 #define FRYHTAN_REGEN_DAYS	10
 
+//--- 7kmod-gameplay: a general with this number of his soldiers in range gets his own leadership bonus and more armor ---//
+
+#define GENERAL_BUFF_MIN_SOLDIERS	4
+#define GENERAL_BUFF_ARMOR				1
+
 //-------- action code for action_mode ---------//
 
 enum { ACTION_STOP,
@@ -731,6 +736,7 @@ protected:
 	int   get_base_armor();
 	int   get_armor_bonus();
 	int   leadership_bonus();
+	int   general_buff_active();			// 7kmod-gameplay
 	void  disp_attack_power(int x, int y, const char* label, int rangeAttack, int leaderBonus, int refreshFlag);
 	void  disp_value_with_bonus(int x, int y, const char* label, int value, int bonus, const char* bonusUnit, int refreshFlag);
 	void  disp_attack_info(int x, int y, int refreshFlag);

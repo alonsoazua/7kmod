@@ -1489,9 +1489,12 @@ int Unit::get_base_armor()
 //
 // 7kmod: temporary armor bonus of the unit. None in the original game.
 //
+// 7kmod-gameplay: +1 for a general with enough of his soldiers in range
+// (see Unit::general_buff_active()).
+//
 int Unit::get_armor_bonus()
 {
-	return 0;
+	return general_buff_active() ? GENERAL_BUFF_ARMOR : 0;
 }
 //----------- End of function Unit::get_armor_bonus -----------//
 
@@ -1506,9 +1509,56 @@ int Unit::leadership_bonus()
 	if( is_leader_in_range() )
 		return unit_array[leader_unit_recno]->skill.skill_level;
 
+	//--- 7kmod-gameplay: a general with enough of his soldiers in range gets his own leadership ---//
+
+	if( general_buff_active() )
+		return skill.skill_level;
+
 	return 0;
 }
 //----------- End of function Unit::leadership_bonus -----------//
+
+
+//--------- Begin of function Unit::general_buff_active ---------//
+//
+// 7kmod-gameplay: a general on the map with at least GENERAL_BUFF_MIN_SOLDIERS
+// of his own soldiers (units led by him) in range, the same range of the
+// leadership bonus (EFFECTIVE_LEADING_DISTANCE), gets the bonus of his own
+// leadership on his damage and +GENERAL_BUFF_ARMOR armor.
+//
+int Unit::general_buff_active()
+{
+	if( rank_id != RANK_GENERAL || !nation_recno || skill.skill_id != SKILL_LEADING ||
+		 !is_visible() || hit_points <= 0 )
+	{
+		return 0;
+	}
+
+	int soldierCount = 0;
+
+	for( int i=unit_array.size() ; i>0 ; i-- )
+	{
+		if( unit_array.is_deleted(i) )
+			continue;
+
+		Unit* unitPtr = unit_array[i];
+
+		if( unitPtr->leader_unit_recno != sprite_recno ||
+			 unitPtr->hit_points <= 0 || !unitPtr->is_visible() )
+		{
+			continue;
+		}
+
+		if( unitPtr->is_leader_in_range() )
+		{
+			if( ++soldierCount >= GENERAL_BUFF_MIN_SOLDIERS )
+				return 1;
+		}
+	}
+
+	return 0;
+}
+//----------- End of function Unit::general_buff_active -----------//
 
 
 //--------- Begin of function Unit::attack_info_lines ---------//

@@ -848,13 +848,12 @@ float Unit::actual_damage()
 	// The unit's attacking ability is increased by a percentage equivalent to
 	// the leader unit's leadership.
 	//
+	// 7kmod-gameplay: a general with enough of his soldiers in range also
+	// gets his own leadership as a bonus (see Unit::leadership_bonus()).
+	//
 	//------------------------------------------------------------------------//
 
-	if( is_leader_in_range() )
-	{
-		Unit *leaderUnit = unit_array[leader_unit_recno];
-		attackDamage += attackDamage * leaderUnit->skill.skill_level / 100;
-	}
+	attackDamage += attackDamage * leadership_bonus() / 100;
 
 	return (float) attackDamage / ATTACK_SLOW_DOWN;		// lessen all attacking damages, thus slowing down all battles.
 }

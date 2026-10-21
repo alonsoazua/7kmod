@@ -32,7 +32,11 @@ daño = daño básico + azar(0 a 2)
 
 1. **Bono del general:** si el general de la unidad está cerca, el daño sube un
    porcentaje igual a su liderazgo (un general con 60 de liderazgo da +60%). También
-   aplica a los Fryhtans que salen del fuerte con su general.
+   aplica a los Fryhtans que salen del fuerte con su general. En `7kmod-gameplay`,
+   el general también recibe su propio liderazgo como bono y +1 de armadura si tiene
+   al menos 4 de sus soldados a 10 casillas o menos (no aplica al rey). El bono se
+   aplica antes de la reducción de la armadura, así que el daño real que llega al
+   objetivo sube más que el porcentaje.
 2. **Reducción general:** el daño se divide entre 4 (`ATTACK_SLOW_DOWN`), para que las
    batallas duren más.
 3. **Armadura:** al resultado se le resta 1. Si el daño dividido es menor que 1.25, el

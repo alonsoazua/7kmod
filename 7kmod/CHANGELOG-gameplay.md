@@ -49,6 +49,7 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
   - **Japoneses:** el ataque especial se aprende con combate 50 (antes 55).
   - **Mughules:** el segundo ataque especial se aprende con combate 50 (antes 60).
   - **Zulúes:** velocidad de movimiento 5 (antes 4), un 25% más rápidos.
+  - **Bono del general en batalla:** un general en el mapa con al menos 4 de sus soldados (las unidades que él dirige) a 10 casillas o menos recibe su propio liderazgo como bono de daño (por ejemplo +60% con 60 de liderazgo) y +1 de armadura. Es el mismo alcance del bono que les da a sus soldados. No aplica al rey. Solo cuentan las unidades que tienen a ese general como líder: las que salen del fuerte con el botón de patrulla o en la defensa automática del fuerte; las que sacas una por una con clic derecho no cuentan. El panel del general muestra el bono con la flecha hacia arriba, por ejemplo "Armor 5 ↑ (+1)".
   - Los cambios se aplican al cargar los datos; los archivos del juego no se modifican. El efecto en los combates está en la sección 8 de `COMBAT_ANALYSIS.md`.
 - **Versión en el menú principal:** se muestra la versión de esta rama y la de `7kmod` en la que está basada, por ejemplo "7kmod-gameplay 0.1.0 (7kmod 0.1.0)". La versión está en `include/ModVersion.h`.
 
