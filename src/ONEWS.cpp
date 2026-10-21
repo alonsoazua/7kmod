@@ -401,8 +401,9 @@ int News::put(int y, int detectAction, int& newsHeight)
 					return 1;
 				}
 			}
-			else if( id == NEWS_GENERAL_HONORS )		// 7kmod: open the window of the request for honors
+			else if( id == NEWS_GENERAL_HONORS )		// 7kmod: answer the request for honors in the kingdoms report
 			{
+				vga.use_front();
 				honors_request.open( short_para1, short_para2 );
 				return 1;
 			}

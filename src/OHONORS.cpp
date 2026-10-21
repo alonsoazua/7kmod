@@ -406,37 +406,51 @@ void set_worker_loyalty_help(Worker* workerPtr, int firmRecno, int x1, int y1, i
 //-------- End of function set_worker_loyalty_help --------//
 
 
-//---------- Define the window of the request ----------//
-
-enum { HONORS_WIN_WIDTH  = 330,
-		 HONORS_WIN_HEIGHT = 152,
-		 HONORS_WIN_X1 = ZOOM_X1 + (ZOOM_X2-ZOOM_X1+1-HONORS_WIN_WIDTH)/2,
-		 HONORS_WIN_Y1 = ZOOM_Y1 + (ZOOM_Y2-ZOOM_Y1+1-HONORS_WIN_HEIGHT)/2,
-		 HONORS_WIN_X2 = HONORS_WIN_X1 + HONORS_WIN_WIDTH - 1,
-		 HONORS_WIN_Y2 = HONORS_WIN_Y1 + HONORS_WIN_HEIGHT - 1 };
-
-enum { HONORS_BUTTON_WIDTH  = 100,
-		 HONORS_BUTTON_HEIGHT = 22,
-		 HONORS_BUTTON_Y1 = HONORS_WIN_Y2 - HONORS_BUTTON_HEIGHT - 8,
-		 HONORS_ACCEPT_X1 = HONORS_WIN_X1 + 45,
-		 HONORS_REJECT_X1 = HONORS_WIN_X2 - 45 - HONORS_BUTTON_WIDTH + 1 };
-
-
 //------- Begin of function HonorsRequest::open -------//
+//
+// Open the request for honors of the general in the kingdoms report (F1).
 //
 void HonorsRequest::open(int unitRecno, int unitNameId)
 {
-	unit_recno   = unitRecno;
-	unit_name_id = unitNameId;
-	active_flag  = 1;
+	unit_recno    = unitRecno;
+	unit_name_id  = unitNameId;
+	cur_choice_id = 0;
 
 	if( !is_valid() )		// the general is no longer valid, remove his request
 	{
 		active_flag = 0;
 		news_array.remove(NEWS_GENERAL_HONORS, unitRecno);
+		return;
 	}
+
+	if( !(active_flag && sys.view_mode == MODE_NATION && info.nation_report_mode == NATION_REPORT_HONORS) )
+		save_view_mode = sys.view_mode;
+
+	active_flag = 1;
+
+	info.init_honors_reply();
+	sys.set_view_mode(MODE_NATION);
 }
 //-------- End of function HonorsRequest::open --------//
+
+
+//------- Begin of function HonorsRequest::close -------//
+//
+// Close the request and go back to the previous view if it is displayed.
+//
+void HonorsRequest::close()
+{
+	active_flag = 0;
+
+	if( info.nation_report_mode == NATION_REPORT_HONORS )
+	{
+		info.nation_report_mode = NATION_REPORT_INFO;
+
+		if( sys.view_mode == MODE_NATION )
+			sys.set_view_mode(save_view_mode);
+	}
+}
+//-------- End of function HonorsRequest::close --------//
 
 
 //------- Begin of function HonorsRequest::is_valid -------//
@@ -455,135 +469,100 @@ int HonorsRequest::is_valid()
 //-------- End of function HonorsRequest::is_valid --------//
 
 
-//------- Begin of function HonorsRequest::disp -------//
+//------- Begin of function HonorsRequest::disp_report -------//
 //
-// Display the window on the active buffer (the back buffer).
+// Display the request in the detail area of the kingdoms report, in the
+// same style as the replies to diplomatic messages.
 //
-void HonorsRequest::disp()
+// <int> x1, y1, x2  - the area of the text
+// <int> lineHeight  - the height of each line
+//
+void HonorsRequest::disp_report(int x1, int y1, int x2, int lineHeight)
 {
-	if( !active_flag )
-		return;
-
-	if( !is_valid() )
+	if( !active_flag || !is_valid() )
 	{
 		close();
 		return;
 	}
 
 	Unit* unitPtr = unit_array[unit_recno];
-	VgaBuf* vgaBuf = Vga::active_buf;
-
-	vgaBuf->d3_panel_up( HONORS_WIN_X1, HONORS_WIN_Y1, HONORS_WIN_X2, HONORS_WIN_Y2 );
-	vgaBuf->d3_panel_down( HONORS_WIN_X1+6, HONORS_WIN_Y1+6, HONORS_WIN_X2-6, HONORS_WIN_Y1+28 );
-
-	font_san.center_put( HONORS_WIN_X1+6, HONORS_WIN_Y1+6, HONORS_WIN_X2-6, HONORS_WIN_Y1+28, _("Request for Honors") );
+	int   y = y1;
+	String str;
 
 	//------- the request -------//
-
-	int x=HONORS_WIN_X1+14, y=HONORS_WIN_Y1+36;
-	String str;
 
 	// TRANSLATORS: General <Name> asks to be honored for his service to the kingdom.
 	snprintf( str, MAX_STR_LEN+1, _("General %s asks to be honored for his service to the kingdom."), unitPtr->unit_name(0) );
 
-	font_san.put_paragraph( x, y, HONORS_WIN_X2-14, y+30, str );
+	font_san.put( x1+3, y, str );
+	y += lineHeight;
 
-	y += 34;
-
-	str  = _("Loyalty");
-	str += ": ";
-	str += unitPtr->loyalty;
-	str += "      ";
-	str += _("Penalty");
-	str += ": -";
-	str += honors_penalty(unitPtr);
-
-	font_san.put( x, y, str );
-
-	y += 16;
-
-	int cost = honors_cost(unitPtr);
-
-	str  = _("Honors");
-	str += ": $";
-	str += cost;
-
+	int cost   = honors_cost(unitPtr);
 	int canPay = nation_array[unitPtr->nation_recno]->cash >= cost;
 
-	if( !canPay )
-	{
-		str += "   (";
-		str += _("Not enough money");
-		str += ")";
-	}
-
-	font_san.put( x, y, str );
-
-	//------- the buttons -------//
-
-	vgaBuf->d3_panel_up( HONORS_ACCEPT_X1, HONORS_BUTTON_Y1, HONORS_ACCEPT_X1+HONORS_BUTTON_WIDTH-1, HONORS_BUTTON_Y1+HONORS_BUTTON_HEIGHT-1 );
-	font_san.center_put( HONORS_ACCEPT_X1, HONORS_BUTTON_Y1, HONORS_ACCEPT_X1+HONORS_BUTTON_WIDTH-1, HONORS_BUTTON_Y1+HONORS_BUTTON_HEIGHT-1, _("Accept") );
+	// TRANSLATORS: Loyalty <loyalty>, penalty -<penalty>. Honors: $<cost>.
+	snprintf( str, MAX_STR_LEN+1, _("Loyalty %d, penalty -%d. Honors: $%d."), (int) unitPtr->loyalty, honors_penalty(unitPtr), cost );
 
 	if( !canPay )
 	{
-		vgaBuf->adjust_brightness( HONORS_ACCEPT_X1, HONORS_BUTTON_Y1, HONORS_ACCEPT_X1+HONORS_BUTTON_WIDTH-1,
-			HONORS_BUTTON_Y1+HONORS_BUTTON_HEIGHT-1, -6 );
+		str += " ";
+		str += _("(Not enough money)");
 	}
 
-	vgaBuf->d3_panel_up( HONORS_REJECT_X1, HONORS_BUTTON_Y1, HONORS_REJECT_X1+HONORS_BUTTON_WIDTH-1, HONORS_BUTTON_Y1+HONORS_BUTTON_HEIGHT-1 );
-	font_san.center_put( HONORS_REJECT_X1, HONORS_BUTTON_Y1, HONORS_REJECT_X1+HONORS_BUTTON_WIDTH-1, HONORS_BUTTON_Y1+HONORS_BUTTON_HEIGHT-1, _("Reject") );
+	font_san.put( x1+3, y, str );
+	y += lineHeight;
+
+	//------- the choices -------//
+
+	int choiceCount = canPay ? 2 : 1;
+
+	for( int i=0 ; i<choiceCount ; i++, y+=lineHeight )
+	{
+		if( i+1 == cur_choice_id )		// the choice under the mouse cursor
+			vga_back.adjust_brightness( x1, y, x2, y+lineHeight-1, -3 );
+
+		str  = "- ";
+		str += (canPay && i==0) ? _("Accept.") : _("Reject.");
+
+		font_san.put( x1+3, y+2, str );
+	}
 }
-//-------- End of function HonorsRequest::disp --------//
+//-------- End of function HonorsRequest::disp_report --------//
 
 
-//------- Begin of function HonorsRequest::detect -------//
+//------- Begin of function HonorsRequest::detect_report -------//
 //
-// return: <int> 1 - the mouse or keyboard event is used by the window
-//
-int HonorsRequest::detect()
+void HonorsRequest::detect_report(int x1, int y1, int x2, int lineHeight)
 {
-	if( !active_flag )
-		return 0;
-
-	if( !is_valid() )
+	if( !active_flag || !is_valid() )
 	{
 		close();
-		return 0;
+		return;
 	}
 
 	Unit* unitPtr = unit_array[unit_recno];
 
-	//-------- Accept --------//
+	int cost        = honors_cost(unitPtr);
+	int canPay      = nation_array[unitPtr->nation_recno]->cash >= cost;
+	int choiceCount = canPay ? 2 : 1;
+	int y           = y1 + lineHeight*2;		// below the two lines of the request
 
-	if( mouse.single_click( HONORS_ACCEPT_X1, HONORS_BUTTON_Y1, HONORS_ACCEPT_X1+HONORS_BUTTON_WIDTH-1,
-		 HONORS_BUTTON_Y1+HONORS_BUTTON_HEIGHT-1 ) )
+	cur_choice_id = 0;
+
+	for( int i=0 ; i<choiceCount ; i++, y+=lineHeight )
 	{
-		if( nation_array[unitPtr->nation_recno]->cash >= honors_cost(unitPtr) )
+		if( mouse.in_area(x1, y, x2, y+lineHeight-1) )
+			cur_choice_id = i+1;
+
+		if( mouse.single_click(x1, y, x2, y+lineHeight-1) )
 		{
-			pay_honors(unitPtr);
-			remove_honors_request(unitPtr);		// also closes the window
+			if( canPay && i==0 )		// Accept
+				pay_honors(unitPtr);
+
+			remove_honors_request(unitPtr);		// the request is answered, also closes it
+			close();
+			return;
 		}
-		return 1;
 	}
-
-	//-------- Reject or Esc --------//
-
-	if( mouse.single_click( HONORS_REJECT_X1, HONORS_BUTTON_Y1, HONORS_REJECT_X1+HONORS_BUTTON_WIDTH-1,
-		 HONORS_BUTTON_Y1+HONORS_BUTTON_HEIGHT-1 ) ||
-		 (mouse.is_key_event() && mouse.key_code == KEY_ESC) )
-	{
-		close();
-		return 1;
-	}
-
-	//---- clicks on the window don't go to the map below ----//
-
-	if( mouse.any_click( HONORS_WIN_X1, HONORS_WIN_Y1, HONORS_WIN_X2, HONORS_WIN_Y2, 0 ) ||
-		 mouse.any_click( HONORS_WIN_X1, HONORS_WIN_Y1, HONORS_WIN_X2, HONORS_WIN_Y2, 1 ) )
-	{
-		return 1;
-	}
-
-	return 0;
 }
-//-------- End of function HonorsRequest::detect --------//
+//-------- End of function HonorsRequest::detect_report --------//

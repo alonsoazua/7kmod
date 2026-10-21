@@ -40,6 +40,7 @@
 #include <OINFO.h>
 #include <OREMOTE.h>
 #include <locale.h>
+#include <OHONORS.h>
 #include "gettext.h"
 
 //------------- Define coordinations -----------//
@@ -61,6 +62,13 @@ enum { REPORT_BROWSE_X1 = ZOOM_X1+6,
 		 REPORT_DET_Y2 = ZOOM_Y2-6,
 		 REPORT_TALK_Y2 = ZOOM_Y2-86,		// use a shorter height for the diplomacy menu as it needs to let the player looks at the messages received.
 	 };
+
+//---- 7kmod: the area of the request for honors, the same as the talk area of TalkRes ----//
+
+enum { HONORS_TALK_X1 = ZOOM_X1+16,
+		 HONORS_TALK_Y1 = ZOOM_Y1+252,
+		 HONORS_TALK_X2 = ZOOM_X2-16,
+		 HONORS_TALK_LINE_HEIGHT = 18 };
 
 //---------- Define report mode strings ---------//
 
@@ -229,6 +237,37 @@ void Info::detect_nation()
 	detect_detail();
 }
 //----------- End of function Info::detect_nation -----------//
+
+
+//--------- Begin of function Info::init_honors_reply ---------//
+//
+// 7kmod: display a request for honors of a general in the kingdoms report,
+// like the replies to diplomatic messages. The tabs of the report are not
+// selected, it is a hidden mode.
+//
+void Info::init_honors_reply()
+{
+	nation_report_mode = NATION_REPORT_HONORS;
+
+	viewing_nation_recno = nation_array.player_recno;
+
+	//--- select the player's nation in the browser ---//
+
+	int nationCount = nation_filter();
+
+	for( int i=1 ; i<=nationCount ; i++ )
+	{
+		if( nation_filter(i) == nation_array.player_recno )
+		{
+			browse_nation_recno = i;
+			break;
+		}
+	}
+
+	if( sys.view_mode == MODE_NATION )
+		browse_nation.refresh(browse_nation_recno);
+}
+//----------- End of function Info::init_honors_reply -----------//
 
 
 //--------- Begin of function Info::init_player_reply ---------//
@@ -450,6 +489,11 @@ static void disp_detail(int refreshFlag)
 		case NATION_REPORT_DEBUG:
 			disp_debug_info();
 			break;
+
+		case NATION_REPORT_HONORS:		// 7kmod: request for honors of a general
+			vga_util.d3_panel_down( REPORT_DET_X1, REPORT_DET_Y1, REPORT_DET_X2, REPORT_TALK_Y2 );
+			honors_request.disp_report( HONORS_TALK_X1, HONORS_TALK_Y1, HONORS_TALK_X2, HONORS_TALK_LINE_HEIGHT );
+			break;
 	}
 }
 //----------- End of static function disp_detail -----------//
@@ -476,6 +520,10 @@ static void detect_detail()
 		case NATION_REPORT_TALK_LOG:
 			if( browse_talk_msg.detect() )
 				info.browse_talk_msg_recno = browse_talk_msg.recno();
+			break;
+
+		case NATION_REPORT_HONORS:		// 7kmod: request for honors of a general
+			honors_request.detect_report( HONORS_TALK_X1, HONORS_TALK_Y1, HONORS_TALK_X2, HONORS_TALK_LINE_HEIGHT );
 			break;
 	}
 }

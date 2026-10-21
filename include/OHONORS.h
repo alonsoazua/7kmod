@@ -53,8 +53,9 @@ void set_worker_loyalty_help(Worker* workerPtr, int firmRecno, int x1, int y1, i
 
 //------- Define class HonorsRequest --------//
 //
-// The window of the request for honors of a general. It isn't modal, the
-// game continues while it is open.
+// The request for honors of a general being answered. It is displayed in
+// the kingdoms report (F1), like the replies to diplomatic messages, in the
+// hidden report mode NATION_REPORT_HONORS. The game continues meanwhile.
 //
 
 class HonorsRequest
@@ -63,17 +64,19 @@ public:
 	char	active_flag;
 	short	unit_recno;
 	short	unit_name_id;
+	char	save_view_mode;		// the view to go back to after answering
+	char	cur_choice_id;			// the choice under the mouse cursor
 
 public:
-	HonorsRequest()		{ active_flag=0; unit_recno=0; unit_name_id=0; }
+	HonorsRequest()		{ active_flag=0; unit_recno=0; unit_name_id=0; save_view_mode=0; cur_choice_id=0; }
 
 	int	is_active()		{ return active_flag; }
 	void	open(int unitRecno, int unitNameId);
-	void	close()			{ active_flag=0; }
+	void	close();
 	int	is_valid();
 
-	void	disp();
-	int	detect();
+	void	disp_report(int x1, int y1, int x2, int lineHeight);
+	void	detect_report(int x1, int y1, int x2, int lineHeight);
 };
 
 extern HonorsRequest honors_request;

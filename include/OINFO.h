@@ -59,7 +59,8 @@ enum { NATION_REPORT_INFO=1,
 		 NATION_REPORT_TALK,
 		 NATION_REPORT_CHAT,
 		 NATION_REPORT_TALK_LOG,
-		 NATION_REPORT_DEBUG
+		 NATION_REPORT_DEBUG,
+		 NATION_REPORT_HONORS		// 7kmod: hidden mode (no tab) for answering a request for honors of a general
 	  };
 
 enum { MAX_RANK_TYPE	= 5 };
@@ -239,6 +240,7 @@ public:
 	void 	detect_news_log();
 
 	void	init_player_reply(int talkToNationRecno);
+	void	init_honors_reply();		// 7kmod
 	void 	player_reply_chat(int withNationRecno);
 	void	process_viewing_spy();
 
