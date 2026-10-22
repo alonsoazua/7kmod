@@ -31,7 +31,9 @@ impuestos supera a la de minas, fábricas y mercados.
 - Va de 0 a 100% y mide cuánto de la demanda de los 3 productos del pueblo
   cubren los mercados enlazados (cada producto vale 1/3).
 - La demanda crece con la población del pueblo.
-- Hoy solo es un bono: sin mercado el pueblo crece ×1, y con todo cubierto ×2.
+- En el crecimiento solo es un bono: sin mercado el pueblo crece ×1, y con todo
+  cubierto ×2.
+- También afecta la lealtad objetivo del pueblo (ver más abajo).
 
 ### Comida (`Town::process_food`)
 
@@ -69,7 +71,34 @@ impuestos supera a la de minas, fábricas y mercados.
 - Empleo: +30 × proporción de aldeanos con trabajo (0 a 30). Un pueblo solo de
   campesinos tiene 30 puntos menos de objetivo.
 - +10 si es de la raza del rey.
-- Influencia de los generales de los fuertes enlazados.
+- Influencia del general de cada fuerte propio enlazado: liderazgo / 3 (0 a
+  33), +20 si es el rey, +8 si es de la raza de esos habitantes y +8 si la raza
+  del reino es la de esos habitantes. Un general enemigo enlazado resta lo
+  mismo, pero solo a los habitantes de su raza.
+- Calidad de vida: (calidad de vida − 50) / 3, de −17 a +17. Está activada por
+  defecto (`town_loyalty_qol`). Solo afecta la parte del objetivo que pasa de
+  30 y nunca lo baja de 30. Un objetivo que ya era 30 o menos no se ve
+  afectado.
+
+#### Pueblo aislado (sin fuerte ni edificios)
+
+No tiene empleo ni general, y sin mercado la calidad de vida le resta 17. Su
+objetivo depende casi solo de la armonía de razas, la reputación y si es de la
+raza del rey:
+
+| Pueblo aislado | Cálculo | Objetivo | Resultado |
+|---|---|---|---|
+| Una raza, la del rey, reputación +100 | 33 + 25 + 10 = 68, −17 | 51 | estable |
+| Una raza, no la del rey, reputación +100 | 33 + 25 = 58, −17 | 41 | estable |
+| Una raza, no la del rey, reputación 0 | 33, −17, mínimo 30 | 30 | estable justo en el límite |
+| Una raza, la del rey, reputación −40 | 33 − 10 + 10 = 33, −17, mínimo 30 | 30 | estable |
+| Mitad y mitad, reputación 0 | 16 + 0 (+10 para la raza del rey) | 16 o 26 | se rebela |
+| Una raza, no la del rey, reputación −40 | 33 − 10 = 23 | 23 | se rebela |
+
+Como la rebelión ocurre con lealtad de 29 o menos, un pueblo atorado en 30 por
+el mínimo de la calidad de vida nunca se rebela. Por eso muchos pueblos aislados
+de una sola raza se quedan en 30–40 y los de razas mezcladas o con mala
+reputación se rebelan. Cobrar impuestos sí puede empujarlos por debajo de 30.
 
 ### Rebeliones (`Town::think_rebel`)
 
@@ -79,7 +108,12 @@ impuestos supera a la de minas, fábricas y mercados.
 - Del grupo descontento se van entre 30% y 60% como rebeldes que atacan el
   pueblo, y la lealtad de los que se quedan sube.
 - Un pueblo con lealtad baja también puede rendirse a otro reino que tenga
-  influencia sobre él.
+  influencia sobre él (`Town::think_surrender`). Solo pasa si tiene un fuerte
+  enemigo enlazado y ninguno propio; en ese caso su lealtad ya no puede subir,
+  y si 2/3 llegan a 29 o menos se rinde en lugar de rebelarse.
+- Cada raza del pueblo tiene su propia lealtad: una minoría muy descontenta no
+  provoca rebelión mientras no sea 2/3 del pueblo.
+- Los espías enemigos también pueden bajar la lealtad del pueblo.
 
 ### Reinos nuevos (`Town::think_independent_form_new_nation`)
 
@@ -137,6 +171,12 @@ territorio nuevo, que además hay que defender.
 **Penalización.** −1 de lealtad objetivo por cada 10 personas arriba de 150,
 hasta −25. La calidad de vida la reduce hasta un 50%: un pueblo bien abastecido
 aguanta más vecinos.
+
+La calidad de vida ya afecta la lealtad hoy (−17 a +17), pero con un mínimo de
+30 que deja a los pueblos justo por encima del umbral de rebelión. Si la
+penalización por densidad se aplica después de ese mínimo, sí puede llevar a
+pueblos sobrepoblados a rebelarse. Si se aplica antes, el mínimo de 30 la
+anularía en muchos casos. Hay que decidir el orden.
 
 **Opcional.** La misma densidad también reduce el crecimiento de la zona.
 
@@ -226,3 +266,5 @@ del lado de la lealtad ("Overcrowding −12").
 - ¿P3 se usa en lugar de P2, combinado con ella, o solo como red de seguridad?
 - Radio y umbrales de la densidad (12 casillas, 150 personas, −1 por cada 10,
   máximo −25): por calibrar.
+- ¿La penalización por densidad se aplica antes o después del mínimo de 30 de
+  la calidad de vida?
