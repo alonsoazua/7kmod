@@ -25,20 +25,16 @@ Cosas anotadas para agregar en un parche. Todavía no se trabajan.
     equivale a un constructor de nivel 1–20. Un edificio de 200 tardaría 1000
     días en llenarse.
   - La IA no la investiga por ahora.
-- [ ] **Pausa con P y aviso "Game Paused"** (comodidad: va en 7kmod y pasa a
-  gameplay con el rebase).
-  - `P` pausa / continúa, igual que `Espacio` y `0` (`Sys::detect_set_speed`,
-    `Sys::set_speed`). En el menú de construcción, `P` sigue construyendo la Sede
-    de Poder.
-  - El cambio entre informes opacos y transparentes
-    (`KEYEVENT_REPORT_OPAQUE_TOGGLE`) pasa de `P` a `Shift+P`. Sigue también en
-    el menú de opciones.
+- [ ] **Aviso "Game Paused"** (comodidad: va en 7kmod y pasa a gameplay con el
+  rebase).
   - Mientras el juego está en pausa se muestra "Game Paused" centrado en la
-    parte de arriba del mapa, sin importar con qué tecla se pausó. También
-    cuando el juego se pausa solo al perder el foco de la ventana
-    (`Sys::pause`). Desaparece al continuar. En multijugador lo ven todos,
-    porque la pausa es compartida.
-  - Actualizar `KEYBINDINGS.md` y el changelog de 7kmod.
+    parte de arriba del mapa, sin importar cómo se pausó (`Espacio` o `0`,
+    `Sys::detect_set_speed`). También cuando el juego se pausa solo al perder el
+    foco de la ventana (`Sys::pause`). Desaparece al continuar. En multijugador
+    lo ven todos, porque la pausa es compartida.
+  - Las teclas no cambian: la pausa sigue en `Espacio` / `0` y `P` sigue
+    alternando los informes opacos y transparentes.
+  - Actualizar el changelog de 7kmod.
 
 ---
 
