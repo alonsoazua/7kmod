@@ -5,6 +5,29 @@ queda solo con mejoras de comodidad (interfaz) sobre la 2.15.7.
 
 ---
 
+## Checklist del próximo parche
+
+Cosas anotadas para agregar en un parche. Todavía no se trabajan.
+
+- [ ] **Tecnología de reparación de edificios.** Una tecnología del mod
+  (`ModTech`, en "Technologies" de la Torre de Investigación) que hace que los
+  edificios propios dentro de un radio recuperen 1 punto de vida cada 4 días,
+  sin necesidad de constructor.
+  - Referencia: hoy solo repara un constructor asignado, a 1 punto cada 1 a 6
+    días según su nivel de construcción (`Firm::process_repair`). 1 cada 4 días
+    equivale a un constructor de nivel 21–40. Un edificio de 200 tardaría 800
+    días en llenarse.
+  - Por definir:
+    - ¿El radio es alrededor de qué? ¿De la Torre de Investigación, de los
+      fuertes o de la Sede de Poder? ¿Y de cuántas casillas?
+    - ¿Se suma a la reparación del constructor o solo se usa la más rápida?
+    - ¿Se detiene mientras el edificio está bajo ataque y con el tesoro
+      negativo, como la reparación normal?
+    - ¿Repara también los muros?
+    - ¿Costo de investigación y si la IA la investiga?
+
+---
+
 ## 1. Mejoras permanentes en la Torre de Investigación
 
 **Estado:** primera tecnología implementada con un enfoque distinto al de abajo:
