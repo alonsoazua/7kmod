@@ -46,6 +46,7 @@
 #include <OREMOTE.h>
 #include <ONEWS.h>
 #include <OWORLDMT.h>
+#include <OWORLD.h>
 #include <ConfigAdv.h>
 #include <OHONORS.h>
 #include "gettext.h"
@@ -422,6 +423,15 @@ void HonorsRequest::open(int unitRecno, int unitNameId)
 		news_array.remove(NEWS_GENERAL_HONORS, unitRecno);
 		return;
 	}
+
+	//--- center the view on the general and select him (or his fort) ---//
+
+	short xLoc, yLoc;
+
+	if( unit_array[unitRecno]->get_cur_loc(xLoc, yLoc) )
+		world.go_loc(xLoc, yLoc, 1);		// 1-select the object on the location
+
+	//--- display the request in the kingdoms report ---//
 
 	if( !(active_flag && sys.view_mode == MODE_NATION && info.nation_report_mode == NATION_REPORT_HONORS) )
 		save_view_mode = sys.view_mode;
