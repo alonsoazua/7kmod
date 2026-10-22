@@ -572,7 +572,18 @@ void UnitGod::persian_cast_power(int unitRecno, int divider)
 	if( unitPtr->nation_recno == nation_recno &&
 		 (unitPtr->race_id > 0 || unit_res[unitPtr->unit_id]->unit_class == UNIT_CLASS_MONSTER) )
 	{
-		float changePoints = (float) unitPtr->max_hit_points / (6+misc.random(4));	 // divided by (6 to 9)
+		float changePoints;
+
+		//--- 7kmod-gameplay: the general of a fort or Seat of Power heals as much as his soldiers ---//
+
+		if( unitPtr->unit_mode == UNIT_MODE_OVERSEE &&
+			 (firm_array[unitPtr->unit_mode_para]->firm_id == FIRM_CAMP ||
+			  firm_array[unitPtr->unit_mode_para]->firm_id == FIRM_BASE) )
+		{
+			changePoints = (float) unitPtr->max_hit_points / (3+misc.random(3));	 // divided by (3 to 5)
+		}
+		else
+			changePoints = (float) unitPtr->max_hit_points / (6+misc.random(4));	 // divided by (6 to 9)
 
 		changePoints = MAX( changePoints, 10 );
 
@@ -637,7 +648,7 @@ void UnitGod::persian_cast_power(Worker* workerPtr, int nationRecno, int divider
 	if( nationRecno == nation_recno &&
 		 (workerPtr->race_id > 0 || unit_res[workerPtr->unit_id]->unit_class == UNIT_CLASS_MONSTER) )
 	{
-		int changePoints = workerPtr->max_hit_points() / (4+misc.random(4));	 // divided by (4 to 7)
+		int changePoints = workerPtr->max_hit_points() / (3+misc.random(3));	 // 7kmod-gameplay: divided by (3 to 5), it was (4 to 7)
 
 		changePoints = MAX( changePoints, 10 );
 

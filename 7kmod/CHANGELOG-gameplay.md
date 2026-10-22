@@ -22,7 +22,7 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 - **Invocar Fryhtan:** botón nuevo en la Sede de Poder (icono de contratar unidad, último lugar de la fila) que invoca un Fryhtan de tu reino con combate 50. Cada raza tiene su Fryhtan aliado, según la raza de la Sede:
   - Normandos → Holgh, Mayas → Deezboanz, Griegos → Sauroid, Vikingos → Haubudam, Persas → Rokken.
   - Chinos → Wyrm, Japoneses → Rattus, Egipcios → Karrotten, Mughules → Doink, Zulúes → Broosken.
-  - **Costo en puntos de oración,** según la fuerza de cada Fryhtan (vida × daño por segundo con combate 50, ver `COMBAT_ANALYSIS.md`), con −5 para los lentos: Rokken y Sauroid 80; Wyrm y Haubudam 75; Holgh 60; Rattus 55; Karrotten 50; Deezboanz 45; Broosken 40; Doink 30. Ajustados con duelos simulados contra soldados (ver `COMBAT_ANALYSIS.md`). La barra tiene 400 puntos.
+  - **Costo en puntos de oración,** según la fuerza de cada Fryhtan (vida × daño por segundo con combate 50, ver `COMBAT_ANALYSIS.md`), con −5 para los lentos: Rokken 90; Sauroid 80; Wyrm y Haubudam 75; Holgh 60; Rattus 55; Karrotten 50; Deezboanz 45; Broosken 40; Doink 30. Ajustados con duelos simulados contra soldados (ver `COMBAT_ANALYSIS.md`). La barra tiene 400 puntos.
   - **Daño:** los Fryhtans invocados hacen 25% más daño que los salvajes, para compensar que su daño por golpe es bajo para su tamaño. Se suma al bono del general si salen del fuerte con uno.
   - El poder de ataque que muestra el panel del Fryhtan (ver `CHANGELOG.md`) incluye este bono.
   - **Doink:** el único Fryhtan con ataque a distancia. Su alcance sube de 5 a 6, igual que los arqueros humanos (también para los Doink salvajes). El Doink invocado tiene +1 de daño base por golpe (6 en lugar de 5), antes del +25%.
@@ -33,6 +33,7 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
   - Los Fryhtans de un reino no deambulan solos, atacan según su modo agresivo, no entran a guaridas Fryhtan, no dan reputación a quien los ataca y no cuentan para el objetivo de destruir a los Fryhtans.
   - **Regeneración:** recuperan 1 punto de vida cada 10 días de juego (unos 8 segundos a la velocidad normal), aunque se estén moviendo o peleando. Dentro del fuerte también, además de la recuperación normal de los soldados.
   - **Curación del Greater Being persa:** su poder ahora cura también a los Fryhtans de tu reino, tanto en el mapa como dentro de los fuertes. Antes solo curaba unidades humanas.
+- **Greater Being persa (Lord of Healing) cura más en los fuertes:** dentro de un fuerte o de la Sede de Poder, los soldados (y sacerdotes) recuperan entre 1/5 y 1/3 de su vida máxima (antes entre 1/7 y 1/4), y el general al mando cura igual que sus soldados (antes curaba como en el mapa, entre 1/9 y 1/6). En el mapa cura igual que antes.
   - **Costo visible:** el botón muestra el costo en puntos. Al pasar el ratón aparece el nombre del Fryhtan, su costo y los puntos que tienes.
   - Sus gráficos no tienen zonas con el color del reino, así que se ven igual que los Fryhtans salvajes.
   - Los Fryhtans no tienen sonidos de selección ni de orden en los datos del juego; usan su sonido de muerte en su lugar.
@@ -44,7 +45,7 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 
 ### Cambiado
 - **Balance de razas:**
-  - **Armadura por raza:** el juego original usa armadura 4 para todas las unidades e ignora la de los datos. Ahora la armadura sube con el combate en algunas razas: los Normandos tienen 4 y suben a 5 con combate 50; los Griegos tienen 4, suben a 5 con combate 30 y a 6 con combate 50; los Mayas tienen 3 mientras su combate es menor a 50 y 4 desde 50. Las demás razas, los Fryhtans, las armas y los barcos siguen con 4. Cada punto de armadura quita 0.25 de daño a cada golpe recibido. El panel de la unidad muestra su armadura actual.
+  - **Armadura por raza:** el juego original usa armadura 4 para todas las unidades e ignora la de los datos. Ahora la armadura sube con el combate en algunas razas: los Normandos tienen 4 y suben a 5 con combate 50; los Griegos tienen 4, suben a 5 con combate 30 y a 6 con combate 70; los Mayas tienen 3 mientras su combate es menor a 50 y 4 desde 50. Las demás razas, los Fryhtans, las armas y los barcos siguen con 4. Cada punto de armadura quita 0.25 de daño a cada golpe recibido. El panel de la unidad muestra su armadura actual.
   - **Chinos:** el ataque a distancia se aprende con combate 40 (antes 30).
   - **Egipcios:** el ataque a distancia se aprende con combate 30 (antes 40).
   - **Japoneses:** el ataque especial se aprende con combate 50 (antes 55).

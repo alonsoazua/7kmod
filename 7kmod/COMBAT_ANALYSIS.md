@@ -361,7 +361,7 @@ o en la clase `Fighter`.
 | Raza | Cambio | Original |
 |---|---|---|
 | Normando | Armadura 4; 5 desde combate 50 | 4 (fija para todos) |
-| Griego | Armadura 4; 5 desde combate 30; 6 desde combate 50 | 4 |
+| Griego | Armadura 4; 5 desde combate 30; 6 desde combate 70 | 4 |
 | Maya | Armadura 3 mientras su combate es menor a 50; 4 desde 50 | 4 |
 | Chino | Ataque a distancia desde combate 40 | 30 |
 | Egipcio | Ataque a distancia desde combate 30 | 40 |
@@ -502,7 +502,7 @@ balance de razas. Cambios de los Fryhtans invocados:
 | Griego | Sauroid | 65 → 80 | 5 | 150 | 2.48 |
 | Chino | Wyrm | 70 → 75 | 4 | 165 | 2.36 |
 | Vikingo | Haubudam | 65 → 75 | 4 | 150 | 2.75 |
-| Persa | Rokken | 80 → 80 (armadura 5) | 3 | 200 | 2.06 |
+| Persa | Rokken | 80 → 90 (armadura 5) | 3 | 200 | 2.06 |
 
 - El daño por segundo con +25% viene de la misma simulación de la sección 3, con el
   bono aplicado. El del Doink está calculado a mano desde sus datos.
@@ -522,7 +522,7 @@ que cada uno vence sin generales:
 |---|---|---|---|---|
 | Fuerte | Haubudam, Wyrm | 75 | 80 | 70 |
 | Fuerte | Sauroid (rápido) | 80 | 80 | 70 |
-| Tanque | Rokken (armadura 5) | 80 | 100 | 80 |
+| Tanque | Rokken (armadura 5) | 90 | 100 | 80 |
 | Medio-alto | Holgh | 60 | 70 | 60 |
 | Medio | Rattus | 55 | 60 | 50 |
 | Medio | Karrotten | 50 | 60 | 50 |

@@ -1466,7 +1466,7 @@ int Unit::get_armor()
 // level for some races:
 //
 //  - Normans: 4, 5 from combat level 50
-//  - Greeks : 4, 5 from combat level 30, 6 from combat level 50
+//  - Greeks : 4, 5 from combat level 30, 6 from combat level 70
 //  - Mayas  : 3 while their combat level is below 50, 4 after that
 //  - invoked Rokken: 5
 //
@@ -1483,7 +1483,7 @@ int Unit::get_base_armor()
 			return combatLevel >= 50 ? 5 : 4;
 
 		case RACE_GREEK:
-			return combatLevel >= 50 ? 6 : (combatLevel >= 30 ? 5 : 4);
+			return combatLevel >= 70 ? 6 : (combatLevel >= 30 ? 5 : 4);
 
 		case RACE_MAYA:
 			return combatLevel < 50 ? 3 : 4;

@@ -814,14 +814,14 @@ int FirmBase::invoke_fryhtan_unit_id()
 // Fryhtans), from 40 to 80 and rounded to a multiple of 5, with -5 for the
 // slow ones (speed 3). The Haubudam is limited to 75 and the Doink, a weak
 // archer, costs 30. Adjusted after simulating duels against soldiers: the
-// Rokken (with more armor) and the Sauroid (fast) cost 80 and the Karrotten
+// Rokken (with more armor) costs 90, the Sauroid (fast) 80 and the Karrotten
 // 50. See 7kmod/COMBAT_ANALYSIS.md.
 //
 int FirmBase::invoke_fryhtan_pray_points()
 {
 	switch( invoke_fryhtan_unit_id() )
 	{
-		case UNIT_ROCKMAN:		return 80;		// Rokken (slow, armor 5)
+		case UNIT_ROCKMAN:		return 90;		// Rokken (slow, armor 5)
 		case UNIT_FIREKIN:		return 75;		// Wyrm
 		case UNIT_LIZARDMAN:		return 80;		// Sauroid (fast)
 		case UNIT_GIANT_ETTIN:	return 75;		// Haubudam

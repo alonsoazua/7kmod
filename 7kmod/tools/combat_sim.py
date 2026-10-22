@@ -68,7 +68,7 @@ UNITS = {}
 def MOD_ARMOR(name, combat):
     if name == 'Rokken': return 5          # invoked Rokken (Fryhtans are simulated as invoked)
     if name == 'Norman': return 5 if combat >= 50 else 4
-    if name == 'Greek': return 6 if combat >= 50 else (5 if combat >= 30 else 4)
+    if name == 'Greek': return 6 if combat >= 70 else (5 if combat >= 30 else 4)
     if name == 'Maya': return 3 if combat < 50 else 4
     return 4
 
@@ -241,7 +241,7 @@ def break_even(race, fryhtan, fry_combat=50, n=300):
 RACES = ['Norman', 'Maya', 'Greek', 'Viking', 'Persian', 'Chinese', 'Japanese', 'Egyptian', 'Mughul', 'Zulu']
 FRYHTANS = ['Doink', 'Broosken', 'Deezboanz', 'Rattus', 'Karrotten', 'Holgh', 'Sauroid', 'Haubudam', 'Wyrm', 'Rokken']
 INVOKE_COST = dict(Doink=30, Broosken=40, Deezboanz=45, Rattus=55, Karrotten=50, Holgh=60,
-                   Sauroid=80, Haubudam=75, Wyrm=75, Rokken=80)          # src/OF_BASE.cpp
+                   Sauroid=80, Haubudam=75, Wyrm=75, Rokken=90)          # src/OF_BASE.cpp
 
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--') and not a.isdigit()]
