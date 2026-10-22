@@ -35,6 +35,23 @@ Cosas anotadas para agregar en un parche. Todavía no se trabajan.
   - Las teclas no cambian: la pausa sigue en `Espacio` / `0` y `P` sigue
     alternando los informes opacos y transparentes.
   - Actualizar el changelog de 7kmod.
+- [ ] **Retrato del rey en el informe de reinos (F1)** (comodidad: va en 7kmod
+  y pasa a gameplay con el rebase).
+  - En la lista de reinos (`put_nation_rec` en `src/OR_NAT.cpp`), después del
+    cuadro de color, se muestra el retrato pequeño del rey de ese reino: si el
+    reino 1 tiene un rey japonés, aparece el retrato del rey japonés.
+  - El juego ya tiene un retrato pequeño de rey para cada una de las 10 razas
+    (`U_NORMAN`, `U_JAPANE`, etc., `UnitInfo::get_small_icon_ptr(RANK_KING)`).
+    Mide 24×20, lo mismo que la altura de cada fila de la lista (20), así que
+    cabe sin cambiar el tamaño de las filas. Es el mismo tipo de retrato que usa
+    la lista de tropas del informe militar (F5).
+  - Se toma la raza del rey actual (`king_unit_recno`), porque el sucesor puede
+    ser de otra raza. Si el reino no tiene rey en ese momento (entre la muerte
+    del rey y la sucesión), se usa el retrato de rey de la raza del reino.
+  - El nombre del reino se recorre a la derecha unos 28 píxeles: el color queda
+    en x, el retrato en x+18 y el nombre en x+46, recortado antes de la columna
+    de reputación.
+  - Actualizar el changelog de 7kmod.
 
 ---
 
