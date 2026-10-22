@@ -11,19 +11,20 @@ Cosas anotadas para agregar en un parche. Todavía no se trabajan.
 
 - [ ] **Tecnología de reparación de edificios.** Una tecnología del mod
   (`ModTech`, en "Technologies" de la Torre de Investigación) que hace que todos
-  los edificios propios recuperen 1 punto de vida cada 4 días.
+  los edificios propios recuperen 1 punto de vida cada 5 días.
   - Pasiva general: aplica a todos los edificios del reino, sin radio.
   - No necesita constructor y es independiente de él: si hay un constructor
     asignado, su reparación se suma.
-  - No se detiene durante un ataque ni con el tesoro negativo.
+  - No se detiene durante un ataque, pero sí con el tesoro negativo (como la
+    reparación normal).
   - No repara muros.
   - Costo de investigación: rápido por ahora (como Elite Warriors), para
     probarla. Ajustar después.
   - Referencia: hoy solo repara un constructor asignado, a 1 punto cada 1 a 6
-    días según su nivel de construcción (`Firm::process_repair`). 1 cada 4 días
-    equivale a un constructor de nivel 21–40. Un edificio de 200 tardaría 800
+    días según su nivel de construcción (`Firm::process_repair`). 1 cada 5 días
+    equivale a un constructor de nivel 1–20. Un edificio de 200 tardaría 1000
     días en llenarse.
-  - Por definir: si la IA la investiga.
+  - La IA no la investiga por ahora.
 
 ---
 
