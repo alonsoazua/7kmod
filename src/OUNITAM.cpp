@@ -344,7 +344,8 @@ static int formation_role(Unit* unitPtr)
 // - If the group is scattered (e.g. soldiers that just left a fort, spread
 //   around it), a new formation is made at the destination: rows perpendicular
 //   to the direction of the movement (diagonal for a diagonal movement), with
-//   1 row up to 4 units, 2 rows up to 12 and 3 rows for more. Melee units go
+//   1 row up to 4 units, 2 rows up to 12, and then at least 3 rows of at most
+//   10 units each. Melee units go
 //   in the front rows, then ranged units, then siege weapons, and generals and
 //   kings at the back.
 // - If the destination is inside the box of a group that is together, or very
@@ -441,7 +442,10 @@ int UnitArray::move_in_formation(int destX, int destY, short* selectedUnitArray,
 
 		//--- the number of rows and the units per row ---//
 
-		int rowCount = selectedCount <= 4 ? 1 : (selectedCount <= 12 ? 2 : 3);
+		#define FORMATION_MAX_WIDTH	10		// with more units, more rows are added
+
+		int rowCount = selectedCount <= 4 ? 1 : (selectedCount <= 12 ? 2 :
+							MAX(3, (selectedCount+FORMATION_MAX_WIDTH-1) / FORMATION_MAX_WIDTH));
 		int colCount = (selectedCount+rowCount-1) / rowCount;
 
 		//--- sort the units: by role, then the ones more to the front first ---//

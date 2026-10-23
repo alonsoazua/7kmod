@@ -18,7 +18,10 @@ Si los cambios funcionan bien en partidas, se pasarán a `7kmod-gameplay` (o a
   no se copia su forma: se arma una formación nueva en el destino, centrada en el
   clic.
   - Filas perpendiculares a la dirección del movimiento, con el frente hacia el
-    destino: 1 fila hasta 4 unidades, 2 filas hasta 12 y 3 filas a partir de 13.
+    destino: 1 fila hasta 4 unidades, 2 filas hasta 12 y a partir de 13, al menos 3
+    filas de 10 unidades como máximo (desde 0.4.1; en 0.4.0 eran siempre 3 filas,
+    lo que hacía muy anchos los grupos grandes). Por ejemplo, 30 unidades van en 3
+    filas de 10, 50 en 5 filas y 100 en 10 filas.
     Unidades pegadas. Si el movimiento es en diagonal, la formación también va en
     diagonal (en escalera).
   - Orden por tipo, del frente hacia atrás: cuerpo a cuerpo, unidades a distancia,
