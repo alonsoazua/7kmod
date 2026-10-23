@@ -9,7 +9,20 @@ queda solo con mejoras de comodidad (interfaz) sobre la 2.15.7.
 
 Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo en partida.
 
-(vacío)
+- [ ] **Corregir: restos gráficos al dar clic en un soldado oscurecido del
+  fuerte** (7kmod).
+  - Al dar clic en un soldado que está fuera del fuerte, la cámara va a él y
+    se abre su panel, pero siguen apareciendo barras de vida de los soldados
+    del fuerte encima (solo las del lado izquierdo).
+  - Causa probable: `Firm::detect_worker_list` selecciona al soldado
+    (`world.go_loc(..., 1)`) y devuelve 1; entonces `FirmCamp::detect_info`
+    vuelve a dibujar el panel del fuerte (`disp_camp_info`,
+    `disp_worker_list`, `disp_worker_info` con `INFO_UPDATE`) encima del panel
+    del soldado que ya se abrió.
+  - Corrección: cuando el clic selecciona a una unidad fuera del fuerte, no
+    volver a dibujar el panel del fuerte (por ejemplo, revisar que el fuerte
+    siga seleccionado antes de redibujar, o devolver un código distinto).
+    Revisar lo mismo con el clic en el general oscurecido.
 
 ---
 
