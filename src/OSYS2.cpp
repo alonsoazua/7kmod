@@ -1008,6 +1008,19 @@ void Sys::disp_zoom()
 
 	news_array.disp();
 
+	//--- 7kmod: show that the game is paused (by the player or when the window loses focus) ---//
+
+	if( config.frame_speed == 0 )
+	{
+		const char* pausedStr = _("Game Paused");
+
+		int x = ZOOM_X1 + ( (ZOOM_X2-ZOOM_X1+1) - font_news.text_width(pausedStr) ) / 2;
+
+		vga.use_back();
+		font_news.disp( x, ZOOM_Y1+10, pausedStr, ZOOM_X2 );
+		vga.use_front();
+	}
+
 	//----- next frame, increase the frame counter -----//
 
 	sys.frames_in_this_second++;		// no. of frames displayed in this second

@@ -41,6 +41,9 @@
 #include <OREMOTE.h>
 #include <locale.h>
 #include <OHONORS.h>
+#include <OUNIT.h>
+#include <OUNITRES.h>
+#include <ORACERES.h>
 #include "gettext.h"
 
 //------------- Define coordinations -----------//
@@ -346,6 +349,31 @@ static int nation_filter(int recNo)
 //----------- End of static function nation_filter -----------//
 
 
+//-------- Begin of static function king_small_icon --------//
+//
+// 7kmod: return the small portrait of the king of the given nation.
+// The race of the current king is used, as a successor may be of another
+// race. If the nation has no king at the moment (between the death of the
+// king and the succession), the king of the race of the nation is used.
+//
+static char* king_small_icon(Nation* nationPtr)
+{
+	int unitId = 0;
+
+	if( nationPtr->king_unit_recno && !unit_array.is_deleted(nationPtr->king_unit_recno) )
+		unitId = unit_array[nationPtr->king_unit_recno]->unit_id;
+
+	else if( nationPtr->race_id > 0 )
+		unitId = race_res[nationPtr->race_id]->basic_unit_id;
+
+	if( !unitId )
+		return NULL;
+
+	return unit_res[unitId]->get_small_icon_ptr(RANK_KING);
+}
+//----------- End of static function king_small_icon -----------//
+
+
 //-------- Begin of static function put_nation_rec --------//
 //
 static void put_nation_rec(int recNo, int x, int y, int refreshFlag)
@@ -360,7 +388,14 @@ static void put_nation_rec(int recNo, int x, int y, int refreshFlag)
 
 	nationPtr->disp_nation_color(x, y+1);
 
-	font_san.put( x+20 , y, nationPtr->nation_name(), 0, x+215 );
+	//--- 7kmod: portrait of the king of the kingdom, after its color ---//
+
+	char* kingIconPtr = king_small_icon(nationPtr);
+
+	if( kingIconPtr )
+		vga.active_buf->put_bitmap( x+17, y-5, kingIconPtr );
+
+	font_san.put( x+46 , y, nationPtr->nation_name(), 0, x+215 );
 	font_san.put( x+220, y, misc.format((int) nationPtr->reputation) );
 
 	//------- display relation parameters --------//
