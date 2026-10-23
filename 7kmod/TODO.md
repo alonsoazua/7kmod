@@ -9,139 +9,29 @@ queda solo con mejoras de comodidad (interfaz) sobre la 2.15.7.
 
 Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo en partida.
 
-- [x] **Tecnología de reparación de edificios.** Una tecnología del mod
-  (`ModTech`, en "Technologies" de la Torre de Investigación) que hace que todos
-  los edificios propios recuperen 1 punto de vida cada 5 días.
-  - Pasiva general: aplica a todos los edificios del reino, sin radio.
-  - No necesita constructor y es independiente de él: si hay un constructor
-    asignado, su reparación se suma.
-  - No se detiene durante un ataque, pero sí con el tesoro negativo (como la
-    reparación normal).
-  - No repara muros.
-  - Costo de investigación: muy rápido por ahora (`complex_level` 1), para
-    probarla. Ajustar después.
-  - Referencia: hoy solo repara un constructor asignado, a 1 punto cada 1 a 6
-    días según su nivel de construcción (`Firm::process_repair`). 1 cada 5 días
-    equivale a un constructor de nivel 1–20. Un edificio de 200 tardaría 1000
-    días en llenarse.
-  - La IA no la investiga por ahora.
-- [x] **Aviso "Game Paused"** (comodidad: va en 7kmod y pasa a gameplay con el
-  rebase).
-  - Mientras el juego está en pausa se muestra "Game Paused" centrado en la
-    parte de arriba del mapa, sin importar cómo se pausó (`Espacio` o `0`,
-    `Sys::detect_set_speed`). También cuando el juego se pausa solo al perder el
-    foco de la ventana (`Sys::pause`). Desaparece al continuar. En multijugador
-    lo ven todos, porque la pausa es compartida.
-  - Las teclas no cambian: la pausa sigue en `Espacio` / `0` y `P` sigue
-    alternando los informes opacos y transparentes.
-  - Actualizar el changelog de 7kmod.
-- [x] **Retrato del rey en el informe de reinos (F1)** (comodidad: va en 7kmod
-  y pasa a gameplay con el rebase).
-  - En la lista de reinos (`put_nation_rec` en `src/OR_NAT.cpp`), después del
-    cuadro de color, se muestra el retrato pequeño del rey de ese reino: si el
-    reino 1 tiene un rey japonés, aparece el retrato del rey japonés.
-  - El juego ya tiene un retrato pequeño de rey para cada una de las 10 razas
-    (`U_NORMAN`, `U_JAPANE`, etc., `UnitInfo::get_small_icon_ptr(RANK_KING)`).
-    Mide 24×20, lo mismo que la altura de cada fila de la lista (20), así que
-    cabe sin cambiar el tamaño de las filas. Es el mismo tipo de retrato que usa
-    la lista de tropas del informe militar (F5).
-  - Se toma la raza del rey actual (`king_unit_recno`), porque el sucesor puede
-    ser de otra raza. Si el reino no tiene rey en ese momento (entre la muerte
-    del rey y la sucesión), se usa el retrato de rey de la raza del reino.
-  - El nombre del reino se recorre a la derecha unos 28 píxeles: el color queda
-    en x, el retrato en x+18 y el nombre en x+46, recortado antes de la columna
-    de reputación.
-  - Actualizar el changelog de 7kmod.
+(vacío)
 
 ---
 
-## 1. Mejoras permanentes en la Torre de Investigación
+## Tecnologías del mod (`ModTech`)
 
-**Estado:** primera tecnología implementada con un enfoque distinto al de abajo:
-un sistema de tecnologías propio del mod (`ModTech.h` / `ModTech.cpp`), separado de
-las armas de `TechRes`. La torre muestra primero "Technologies" o "War Machines";
-las tecnologías del mod solo aparecen en "Technologies", así que no tocan la
-diplomacia, los reportes ni las demás partes que asumen que una tecnología es un arma.
+Las tecnologías del mod están en `include/ModTech.h` y `src/ModTech.cpp`,
+separadas de las armas de `TechRes`. Se investigan en "Technologies" de la
+Torre de Investigación y no tocan la diplomacia, los reportes ni las demás
+partes que asumen que una tecnología es un arma.
 
-- **Guerreros élite (Elite Warriors):** las unidades entrenadas en Leadership empiezan
-  con 30 de combate en lugar de 20 (el Leadership sigue en 20). La IA no la investiga.
-  El costo (`complex_level` 0.1) es muy bajo, solo para pruebas.
-- Pendiente: costo real, que la IA use las tecnologías, ícono propio y más tecnologías.
+- **Hechas:** Elite Warriors, Elite Workers y Building Repair.
+- **Agregar una tecnología:** una entrada en el enum y en
+  `mod_tech_info_array` (nombre, descripción, costo, niveles), su efecto con
+  `mod_tech_res.get_level(...)`, y subir `GAME_VERSION_7KMOD` con su
+  `MAX_MOD_TECH_BEFORE_...` para leer las partidas anteriores
+  (`GameFile::read_file_3` en `src/OGFILE2.cpp`).
+- **Pendientes:**
+  - Costo real de Building Repair (hoy es muy barato, solo para pruebas).
+  - Que la IA investigue las tecnologías del mod.
+  - Íconos propios (hoy reutilizan imágenes del juego).
+  - Más tecnologías. Ideas: entrenar más rápido o más barato, minas o
+    fábricas más productivas, bonos de lealtad.
 
-El análisis original (agregar las mejoras a la lista de armas) queda abajo como referencia.
-
-**Idea:** además de desbloquear armas, la Torre de Investigación puede
-investigar mejoras permanentes para la nación. Primera mejora:
-**Entrenamiento avanzado**, que hace que Entrenar genere unidades con
-habilidad 30 en vez de 20.
-
-### Cómo funciona hoy la investigación
-
-- Las tecnologías vienen de `TECH.DBF` dentro de `RESOURCE/STD.SET`
-  (clase, niveles máximos, costo `complex_level`, requisito padre).
-  Las carga `TechRes::load_tech_info()` en `src/OTECHRES.cpp`.
-- Ícono en `I_TECH.RES`. El nombre es el del arma: `TechInfo::tech_des()`
-  devuelve el nombre de `unit_id` o `firm_id`.
-- La torre (`src/OF_RESE.cpp`) lista lo que cumple `TechInfo::can_research()`.
-  Al completar un nivel, `TechInfo::set_nation_tech_level()` sube el nivel
-  del arma para esa nación.
-
-### Plan propuesto
-
-- **Efecto:** `Town::recruit()` usa la constante `TRAIN_SKILL_LEVEL` (20)
-  para la habilidad y, con Leadership, también para el combate. Se cambia
-  por una función, por ejemplo `20 + 10 * nivel de la mejora`.
-- **No editar `STD.SET`**: lo comparte el juego original en la misma
-  carpeta. Las mejoras se definen en el código del mod y se agregan al
-  final de la lista de tecnologías después de cargar los datos.
-- **Base de "mejoras permanentes"**: una tabla en el código (nombre,
-  descripción, costo, niveles, requisito, ícono) y una consulta tipo
-  `mod_tech_level(nation, MODTECH_ADVANCED_TRAINING)`. Las mejoras
-  siguientes serían casi solo agregar una fila y su efecto.
-- **Ícono:** reutilizar una imagen existente del juego al inicio. Una
-  imagen nueva requiere convertirla a la paleta de 8 bits y empaquetarla.
-
-### Lugares que asumen que toda tecnología es un arma (hay que revisarlos)
-
-- `src/OF_RESE.cpp`: el sonido al terminar la investigación usa
-  `unit_res[tech->unit_id]->sprite_id`. Con `unit_id == 0` **el juego se cierra**.
-- `src/ONATIONB.cpp` `NationBase::total_tech_level()`: filtra por
-  `unit_res[unit_id]->unit_class`.
-- `src/OTECHRES.cpp` `tech_des()` / `set_nation_tech_level()`: nombre y
-  efecto para tecnologías sin `unit_id` ni `firm_id`.
-- Noticias: `src/ONEWSENG.cpp` (tecnología investigada).
-- Diplomacia: `src/OAI_DIPL.cpp`, `src/OAI_TALK.cpp`, `src/OTALKFRE.cpp`,
-  `src/ONATIONB.cpp` (pedir, regalar e intercambiar tecnologías).
-- Reporte de tecnologías: `src/OR_TECH.cpp`.
-- IA de investigación: `src/OF_RESE2.cpp` (recorre todas las tecnologías;
-  `total_tech_level` se usa para saber si ya investigó todo).
-
-### Partidas guardadas
-
-- `TechRes::read_file()` (`src/OGFILE2.cpp`) lee una entrada por
-  tecnología. Al agregar mejoras cambia la cantidad, así que hay que subir
-  `GAME_VERSION_7KMOD` (290 → 291) y leer la cantidad anterior en
-  partidas viejas. Igual que se hizo con `TownGF` y
-  `TOWN_GF_SIZE_BEFORE_7KMOD`.
-- Los escenarios (`.SCN`) son partidas guardadas: se aplica lo mismo.
-
-### Dudas de diseño pendientes
-
-1. ¿A qué entrenamiento aplica? (a) solo Leadership (habilidad y combate)
-   o (b) todas las habilidades que entrena el pueblo.
-2. ¿Cuántos niveles? Uno (20 → 30) o varios (30, 40, 50).
-3. ¿Costo de investigación? Igual, más o menos que un nivel de arma.
-4. ¿Requisito? Disponible desde el inicio o con requisito previo.
-5. ¿La IA también la investiga? (recomendado: sí)
-6. ¿Afecta a Reclutar instantáneo? (supuesto: no, solo a Entrenar)
-
-### Ideas para mejoras siguientes
-
-- Entrenar más rápido o más barato.
-- Minas o fábricas más productivas.
-- Bonos de lealtad.
-
-### Etapas sugeridas
-
-1. Base de mejoras permanentes + Entrenamiento avanzado (ícono reutilizado).
-2. Más mejoras sobre la misma base.
+El análisis original de las mejoras permanentes quedó en el historial de git
+de este archivo.
