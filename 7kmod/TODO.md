@@ -48,6 +48,31 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   - Tooltip "Withdraw: all the units of this fort outside of it return".
   - Actualizar `KEYBINDINGS.md` si se le asigna una tecla, y el changelog de
     7kmod.
+- [ ] **Lista de las unidades seleccionadas** (comodidad: va en 7kmod y pasa
+  a gameplay con el rebase).
+  - Con varias unidades seleccionadas, junto al número de unidades (a la
+    derecha de la barra del nombre, `Unit::disp_basic_info` en
+    `src/OUNITIF.cpp`) aparece un botón **">"**.
+  - Al presionarlo, el resto del panel (los datos del soldado y los botones de
+    órdenes) se reemplaza por una lista de las unidades seleccionadas, como la
+    lista de soldados del fuerte: retrato pequeño, barra de vida y nivel de
+    combate (o de habilidad para los civiles), 4 por fila.
+  - El botón cambia a **"<"**, que regresa a la vista normal.
+  - **Cómo hacerlo:** un modo nuevo del menú de la unidad
+    (`unit_menu_mode`, junto a `UNIT_MENU_MAIN` y `UNIT_MENU_BUILD`) con su
+    `disp` y `detect`. Regresa solo a la vista normal si queda una sola unidad
+    seleccionada o cambia la unidad principal del panel (hoy
+    `Unit::disp_info` ya regresa al menú principal cuando cambia la unidad).
+  - **Muchas unidades:** el panel tiene espacio para unas 8 filas (32
+    unidades). Si hay más, páginas con flechas, como los botones del fuerte.
+  - Por definir:
+    - Qué hace el clic en una unidad de la lista. Propuesta: clic izquierdo
+      selecciona solo esa unidad (y abre su panel), clic derecho la quita de
+      la selección. Tooltip con su nombre al pasar el ratón.
+    - El orden de la lista. Propuesta: general y rey primero, luego por tipo
+      de unidad y nivel de combate.
+  - Actualizar `KEYBINDINGS.md` (los clics de la lista) y el changelog de
+    7kmod.
 
 ---
 
