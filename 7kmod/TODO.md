@@ -46,6 +46,25 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   - No se muestra el ícono de habilidad que acompaña a la barra en las
     unidades enemigas, igual que hoy con una sola unidad enemiga
     seleccionada.
+- [ ] **Corregir: a la lista de unidades de otros reinos se agregan unidades
+  que no estaban en el recuadro** (7kmod).
+  - Ejemplo: un recuadro sobre Fryhtans peleando contra un reino; por un
+    momento apareció en la lista un soldado del otro lado del mapa que iba
+    saliendo de su fuerte.
+  - Causa (revisada en el código): la lista guarda los números de registro
+    de las unidades (`inspect_unit_array` en `src/OUNITLST.cpp`). Cuando una
+    unidad muere o entra a un edificio, su número queda libre, y el juego lo
+    reutiliza enseguida para la siguiente unidad que se crea
+    (`DynArrayB::linkin`: sin intervalo de espera, el último número liberado
+    es el primero que se reutiliza). Un soldado que sale de un fuerte es una
+    unidad nueva, así que puede recibir el número del Fryhtan que acababa de
+    morir y aparecer en la lista.
+  - Corrección: guardar junto a cada número algo que identifique a la unidad
+    (por ejemplo su tipo `unit_id`, su `name_id` y su reino al momento del
+    recuadro) y quitar de la lista las que ya no coincidan.
+  - Revisar si la lista de unidades propias seleccionadas tiene el mismo
+    problema (no debería: usa `selected_flag` de cada unidad, que una unidad
+    nueva no tiene).
 
 ---
 
