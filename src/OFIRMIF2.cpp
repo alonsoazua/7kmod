@@ -743,12 +743,28 @@ static short  button_page_firm_recno;		// the firm the page applies to
 //
 int Firm::button_page()
 {
-	if( button_page_firm_recno != firm_recno || !own_firm() || player_spy_count==0 )
+	if( button_page_firm_recno != firm_recno || !has_button_pages() )
 		return 0;
 
 	return button_page_no;
 }
 //----------- End of function Firm::button_page ---------//
+
+
+//--------- Begin of function Firm::has_button_pages --------//
+//
+// Whether the button row of this firm has two pages. The player's own
+// firms have it when the player has spies in it, and the player's own
+// Forts always have it (the Alert / At ease button is on the second page).
+//
+int Firm::has_button_pages()
+{
+	if( !own_firm() )
+		return 0;
+
+	return player_spy_count > 0 || firm_id == FIRM_CAMP;
+}
+//----------- End of function Firm::has_button_pages ---------//
 
 
 //--------- Begin of function Firm::disp_button_page_arrows --------//
@@ -760,7 +776,7 @@ void Firm::disp_button_page_arrows(int stripY1, int refreshFlag)
 	if( refreshFlag != INFO_REPAINT )
 		return;
 
-	if( !own_firm() || player_spy_count==0 )
+	if( !has_button_pages() )
 	{
 		button_page_prev.reset();
 		button_page_next.reset();
@@ -783,7 +799,7 @@ void Firm::disp_button_page_arrows(int stripY1, int refreshFlag)
 //
 int Firm::detect_button_page_arrows()
 {
-	if( !own_firm() || player_spy_count==0 )
+	if( !has_button_pages() )
 		return 0;
 
 	int newPage = -1;

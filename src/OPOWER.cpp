@@ -39,6 +39,7 @@
 #include <OU_CARA.h>
 #include <OU_MARI.h>
 #include <OPOWER.h>
+#include <OUNITLST.h>
 #include <OWALLRES.h>
 #include <OSERES.h>
 #include <OREMOTE.h>
@@ -1096,6 +1097,8 @@ int Power::detect_select(int selX1, int selY1, int selX2, int selY2, int recallG
 
 	int selectOneOnly = abs(selX1-selX2)<=3 && abs(selY1-selY2)<=3;
 
+	unit_list_clear_inspect();		// 7kmod: the units of other kingdoms of the last selection box
+
 	//---------- select sprite --------------//
 
 	int		selectedCount=0;	// whether any sprite has been selected.
@@ -1336,6 +1339,78 @@ int Power::detect_select(int selX1, int selY1, int selX2, int selY2, int recallG
 						}
 					}
 				}
+			}
+		}
+
+		//--- 7kmod: a selection box without units of the player selects the most important of the other ---//
+		//--- units in it, and the panel can list all of them (unit_list_set_inspect())                   ---//
+
+		if( selectedCount==0 && !shiftSelect && !recallGroup )
+		{
+			short inspectArray[MAX_UNIT_LIST];
+			int   inspectCount = 0;
+			int   bestUnitRecno = 0;
+
+			for( yLoc=selYLoc1 ; yLoc<=selYLoc2 ; yLoc++ )
+			{
+				for( xLoc=selXLoc1 ; xLoc<=selXLoc2 ; xLoc++ )
+				{
+					locPtr = world.get_loc(xLoc, yLoc);
+
+					for( int mt = 0; mt < sizeof(mobileTypeList)/sizeof(char); ++mt )
+					{
+						char mobileType = mobileTypeList[mt];
+
+						if( !locPtr->has_unit(mobileType) || unit_array.is_deleted(locPtr->unit_recno(mobileType)) )
+							continue;
+
+						int unitRecno = locPtr->unit_recno(mobileType);
+						unitPtr = unit_array[unitRecno];
+
+						if( !unitPtr->is_visible() || unitPtr->hit_points<=0 || unitPtr->is_shealth() ||
+							 unitPtr->is_own() )
+						{
+							continue;
+						}
+
+						//--- big units are in several locations, add them once ---//
+
+						int k;
+						for( k=0 ; k<inspectCount && inspectArray[k]!=unitRecno ; k++ );
+
+						if( k<inspectCount || inspectCount>=MAX_UNIT_LIST )
+							continue;
+
+						unitPtr->update_abs_pos();
+
+						if( !misc.is_touch( absSelX1, absSelY1, absSelX2, absSelY2,
+							 unitPtr->abs_x1, unitPtr->abs_y1, unitPtr->abs_x2, unitPtr->abs_y2 ) )
+						{
+							continue;
+						}
+
+						inspectArray[inspectCount++] = unitRecno;
+
+						//--- the most important unit: king, general (Fryhtans also have ranks), human, then hit points ---//
+						//--- (the combat level is not used, as it is not revealed for these units)                ---//
+
+						if( !bestUnitRecno || is_unit_higher_rank(unitRecno, bestUnitRecno) ||
+							 ( !is_unit_higher_rank(bestUnitRecno, unitRecno) &&
+								unitPtr->hit_points > unit_array[bestUnitRecno]->hit_points ) )
+						{
+							bestUnitRecno = unitRecno;
+						}
+					}
+				}
+			}
+
+			if( bestUnitRecno )
+			{
+				unit_array[bestUnitRecno]->selected_flag = 2;		// set to 2 as all sprites will be processed below
+				selectedCount = 1;
+
+				if( inspectCount > 1 )
+					unit_list_set_inspect( inspectArray, inspectCount );
 			}
 		}
 	}

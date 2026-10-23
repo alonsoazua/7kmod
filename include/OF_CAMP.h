@@ -53,6 +53,10 @@ struct DefenseUnit
 
 #define ABSENT_UNIT_BRIGHTNESS	-7
 
+//--- 7kmod: the maximum number of units the Withdraw button orders back ---//
+
+#define MAX_WITHDRAW_UNIT			50
+
 //------- Define class FirmCamp --------//
 
 struct FirmCampCrc;
@@ -127,6 +131,7 @@ public:
 	//------- 7kmod: units of this fort that are outside of it -------//
 
 	int		get_absent_units(short* overseerRecnoPtr, short* soldierRecnoArray);
+	int		get_withdraw_units(short* unitRecnoArray);
 	void		disp_absent_overseer(int unitRecno, int dispY1, int refreshFlag);
 
 	void 		change_nation(int newNationRecno);

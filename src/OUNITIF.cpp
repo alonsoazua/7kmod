@@ -49,6 +49,7 @@
 #include <OSPRTRES.h>
 #include <OUNITRES.h>
 #include <OHONORS.h>
+#include <OUNITLST.h>
 #include <stdio.h>
 #include "gettext.h"
 
@@ -224,6 +225,15 @@ bool Unit::is_in_build_menu()
 void Unit::disp_main_menu(int refreshFlag)
 {
 	disp_basic_info(INFO_Y1, refreshFlag);
+
+	//--- 7kmod: the list of units replaces the rest of the panel ---//
+
+	if( unit_list_is_open() )
+	{
+		unit_list_disp( this, INFO_Y1+52, refreshFlag );
+		return;
+	}
+
 	disp_unit_profile( INFO_Y1+52, refreshFlag );
 
 	if( !should_show_info() )
@@ -307,6 +317,12 @@ void Unit::detect_main_menu()
 	if( detect_basic_info() )
 		return;
 
+	if( unit_list_is_open() )		// 7kmod: the list of units replaces the rest of the panel
+	{
+		unit_list_detect( this, INFO_Y1+52 );
+		return;
+	}
+
 	if( detect_unit_profile() )
 		return;
 
@@ -325,6 +341,23 @@ static short last_selected_count;		// 7kmod: number of selected units displayed 
 //
 void Unit::disp_basic_info(int dispY1, int refreshFlag)
 {
+	//--- 7kmod: the list of units, closed when there is no list ---//
+
+	short listRecnoArray[MAX_UNIT_LIST];
+
+	int listCount = unit_list_units(this, listRecnoArray);
+
+	if( listCount < 2 && unit_list_is_open() )
+	{
+		unit_list_close();
+
+		if( refreshFlag == INFO_UPDATE )
+		{
+			info.disp();
+			return;
+		}
+	}
+
 	//------- display the name of the unit --------//
 
 	if( refreshFlag == INFO_REPAINT )
@@ -354,18 +387,28 @@ void Unit::disp_basic_info(int dispY1, int refreshFlag)
 				font_san.center_put( INFO_X1, dispY1, INFO_X2-2, dispY1+21, unit_name() );
 		}
 
-		//--- 7kmod: the number of selected units, at the right of the name bar ---//
+		//--- 7kmod: the number of units of the list (the selected units, or the units of another kingdom ---//
+		//--- in a selection box) and the ">" / "<" button of the list, at the right of the name bar     ---//
 
-		if( unit_array.selected_count > 1 )
-			font_san.right_put( INFO_X2-6, dispY1+5, misc.format(unit_array.selected_count) );
+		if( listCount > 1 )
+		{
+			font_san.right_put( INFO_X2-26, dispY1+5, misc.format(listCount) );
+			unit_list_disp_toggle( INFO_X2-21, dispY1+2, refreshFlag );
+		}
+		else
+			unit_list_reset_toggle();
 
-		last_selected_count = unit_array.selected_count;
+		last_selected_count = listCount;
 	}
-	else if( last_selected_count != unit_array.selected_count )	// 7kmod: repaint when the number of selected units changes
+	else if( last_selected_count != listCount )	// 7kmod: repaint when the number of units changes
 	{
-		last_selected_count = unit_array.selected_count;
+		last_selected_count = listCount;
 		info.disp();
 		return;
+	}
+	else if( listCount > 1 )
+	{
+		unit_list_disp_toggle( INFO_X2-21, dispY1+2, refreshFlag );		// for its help
 	}
 
 	dispY1+=23;
@@ -395,6 +438,11 @@ void Unit::disp_basic_info(int dispY1, int refreshFlag)
 //
 int Unit::detect_basic_info()
 {
+	//--- 7kmod: the ">" / "<" button of the list of units ---//
+
+	if( unit_list_detect_toggle() )
+		return 1;
+
 	//--- detect pressing on the name to center the unit on the screen ---//
 
 	if( is_visible() && ( ISKEY(KEYEVENT_GOTO_SELECTED) ||

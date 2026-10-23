@@ -119,6 +119,7 @@ En los menús de entrenamiento y producción, `↑` y `↓` mueven la selección
 | Clic izquierdo | Selecciona una unidad, edificio o pueblo. |
 | Arrastrar con clic izquierdo | Selecciona tus unidades dentro del recuadro. **(mod)** Si hay al menos una unidad militar (soldados, generales, rey, armas, barcos de guerra, Fryhtans), solo se seleccionan las militares; si solo hay civiles, se seleccionan todas. |
 | `Alt` + arrastrar **(mod)** | Selecciona todas tus unidades dentro del recuadro, militares y civiles, como en el juego original. |
+| Recuadro sin unidades tuyas **(mod)** | Si dentro hay unidades de otros reinos (o Fryhtans salvajes, rebeldes…), selecciona la más importante (rey, general, luego la de más vida) y el botón `>` del panel muestra la lista de todas las del recuadro. |
 | `Shift` + clic o recuadro | Agrega o quita unidades de la selección actual. |
 | `Ctrl` + clic izquierdo | Selección precisa: solo lo que está justo bajo el cursor. Sin Ctrl, el juego también toma unidades grandes o en movimiento cercanas. |
 | Clic derecho en el terreno | Mueve las unidades seleccionadas. |
@@ -212,6 +213,10 @@ puerto.
 | Pueblo en modo fuerte, botón Train **(mod, ambas ramas)** | `Shift` + clic | Pone 8 soldados en cola para el fuerte. |
 | Lista de pueblos del botón Recruit del fuerte **(mod, ambas ramas)** | Clic derecho en el panel | Cierra la lista, igual que Cancel. |
 | Pueblo, botón Train Captain **(mod, gameplay)** | Clic izquierdo / derecho | Agrega / quita un capitán de la cola. |
+| Panel de la unidad con varias seleccionadas **(mod, ambas ramas)** | Botón `>` / `<` a la derecha de la barra del nombre | Muestra / oculta la lista de las unidades seleccionadas. Con varias páginas, `<` y `>` abajo cambian de página. |
+| Lista de unidades seleccionadas **(mod, ambas ramas)** | Clic izquierdo / derecho en una unidad | Selecciona solo esa unidad (abre su panel) / la quita de la selección. |
+| Panel del fuerte, unidades oscurecidas (fuera del fuerte) **(mod, ambas ramas)** | Clic izquierdo | Mueve la cámara a esa unidad y la selecciona. |
+| Fuerte, botón Withdraw **(mod, ambas ramas)** | Clic | Todas las unidades que salieron del fuerte regresan a él. Alert / At ease está en la página 2 de los botones del fuerte. |
 
 Los demás botones del mod (Recruit del fuerte, comercio del puerto, reclutamiento en
 edificios de producción, tecnologías, Invocar Fryhtan) no tienen tecla.

@@ -56,6 +56,7 @@
 //----------- Define static vars -------------//
 
 static Button3D button_patrol, button_reward, button_defense;
+static Button3D button_withdraw;			// 7kmod
 
 //------ 7kmod: recruit soldiers from linked towns ------//
 
@@ -420,15 +421,21 @@ void FirmCamp::put_info(int refreshFlag)
 			{
 				button_patrol.paint( INFO_X1, INFO_Y1+242, 'A', "PATROL" );
 				button_reward.paint( INFO_X1+BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', "REWARDCB" );
-				button_defense.paint( INFO_X2-BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', defense_flag ? (char*)"DEFENSE1" : (char*)"DEFENSE0" );
 				button_recruit_town.paint( INFO_X1+BUTTON_ACTION_WIDTH*2, INFO_Y1+242, 'A', "TRAIN" );		// 7kmod
+
+				//--- 7kmod: Withdraw in the place of Alert / At ease, which is on the second page ---//
+
+				button_withdraw.paint( INFO_X2-BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', "RETCAMP" );
+				button_defense.reset();
 			}
 			else
 			{
 				button_patrol.reset();
 				button_reward.reset();
-				button_defense.reset();
+				button_withdraw.reset();
 				button_recruit_town.reset();
+
+				button_defense.paint( INFO_X2-BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', defense_flag ? (char*)"DEFENSE1" : (char*)"DEFENSE0" );
 			}
 		}
 
@@ -449,6 +456,17 @@ void FirmCamp::put_info(int refreshFlag)
 			button_patrol.enable();
 		else
 			button_patrol.disable();
+
+		if( button_withdraw.init_flag )		// 7kmod
+		{
+			if( get_withdraw_units(NULL) > 0 )
+				button_withdraw.enable();
+			else
+				button_withdraw.disable();
+
+			help.set_custom_help( button_withdraw.x1, button_withdraw.y1, button_withdraw.x2, button_withdraw.y2,
+				_("Withdraw"), _("All the units of this fort that are outside of it return to it.") );
+		}
 
 		if( nation_array[nation_recno]->cash >= REWARD_COST &&
 			 ( (overseer_recno && unit_array[overseer_recno]->rank_id != RANK_KING)
@@ -531,7 +549,12 @@ int FirmCamp::detect_info()
 
 	//--------- detect soldier info ---------//
 
-	if( detect_worker_list() )
+	int workerListRc = detect_worker_list();
+
+	if( workerListRc==2 )		// 7kmod: a soldier outside of the fort has been selected, its interface is displayed now
+		return 1;
+
+	if( workerListRc )
 	{
 		disp_camp_info(INFO_Y1+54, INFO_UPDATE);
 		disp_worker_list(INFO_Y1+104, INFO_UPDATE);
@@ -602,6 +625,23 @@ int FirmCamp::detect_info()
 		// ##### begin Gilbert 25/9 ######//
 		se_ctrl.immediate_sound("TURN_ON");
 		// ##### end Gilbert 25/9 ######//
+		return 1;
+	}
+
+	//----- 7kmod: detect the withdraw button -------//
+
+	if( button_withdraw.detect() )
+	{
+		short unitRecnoArray[MAX_WITHDRAW_UNIT];
+
+		int unitCount = get_withdraw_units(unitRecnoArray);
+
+		if( unitCount > 0 )
+		{
+			se_ctrl.immediate_sound("TURN_ON");
+			unit_array.return_camp( COMMAND_PLAYER, unitRecnoArray, unitCount );
+		}
+
 		return 1;
 	}
 
@@ -1397,6 +1437,51 @@ int FirmCamp::mobilize_overseer()
 		return 0;
 }
 //----------- End of function FirmCamp::mobilize_overseer --------//
+
+
+//--------- Begin of function FirmCamp::get_withdraw_units ---------//
+//
+// 7kmod: all the units of the player that came out of this fort and are
+// on the map, for the Withdraw button. Unlike get_absent_units(), there is
+// no limit of free places and the general is included even if the fort has
+// another general now (he returns and the fort decides, as usual).
+//
+// <short*> unitRecnoArray - the array to fill (MAX_WITHDRAW_UNIT), NULL to only count them
+//
+// return: <int> the number of units
+//
+int FirmCamp::get_withdraw_units(short* unitRecnoArray)
+{
+	if( !own_firm() )
+		return 0;
+
+	int unitCount = 0;
+
+	for( int i=unit_array.size() ; i>0 ; i-- )		// descending, as UnitArray::return_camp() expects
+	{
+		if( unit_array.is_deleted(i) )
+			continue;
+
+		Unit* unitPtr = unit_array[i];
+
+		if( unitPtr->home_camp_firm_recno != firm_recno ||
+			 unitPtr->nation_recno != nation_recno ||
+			 !unitPtr->is_visible() || unitPtr->hit_points <= 0 ||
+			 unitPtr->cur_action==SPRITE_DIE || unitPtr->action_mode==ACTION_DIE )
+		{
+			continue;
+		}
+
+		if( unitRecnoArray )
+			unitRecnoArray[unitCount] = i;
+
+		if( ++unitCount >= MAX_WITHDRAW_UNIT )
+			break;
+	}
+
+	return unitCount;
+}
+//----------- End of function FirmCamp::get_withdraw_units -----------//
 
 
 //--------- Begin of function FirmCamp::get_absent_units ---------//

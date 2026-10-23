@@ -631,7 +631,7 @@ int Firm::detect_worker_list()
 				if( unit_array[absentSoldierArray[i]]->get_cur_loc(xLoc, yLoc) )
 					world.go_loc(xLoc, yLoc, 1);		// 1-select the object on the location
 
-				return 1;
+				return 2;		// 2-another object has been selected, the firm interface must not be displayed again
 			}
 		}
 	}
