@@ -20,6 +20,33 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     tooltips de lealtad. Igual que toda la ayuda del juego, solo aparece en
     partidas de un jugador y con la ayuda activada.
   - Actualizar el changelog de 7kmod.
+- [ ] **Los Fryhtans invocados comen** (gameplay).
+  - Consumo por año, en proporción al costo de invocación (de 20 a 50):
+
+    | Fryhtan | Costo | Comida / año |
+    |---|---|---|
+    | Doink | 30 | 20 |
+    | Broosken | 40 | 25 |
+    | Deezboanz | 45 | 25 |
+    | Karrotten | 50 | 30 |
+    | Rattus | 55 | 30 |
+    | Holgh | 60 | 35 |
+    | Haubudam | 75 | 40 |
+    | Wyrm | 75 | 40 |
+    | Sauroid | 80 | 45 |
+    | Rokken | 90 | 50 |
+
+  - Solo los Fryhtans de un reino (invocados); los salvajes no comen.
+  - Comen en cualquier lugar: en el mapa (`Unit::pay_expense`, que hoy solo
+    cobra comida a los humanos) y dentro del fuerte (`Firm::consume_food`, que
+    hoy solo cuenta a los trabajadores con raza).
+  - Sin comida pierden 1 punto de vida por día, en el mapa y dentro del fuerte.
+    Se suma a la pérdida por falta de dinero (2 por día si faltan los dos).
+    Igual que los humanos, dejan de comer cuando la reserva llega a 0.
+  - Por ahora no se muestra el consumo en la interfaz.
+  - Actualizar `CHANGELOG-gameplay.md`, `COMBAT_ANALYSIS.md` (sección de los
+    Fryhtans invocados) y `SIEGE_WEAPONS.md` (la nota de los Fryhtans sin
+    dinero).
 
 ---
 
