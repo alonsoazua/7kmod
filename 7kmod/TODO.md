@@ -9,7 +9,27 @@ queda solo con mejoras de comodidad (interfaz) sobre la 2.15.7.
 
 Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo en partida.
 
-(vacío)
+- [ ] **El general fuera del fuerte se sigue viendo, oscurecido** (comodidad:
+  va en 7kmod y pasa a gameplay con el rebase).
+  - Cuando el general sale del fuerte (patrulla o clic derecho), el fuerte
+    queda sin general y su panel no muestra a nadie (`FirmCamp::disp_camp_info`
+    termina si `overseer_recno` es 0). Se pierde de vista a quién pertenece ese
+    fuerte.
+  - Mientras el fuerte no tenga general, se muestra en su lugar el retrato del
+    general que salió de él, oscurecido, con su nombre, para indicar que está
+    fuera.
+  - Para saber quién es: el juego ya guarda en cada unidad que sale el fuerte
+    al que regresa (`home_camp_firm_recno`, lo pone
+    `FirmCamp::mobilize_overseer`). Se busca la unidad con ese fuerte como
+    casa, que sea general o rey y que siga en el mapa (no dentro de otro
+    edificio).
+  - Si el general muere, entra a otro fuerte o cambia de reino, ya no se
+    muestra. Si otro general entra al fuerte, se muestra el nuevo como
+    siempre.
+  - También aplica al rey cuando sale de su fuerte.
+  - Por definir: si dar clic en el retrato oscurecido mueve la cámara al
+    general y lo selecciona.
+  - Actualizar el changelog de 7kmod.
 
 ---
 
