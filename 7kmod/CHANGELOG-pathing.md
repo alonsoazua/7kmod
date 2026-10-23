@@ -11,6 +11,14 @@ Si los cambios funcionan bien en partidas, se pasarán a `7kmod-gameplay` (o a
 
 ## [Sin publicar]
 
+### Corregido
+- **Rodeos en movimientos cortos (0.2.1):** con la heurística nueva, al mover una
+  unidad unas pocas casillas en línea recta a veces daba un rodeo. Como un paso en
+  diagonal cuesta lo mismo que uno recto, un camino que se desvía a un lado y
+  regresa empataba con el recto, y la búsqueda podía elegirlo. Ahora la estimación
+  sube un poco cuando el camino se aparta de la línea hacia el destino (la menor de
+  las dos distancias suma (menor+1)/2), así que en un empate gana el camino recto.
+
 ### Agregado
 - **Paso lateral al chocar (0.2.0):** cuando una unidad terrestre choca con otra que
   avanza o espera (en una multitud o una fila), antes solo esperaba su turno. Ahora,

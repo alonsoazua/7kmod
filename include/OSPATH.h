@@ -100,9 +100,25 @@ enum	{	SEARCH_SUB_MODE_NORMAL=0,
 // (Chebyshev distance, each move costs 1 or 2), weighted by 3/2 to keep the
 // search fast while it still goes around obstacles.
 //
+// As a diagonal move costs the same as a straight one, a path that goes to a
+// side and comes back costs the same as the straight one. To prefer the
+// straight path, the smaller of the two distances adds (min+1)/2: leaving the
+// line to the destination makes the estimate higher (0.2.1).
+//
 //------------------------------------------------------------------------------//
 
-#define PATH_HEURISTIC(dx, dy)	( (MAX(abs(dx), abs(dy)) * 3) / 2 )
+inline int path_heuristic(int dx, int dy)
+{
+	dx = abs(dx);
+	dy = abs(dy);
+
+	int maxDist = MAX(dx, dy);
+	int minDist = MIN(dx, dy);
+
+	return maxDist*3/2 + (minDist+1)/2;
+}
+
+#define PATH_HEURISTIC(dx, dy)	path_heuristic(dx, dy)
 
 #define MAX_CHILD_NODE    8		// one for each direction
 //#define MAX_STACK_NUM  2000		// maximum no. of stack entity in stack_aray, which is shared by all SeekPath objects. It is calculated based on: MAX possiblity: 500(MAX node) x 8(MAX child node) = 4000. Practical no. possiblities=2000. Memory occupied: 2000*4 = 8K
