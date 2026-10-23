@@ -90,12 +90,13 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     volver a rendirse a ese reino.
   - Propuesta: al rendirse (`Town::surrender`), la lealtad sube 15 puntos (55
     para la raza del rey, 45 para las demás) y el pueblo no puede rebelarse
-    durante 90 días (como si acabara de rebelarse: `last_rebel_date`). Da tiempo
+    durante 60 días (con `last_rebel_date`; la espera normal entre rebeliones es
+    de 90 días, así que hay que ajustarla para este caso). Da tiempo
     de poner un fuerte con general y darle empleo.
   - Aplica tanto a pueblos de otros reinos como a pueblos independientes
     capturados, y a la IA igual que al jugador. No aplica cuando un reino
     completo se rinde y entrega todos sus pueblos (`NationBase::surrender`).
-  - Por definir: los valores (+15 y 90 días).
+  - Valores: +15 de lealtad y 60 días sin rebelión.
   - Actualizar `CHANGELOG-gameplay.md`.
 
 ---
