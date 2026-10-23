@@ -29,6 +29,23 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     corrección.
   - Revisar si queda algún otro repintado parcial con `d3_panel_up` en el
     código del mod.
+- [ ] **Barra de vida en el mapa para las unidades de otros reinos del
+  recuadro** (7kmod).
+  - Hoy el juego dibuja la barra de vida sobre las unidades seleccionadas
+    (`Unit::draw_selected`, llamado desde `Unit::draw` y
+    `Unit::draw_outlined` en `src/OUNITDRW.cpp` cuando `selected_flag` está
+    activo). Al seleccionar con el recuadro unidades de otros reinos, solo la
+    unidad elegida queda seleccionada; las demás están en la lista aparte
+    (`unit_list_set_inspect`) y no muestran su barra.
+  - Cambio: mientras la unidad mostrada en el panel sea una de esa lista,
+    todas las unidades de la lista muestran su barra de vida sobre ellas en
+    el mapa, igual que las unidades seleccionadas.
+  - Hace falta una función en `OUNITLST` que diga si una unidad está en la
+    lista activa (la lista y la unidad del panel), y usarla en `Unit::draw` y
+    `Unit::draw_outlined` junto a `selected_flag`.
+  - No se muestra el ícono de habilidad que acompaña a la barra en las
+    unidades enemigas, igual que hoy con una sola unidad enemiga
+    seleccionada.
 
 ---
 
