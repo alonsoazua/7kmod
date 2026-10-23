@@ -7,9 +7,9 @@ queda solo con mejoras de comodidad (interfaz) sobre la 2.15.7.
 
 ## Checklist del próximo parche
 
-Cosas anotadas para agregar en un parche. Todavía no se trabajan.
+Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo en partida.
 
-- [ ] **Tecnología de reparación de edificios.** Una tecnología del mod
+- [x] **Tecnología de reparación de edificios.** Una tecnología del mod
   (`ModTech`, en "Technologies" de la Torre de Investigación) que hace que todos
   los edificios propios recuperen 1 punto de vida cada 5 días.
   - Pasiva general: aplica a todos los edificios del reino, sin radio.
@@ -18,14 +18,14 @@ Cosas anotadas para agregar en un parche. Todavía no se trabajan.
   - No se detiene durante un ataque, pero sí con el tesoro negativo (como la
     reparación normal).
   - No repara muros.
-  - Costo de investigación: rápido por ahora (como Elite Warriors), para
+  - Costo de investigación: muy rápido por ahora (`complex_level` 1), para
     probarla. Ajustar después.
   - Referencia: hoy solo repara un constructor asignado, a 1 punto cada 1 a 6
     días según su nivel de construcción (`Firm::process_repair`). 1 cada 5 días
     equivale a un constructor de nivel 1–20. Un edificio de 200 tardaría 1000
     días en llenarse.
   - La IA no la investiga por ahora.
-- [ ] **Aviso "Game Paused"** (comodidad: va en 7kmod y pasa a gameplay con el
+- [x] **Aviso "Game Paused"** (comodidad: va en 7kmod y pasa a gameplay con el
   rebase).
   - Mientras el juego está en pausa se muestra "Game Paused" centrado en la
     parte de arriba del mapa, sin importar cómo se pausó (`Espacio` o `0`,
@@ -35,7 +35,7 @@ Cosas anotadas para agregar en un parche. Todavía no se trabajan.
   - Las teclas no cambian: la pausa sigue en `Espacio` / `0` y `P` sigue
     alternando los informes opacos y transparentes.
   - Actualizar el changelog de 7kmod.
-- [ ] **Retrato del rey en el informe de reinos (F1)** (comodidad: va en 7kmod
+- [x] **Retrato del rey en el informe de reinos (F1)** (comodidad: va en 7kmod
   y pasa a gameplay con el rebase).
   - En la lista de reinos (`put_nation_rec` en `src/OR_NAT.cpp`), después del
     cuadro de color, se muestra el retrato pequeño del rey de ese reino: si el

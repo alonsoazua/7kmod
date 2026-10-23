@@ -739,8 +739,14 @@ int GameFile::read_file_3(File* filePtr)
 	if( !read_book_mark( filePtr, BOOK_MARK+290 ) )
 		return 0;
 
-	int modTechCount = game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_ELITE_WORKERS ?
-							 MAX_MOD_TECH : MAX_MOD_TECH_BEFORE_ELITE_WORKERS;
+	int modTechCount;
+
+	if( game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_BUILDING_REPAIR )
+		modTechCount = MAX_MOD_TECH;
+	else if( game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_ELITE_WORKERS )
+		modTechCount = MAX_MOD_TECH_BEFORE_BUILDING_REPAIR;
+	else
+		modTechCount = MAX_MOD_TECH_BEFORE_ELITE_WORKERS;
 
 	if( !mod_tech_res.read_file(filePtr, modTechCount) )
 		return 0;

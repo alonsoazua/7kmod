@@ -42,6 +42,9 @@ static ModTechInfo mod_tech_info_array[MAX_MOD_TECH] =
 
 	// MOD_TECH_ELITE_WORKERS
 	{ "Elite Workers", "Trained workers start with 30 skill", (float) 15, 1 },
+
+	// MOD_TECH_BUILDING_REPAIR (research cost very low for testing)
+	{ "Building Repair", "Buildings recover 1 HP every 5 days", (float) 1, 1 },
 };
 
 //------- Define the global object --------//

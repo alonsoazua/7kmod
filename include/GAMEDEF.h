@@ -40,7 +40,8 @@ extern const int GAME_VERSION;
 #define GAME_VERSION_7KMOD_AUTO_RECRUIT	293		// 7kmod-gameplay, Firm: auto recruit flag
 #define GAME_VERSION_7KMOD_MOD_TECH		294		// 7kmod-gameplay: ModTechRes and FirmResearch::mod_tech_id
 #define GAME_VERSION_7KMOD_ELITE_WORKERS	295		// 7kmod-gameplay: ModTechRes with the Elite Workers technology
-#define GAME_VERSION_7KMOD	295
+#define GAME_VERSION_7KMOD_BUILDING_REPAIR	296	// 7kmod-gameplay: ModTechRes with the Building Repair technology
+#define GAME_VERSION_7KMOD	296
 
 //-------- Define constant ------------//
 

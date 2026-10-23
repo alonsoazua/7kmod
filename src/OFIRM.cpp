@@ -56,6 +56,7 @@
 #include <locale.h>
 #include "gettext.h"
 #include <ConfigAdv.h>
+#include <ModTech.h>
 
 
 //---------- define static member vars -------------//
@@ -1608,6 +1609,19 @@ void Firm::next_day()
 	//--------- repairing ----------//
 
 	process_repair();
+
+	//--- 7kmod-gameplay: the Building Repair technology repairs all the buildings of the nation ---//
+
+	if( hit_points < max_hit_points &&
+		 info.game_date % BUILDING_REPAIR_DAYS == firm_recno % BUILDING_REPAIR_DAYS &&
+		 nation_array[nation_recno]->cash >= 0 &&
+		 mod_tech_res.get_level(MOD_TECH_BUILDING_REPAIR, nation_recno) > 0 )
+	{
+		hit_points++;
+
+		if( hit_points > max_hit_points )
+			hit_points = max_hit_points;
+	}
 
 	//------ catching spies -------//
 

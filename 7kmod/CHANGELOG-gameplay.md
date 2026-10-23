@@ -33,7 +33,6 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
   - Los Fryhtans de un reino no deambulan solos, atacan según su modo agresivo, no entran a guaridas Fryhtan, no dan reputación a quien los ataca y no cuentan para el objetivo de destruir a los Fryhtans.
   - **Regeneración:** recuperan 1 punto de vida cada 10 días de juego (unos 8 segundos a la velocidad normal), aunque se estén moviendo o peleando. Dentro del fuerte también, además de la recuperación normal de los soldados.
   - **Curación del Greater Being persa:** su poder ahora cura también a los Fryhtans de tu reino, tanto en el mapa como dentro de los fuertes. Antes solo curaba unidades humanas.
-- **Greater Being persa (Lord of Healing) cura más en los fuertes:** dentro de un fuerte o de la Sede de Poder, los soldados (y sacerdotes) recuperan entre 1/5 y 1/3 de su vida máxima (antes entre 1/7 y 1/4), y el general al mando cura igual que sus soldados (antes curaba como en el mapa, entre 1/9 y 1/6). En el mapa cura igual que antes.
   - **Costo visible:** el botón muestra el costo en puntos. Al pasar el ratón aparece el nombre del Fryhtan, su costo y los puntos que tienes.
   - Sus gráficos no tienen zonas con el color del reino, así que se ven igual que los Fryhtans salvajes.
   - Los Fryhtans no tienen sonidos de selección ni de orden en los datos del juego; usan su sonido de muerte en su lugar.
@@ -42,6 +41,7 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 - **Documentación:** `COMBAT_ANALYSIS.md` explica cómo funciona el combate (vida, fórmula de daño, velocidad de ataque, poder y ataques especiales) y compara a los soldados de cada raza y a los Fryhtans con tablas de daño por segundo y duelos simulados. Incluye que la armadura de los datos no se usa en el código. El simulador está en `7kmod/tools/combat_sim.py` para volver a calcular los números después de un cambio.
 - **Fryhtans en el fuerte:** los Fryhtans de tu reino pueden entrar a tus fuertes como soldados, igual que las armas de asedio, y salir conservando su especie. En el panel del fuerte se muestra su combate. No entrenan con el general. Al salir del fuerte tienen el botón de regresar al fuerte.
 - **Retrato pequeño de los Fryhtans:** los datos del juego no tienen retratos pequeños para los Fryhtans (usaban uno persa). Ahora se generan al iniciar el juego reduciendo su retrato grande, y se ven en la lista de soldados del fuerte.
+- **Tecnología Building Repair:** nueva tecnología en Technologies de la torre de ciencia. Todos los edificios de tu reino recuperan 1 punto de vida cada 5 días (un edificio de 200 tarda unos 1000 días en llenarse), sin necesidad de constructor. Se suma a la reparación del constructor, si hay uno. Sigue reparando durante los ataques, pero se detiene si tu tesoro es negativo. No repara muros. Por ahora su investigación es muy rápida, para probarla; la IA no la investiga.
 
 ### Cambiado
 - **Balance de razas:**
@@ -53,10 +53,11 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
   - **Zulúes:** velocidad de movimiento 5 (antes 4), un 25% más rápidos.
   - **Bono del general en batalla:** un general en el mapa con al menos 4 de sus soldados (las unidades que él dirige) a 10 casillas o menos recibe su propio liderazgo como bono de daño (por ejemplo +60% con 60 de liderazgo) y +1 de armadura. Es el mismo alcance del bono que les da a sus soldados. No aplica al rey. Solo cuentan las unidades que tienen a ese general como líder: las que salen del fuerte con el botón de patrulla o en la defensa automática del fuerte; las que sacas una por una con clic derecho no cuentan. El panel del general muestra el bono con la flecha hacia arriba, por ejemplo "Armor 5 ↑ (+1)".
   - Los cambios se aplican al cargar los datos; los archivos del juego no se modifican. El efecto en los combates está en la sección 8 de `COMBAT_ANALYSIS.md`.
+- **Greater Being persa (Lord of Healing) cura más en los fuertes:** dentro de un fuerte o de la Sede de Poder, los soldados (y sacerdotes) recuperan entre 1/5 y 1/3 de su vida máxima (antes entre 1/7 y 1/4), y el general al mando cura igual que sus soldados (antes curaba como en el mapa, entre 1/9 y 1/6). En el mapa cura igual que antes.
 - **Versión en el menú principal:** se muestra la versión de esta rama y la de `7kmod` en la que está basada, por ejemplo "7kmod-gameplay 0.1.0 (7kmod 0.1.0)". La versión está en `include/ModVersion.h`.
 
 ### Compatibilidad
-- **Partidas guardadas:** sin cambios de formato (sigue siendo la versión 295). Los Fryhtans de un reino se guardan como unidades normales.
+- **Partidas guardadas:** versión 296, que agrega la tecnología Building Repair. Las partidas anteriores se siguen cargando (la tecnología queda sin investigar). Los Fryhtans de un reino se guardan como unidades normales.
 - **Multijugador:** invocar un Fryhtan usa el mensaje de red nuevo `MSG_F_BASE_INVOKE_FRYHTAN`. Todos los jugadores necesitan el mismo ejecutable.
 - La IA no invoca Fryhtans.
 - **Balance de razas:** no cambia el formato de las partidas guardadas; al cargar una partida se aplican las reglas nuevas. En multijugador, todos necesitan el mismo ejecutable.
