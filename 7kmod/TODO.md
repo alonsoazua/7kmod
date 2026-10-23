@@ -9,7 +9,26 @@ queda solo con mejoras de comodidad (interfaz) sobre la 2.15.7.
 
 Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo en partida.
 
-(vacío)
+- [ ] **Corregir: el fondo de la lista de unidades se aclara cada vez más**
+  (7kmod).
+  - En el panel de la lista de unidades seleccionadas, el fondo se vuelve más
+    blanco cada vez que cambia la lista (por ejemplo, cuando muere una
+    unidad).
+  - Causa (revisada en el código): cuando la lista cambia, `unit_list_disp`
+    (`src/OUNITLST.cpp`) vuelve a pintar el panel por su cuenta con
+    `vga_util.d3_panel_up`. Ese panel no es opaco: aclara lo que ya hay debajo
+    (`adjust_brightness` sobre el fondo), y como debajo ya estaba el panel
+    aclarado de antes, cada repintado lo aclara un poco más. En un repintado
+    normal (`info.disp()`) el juego primero restaura el fondo, por eso solo se
+    aclara una vez.
+  - Corrección: cuando la lista cambie, pedir el repintado completo con
+    `info.disp()` en lugar de repintar el panel directamente.
+  - **El mismo problema en el fuerte:** `FirmCamp::disp_camp_info` repinta su
+    panel con `d3_panel_up` cuando cambia el general que está fuera del fuerte
+    (cuando sale, muere o regresa), así que ese panel también se aclara. Misma
+    corrección.
+  - Revisar si queda algún otro repintado parcial con `d3_panel_up` en el
+    código del mod.
 
 ---
 
