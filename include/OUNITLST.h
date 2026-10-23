@@ -56,5 +56,6 @@ int  unit_list_detect(Unit* mainUnit, int dispY1);
 
 void unit_list_set_inspect(short* recnoArray, int unitCount);	// units of other kingdoms in a selection box
 void unit_list_clear_inspect();
+int  unit_list_is_inspected(int unitRecno);							// whether the unit is in the active inspect list
 
 #endif

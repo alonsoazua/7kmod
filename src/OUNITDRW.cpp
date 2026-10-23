@@ -32,6 +32,7 @@
 #include <OGAME.h>
 #include <ONATION.h>
 #include <OUNIT.h>
+#include <OUNITLST.h>
 #include <OCONFIG.h>
 
 #ifdef NO_DEBUG_UNIT
@@ -120,8 +121,17 @@ void Unit::draw()
 	}
 
 	//---- display additional info for selected units ----//
+	//
+	// 7kmod: also the hit points bar of the units of other kingdoms in a
+	// selection box, listed in the unit panel (unit_list_is_inspected()).
+	//
+	//------------------------------------------------------//
 
-	if( selected_flag )
+	if( !selected_flag && unit_list_is_inspected(sprite_recno) )
+	{
+		draw_selected();
+	}
+	else if( selected_flag )
 	{
 		draw_selected();
 
@@ -443,8 +453,17 @@ void Unit::draw_outlined()
 	}
 
 	//---- display additional info for selected units ----//
+	//
+	// 7kmod: also the hit points bar of the units of other kingdoms in a
+	// selection box, listed in the unit panel (unit_list_is_inspected()).
+	//
+	//------------------------------------------------------//
 
-	if( selected_flag )
+	if( !selected_flag && unit_list_is_inspected(sprite_recno) )
+	{
+		draw_selected();
+	}
+	else if( selected_flag )
 	{
 		draw_selected();
 

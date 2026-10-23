@@ -59,6 +59,14 @@ static Button button_list_prev, button_list_next;
 static short  inspect_unit_array[MAX_UNIT_LIST];	// units of other kingdoms in the last selection box
 static short  inspect_unit_count;
 
+// The recno of a unit that dies or enters a building is given at once to
+// the next unit created (DynArrayB::linkin()), anywhere on the map. These
+// identify the units of the list, to remove the recnos that are reused.
+
+static short  inspect_unit_id_array[MAX_UNIT_LIST];
+static short  inspect_name_id_array[MAX_UNIT_LIST];
+static char   inspect_nation_array[MAX_UNIT_LIST];
+
 static short  last_list_recno_array[MAX_UNIT_LIST];	// to know when the list changes
 static short  last_list_count;
 static short  last_list_page;
@@ -68,6 +76,8 @@ static int	  sort_main_nation_recno;					// for sorting the inspect list
 //------- static functions -------//
 
 static int  is_inspect_unit(int unitRecno);
+static int  is_valid_inspect_unit(int listId);
+static void purge_inspect_list();
 static int  sort_own_function(const void* a, const void* b);
 static int  sort_inspect_function(const void* a, const void* b);
 static int  is_civilian_skill(int skillId);
@@ -116,6 +126,8 @@ int unit_list_units(Unit* mainUnit, short* recnoArray)
 	}
 	else
 	{
+		purge_inspect_list();
+
 		if( !is_inspect_unit(mainUnit->sprite_recno) )
 			return 0;
 
@@ -219,18 +231,25 @@ void unit_list_disp(Unit* mainUnit, int dispY1, int refreshFlag)
 	if( list_page >= pageCount )
 		list_page = MAX(0, pageCount-1);
 
-	//--- if the units of the list have changed, paint it all again ---//
+	//--- if the units of the list have changed, paint the whole interface again ---//
+	//
+	// The panel must not be painted again over itself: it is not opaque, it
+	// lightens what is below it, so it would get lighter each time.
+	//
+	//----------------------------------------------------------------------//
 
-	if( refreshFlag == INFO_UPDATE &&
-		 ( unitCount != last_list_count || list_page != last_list_page ||
-			memcmp(recnoArray, last_list_recno_array, sizeof(short)*unitCount) != 0 ) )
-	{
-		refreshFlag = INFO_REPAINT;
-	}
+	int listChanged = unitCount != last_list_count || list_page != last_list_page ||
+							memcmp(recnoArray, last_list_recno_array, sizeof(short)*unitCount) != 0;
 
 	last_list_count = unitCount;
 	last_list_page  = list_page;
 	memcpy( last_list_recno_array, recnoArray, sizeof(short)*unitCount );
+
+	if( refreshFlag == INFO_UPDATE && listChanged )
+	{
+		info.disp();
+		return;
+	}
 
 	//---------- paint the panel ---------//
 
@@ -410,12 +429,12 @@ int unit_list_detect(Unit* mainUnit, int dispY1)
 				{
 					if( inspect_unit_array[j] == unitRecno )
 					{
-						memmove( inspect_unit_array+j, inspect_unit_array+j+1,
-							sizeof(short) * (inspect_unit_count-j-1) );
-						inspect_unit_count--;
+						inspect_unit_array[j] = 0;		// removed by purge_inspect_list()
 						break;
 					}
 				}
+
+				purge_inspect_list();
 
 				if( mainUnit->sprite_recno == unitRecno )		// the unit of the panel: the next of the list is shown
 				{
@@ -447,6 +466,15 @@ void unit_list_set_inspect(short* recnoArray, int unitCount)
 	inspect_unit_count = MIN(unitCount, MAX_UNIT_LIST);
 
 	memcpy( inspect_unit_array, recnoArray, sizeof(short)*inspect_unit_count );
+
+	for( int i=0 ; i<inspect_unit_count ; i++ )
+	{
+		Unit* unitPtr = unit_array[inspect_unit_array[i]];
+
+		inspect_unit_id_array[i] = unitPtr->unit_id;
+		inspect_name_id_array[i] = unitPtr->name_id;
+		inspect_nation_array[i]  = unitPtr->nation_recno;
+	}
 }
 //----------- End of function unit_list_set_inspect -----------//
 
@@ -460,6 +488,23 @@ void unit_list_clear_inspect()
 //----------- End of function unit_list_clear_inspect -----------//
 
 
+//--------- Begin of function unit_list_is_inspected ---------//
+//
+// Whether the given unit is in the inspect list (units of other kingdoms
+// in the last selection box) and that list is active, that is, the unit
+// displayed in the unit panel is one of them. These units display their
+// hit points bar on the map, like the selected units.
+//
+int unit_list_is_inspected(int unitRecno)
+{
+	if( !inspect_unit_count || !unit_array.selected_recno || unit_array.selected_count != 1 )
+		return 0;
+
+	return is_inspect_unit(unit_array.selected_recno) && is_inspect_unit(unitRecno);
+}
+//----------- End of function unit_list_is_inspected -----------//
+
+
 //--------- Begin of static function is_inspect_unit ---------//
 //
 static int is_inspect_unit(int unitRecno)
@@ -467,12 +512,58 @@ static int is_inspect_unit(int unitRecno)
 	for( int i=0 ; i<inspect_unit_count ; i++ )
 	{
 		if( inspect_unit_array[i] == unitRecno )
-			return 1;
+			return is_valid_inspect_unit(i);
 	}
 
 	return 0;
 }
 //----------- End of static function is_inspect_unit -----------//
+
+
+//--------- Begin of static function is_valid_inspect_unit ---------//
+//
+// Whether the unit of the inspect list is still the same unit: its recno
+// may have been given to a new unit.
+//
+static int is_valid_inspect_unit(int listId)
+{
+	int unitRecno = inspect_unit_array[listId];
+
+	if( !unitRecno || unit_array.is_deleted(unitRecno) )
+		return 0;
+
+	Unit* unitPtr = unit_array[unitRecno];
+
+	return unitPtr->unit_id      == inspect_unit_id_array[listId] &&
+			 unitPtr->name_id      == inspect_name_id_array[listId] &&
+			 unitPtr->nation_recno == inspect_nation_array[listId];
+}
+//----------- End of static function is_valid_inspect_unit -----------//
+
+
+//--------- Begin of static function purge_inspect_list ---------//
+//
+// Remove the units that are no longer valid from the inspect list.
+//
+static void purge_inspect_list()
+{
+	int newCount = 0;
+
+	for( int i=0 ; i<inspect_unit_count ; i++ )
+	{
+		if( !is_valid_inspect_unit(i) )
+			continue;
+
+		inspect_unit_array[newCount]    = inspect_unit_array[i];
+		inspect_unit_id_array[newCount] = inspect_unit_id_array[i];
+		inspect_name_id_array[newCount] = inspect_name_id_array[i];
+		inspect_nation_array[newCount]  = inspect_nation_array[i];
+		newCount++;
+	}
+
+	inspect_unit_count = newCount;
+}
+//----------- End of static function purge_inspect_list -----------//
 
 
 //--------- Begin of static function select_one_unit ---------//

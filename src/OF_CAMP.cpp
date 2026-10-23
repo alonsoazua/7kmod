@@ -435,12 +435,12 @@ void FirmCamp::put_info(int refreshFlag)
 				button_withdraw.reset();
 				button_recruit_town.reset();
 
-				button_defense.paint( INFO_X2-BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', defense_flag ? (char*)"DEFENSE1" : (char*)"DEFENSE0" );
+				button_defense.paint( INFO_X1, INFO_Y1+242, 'A', defense_flag ? (char*)"DEFENSE1" : (char*)"DEFENSE0" );		// 7kmod: first place of the second page
 			}
 		}
 
 		if( buttonPage==1 )
-			disp_spy_button( INFO_X1, INFO_Y1+242, refreshFlag );
+			disp_spy_button( INFO_X1+BUTTON_ACTION_WIDTH, INFO_Y1+242, refreshFlag );		// 7kmod: after Alert / At ease
 
 		disp_button_page_arrows( INFO_Y1+242+BUTTON_ACTION_HEIGHT+1, refreshFlag );
 
@@ -934,10 +934,15 @@ void FirmCamp::disp_camp_info(int dispY1, int refreshFlag)
 	if( !overseer_recno )
 		get_absent_units( &absentOverseerRecno, absentSoldierArray );
 
-	if( refreshFlag == INFO_UPDATE && absentOverseerRecno != lastAbsentRecno )
-		refreshFlag = INFO_REPAINT;			// the absent general has changed, paint the panel again
+	int absentChanged = absentOverseerRecno != lastAbsentRecno;
 
 	lastAbsentRecno = absentOverseerRecno;
+
+	if( refreshFlag == INFO_UPDATE && absentChanged )		// the absent general has changed, paint the whole interface again
+	{																		// (not only this panel, which would get lighter each time)
+		info.disp();
+		return;
+	}
 
 	//---------------- paint the panel --------------//
 
