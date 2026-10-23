@@ -36,15 +36,18 @@ class File;
 enum { MOD_TECH_ELITE_WARRIORS=1,		// units trained in Leadership start with ELITE_WARRIORS_COMBAT_LEVEL combat
 		 MOD_TECH_ELITE_WORKERS,			// units trained in other skills start with ELITE_WORKERS_SKILL_LEVEL skill
 		 MOD_TECH_BUILDING_REPAIR,			// buildings recover 1 hit point every BUILDING_REPAIR_DAYS days
-		 MAX_MOD_TECH=MOD_TECH_BUILDING_REPAIR
+		 MOD_TECH_FRYHTAN_SLAYERS,			// soldiers do FRYHTAN_SLAYERS_DAMAGE_BONUS % more damage to Fryhtans
+		 MAX_MOD_TECH=MOD_TECH_FRYHTAN_SLAYERS
 	  };
 
 #define MAX_MOD_TECH_BEFORE_ELITE_WORKERS		1		// the number of technologies in saved games before GAME_VERSION_7KMOD_ELITE_WORKERS
 #define MAX_MOD_TECH_BEFORE_BUILDING_REPAIR	2		// the number of technologies in saved games before GAME_VERSION_7KMOD_BUILDING_REPAIR
+#define MAX_MOD_TECH_BEFORE_FRYHTAN_SLAYERS	3		// the number of technologies in saved games before GAME_VERSION_7KMOD_FRYHTAN_SLAYERS
 
 #define ELITE_WARRIORS_COMBAT_LEVEL		30
 #define ELITE_WORKERS_SKILL_LEVEL		30
 #define BUILDING_REPAIR_DAYS				5
+#define FRYHTAN_SLAYERS_DAMAGE_BONUS	30
 
 //------- Define class ModTechRes --------//
 

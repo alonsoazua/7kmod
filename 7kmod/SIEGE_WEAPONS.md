@@ -49,6 +49,10 @@ por día y mueren sin noticia. En gameplay regeneran 1 punto cada 10 días, lo q
 no lo compensa (unos −0.9 por día). Dentro de un fuerte o de la Sede de Poder no
 pierden nada, porque el cobro del fuerte solo revisa las armas.
 
+En gameplay los Fryhtans invocados además comen (de 20 a 50 de comida al año,
+ver `CHANGELOG-gameplay.md`). Sin comida pierden otro punto de vida por día, en
+el mapa y dentro del fuerte, así que sin dinero ni comida pierden 2 por día.
+
 ## 2. Estadísticas
 
 Las armas siempre tienen combate 100, así que su vida es la de los datos y no

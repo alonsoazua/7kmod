@@ -1537,7 +1537,8 @@ int Unit::leadership_bonus()
 //
 int Unit::general_buff_active()
 {
-	if( rank_id != RANK_GENERAL || !nation_recno || skill.skill_id != SKILL_LEADING ||
+	if( (rank_id != RANK_GENERAL && rank_id != RANK_KING) ||		// the king also gets it
+		 !nation_recno || skill.skill_id != SKILL_LEADING ||
 		 !is_visible() || hit_points <= 0 )
 	{
 		return 0;

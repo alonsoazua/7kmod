@@ -41,6 +41,7 @@
 #include <OHONORS.h>
 #include <ORACERES.h>
 #include <OF_BASE.h>
+#include <ModTech.h>
 
 #ifdef NO_DEBUG_UNIT
 #undef err_when
@@ -147,6 +148,15 @@ void Unit::hit_target(Unit* parentUnit, Unit* targetUnit, float attackDamage, sh
 	// decrease the hit points of the target Unit
 	//-----------------------------------------------------------------------//
 	#define ONE_OVER_ATTACK_SLOW_DOWN				(float) 1/ATTACK_SLOW_DOWN
+
+	//--- 7kmod-gameplay: the Fryhtan Slayers technology, soldiers do more damage to Fryhtans (before the armor) ---//
+
+	if( parentUnit && parentUnit->race_id && parentNationRecno &&
+		 unit_res[targetUnit->unit_id]->unit_class == UNIT_CLASS_MONSTER &&
+		 mod_tech_res.get_level(MOD_TECH_FRYHTAN_SLAYERS, parentNationRecno) > 0 )
+	{
+		attackDamage += attackDamage * FRYHTAN_SLAYERS_DAMAGE_BONUS / 100;
+	}
 
 	//--- 7kmod-gameplay: the armor depends on the race (it was 4 for all units) ---//
 

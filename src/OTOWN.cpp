@@ -1832,7 +1832,30 @@ void Town::surrender(int toNationRecno)
 		// ##### end Gilbert 9/10 ######//
 	}
 
+	int oldNationRecno = nation_recno;
+	int townRecno		 = town_recno;
+
 	set_nation( toNationRecno );
+
+	//--- 7kmod-gameplay: a town of another kingdom that surrenders starts with more loyalty ---//
+	//
+	// set_nation() sets the loyalty to 40 for the race of the new king and to
+	// 30 for the others, just above REBEL_LOYALTY. It gets SURRENDER_LOYALTY_BONUS
+	// more and it doesn't rebel in the next REBEL_INTERVAL_MONTH months (the
+	// same wait as between two rebellions), so that it doesn't rebel at once.
+	//
+	//----------------------------------------------------------------------//
+
+	if( oldNationRecno && !town_array.is_deleted(townRecno) )
+	{
+		for( int i=0 ; i<MAX_RACE ; i++ )
+		{
+			if( race_pop_array[i] > 0 )
+				change_loyalty( i+1, (float) SURRENDER_LOYALTY_BONUS );
+		}
+
+		last_rebel_date = info.game_date;
+	}
 }
 //------- End of function Town::surrender ---------//
 

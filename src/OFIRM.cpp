@@ -57,6 +57,7 @@
 #include "gettext.h"
 #include <ConfigAdv.h>
 #include <ModTech.h>
+#include <OF_BASE.h>
 
 
 //---------- define static member vars -------------//
@@ -1859,14 +1860,21 @@ void Firm::consume_food()
 	if( nation_array[nation_recno]->food > 0 )
 	{
 		int humanUnitCount=0;
+		int fryhtanFoodYear=0;		// 7kmod-gameplay: the Fryhtans in a fort also eat
 
 		for( int i=0 ; i<worker_count ; i++ )
 		{
 			if( worker_array[i].race_id )
 				humanUnitCount++;
+
+			else if( worker_array[i].unit_id &&
+						unit_res[worker_array[i].unit_id]->unit_class == UNIT_CLASS_MONSTER )
+			{
+				fryhtanFoodYear += invoked_fryhtan_food_year(worker_array[i].unit_id);
+			}
 		}
 
-		nation_array[nation_recno]->consume_food((float) humanUnitCount * PERSON_FOOD_YEAR_CONSUMPTION / 365);
+		nation_array[nation_recno]->consume_food((float) (humanUnitCount * PERSON_FOOD_YEAR_CONSUMPTION + fryhtanFoodYear) / 365);
 	}
 	else	//--- decrease loyalty if the food has been run out ---//
 	{
@@ -1877,6 +1885,25 @@ void Firm::consume_food()
 				if( worker_array[i].race_id )
 					worker_array[i].change_loyalty(-1);
 			}
+		}
+
+		//--- 7kmod-gameplay: the Fryhtans in a fort lose 1 hit point a day without food ---//
+
+		for( int i=worker_count ; i>0 ; i-- )		// backwards, as kill_worker() removes the worker
+		{
+			Worker* workerPtr = worker_array+i-1;
+
+			if( workerPtr->race_id || !workerPtr->unit_id ||
+				 unit_res[workerPtr->unit_id]->unit_class != UNIT_CLASS_MONSTER )
+			{
+				continue;
+			}
+
+			if( workerPtr->hit_points > 0 )
+				workerPtr->hit_points--;
+
+			if( workerPtr->hit_points <= 0 )
+				kill_worker(i);
 		}
 	}
 }

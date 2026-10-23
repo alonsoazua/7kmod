@@ -838,6 +838,33 @@ int FirmBase::invoke_fryhtan_pray_points()
 //----------- End of function FirmBase::invoke_fryhtan_pray_points -----------//
 
 
+//--------- Begin of function invoked_fryhtan_food_year ---------//
+//
+// 7kmod-gameplay: the food that a Fryhtan of a nation (invoked) eats in a
+// year, from 20 to 50, in proportion to its invoke cost. A person eats
+// PERSON_FOOD_YEAR_CONSUMPTION (10).
+//
+int invoked_fryhtan_food_year(int unitId)
+{
+	switch( unitId )
+	{
+		case UNIT_ROCKMAN:		return 50;		// Rokken
+		case UNIT_LIZARDMAN:		return 45;		// Sauroid
+		case UNIT_FIREKIN:		return 40;		// Wyrm
+		case UNIT_GIANT_ETTIN:	return 40;		// Haubudam
+		case UNIT_HEADLESS:		return 35;		// Holgh
+		case UNIT_LYW:				return 30;		// Rattus
+		case UNIT_MAN:				return 30;		// Karrotten
+		case UNIT_SKELETON:		return 25;		// Deezboanz
+		case UNIT_HOBGLOBLIN:	return 25;		// Broosken
+		case UNIT_GREMJERM:		return 20;		// Doink
+	}
+
+	return 30;		// other Fryhtans
+}
+//----------- End of function invoked_fryhtan_food_year -----------//
+
+
 //--------- Begin of function FirmBase::invoke_fryhtan ---------//
 //
 // 7kmod-gameplay: invoke a Fryhtan that belongs to the nation of this Seat

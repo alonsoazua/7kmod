@@ -73,6 +73,7 @@
 #define MIN_INDEPENDENT_DEFEND_LOYALTY 30
 #define SURRENDER_LOYALTY				   29	   // when the loyalty of the town is <= this, and being attacked by a nation, the town will surrender
 #define REBEL_LOYALTY					   29    // if loyalty <= REBEL_LOYALTY, the unit may rebel
+#define SURRENDER_LOYALTY_BONUS		   15    // 7kmod-gameplay: extra loyalty of a town of another kingdom that surrenders
 
 #define INDEPENDENT_LINK_RESISTANCE  50	 // only if the resistance of an independent town is lower than this, the town will enable its link with a foreign firm
 

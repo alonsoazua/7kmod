@@ -741,8 +741,10 @@ int GameFile::read_file_3(File* filePtr)
 
 	int modTechCount;
 
-	if( game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_BUILDING_REPAIR )
+	if( game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_FRYHTAN_SLAYERS )
 		modTechCount = MAX_MOD_TECH;
+	else if( game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_BUILDING_REPAIR )
+		modTechCount = MAX_MOD_TECH_BEFORE_FRYHTAN_SLAYERS;
 	else if( game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_ELITE_WORKERS )
 		modTechCount = MAX_MOD_TECH_BEFORE_BUILDING_REPAIR;
 	else

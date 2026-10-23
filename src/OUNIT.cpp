@@ -49,6 +49,7 @@
 #include "gettext.h"
 #include <ConfigAdv.h>
 #include <OHONORS.h>
+#include <OF_BASE.h>
 
 #if(GAME_FRAMES_PER_DAY!=FRAMES_PER_DAY)
 #error
@@ -1739,6 +1740,23 @@ void Unit::pay_expense()
    }
    else  //----- it's a non-human unit ------//
    {
+      //--- 7kmod-gameplay: the Fryhtans of a nation eat, they lose hit points without food ---//
+
+      if( unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER )
+      {
+         if( nationPtr->food > 0 )
+         {
+            nationPtr->consume_food( (float) invoked_fryhtan_food_year(unit_id) / 365 );
+         }
+         else if( hit_points > 0 )
+         {
+            hit_points--;
+
+            if( hit_points < 0 )
+               hit_points = (float) 0;
+         }
+      }
+
       if( nationPtr->cash > 0 )
       {
          int expenseType;

@@ -48,6 +48,8 @@
 #define		INVOKED_ROKKEN_ARMOR				5		// armor of the invoked Rokken (4 for the other units)
 #define		INVOKED_DOINK_EXTRA_DAMAGE		1		// extra base damage per hit of the invoked Doink
 
+int invoked_fryhtan_food_year(int unitId);		// 7kmod-gameplay: yearly food consumption of a Fryhtan of a nation
+
 //------- Define class FirmBase --------//
 
 struct FirmBaseCrc;
