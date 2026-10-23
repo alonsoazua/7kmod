@@ -49,6 +49,10 @@ struct DefenseUnit
 };
 #pragma pack()
 
+//--- 7kmod: darkening of the portraits of the units that are outside of the fort ---//
+
+#define ABSENT_UNIT_BRIGHTNESS	-7
+
 //------- Define class FirmCamp --------//
 
 struct FirmCampCrc;
@@ -119,6 +123,11 @@ public:
 
 	int	 	mobilize_worker(int workerId, char remoteAction);
 	int  		mobilize_overseer();
+
+	//------- 7kmod: units of this fort that are outside of it -------//
+
+	int		get_absent_units(short* overseerRecnoPtr, short* soldierRecnoArray);
+	void		disp_absent_overseer(int unitRecno, int dispY1, int refreshFlag);
 
 	void 		change_nation(int newNationRecno);
 

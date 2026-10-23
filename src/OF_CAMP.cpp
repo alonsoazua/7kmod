@@ -502,6 +502,24 @@ int FirmCamp::detect_info()
 	int rc = mouse.any_click(INFO_X1+6, INFO_Y1+58, INFO_X1+5+UNIT_LARGE_ICON_WIDTH, INFO_Y1+57+UNIT_LARGE_ICON_HEIGHT, LEFT_BUTTON) ? 1 
 		: mouse.any_click(INFO_X1+6, INFO_Y1+58, INFO_X1+5+UNIT_LARGE_ICON_WIDTH, INFO_Y1+57+UNIT_LARGE_ICON_HEIGHT, RIGHT_BUTTON) ? 2 : 0;
 
+	if( rc==1 && !overseer_recno )		// 7kmod: go to the general who is outside of the fort
+	{
+		short absentOverseerRecno;
+		short absentSoldierArray[MAX_WORKER];
+
+		get_absent_units( &absentOverseerRecno, absentSoldierArray );
+
+		if( absentOverseerRecno )
+		{
+			short xLoc, yLoc;
+
+			if( unit_array[absentOverseerRecno]->get_cur_loc(xLoc, yLoc) )
+				world.go_loc(xLoc, yLoc, 1);		// 1-select the object on the location
+
+			return 1;
+		}
+	}
+
 	if( rc==1 )		// display this overseer's info
 	{
 		selected_worker_id = 0;
@@ -866,11 +884,33 @@ void FirmCamp::disp_camp_info(int dispY1, int refreshFlag)
 {
 	//---------------- paint the panel --------------//
 
+	//--- 7kmod: if the general is outside of the fort, he is displayed darkened ---//
+
+	static short lastAbsentRecno=0;
+
+	short absentOverseerRecno = 0;
+	short absentSoldierArray[MAX_WORKER];
+
+	if( !overseer_recno )
+		get_absent_units( &absentOverseerRecno, absentSoldierArray );
+
+	if( refreshFlag == INFO_UPDATE && absentOverseerRecno != lastAbsentRecno )
+		refreshFlag = INFO_REPAINT;			// the absent general has changed, paint the panel again
+
+	lastAbsentRecno = absentOverseerRecno;
+
+	//---------------- paint the panel --------------//
+
 	if( refreshFlag == INFO_REPAINT )
 		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+46);
 
 	if( !overseer_recno )
+	{
+		if( absentOverseerRecno )
+			disp_absent_overseer( absentOverseerRecno, dispY1, refreshFlag );
+
 		return;
+	}
 
 	//------------ display overseer info -------------//
 
@@ -955,6 +995,40 @@ void FirmCamp::disp_camp_info(int dispY1, int refreshFlag)
 	}
 }
 //----------- End of function FirmCamp::disp_camp_info -----------//
+
+
+//--------- Begin of function FirmCamp::disp_absent_overseer ---------//
+//
+// 7kmod: display the general (or king) who is outside of the fort, darkened.
+// A click on him moves the view to him and selects him (see detect_info()).
+//
+void FirmCamp::disp_absent_overseer(int unitRecno, int dispY1, int refreshFlag)
+{
+	Unit* unitPtr = unit_array[unitRecno];
+
+	int x=INFO_X1+6, y=dispY1+4, x1=x+UNIT_LARGE_ICON_WIDTH+8;
+
+	if( refreshFlag == INFO_REPAINT )
+	{
+		vga_front.put_bitmap(x, y, unit_res[unitPtr->unit_id]->get_large_icon_ptr(unitPtr->rank_id) );
+		vga_front.adjust_brightness( x, y, x+UNIT_LARGE_ICON_WIDTH-1, y+UNIT_LARGE_ICON_HEIGHT-1, ABSENT_UNIT_BRIGHTNESS );
+
+		if( unitPtr->rank_id == RANK_KING )
+		{
+			font_san.put( x1, y, _("King") );
+			y+=14;
+		}
+
+		font_san.put( x1, y, unitPtr->unit_name(0), 0, INFO_X2-2 );
+		y+=14;
+
+		font_san.put( x1, y, _("Outside of the fort"), 0, INFO_X2-2 );
+	}
+
+	if( mouse.in_area(x, dispY1+4, x+UNIT_LARGE_ICON_WIDTH+3, dispY1+4+UNIT_LARGE_ICON_HEIGHT+3) )
+		help.set_unit_help( unitPtr->unit_id, unitPtr->rank_id, x, dispY1+4, x+UNIT_LARGE_ICON_WIDTH+3, dispY1+4+UNIT_LARGE_ICON_HEIGHT+3);
+}
+//----------- End of function FirmCamp::disp_absent_overseer -----------//
 
 
 //--------- Begin of function FirmCamp::next_day ---------//
@@ -1323,6 +1397,59 @@ int FirmCamp::mobilize_overseer()
 		return 0;
 }
 //----------- End of function FirmCamp::mobilize_overseer --------//
+
+
+//--------- Begin of function FirmCamp::get_absent_units ---------//
+//
+// 7kmod: the units of the player that came out of this fort and are on the
+// map. Each unit keeps the fort it returns to in home_camp_firm_recno.
+//
+// <short*> overseerRecnoPtr  - the general or king who left the fort, only
+//                              if the fort has no general now (0 if none)
+// <short*> soldierRecnoArray - the soldiers (and weapons, Fryhtans) who left
+//                              the fort, as many as there are free places
+//                              in it (MAX_WORKER-worker_count at most)
+//
+// return: <int> the number of soldiers in soldierRecnoArray
+//
+int FirmCamp::get_absent_units(short* overseerRecnoPtr, short* soldierRecnoArray)
+{
+	*overseerRecnoPtr = 0;
+
+	if( !own_firm() )
+		return 0;
+
+	int soldierCount = 0;
+	int maxSoldier = MAX_WORKER - worker_count;
+
+	for( int i=1 ; i<=unit_array.size() ; i++ )
+	{
+		if( unit_array.is_deleted(i) )
+			continue;
+
+		Unit* unitPtr = unit_array[i];
+
+		if( unitPtr->home_camp_firm_recno != firm_recno ||
+			 unitPtr->nation_recno != nation_recno ||
+			 !unitPtr->is_visible() || unitPtr->hit_points <= 0 )
+		{
+			continue;
+		}
+
+		if( unitPtr->rank_id == RANK_GENERAL || unitPtr->rank_id == RANK_KING )
+		{
+			if( !overseer_recno && !*overseerRecnoPtr )
+				*overseerRecnoPtr = i;
+		}
+		else if( soldierCount < maxSoldier )
+		{
+			soldierRecnoArray[soldierCount++] = i;
+		}
+	}
+
+	return soldierCount;
+}
+//----------- End of function FirmCamp::get_absent_units -----------//
 
 
 //--------- Begin of function FirmCamp::mobilize_worker ---------//

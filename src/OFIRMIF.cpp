@@ -44,6 +44,8 @@
 #include <OGAME.h>
 #include <OSYS.h>
 #include <OHONORS.h>
+#include <OF_CAMP.h>
+#include <OUNITRES.h>
 #include "gettext.h"
 
 //---------- Define static variables ------------//
@@ -438,6 +440,15 @@ void Firm::disp_worker_list(int dispY1, int refreshFlag)
 	static  char last_race_id_array[MAX_WORKER];
 	static  char last_unit_id_array[MAX_WORKER];
 
+	//--- 7kmod: the soldiers of a fort that are outside of it, displayed darkened in the free places ---//
+
+	short absentOverseerRecno;
+	short absentSoldierArray[MAX_WORKER];
+	int   absentSoldierCount = 0;
+
+	if( firm_id == FIRM_CAMP )
+		absentSoldierCount = cast_to_FirmCamp()->get_absent_units( &absentOverseerRecno, absentSoldierArray );
+
 	dispY1+=1;
 
 	for( int i=0 ; i<MAX_WORKER ; i++ )
@@ -525,6 +536,28 @@ void Firm::disp_worker_list(int dispY1, int refreshFlag)
 			if( mouse.in_area(x, y, x+27, y+23) )
 				help.set_unit_help( workerPtr->unit_id, 0, x, y, x+27, y+23 );
 		}
+		else if( i-worker_count < absentSoldierCount )		// 7kmod: a soldier outside of the fort
+		{
+			Unit* unitPtr = unit_array[ absentSoldierArray[i-worker_count] ];
+
+			if( refreshFlag==INFO_REPAINT ||
+				 last_race_id_array[i] != (char) -1 ||		// -1 marks an absent soldier
+				 last_unit_id_array[i] != unitPtr->unit_id )
+			{
+				vga_util.blt_buf( x, y, x+49, y+27, 0 );
+				vga_front.put_bitmap(x+2, y+2, unit_res[unitPtr->unit_id]->get_small_icon_ptr(unitPtr->rank_id));
+				vga_front.adjust_brightness( x+2, y+2, x+2+UNIT_SMALL_ICON_WIDTH-1, y+2+UNIT_SMALL_ICON_HEIGHT-1, ABSENT_UNIT_BRIGHTNESS );
+				vga_front.rect( x, y, x+27, y+23, 2, vga_front.color_up );
+
+				last_race_id_array[i] = (char) -1;
+				last_unit_id_array[i] = unitPtr->unit_id;
+			}
+
+			disp_worker_hit_points( x+2, y+24, x+25, (int) unitPtr->hit_points, unitPtr->max_hit_points );
+
+			if( mouse.in_area(x, y, x+27, y+23) )
+				help.set_unit_help( unitPtr->unit_id, unitPtr->rank_id, x, y, x+27, y+23 );
+		}
 		else
 		{
 			if( last_race_id_array[i] != 0 || last_unit_id_array[i] != 0 )
@@ -574,6 +607,32 @@ int Firm::detect_worker_list()
 					return 1;
 				}
 				break;
+		}
+	}
+
+	//--- 7kmod: a click on a soldier outside of the fort moves the view to him and selects him ---//
+
+	if( firm_id == FIRM_CAMP )
+	{
+		short absentOverseerRecno;
+		short absentSoldierArray[MAX_WORKER];
+
+		int absentSoldierCount = cast_to_FirmCamp()->get_absent_units( &absentOverseerRecno, absentSoldierArray );
+
+		for( i=0 ; i<absentSoldierCount ; i++ )
+		{
+			x = INFO_X1+6+(worker_count+i)%4*50;
+			y = pop_disp_y1+1+(worker_count+i)/4*29;
+
+			if( mouse.single_click(x, y, x+27, y+23) )
+			{
+				short xLoc, yLoc;
+
+				if( unit_array[absentSoldierArray[i]]->get_cur_loc(xLoc, yLoc) )
+					world.go_loc(xLoc, yLoc, 1);		// 1-select the object on the location
+
+				return 1;
+			}
 		}
 	}
 
