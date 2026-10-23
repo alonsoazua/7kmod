@@ -65,6 +65,24 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   - Revisar si la lista de unidades propias seleccionadas tiene el mismo
     problema (no debería: usa `selected_flag` de cada unidad, que una unidad
     nueva no tiene).
+- [ ] **Corregir: botones del fuerte** (7kmod).
+  - **Alert / At ease en la posición 1 de la página 2** (a la izquierda,
+    `INFO_X1`), no a la derecha. El botón de espías, que hoy ocupa la
+    posición 1 de la página 2, pasa a la posición 2.
+  - **Withdraw deshabilitado si todas las unidades están en el fuerte.**
+    Hoy se habilita si `FirmCamp::get_withdraw_units` encuentra alguna unidad
+    con ese fuerte como casa (`home_camp_firm_recno`) que esté en el mapa.
+    Revisar por qué queda habilitado con todas dentro. Posibles causas:
+    - Unidades que salieron antes y ya no son "de ese fuerte" en la práctica
+      (por ejemplo, sacadas con clic derecho y que se quedaron en el mapa
+      sin regresar), que siguen contando.
+    - Que el estado del botón no se actualice al regresar las unidades (se
+      calcula en `FirmCamp::put_info`; revisar que se llame con
+      `INFO_UPDATE` en cada cuadro y que el botón se vuelva a dibujar al
+      cambiar de habilitado a deshabilitado).
+    - Comparar con lo que muestra el panel: si no hay unidades oscurecidas
+      (`get_absent_units`), Withdraw debe estar deshabilitado; las dos
+      funciones deben usar el mismo criterio.
 
 ---
 
