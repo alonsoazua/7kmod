@@ -9,7 +9,21 @@ queda solo con mejoras de comodidad (interfaz) sobre la 2.15.7.
 
 Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo en partida.
 
-(vacío)
+- [ ] **Prioridad militar en el recuadro sobre unidades de otros reinos**
+  (7kmod).
+  - Hoy, al hacer el recuadro sin unidades tuyas, la lista
+    (`unit_list_set_inspect` desde `Power::detect_select`) toma todas las
+    unidades de otros reinos dentro del recuadro, militares y civiles.
+  - Cambio: usar la misma regla que con tus unidades. Si dentro hay al menos
+    una unidad militar (soldados, generales, reyes, armas de asedio, barcos de
+    guerra, Fryhtans y Greater Beings), la lista y la unidad elegida solo
+    toman militares. Si solo hay civiles (constructores, trabajadores,
+    caravanas, barcos Trader y Transport...), se toman todos como hoy.
+  - Con `Alt` presionado se toman todas, como con tus unidades.
+  - Reutilizar `is_military_unit` de `src/OPOWER.cpp`. Revisar que no
+    revele espías enemigos: un espía enemigo debe clasificarse por lo que
+    aparenta ser (su habilidad visible), no por ser espía.
+  - Actualizar `KEYBINDINGS.md` y el changelog de 7kmod.
 
 ---
 
