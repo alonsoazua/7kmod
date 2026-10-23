@@ -82,9 +82,27 @@ enum	{	SEARCH_SUB_MODE_NORMAL=0,
 
 //----------- Define constants -----------//
 
-#define MAX_BACKGROUND_NODE				2400		// the total no. of nodes can be used at a time
-#define VALID_BACKGROUND_SEARCH_NODE	1600		// the search is considered unsuccessful if the node used > this value
-#define MIN_BACKGROUND_NODE_USED_UP		400		// don't do any new search if the current available nodes is < this value
+//--- 7kmod-pathing: 8 times the original budgets (2400, 1600 and 400), which ---//
+//--- were set for the computers of 1997                                       ---//
+
+#define MAX_BACKGROUND_NODE				19200		// the total no. of nodes can be used at a time
+#define VALID_BACKGROUND_SEARCH_NODE	12800		// the search is considered unsuccessful if the node used > this value
+#define MIN_BACKGROUND_NODE_USED_UP		3200		// don't do any new search if the current available nodes is < this value
+
+//--- 7kmod-pathing: the heuristic of the A* search -------------------------------//
+//
+// The original heuristic was the squared distance to the destination, which is
+// much larger than the cost of the path (1 or 2 per node), so the search was a
+// greedy search towards the destination: it went into concave obstacles (lakes,
+// forests) and used up its nodes there, and the paths were not the shortest.
+//
+// Now it is the number of nodes to the destination with diagonal moves
+// (Chebyshev distance, each move costs 1 or 2), weighted by 3/2 to keep the
+// search fast while it still goes around obstacles.
+//
+//------------------------------------------------------------------------------//
+
+#define PATH_HEURISTIC(dx, dy)	( (MAX(abs(dx), abs(dy)) * 3) / 2 )
 
 #define MAX_CHILD_NODE    8		// one for each direction
 //#define MAX_STACK_NUM  2000		// maximum no. of stack entity in stack_aray, which is shared by all SeekPath objects. It is calculated based on: MAX possiblity: 500(MAX node) x 8(MAX child node) = 4000. Practical no. possiblities=2000. Memory occupied: 2000*4 = 8K

@@ -41,9 +41,17 @@
 
 
 
+//------- version of the experimental 7kmod-pathing branch --------//
+//
+// Based on 7kmod-gameplay, with changes of the path finding.
+
+#define MOD_PATHING_VERSION		"0.1.0"
+
 //------- the text displayed on the main menu --------//
 
-#ifdef MOD_GAMEPLAY_VERSION
+#if defined(MOD_PATHING_VERSION)
+	#define MOD_VERSION_TEXT		"7kmod-pathing " MOD_PATHING_VERSION " (gameplay " MOD_GAMEPLAY_VERSION ", 7kmod " MOD_7KMOD_VERSION ")"
+#elif defined(MOD_GAMEPLAY_VERSION)
 	#define MOD_VERSION_TEXT		"7kmod-gameplay " MOD_GAMEPLAY_VERSION " (7kmod " MOD_7KMOD_VERSION ")"
 #else
 	#define MOD_VERSION_TEXT		"7kmod " MOD_7KMOD_VERSION

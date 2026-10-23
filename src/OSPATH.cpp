@@ -836,7 +836,7 @@ int SeekPath::seek(int sx,int sy,int dx,int dy, uint32_t groupId, char mobileTyp
 	// whether the destination is blocked, if so, only search till the destination's neighbor locations
 
 	nodePtr->node_g = 0;
-	nodePtr->node_h = (sourceX-dest_x)*(sourceX-dest_x)+(sourceY-dest_y)*(sourceY-dest_y);  // should really use sqrt().
+	nodePtr->node_h = PATH_HEURISTIC(sourceX-dest_x, sourceY-dest_y);		// 7kmod-pathing (it was the squared distance)
 	nodePtr->node_f = nodePtr->node_g + nodePtr->node_h;
 	nodePtr->node_x = sourceX;
 	nodePtr->node_y = sourceY;
@@ -2312,7 +2312,7 @@ short Node::generate_succ(short x, short y, short enter_direct,short cost)
 
 		succNode->parent_node = this;
 		succNode->node_g = g;
-		succNode->node_h = (x-cur_dest_x)*(x-cur_dest_x)+(y-cur_dest_y)*(y-cur_dest_y); // should do sqrt(), but since we don't really
+		succNode->node_h = PATH_HEURISTIC(x-cur_dest_x, y-cur_dest_y);		// 7kmod-pathing (it was the squared distance)
 		succNode->node_f = g+succNode->node_h;     		// care about the distance but just which branch looks
 		succNode->node_x = x;                  			// better this should suffice. Anyayz it's faster.
 		succNode->node_y = y;
@@ -2812,7 +2812,7 @@ int SeekPath::seek2(int sx, int sy, int dx, int dy, short miscNo, short numOfPat
 	//#### end alex 25/9 ####//
 
 	nodePtr->node_g = 0;
-	nodePtr->node_h = (sourceX-dest_x)*(sourceX-dest_x)+(sourceY-dest_y)*(sourceY-dest_y);  // should really use sqrt().
+	nodePtr->node_h = PATH_HEURISTIC(sourceX-dest_x, sourceY-dest_y);		// 7kmod-pathing (it was the squared distance)
 	nodePtr->node_f = nodePtr->node_g + nodePtr->node_h;
 	nodePtr->node_x = sourceX;
 	nodePtr->node_y = sourceY;
@@ -3196,7 +3196,7 @@ short Node::generate_succ2(short x, short y, short cost)
 
 		succNode->parent_node = this;
 		succNode->node_g = g;
-		succNode->node_h = (x-cur_dest_x)*(x-cur_dest_x)+(y-cur_dest_y)*(y-cur_dest_y); // should do sqrt(), but since we don't really
+		succNode->node_h = PATH_HEURISTIC(x-cur_dest_x, y-cur_dest_y);		// 7kmod-pathing (it was the squared distance)
 		succNode->node_f = g+succNode->node_h;     		// care about the distance but just which branch looks
 		succNode->node_x = x;                  			// better this should suffice. Anyayz it's faster.
 		succNode->node_y = y;

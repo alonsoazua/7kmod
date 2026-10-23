@@ -120,19 +120,30 @@ Node* SeekPath::return_best_node()
 //
 Node* SeekPath::return_closest_node()
 {
-	Node	*nodePtr;
-	Node	*shortestNode;
-	int	shortestDistance=0x7FFFFFFF;
+	//--------------------------------------------------------------------------------//
+	// 7kmod-pathing: look for the node closest to the destination among all the
+	// nodes of the search. The original only compared the first node of the open
+	// list and the first node of the closed list, which are sorted by node_f (the
+	// path cost + the heuristic), not by the distance to the destination, so the
+	// unit often went to a point that was not the closest.
+	//--------------------------------------------------------------------------------//
 
-	shortestNode = open_node_list.return_min();
-	if(shortestNode)
-		shortestDistance = shortestNode->node_h;
-	
-	nodePtr = closed_node_list.return_min();
-	if(nodePtr && nodePtr->node_h<shortestDistance)
+	Node	*nodePtr;
+	Node	*shortestNode = NULL;
+	int	shortestDistance=0x7FFFFFFF;
+	int	shortestG=0x7FFFFFFF;
+
+	for( int i=0 ; i<node_count ; i++ )
 	{
-		shortestNode = nodePtr;
-		shortestDistance = nodePtr->node_h;
+		nodePtr = node_array+i;
+
+		if( nodePtr->node_h < shortestDistance ||
+			 (nodePtr->node_h == shortestDistance && nodePtr->node_g < shortestG) )		// the same distance: closer to the start
+		{
+			shortestNode	  = nodePtr;
+			shortestDistance = nodePtr->node_h;
+			shortestG		  = nodePtr->node_g;
+		}
 	}
 
 	//--------------------------------------------------------------------------------//
