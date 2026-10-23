@@ -78,14 +78,22 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     aunque haya unidades enemigas dentro (`Power::detect_select` solo acepta
     las propias en el recuadro; las enemigas solo se seleccionan con un clic).
   - **Cambio:** si el recuadro no tiene unidades tuyas pero sí de otros
-    reinos, se selecciona la unidad más importante: rey, luego general, luego
-    la de más combate. Se ve su panel normal, como al darle clic.
-  - **Lista:** el número de unidades del recuadro y el botón ">" aparecen igual
-    que con tus unidades, y la lista muestra las unidades enemigas del
-    recuadro con su retrato y barra de vida, pero **sin nivel de combate**,
-    porque no te pertenecen.
-  - Solo entran a la lista las unidades del mismo reino que la unidad
-    elegida (si el recuadro toma unidades de varios reinos).
+    reinos, Fryhtans salvajes, rebeldes o unidades independientes, se
+    selecciona la unidad más importante de todo el recuadro: un rey, luego un
+    general, luego un Fryhtan con rango (los de las guaridas tienen rangos),
+    luego la que tenga más vida. No se usa el nivel de combate, para no revelar
+    información. Se ve su panel normal, como al darle clic.
+  - **Lista:** el número de unidades del recuadro (el total, de todos los
+    reinos) y el botón ">" aparecen igual que con tus unidades. La lista
+    muestra todas las unidades del recuadro que no son tuyas con su retrato y
+    barra de vida, pero **sin nivel de combate**, porque no te pertenecen.
+  - **Varios reinos:** la lista puede tener unidades de varios reinos,
+    Fryhtans salvajes, rebeldes e independientes. Cada casilla tiene un
+    pequeño cuadro con el color de su reino en una esquina; los Fryhtans
+    salvajes y las unidades sin reino van sin color (o en gris).
+  - **Orden:** agrupadas por reino, primero el de la unidad elegida; dentro de
+    cada grupo, rey y generales primero y luego por tipo de unidad. Los
+    Fryhtans salvajes y las unidades sin reino al final.
   - Las unidades enemigas no reciben órdenes: la lista es solo para verlas.
     Clic izquierdo en una la selecciona (abre su panel); clic derecho la quita
     de la lista. La lista se guarda aparte de la selección, porque el juego
