@@ -22,6 +22,7 @@
 //Description : Nation Report
 
 #include <stdlib.h>
+#include <string.h>
 #include <KEY.h>
 #include <OCONFIG.h>
 #include <OVGA.h>
@@ -44,6 +45,7 @@
 #include <OUNIT.h>
 #include <OUNITRES.h>
 #include <ORACERES.h>
+#include <OHELP.h>
 #include "gettext.h"
 
 //------------- Define coordinations -----------//
@@ -129,6 +131,22 @@ static char* nation_color_code_str(int nationRecno);
 #define J_R Font::RIGHT_JUSTIFY
 
 
+//------- 7kmod: areas of the king portraits, for their tooltips -------//
+//
+// The browser rows are not drawn in every frame, so the areas are kept here
+// when the rows are drawn and the tooltips are set in Info::detect_nation(),
+// which is called in every frame.
+//
+
+struct KingIconArea
+{
+	short x1, y1, x2, y2;
+	char  race_id;			// 0 if the portrait of this nation is not displayed
+};
+
+static KingIconArea king_icon_area_array[MAX_NATION];
+
+
 //--------- Begin of function Info::disp_nation ---------//
 //
 // <int> refreshFlag - INFO_REPAINT - the user has just switched
@@ -188,6 +206,8 @@ void Info::disp_nation(int refreshFlag)
 
 	if( refreshFlag == INFO_REPAINT )
 	{
+		memset( king_icon_area_array, 0, sizeof(king_icon_area_array) );		// 7kmod
+
 		browse_nation.init( REPORT_BROWSE_X1, REPORT_BROWSE_Y1+35, REPORT_BROWSE_X2, REPORT_BROWSE_Y2,
 								  0, 20, nation_filter(), put_nation_rec, 1 );
 
@@ -222,6 +242,19 @@ void Info::disp_nation(int refreshFlag)
 //
 void Info::detect_nation()
 {
+	//--- 7kmod: tooltips with the race of the kings over their portraits ---//
+
+	for( int i=0 ; i<MAX_NATION ; i++ )
+	{
+		KingIconArea* iconArea = king_icon_area_array + i;
+
+		if( iconArea->race_id && !nation_array.is_deleted(i+1) )
+		{
+			help.set_custom_help( iconArea->x1, iconArea->y1, iconArea->x2, iconArea->y2,
+				_(race_res[iconArea->race_id]->name) );
+		}
+	}
+
 	//------- detect nation browser ------//
 
 	if( browse_nation.detect() )
@@ -349,29 +382,26 @@ static int nation_filter(int recNo)
 //----------- End of static function nation_filter -----------//
 
 
-//-------- Begin of static function king_small_icon --------//
+//-------- Begin of static function king_unit_id --------//
 //
-// 7kmod: return the small portrait of the king of the given nation.
-// The race of the current king is used, as a successor may be of another
-// race. If the nation has no king at the moment (between the death of the
-// king and the succession), the king of the race of the nation is used.
+// 7kmod: return the unit id of the king of the given nation, for his
+// portrait. The race of the current king is used, as a successor may be of
+// another race. If the nation has no king at the moment (between the death
+// of the king and the succession), the king of the race of the nation is used.
 //
-static char* king_small_icon(Nation* nationPtr)
+static int king_unit_id(Nation* nationPtr)
 {
-	int unitId = 0;
-
 	if( nationPtr->king_unit_recno && !unit_array.is_deleted(nationPtr->king_unit_recno) )
-		unitId = unit_array[nationPtr->king_unit_recno]->unit_id;
+		return unit_array[nationPtr->king_unit_recno]->unit_id;
 
-	else if( nationPtr->race_id > 0 )
-		unitId = race_res[nationPtr->race_id]->basic_unit_id;
+	if( nationPtr->race_id > 0 )
+		return race_res[nationPtr->race_id]->basic_unit_id;
 
-	if( !unitId )
-		return NULL;
-
-	return unit_res[unitId]->get_small_icon_ptr(RANK_KING);
+	return 0;
 }
-//----------- End of static function king_small_icon -----------//
+//----------- End of static function king_unit_id -----------//
+
+
 
 
 //-------- Begin of static function put_nation_rec --------//
@@ -390,10 +420,20 @@ static void put_nation_rec(int recNo, int x, int y, int refreshFlag)
 
 	//--- 7kmod: portrait of the king of the kingdom, after its color ---//
 
-	char* kingIconPtr = king_small_icon(nationPtr);
+	int kingUnitId = king_unit_id(nationPtr);
 
-	if( kingIconPtr )
-		vga.active_buf->put_bitmap( x+17, y-5, kingIconPtr );
+	if( kingUnitId )
+	{
+		vga.active_buf->put_bitmap( x+17, y-5, unit_res[kingUnitId]->get_small_icon_ptr(RANK_KING) );
+
+		KingIconArea* iconArea = king_icon_area_array + nationRecno - 1;
+
+		iconArea->x1 = x+17;
+		iconArea->y1 = y-5;
+		iconArea->x2 = x+17+UNIT_SMALL_ICON_WIDTH-1;
+		iconArea->y2 = y-5+UNIT_SMALL_ICON_HEIGHT-1;
+		iconArea->race_id = unit_res[kingUnitId]->race_id;
+	}
 
 	font_san.put( x+46 , y, nationPtr->nation_name(), 0, x+215 );
 	font_san.put( x+220, y, misc.format((int) nationPtr->reputation) );
