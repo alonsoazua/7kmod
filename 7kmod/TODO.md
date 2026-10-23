@@ -65,12 +65,11 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     `Unit::disp_info` ya regresa al menú principal cuando cambia la unidad).
   - **Muchas unidades:** el panel tiene espacio para unas 8 filas (32
     unidades). Si hay más, páginas con flechas, como los botones del fuerte.
-  - Por definir:
-    - Qué hace el clic en una unidad de la lista. Propuesta: clic izquierdo
-      selecciona solo esa unidad (y abre su panel), clic derecho la quita de
-      la selección. Tooltip con su nombre al pasar el ratón.
-    - El orden de la lista. Propuesta: general y rey primero, luego por tipo
-      de unidad y nivel de combate.
+  - **Clic en una unidad de la lista:** clic izquierdo selecciona solo esa
+    unidad (y abre su panel); clic derecho la quita de la selección. Al pasar
+    el ratón aparece su nombre.
+  - **Orden de la lista:** general y rey primero, luego por tipo de unidad y
+    nivel de combate.
   - Actualizar `KEYBINDINGS.md` (los clics de la lista) y el changelog de
     7kmod.
 
