@@ -24,6 +24,8 @@
 #include <OMOUSE.h>
 #include <OMOUSECR.h>
 #include <OUNIT.h>
+#include <OSKILL.h>
+#include <OUNITRES.h>
 #include <OFIRM.h>
 #include <OTOWN.h>
 #include <OSITE.h>
@@ -243,6 +245,49 @@ void Power::mouse_handler()
 	*/
 }
 //--------- End of function Power::mouse_handler ---------//
+
+
+//-------- Begin of static function is_military_unit --------//
+//
+// 7kmod: whether the unit is a military unit, for the box selection that
+// prefers military units. Military: soldiers, generals, kings, weapons,
+// war ships, Fryhtans and Greater Beings. Civilians: units with a civil
+// skill (construction, mining, manufacture, research, praying), the player's
+// own spies, caravans and the Trader and Transport ships.
+//
+static int is_military_unit(Unit* unitPtr)
+{
+	switch( unit_res[unitPtr->unit_id]->unit_class )
+	{
+		case UNIT_CLASS_HUMAN:
+			if( unitPtr->rank_id == RANK_KING || unitPtr->rank_id == RANK_GENERAL )
+				return 1;
+
+			if( unitPtr->spy_recno && unitPtr->true_nation_recno() == nation_array.player_recno )
+				return 0;
+
+			switch( unitPtr->skill.skill_id )
+			{
+				case SKILL_CONSTRUCTION:
+				case SKILL_MINING:
+				case SKILL_MFT:
+				case SKILL_RESEARCH:
+				case SKILL_SPYING:
+				case SKILL_PRAYING:
+					return 0;
+			}
+			return 1;
+
+		case UNIT_CLASS_SHIP:
+			return unitPtr->unit_id == UNIT_CARAVEL || unitPtr->unit_id == UNIT_GALLEON;
+
+		case UNIT_CLASS_CARAVAN:
+			return 0;
+	}
+
+	return 1;		// weapons, Fryhtans and Greater Beings
+}
+//----------- End of static function is_military_unit -----------//
 
 
 //-------- Begin of function Power::detect_frame --------//
@@ -1210,6 +1255,46 @@ int Power::detect_select(int selX1, int selY1, int selX2, int selY2, int recallG
 			}
 		}
 
+		//--- 7kmod: if the box has military units, only select them (Alt selects all) ---//
+
+		int militaryOnly = 0;
+
+		if( !(mouse.event_skey_state & ALT_KEY_MASK) )
+		{
+			for( yLoc=selYLoc1 ; yLoc<=selYLoc2 && !militaryOnly ; yLoc++ )
+			{
+				for( xLoc=selXLoc1 ; xLoc<=selXLoc2 && !militaryOnly ; xLoc++ )
+				{
+					locPtr = world.get_loc(xLoc, yLoc);
+
+					for( int mt = 0; mt < sizeof(mobileTypeList)/sizeof(char); ++mt )
+					{
+						char mobileType = mobileTypeList[mt];
+						if( locPtr->has_unit(mobileType) && !unit_array.is_deleted(locPtr->unit_recno(mobileType))
+							&& !(unitPtr = unit_array[locPtr->unit_recno(mobileType)])->is_shealth() )
+						{
+							if(!unitPtr->is_visible() || unitPtr->hit_points<=0 || !unitPtr->is_own() )
+								continue;
+
+							if( nationSelect != -1 && unitPtr->nation_recno != nationSelect )
+								continue;
+
+							unitPtr->update_abs_pos();
+
+							if( misc.is_touch( absSelX1, absSelY1, absSelX2, absSelY2,
+								 unitPtr->abs_x1, unitPtr->abs_y1,
+								 unitPtr->abs_x2, unitPtr->abs_y2 ) &&
+								 is_military_unit(unitPtr) )
+							{
+								militaryOnly = 1;
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+
 		// recallGroup is ignored
 		char newSelectedFlag = shiftSelect ? 1 : 2;		// press shift to include more units
 
@@ -1231,6 +1316,9 @@ int Power::detect_select(int selX1, int selY1, int selX2, int selY2, int recallG
 
 						if( nationSelect != -1 && unitPtr->nation_recno != nationSelect )
 							continue;	// skip this unit
+
+						if( militaryOnly && !is_military_unit(unitPtr) )
+							continue;	// 7kmod: skip civilians when the box has military units
 						
 						unitPtr->update_abs_pos();
 
