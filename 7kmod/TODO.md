@@ -72,6 +72,27 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     nivel de combate.
   - Actualizar `KEYBINDINGS.md` (los clics de la lista) y el changelog de
     7kmod.
+- [ ] **Recuadro sobre unidades enemigas** (comodidad: va en 7kmod y pasa a
+  gameplay con el rebase). Depende de la lista de unidades seleccionadas.
+  - Hoy, si el recuadro no toma ninguna unidad tuya, no selecciona nada,
+    aunque haya unidades enemigas dentro (`Power::detect_select` solo acepta
+    las propias en el recuadro; las enemigas solo se seleccionan con un clic).
+  - **Cambio:** si el recuadro no tiene unidades tuyas pero sí de otros
+    reinos, se selecciona la unidad más importante: rey, luego general, luego
+    la de más combate. Se ve su panel normal, como al darle clic.
+  - **Lista:** el número de unidades del recuadro y el botón ">" aparecen igual
+    que con tus unidades, y la lista muestra las unidades enemigas del
+    recuadro con su retrato y barra de vida, pero **sin nivel de combate**,
+    porque no te pertenecen.
+  - Solo entran a la lista las unidades del mismo reino que la unidad
+    elegida (si el recuadro toma unidades de varios reinos).
+  - Las unidades enemigas no reciben órdenes: la lista es solo para verlas.
+    Clic izquierdo en una la selecciona (abre su panel); clic derecho la quita
+    de la lista. La lista se guarda aparte de la selección, porque el juego
+    solo permite seleccionar varias unidades si son tuyas.
+  - Los espías enemigos disfrazados se ven como unidades del reino del que
+    están disfrazados, igual que hoy.
+  - Actualizar `KEYBINDINGS.md` y el changelog de 7kmod.
 
 ---
 
