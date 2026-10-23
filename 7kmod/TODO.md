@@ -9,7 +9,17 @@ queda solo con mejoras de comodidad (interfaz) sobre la 2.15.7.
 
 Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo en partida.
 
-(vacío)
+- [ ] **Tooltip con la raza en el retrato del rey (F1)** (comodidad: va en
+  7kmod y pasa a gameplay con el rebase).
+  - Al dejar el ratón sobre el retrato del rey en la lista de reinos
+    (`put_nation_rec` en `src/OR_NAT.cpp`) aparece la raza del rey, por
+    ejemplo "Japanese".
+  - Se toma la misma raza que decide el retrato: la del rey actual, o la del
+    reino si en ese momento no hay rey.
+  - Usar `help.set_custom_help` sobre el área del retrato (24×20), como los
+    tooltips de lealtad. Igual que toda la ayuda del juego, solo aparece en
+    partidas de un jugador y con la ayuda activada.
+  - Actualizar el changelog de 7kmod.
 
 ---
 
