@@ -77,6 +77,26 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     arriba).
   - Actualizar `CHANGELOG-gameplay.md` (quitar "No aplica al rey") y la sección
     8 de `COMBAT_ANALYSIS.md`.
+- [ ] **Bono de lealtad para los pueblos que se rinden** (gameplay).
+  - Problema: un pueblo enemigo que se rinde a veces se vuelve a rebelar casi
+    al instante.
+  - Por qué pasa: al cambiar de reino (`Town::set_nation`), la lealtad del
+    pueblo queda en 40 para la raza del rey nuevo y en 30 para las demás. La
+    rebelión ocurre con 29 o menos. Si su lealtad objetivo es baja (razas
+    mezcladas, sin empleo porque perdió sus edificios, sin mercado, o un fuerte
+    enemigo todavía enlazado), en unos 10 días baja de 30 a 29. Las rebeliones
+    se revisan cada 15 días, así que puede rebelarse casi de inmediato. Si
+    queda un fuerte del reino anterior enlazado y ninguno propio, también puede
+    volver a rendirse a ese reino.
+  - Propuesta: al rendirse (`Town::surrender`), la lealtad sube 15 puntos (55
+    para la raza del rey, 45 para las demás) y el pueblo no puede rebelarse
+    durante 90 días (como si acabara de rebelarse: `last_rebel_date`). Da tiempo
+    de poner un fuerte con general y darle empleo.
+  - Aplica tanto a pueblos de otros reinos como a pueblos independientes
+    capturados, y a la IA igual que al jugador. No aplica cuando un reino
+    completo se rinde y entrega todos sus pueblos (`NationBase::surrender`).
+  - Por definir: los valores (+15 y 90 días).
+  - Actualizar `CHANGELOG-gameplay.md`.
 
 ---
 
