@@ -94,9 +94,11 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     (`REBEL_INTERVAL_MONTH`): basta con poner `last_rebel_date` en la fecha de
     la rendición. Da tiempo
     de poner un fuerte con general y darle empleo.
-  - Aplica tanto a pueblos de otros reinos como a pueblos independientes
-    capturados, y a la IA igual que al jugador. No aplica cuando un reino
-    completo se rinde y entrega todos sus pueblos (`NationBase::surrender`).
+  - Solo aplica a pueblos de otro reino que se rinden (en `Town::surrender`,
+    cuando el pueblo tenía reino antes de rendirse). No aplica a los pueblos
+    independientes capturados, ni cuando un reino completo se rinde y entrega
+    todos sus pueblos (`NationBase::surrender`). Aplica a la IA igual que al
+    jugador.
   - Valores: +15 de lealtad y 90 días sin rebelión.
   - Actualizar `CHANGELOG-gameplay.md`.
 
