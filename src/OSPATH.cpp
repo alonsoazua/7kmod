@@ -202,6 +202,13 @@ static void sys_yield()
 
 
 //------- Begin of static function can_move_to ------//
+//--- 7kmod-pathing: a higher cost for the locations with units (see SeekPath::set_unit_penalty()) ---//
+
+static char  unit_penalty_flag;
+static short unit_penalty_exclude_recno;
+
+static int node_unit_penalty(int nodeX, int nodeY);
+
 static int can_move_to(int xLoc, int yLoc)
 {
 	Location	*locPtr = world_loc_matrix+yLoc*MAX_WORLD_X_LOC+xLoc;
@@ -2258,9 +2265,56 @@ short Node::generate_successors(short parentEnterDirection, short realSourX, sho
 //------- End of function Node::generate_successors -------//
 
 
+//-------- Begin of static function node_unit_penalty ---------//
+//
+// 7kmod-pathing: the extra cost of a node (2x2 locations) with units, when
+// the search avoids units: 2 for each waiting, idle or fighting unit and 1
+// for each moving unit, at most 4.
+//
+static int node_unit_penalty(int nodeX, int nodeY)
+{
+	int penalty = 0;
+
+	for( int y=nodeY*2 ; y<=nodeY*2+1 && y<MAX_WORLD_Y_LOC ; y++ )
+	{
+		for( int x=nodeX*2 ; x<=nodeX*2+1 && x<MAX_WORLD_X_LOC ; x++ )
+		{
+			short recno = world_loc_matrix[y*MAX_WORLD_X_LOC+x].cargo_recno;
+
+			if( !recno || recno==unit_penalty_exclude_recno || unit_array.is_deleted(recno) )
+				continue;
+
+			penalty += unit_array[recno]->cur_action==SPRITE_MOVE ? 1 : 2;
+		}
+	}
+
+	return MIN(penalty, 4);
+}
+//------- End of static function node_unit_penalty -------//
+
+
+//-------- Begin of function SeekPath::set_unit_penalty ---------//
+//
+// 7kmod-pathing: whether the next searches give a higher cost to the
+// locations with units, so that a blocked unit finds another lane.
+//
+// <int> flag             - 1 to enable, 0 to disable
+// <int> excludeUnitRecno - the unit searching (its own location has no penalty)
+//
+void SeekPath::set_unit_penalty(int flag, int excludeUnitRecno)
+{
+	unit_penalty_flag = (char) flag;
+	unit_penalty_exclude_recno = (short) excludeUnitRecno;
+}
+//------- End of function SeekPath::set_unit_penalty -------//
+
+
 //-------- Begin of function Node::generate_succ ---------//
 short Node::generate_succ(short x, short y, short enter_direct,short cost)
 {
+	if( unit_penalty_flag && mobile_type==UNIT_LAND )		// 7kmod-pathing
+		cost += node_unit_penalty(x, y);
+
 	//----- if it points back to this node's parent ----//
 	if( parent_node )
 	{

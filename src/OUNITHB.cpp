@@ -26,6 +26,7 @@
 #include <OFIRM.h>
 #include <OTOWN.h>
 #include <OUNIT.h>
+#include <OSPATH.h>
 #include <OTERRAIN.h>
 #include <ConfigAdv.h>
 
@@ -135,8 +136,15 @@ void Unit::search_or_wait()
 	}
 
 	//------------------- call searching if should not wait --------------------//
+	//--- 7kmod-pathing: the new search avoids the locations with units (a higher cost, not blocked), ---//
+	//--- so that the unit finds another lane instead of the same path through the queue             ---//
+
 	if(!shouldWait)
+	{
+		seek_path.set_unit_penalty(1, sprite_recno);
 		search(move_to_x_loc, move_to_y_loc, 1, SEARCH_MODE_IN_A_GROUP);
+		seek_path.set_unit_penalty(0, 0);
+	}
 		//search_or_stop(move_to_x_loc, move_to_y_loc, 1, SEARCH_MODE_IN_A_GROUP);
 
 	for(i=0; i<SQUARE3; i++)
@@ -155,6 +163,173 @@ void Unit::search_or_wait()
 //-------- End of function Unit::search_or_wait ---------//
 
 
+//------ Begin of function Unit::try_sidestep -------//
+//
+// 7kmod-pathing: when a unit is blocked by another unit that is moving or
+// waiting (in a crowd or a queue), instead of only waiting, it tries to step
+// to one of the two locations diagonally ahead (45 degrees to each side of its
+// direction) and then continue towards the current point of its path. This
+// lets crowds spread around each other instead of making long queues.
+//
+// The path is made of straight segments (in one of the 8 directions), so the
+// new points are inserted in the path: the side location, and if needed a
+// middle point so that the unit reaches the current point of the path with a
+// diagonal segment followed by a straight one. The locations of both segments
+// must be walkable (other units are handled as usual when it moves).
+//
+// return: <int> 1 - the unit steps aside, 0 - not possible
+//
+int Unit::try_sidestep()
+{
+	static short dirXArray[] = {  0,  1, 1, 1, 0, -1, -1, -1 };	// the same directions as Sprite::final_dir
+	static short dirYArray[] = { -1, -1, 0, 1, 1,  1,  0, -1 };
+
+	if( mobile_type != UNIT_LAND || sprite_info->loc_width != 1 || sprite_info->loc_height != 1 )
+		return 0;
+
+	if( !result_node_array || result_node_recno < 1 || result_node_recno > result_node_count )
+		return 0;
+
+	if( waiting_term < 1 || swapping )		// wait one term first, the unit ahead may only be slower
+		return 0;
+
+	int curXLoc = next_x_loc(), curYLoc = next_y_loc();
+
+	//--- near the destination, let the units settle as usual ---//
+
+	if( MAX( abs(curXLoc-move_to_x_loc), abs(curYLoc-move_to_y_loc) ) <= 2 )
+		return 0;
+
+	ResultNode* goNode = result_node_array + result_node_recno - 1;
+	int goXLoc = goNode->node_x, goYLoc = goNode->node_y;
+	int curGoDist = MAX( abs(goXLoc-curXLoc), abs(goYLoc-curYLoc) );
+
+	//--- the two locations diagonally ahead, the one closer to the point of the path first ---//
+
+	int dirArray[2] = { (final_dir+1)%8, (final_dir+7)%8 };
+
+	if( sprite_recno % 2 )		// with the same distance, alternate the side, so that crowds spread to both sides
+	{
+		int t = dirArray[0];
+		dirArray[0] = dirArray[1];
+		dirArray[1] = t;
+	}
+
+	int distArray[2];
+
+	for( int i=0 ; i<2 ; i++ )
+	{
+		int sx = curXLoc + dirXArray[dirArray[i]];
+		int sy = curYLoc + dirYArray[dirArray[i]];
+		distArray[i] = MAX( abs(goXLoc-sx), abs(goYLoc-sy) );
+	}
+
+	if( distArray[1] < distArray[0] )
+	{
+		int t = dirArray[0];
+		dirArray[0] = dirArray[1];
+		dirArray[1] = t;
+	}
+
+	for( int i=0 ; i<2 ; i++ )
+	{
+		int sideX = curXLoc + dirXArray[dirArray[i]];
+		int sideY = curYLoc + dirYArray[dirArray[i]];
+
+		if( sideX < 0 || sideX >= MAX_WORLD_X_LOC || sideY < 0 || sideY >= MAX_WORLD_Y_LOC )
+			continue;
+
+		if( !world.get_loc(sideX, sideY)->can_move(UNIT_LAND) )		// walkable and free
+			continue;
+
+		//--- the side location must not take the unit further from the point of the path than one more step ---//
+
+		int sideGoDist = MAX( abs(goXLoc-sideX), abs(goYLoc-sideY) );
+
+		if( sideGoDist > curGoDist )
+			continue;
+
+		//--- the middle point: a diagonal segment from the side location, then a straight one ---//
+
+		int dx = goXLoc-sideX, dy = goYLoc-sideY;
+		int diagSteps = MIN( abs(dx), abs(dy) );
+		int midX = sideX + (dx>0 ? diagSteps : -diagSteps);
+		int midY = sideY + (dy>0 ? diagSteps : -diagSteps);
+
+		if( dx==0 || dy==0 )		// already in a straight line
+		{
+			midX = sideX;
+			midY = sideY;
+		}
+
+		//--- the locations of both segments must be walkable ---//
+
+		int walkable = 1;
+		int x = sideX, y = sideY;
+		int stepX = (midX>sideX) - (midX<sideX), stepY = (midY>sideY) - (midY<sideY);
+
+		while( walkable && (x!=midX || y!=midY) )
+		{
+			x += stepX;
+			y += stepY;
+			walkable = world.get_loc(x, y)->walkable();
+		}
+
+		stepX = (goXLoc>midX) - (goXLoc<midX);
+		stepY = (goYLoc>midY) - (goYLoc<midY);
+
+		while( walkable && (x!=goXLoc || y!=goYLoc) )
+		{
+			x += stepX;
+			y += stepY;
+			walkable = world.get_loc(x, y)->walkable();
+		}
+
+		if( !walkable )
+			continue;
+
+		//--- insert the side location (and the middle point) before the current point of the path ---//
+
+		int hasMid  = (midX!=sideX || midY!=sideY) && (midX!=goXLoc || midY!=goYLoc);
+		int isGo	   = (sideX==goXLoc && sideY==goYLoc);		// the side location is the point of the path itself
+		int addCount = isGo ? 0 : 1 + hasMid;
+
+		if( addCount )
+		{
+			ResultNode* newArray = (ResultNode*) mem_add( sizeof(ResultNode) * (result_node_count+addCount) );
+			int insertId = result_node_recno-1;
+
+			memcpy( newArray, result_node_array, sizeof(ResultNode)*insertId );
+
+			newArray[insertId].node_x = sideX;
+			newArray[insertId].node_y = sideY;
+
+			if( hasMid )
+			{
+				newArray[insertId+1].node_x = midX;
+				newArray[insertId+1].node_y = midY;
+			}
+
+			memcpy( newArray+insertId+addCount, result_node_array+insertId,
+					  sizeof(ResultNode)*(result_node_count-insertId) );
+
+			mem_del( result_node_array );
+			result_node_array = newArray;
+			result_node_count += addCount;
+		}
+
+		result_path_dist += 1 + sideGoDist - curGoDist;		// the length of the path changes
+		waiting_term = 0;
+
+		sprite_move( sideX*ZOOM_LOC_WIDTH, sideY*ZOOM_LOC_HEIGHT );
+		return 1;
+	}
+
+	return 0;
+}
+//------- End of function Unit::try_sidestep -------//
+
+
 //------ Begin of function Unit::handle_blocked_move_s11 -------//
 // both blocked and blocking are size 1
 //
@@ -166,6 +341,11 @@ void Unit::handle_blocked_move_s11(Unit *unitPtr)
 
 	int waitTerm;
 	int moveStep = move_step_magn();
+
+	//--- 7kmod-pathing: blocked by a unit that is moving or waiting, try to step aside first ---//
+
+	if( unitPtr->cur_action != SPRITE_IDLE && try_sidestep() )
+		return;
 
 	switch(unitPtr->cur_action)
 	{

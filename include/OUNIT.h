@@ -612,6 +612,7 @@ private:
 	int   edit_path_to_surround(int x1, int y1, int x2, int y2, int readyDist);
 	void  search_or_stop(int destX, int destY, int preserveAction=0, short searchMode=1, short miscNo=0);
 	void  search_or_wait();
+	int   try_sidestep();				// 7kmod-pathing
 	//void   move_to_surround_s2(int destXLoc, int destYLoc); // for 2x2 unit only
 	int   move_to_range_attack(int targetXLoc, int targetYLoc, short miscNo, short searchMode, short maxRange); // move to target for using range attack
 

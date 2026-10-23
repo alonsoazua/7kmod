@@ -242,6 +242,7 @@ public:
 	void	reset_attack_range_para();
 	void	set_nation_recno(char nationRecno);
 	void	set_nation_passable(char nationPassable[]);
+	void	set_unit_penalty(int flag, int excludeUnitRecno);		// 7kmod-pathing
 	void	set_sub_mode(char subMode=SEARCH_SUB_MODE_NORMAL);
 
    int   write_file(File* filePtr);

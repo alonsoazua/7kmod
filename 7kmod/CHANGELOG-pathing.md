@@ -11,6 +11,25 @@ Si los cambios funcionan bien en partidas, se pasarán a `7kmod-gameplay` (o a
 
 ## [Sin publicar]
 
+### Agregado
+- **Paso lateral al chocar (0.2.0):** cuando una unidad terrestre choca con otra que
+  avanza o espera (en una multitud o una fila), antes solo esperaba su turno. Ahora,
+  después de esperar un momento, intenta pasar por una de las dos casillas en
+  diagonal hacia adelante (45° a cada lado de su dirección) y sigue hacia el
+  siguiente punto de su camino. Elige el lado que la deja más cerca de su camino, y
+  con la misma distancia la mitad de las unidades prueba primero un lado y la otra
+  mitad el otro, para que la multitud se abra hacia los dos lados en vez de formar
+  una fila india. Solo lo hace si las casillas hasta el siguiente punto del camino
+  se pueden caminar, y no a 2 casillas o menos del destino, para que las unidades
+  se acomoden normalmente al llegar (`Unit::try_sidestep` en `src/OUNITHB.cpp`).
+- **Buscar otro carril al quedar atascada (0.2.0):** cuando una unidad lleva un rato
+  bloqueada y vuelve a buscar camino (`Unit::search_or_wait`), la búsqueda ahora
+  cuenta las casillas con unidades como más caras: +2 por cada unidad quieta,
+  esperando o peleando y +1 por cada unidad que avanza, hasta +4 por bloque. No las
+  prohíbe. Antes, las unidades de su mismo grupo que estaban a más de 3 casillas
+  contaban como libres, así que el nuevo camino volvía a pasar por la misma fila;
+  ahora busca un carril paralelo si lo hay.
+
 ### Cambiado
 - **Heurística de la búsqueda de caminos:** la búsqueda (A* sobre bloques de 2×2
   casillas, `src/OSPATH.cpp`) estimaba la distancia al destino como la distancia

@@ -45,7 +45,7 @@
 //
 // Based on 7kmod-gameplay, with changes of the path finding.
 
-#define MOD_PATHING_VERSION		"0.1.0"
+#define MOD_PATHING_VERSION		"0.2.0"
 
 //------- the text displayed on the main menu --------//
 
