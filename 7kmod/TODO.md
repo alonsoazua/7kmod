@@ -47,6 +47,21 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   - Actualizar `CHANGELOG-gameplay.md`, `COMBAT_ANALYSIS.md` (sección de los
     Fryhtans invocados) y `SIEGE_WEAPONS.md` (la nota de los Fryhtans sin
     dinero).
+- [ ] **Tecnología contra Fryhtans** (gameplay, `ModTech`).
+  - Las unidades del reino que la investigó hacen 30% más daño a los
+    Fryhtans: tanto a los salvajes como a los invocados por otros reinos.
+  - El bono se aplica al daño antes de la armadura, como el bono del general y
+    el +25% de los Fryhtans invocados (al recibir el golpe, en
+    `Unit::hit_target`, que es donde se conoce al objetivo). Para los
+    proyectiles se usa el reino del que disparó, porque el tirador puede haber
+    muerto antes de que el proyectil llegue.
+  - Por defecto aplica a todas las unidades del reino que hacen daño:
+    soldados, armas de asedio, barcos y sus propios Fryhtans invocados.
+  - Investigación rápida por ahora, para probarla. La IA no la investiga.
+  - Partidas guardadas: una tecnología más en `ModTechRes`, subir
+    `GAME_VERSION_7KMOD` (296 → 297 o la que siga).
+  - Por definir: si también aplica a las guaridas Fryhtan (Fryhtan Lair).
+  - Actualizar `CHANGELOG-gameplay.md` y `COMBAT_ANALYSIS.md`.
 
 ---
 
