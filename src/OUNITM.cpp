@@ -1665,6 +1665,23 @@ int Unit::avail_node_enough_for_search(short x1, short y1, short x2, short y2)
 //
 void Unit::process_move()
 {
+	//--- 7kmod-pathing: a faster unit of a group pauses from time to time, to move at the speed of the slowest one ---//
+
+	if( group_move_speed && group_move_group_id==unit_group_id && action_mode2==ACTION_MOVE )
+	{
+		int mySpeed = move_speed();
+
+		if( group_move_speed < mySpeed )
+		{
+			group_move_acc += group_move_speed;
+
+			if( group_move_acc < mySpeed )
+				return;
+
+			group_move_acc -= mySpeed;
+		}
+	}
+
 	//----- if the sprite has reach the destintion ----//
 
 	//--------------------------------------------------------//
@@ -1732,6 +1749,7 @@ void Unit::process_move()
 	{
 		move_to_x_loc = next_x_loc();
 		move_to_y_loc = next_y_loc();
+		group_move_speed = 0;		// 7kmod-pathing
 	}
 
 	//--------------------------------------------------------//

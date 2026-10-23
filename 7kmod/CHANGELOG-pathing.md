@@ -12,6 +12,36 @@ Si los cambios funcionan bien en partidas, se pasarán a `7kmod-gameplay` (o a
 ## [Sin publicar]
 
 ### Agregado
+- **Formación nueva para grupos dispersos (0.4.0):** si el grupo no está junto (no
+  cabe en un cuadro de 10×10 o sus unidades ocupan menos de la mitad del cuadro, como
+  los soldados que acaban de salir de un fuerte y quedan repartidos alrededor), ya
+  no se copia su forma: se arma una formación nueva en el destino, centrada en el
+  clic.
+  - Filas perpendiculares a la dirección del movimiento, con el frente hacia el
+    destino: 1 fila hasta 4 unidades, 2 filas hasta 12 y 3 filas a partir de 13.
+    Unidades pegadas. Si el movimiento es en diagonal, la formación también va en
+    diagonal (en escalera).
+  - Orden por tipo, del frente hacia atrás: cuerpo a cuerpo, unidades a distancia,
+    armas de asedio y caravanas, y al final el general o el rey.
+  - Dentro de cada fila las unidades se acomodan según su posición actual, para que
+    no se crucen en el camino.
+  - Si das clic muy cerca del centro del grupo disperso (a menos de 3 casillas), se
+    juntan alrededor del clic como en el original.
+  - En pasos estrechos no se controla la forma: cada unidad va por su camino y el
+    grupo se vuelve a formar en el destino.
+- **El grupo avanza a la velocidad del más lento (0.4.0):** al mover un grupo de
+  unidades terrestres, las más rápidas hacen una pausa de vez en cuando para avanzar
+  al ritmo de la más lenta (por ejemplo, Zulúes con armas de asedio). La velocidad
+  de las unidades no se cambia (es un dato compartido por tipo de unidad). Deja de
+  aplicarse cuando la unidad llega, recibe otra orden o entra en combate. No se
+  guarda en la partida: al cargar, las unidades que iban en camino siguen a su
+  velocidad normal.
+- **Intercambio de lugar en la formación (0.4.0):** cuando una unidad choca con un
+  compañero del mismo grupo que ya llegó a su lugar y es del mismo tipo y rango
+  (soldados), intercambian sus lugares en vez de empujarlo fuera de la formación: el
+  compañero sigue hacia el lugar de la unidad y ella ocupa el suyo. Es el
+  comportamiento del juego original para ese caso. Con unidades de otro tipo se
+  sigue empujando al compañero a un lado, como antes.
 - **Movimiento en formación, "caja mágica" (0.3.0):** al mover un grupo de unidades
   terrestres, si el grupo está junto (cabe en un cuadro de 10×10 casillas) y das
   clic fuera del área que ocupa, cada unidad va al punto del clic más su posición

@@ -33,6 +33,7 @@
 #include <OWORLD.h>
 #include <OTERRAIN.h>
 #include <OUNIT.h>
+#include <OUNITRES.h>
 #include <dbglog.h>
 
 DBGLOG_DEFAULT_CHANNEL(Unit);
@@ -307,18 +308,48 @@ void UnitArray::move_to_now_with_filter(int destX, int destY, short* selectedUni
 //----------- End of function UnitArray::move_to_now_with_filter -----------//
 
 
+//--------- Begin of static function formation_role ---------//
+//
+// 7kmod-pathing: the row of a unit in a new formation, from the front:
+// 0 - melee units, 1 - ranged units, 2 - siege weapons and caravans,
+// 3 - generals and kings.
+//
+static int formation_role(Unit* unitPtr)
+{
+	if( unitPtr->rank_id == RANK_GENERAL || unitPtr->rank_id == RANK_KING )
+		return 3;
+
+	char unitClass = unit_res[unitPtr->unit_id]->unit_class;
+
+	if( unitClass == UNIT_CLASS_WEAPON || unitClass == UNIT_CLASS_CARAVAN )
+		return 2;
+
+	if( unitPtr->max_attack_range() > 1 )
+		return 1;
+
+	return 0;
+}
+//----------- End of static function formation_role -----------//
+
+
 //--------- Begin of function UnitArray::move_in_formation ---------//
 //
-// 7kmod-pathing: move a group of land units keeping their formation, like
-// the "magic box" of modern RTS games:
+// 7kmod-pathing: move a group of land units in formation, like the "magic box"
+// of modern RTS games:
 //
-// - If the destination is outside of the box occupied by the group and the
-//   group is not scattered (the box is at most FORMATION_MAX_SPAN locations
-//   wide and high), each unit moves to the destination plus its offset from
-//   the center of the box, so the group arrives with the same shape.
-// - If the destination is inside the box, or the group is scattered, the
-//   units gather around the destination as in the original game
-//   (move_to_now() continues).
+// - If the group is together (the box it occupies is at most FORMATION_MAX_SPAN
+//   locations wide and high, and the units fill at least half of it) and the
+//   destination is outside of the box, each unit moves to the destination plus
+//   its offset from the center of the box, so the group keeps its shape.
+// - If the group is scattered (e.g. soldiers that just left a fort, spread
+//   around it), a new formation is made at the destination: rows perpendicular
+//   to the direction of the movement (diagonal for a diagonal movement), with
+//   1 row up to 4 units, 2 rows up to 12 and 3 rows for more. Melee units go
+//   in the front rows, then ranged units, then siege weapons, and generals and
+//   kings at the back.
+// - If the destination is inside the box of a group that is together, or very
+//   close to the center of a scattered group, the units gather around the
+//   destination as in the original game (move_to_now_gather()).
 //
 // Each unit searches its own path to its place (no path reuse), so they don't
 // cross each other. If the place of a unit is not walkable, is occupied by a
@@ -326,13 +357,14 @@ void UnitArray::move_to_now_with_filter(int destX, int destY, short* selectedUni
 // around it is used.
 //
 // return: <int> 1 - the units have been ordered to move in formation
-//               0 - not possible, move_to_now() moves them as usual
+//               0 - not possible, move_to_now_gather() moves them as usual
 //
 int UnitArray::move_in_formation(int destX, int destY, short* selectedUnitArray, int selectedCount)
 {
 	#define FORMATION_MAX_SPAN		10
 	#define FORMATION_MAX_UNIT		100
 	#define FORMATION_SEARCH_SIZE	9		// the size of the square to look for a free location around a place
+	#define FORMATION_MIN_DIST		3		// the minimum distance to the center of a scattered group to make a new formation
 
 	if( selectedCount < 2 || selectedCount > FORMATION_MAX_UNIT )
 		return 0;
@@ -340,7 +372,8 @@ int UnitArray::move_in_formation(int destX, int destY, short* selectedUnitArray,
 	//------- only land units of size 1x1 --------//
 
 	int minX=MAX_WORLD_X_LOC, minY=MAX_WORLD_Y_LOC, maxX=-1, maxY=-1;
-	int i;
+	int sumX=0, sumY=0;
+	int i, j;
 
 	for( i=0 ; i<selectedCount ; i++ )
 	{
@@ -358,33 +391,133 @@ int UnitArray::move_in_formation(int destX, int destY, short* selectedUnitArray,
 		minY = MIN(minY, y);
 		maxX = MAX(maxX, x);
 		maxY = MAX(maxY, y);
+		sumX += x;
+		sumY += y;
 	}
 
-	//------- scattered group, or destination inside the box: gather as usual -------//
+	short placeXArray[FORMATION_MAX_UNIT], placeYArray[FORMATION_MAX_UNIT];		// the wanted place of each unit
 
-	if( maxX-minX+1 > FORMATION_MAX_SPAN || maxY-minY+1 > FORMATION_MAX_SPAN )
-		return 0;
+	int boxWidth = maxX-minX+1, boxHeight = maxY-minY+1;
 
-	if( destX >= minX && destX <= maxX && destY >= minY && destY <= maxY )
-		return 0;
+	if( boxWidth <= FORMATION_MAX_SPAN && boxHeight <= FORMATION_MAX_SPAN &&
+		 selectedCount*2 >= boxWidth*boxHeight )
+	{
+		//------- the group is together: keep its shape -------//
 
-	//------- the place of each unit: the destination plus its offset from the center of the box -------//
+		if( destX >= minX && destX <= maxX && destY >= minY && destY <= maxY )
+			return 0;		// destination inside the box: gather as usual
 
-	int centerX = (minX+maxX)/2, centerY = (minY+maxY)/2;
+		int centerX = (minX+maxX)/2, centerY = (minY+maxY)/2;
+
+		for( i=0 ; i<selectedCount ; i++ )
+		{
+			Unit* unitPtr = operator[](selectedUnitArray[i]);
+
+			placeXArray[i] = destX + unitPtr->next_x_loc() - centerX;
+			placeYArray[i] = destY + unitPtr->next_y_loc() - centerY;
+		}
+	}
+	else
+	{
+		//------- the group is scattered: make a new formation -------//
+
+		int centerX = sumX/selectedCount, centerY = sumY/selectedCount;
+		int vecX = destX-centerX, vecY = destY-centerY;
+
+		if( MAX(abs(vecX), abs(vecY)) < FORMATION_MIN_DIST )
+			return 0;
+
+		//--- the direction of the movement, in one of the 8 directions ---//
+
+		int frontX = (vecX>0) - (vecX<0);
+		int frontY = (vecY>0) - (vecY<0);
+
+		if( abs(vecX) > 2*abs(vecY) )
+			frontY = 0;
+		else if( abs(vecY) > 2*abs(vecX) )
+			frontX = 0;
+
+		int sideX = -frontY, sideY = frontX;		// along the rows
+
+		//--- the number of rows and the units per row ---//
+
+		int rowCount = selectedCount <= 4 ? 1 : (selectedCount <= 12 ? 2 : 3);
+		int colCount = (selectedCount+rowCount-1) / rowCount;
+
+		//--- sort the units: by role, then the ones more to the front first ---//
+
+		short orderArray[FORMATION_MAX_UNIT];
+		int   keyArray[FORMATION_MAX_UNIT];
+
+		for( i=0 ; i<selectedCount ; i++ )
+		{
+			Unit* unitPtr = operator[](selectedUnitArray[i]);
+			int front = (unitPtr->next_x_loc()-centerX)*frontX + (unitPtr->next_y_loc()-centerY)*frontY;
+
+			orderArray[i] = i;
+			keyArray[i] = formation_role(unitPtr)*10000 - front;
+		}
+
+		for( i=1 ; i<selectedCount ; i++ )		// insertion sort, stable
+		{
+			short id = orderArray[i];
+
+			for( j=i ; j>0 && keyArray[orderArray[j-1]] > keyArray[id] ; j-- )
+				orderArray[j] = orderArray[j-1];
+
+			orderArray[j] = id;
+		}
+
+		//--- each row: the units sorted by their side position, so that they don't cross ---//
+
+		for( int row=0 ; row<rowCount ; row++ )
+		{
+			int firstId = row*colCount;
+			int rowUnits = MIN(colCount, selectedCount-firstId);
+
+			if( rowUnits <= 0 )
+				break;
+
+			for( i=firstId+1 ; i<firstId+rowUnits ; i++ )
+			{
+				short id = orderArray[i];
+				Unit* unitPtr = operator[](selectedUnitArray[id]);
+				int side = unitPtr->next_x_loc()*sideX + unitPtr->next_y_loc()*sideY;
+
+				for( j=i ; j>firstId ; j-- )
+				{
+					Unit* prevPtr = operator[](selectedUnitArray[orderArray[j-1]]);
+
+					if( prevPtr->next_x_loc()*sideX + prevPtr->next_y_loc()*sideY <= side )
+						break;
+
+					orderArray[j] = orderArray[j-1];
+				}
+
+				orderArray[j] = id;
+			}
+
+			int rowOffset = (rowCount-1)/2 - row;		// the formation is centered on the destination, the first row in front
+
+			for( i=0 ; i<rowUnits ; i++ )
+			{
+				int sideOffset = i - (rowUnits-1)/2;
+				short id = orderArray[firstId+i];
+
+				placeXArray[id] = destX + sideOffset*sideX + rowOffset*frontX;
+				placeYArray[id] = destY + sideOffset*sideY + rowOffset*frontY;
+			}
+		}
+	}
+
+	//------- the closest free location around each place (the place itself first) -------//
+
 	int destRegionId = world.get_loc(destX, destY)->region_id;
 	uint32_t groupId = operator[](selectedUnitArray[0])->unit_group_id;
 
-	short placeXArray[FORMATION_MAX_UNIT], placeYArray[FORMATION_MAX_UNIT];
-
 	for( i=0 ; i<selectedCount ; i++ )
 	{
-		Unit* unitPtr = operator[](selectedUnitArray[i]);
-
-		int wantX = destX + unitPtr->next_x_loc() - centerX;
-		int wantY = destY + unitPtr->next_y_loc() - centerY;
-
-		//--- the closest free location around the place (the place itself first) ---//
-
+		int wantX = placeXArray[i], wantY = placeYArray[i];
 		int found = 0;
 
 		for( int n=1 ; n<=FORMATION_SEARCH_SIZE*FORMATION_SEARCH_SIZE && !found ; n++ )
@@ -405,7 +538,6 @@ int UnitArray::move_in_formation(int destX, int destY, short* selectedUnitArray,
 
 			//--- not taken by another unit of the group ---//
 
-			int j;
 			for( j=0 ; j<i && (placeXArray[j]!=x || placeYArray[j]!=y) ; j++ );
 
 			if( j<i )
@@ -440,7 +572,58 @@ int UnitArray::move_in_formation(int destX, int destY, short* selectedUnitArray,
 //----------- End of function UnitArray::move_in_formation -----------//
 
 
+//--------- Begin of function UnitArray::set_group_speed ---------//
+//
+// 7kmod-pathing: the faster units of a group that has been ordered to move
+// pause from time to time, so that they move at the speed of the slowest unit
+// of the group (see Unit::process_move()). The speed itself is not changed, as
+// it is shared by all the units of the same type.
+//
+void UnitArray::set_group_speed(short* selectedUnitArray, int selectedCount)
+{
+	int i, minSpeed = 0;
+
+	for( i=0 ; i<selectedCount ; i++ )
+	{
+		Unit* unitPtr = operator[](selectedUnitArray[i]);
+
+		if( unitPtr->mobile_type != UNIT_LAND )
+			return;
+
+		int speed = unitPtr->move_speed();
+
+		if( !minSpeed || speed < minSpeed )
+			minSpeed = speed;
+	}
+
+	for( i=0 ; i<selectedCount ; i++ )
+	{
+		Unit* unitPtr = operator[](selectedUnitArray[i]);
+
+		unitPtr->group_move_speed    = selectedCount > 1 ? minSpeed : 0;
+		unitPtr->group_move_group_id = unitPtr->unit_group_id;
+		unitPtr->group_move_acc      = 0;
+	}
+}
+//----------- End of function UnitArray::set_group_speed -----------//
+
+
 //--------- Begin of function UnitArray::move_to_now ---------//
+//
+// 7kmod-pathing: move in formation if possible, otherwise gather around the
+// destination as in the original game. Then match the speed of the group.
+//
+void UnitArray::move_to_now(int destXLoc, int destYLoc, short* selectedUnitArray, int selectedCount)
+{
+	if( !move_in_formation(destXLoc, destYLoc, selectedUnitArray, selectedCount) )
+		move_to_now_gather(destXLoc, destYLoc, selectedUnitArray, selectedCount);
+
+	set_group_speed(selectedUnitArray, selectedCount);
+}
+//----------- End of function UnitArray::move_to_now -----------//
+
+
+//--------- Begin of function UnitArray::move_to_now_gather ---------//
 //
 // Order the unit to move to a specific location following the
 // shortest path.
@@ -449,13 +632,8 @@ int UnitArray::move_in_formation(int destX, int destY, short* selectedUnitArray,
 // <short*> selectedUnitArray  - an array of recno of selected units.
 // <int>    selectedCount 		 - no. of selected units.
 //
-void UnitArray::move_to_now(int destXLoc, int destYLoc, short* selectedUnitArray, int selectedCount)
+void UnitArray::move_to_now_gather(int destXLoc, int destYLoc, short* selectedUnitArray, int selectedCount)
 {
-	//--- 7kmod-pathing: keep the formation of the group if possible ---//
-
-	if( move_in_formation(destXLoc, destYLoc, selectedUnitArray, selectedCount) )
-		return;
-
 	err_when(destXLoc<0 || destYLoc<0 || destXLoc>=MAX_WORLD_X_LOC || destYLoc>=MAX_WORLD_Y_LOC);
 	err_when( selectedCount > 10000 );
 
@@ -1087,7 +1265,7 @@ void UnitArray::move_to_now(int destXLoc, int destYLoc, short* selectedUnitArray
 		y-=2;
 	}*/
 }
-//----------- End of function UnitArray::move_to_now -----------//
+//----------- End of function UnitArray::move_to_now_gather -----------//
 
 
 //----------Begin of function UnitArray::construct_sorted_array------------//

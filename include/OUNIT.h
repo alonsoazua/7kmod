@@ -241,6 +241,13 @@ public:
 	char        blocked_by_member;
 	char        swapping;
 
+	//--- 7kmod-pathing: the speed of the group the unit moves with, see Unit::process_move() (not saved) ---//
+	int         group_move_speed;
+	uint32_t    group_move_group_id;
+	int         group_move_acc;
+
+	int         move_speed()      { return sprite_info->speed*100 / MAX(1, sprite_info->frames_per_step); }
+
 	short       leader_unit_recno;   // recno of this unit's leader
 
 	int           is_visible()      { return cur_x >= 0; }     // whether the unit is visible on the map, it is not invisable if cur_x == -1
@@ -869,7 +876,9 @@ private:
 	//------------ move sub-functions --------------//
 	void  move_to_now_with_filter(int destX, int destY, short* selectedUnitArray, int selectedCount);
 	void  move_to_now(int destX, int destY, short* selectedUnitArray, int selectedCount);
+	void  move_to_now_gather(int destX, int destY, short* selectedUnitArray, int selectedCount);		// 7kmod-pathing: the original move_to_now()
 	int   move_in_formation(int destX, int destY, short* selectedUnitArray, int selectedCount);		// 7kmod-pathing
+	void  set_group_speed(short* selectedUnitArray, int selectedCount);										// 7kmod-pathing
 	void  construct_sorted_array(short* selectedUnitArray, int selectedCount);
 	void  determine_position_to_construct_table(int selectedCount, int destXLoc, int destYLoc, char mobileType);
 

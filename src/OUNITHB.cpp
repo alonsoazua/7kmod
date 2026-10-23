@@ -442,7 +442,13 @@ void Unit::handle_blocked_move_s11(Unit *unitPtr)
 						}
 						else if((unitPtr->next_x_loc() != move_to_x_loc || unitPtr->next_y_loc() != move_to_y_loc) &&
 							(unitPtr->cur_action==SPRITE_IDLE && unitPtr->action_mode2==ACTION_STOP))
-							if( config_adv.fix_path_blocked_by_team )
+							//--- 7kmod-pathing: a unit of the same type and rank has already reached its place in the ---//
+							//--- formation: exchange the places, so that the formation is kept (as in the original    ---//
+							//--- game), instead of pushing it out of its place                                         ---//
+							if( unitPtr->unit_id==unit_id && unitPtr->rank_id==rank_id && rank_id==RANK_SOLDIER &&
+								 mobile_type==UNIT_LAND && result_node_array )
+								move_to_my_loc(unitPtr);
+							else if( config_adv.fix_path_blocked_by_team )
 								handle_blocked_by_idle_unit(unitPtr);
 							else
 								move_to_my_loc(unitPtr); // push the blocking unit and exchange their destination
