@@ -264,6 +264,12 @@ static int is_military_unit(Unit* unitPtr)
 			if( unitPtr->rank_id == RANK_KING || unitPtr->rank_id == RANK_GENERAL )
 				return 1;
 
+			//--- the skill of the units of other kingdoms is not revealed (and spies would be revealed), ---//
+			//--- they all look the same: all of them are taken as military units                         ---//
+
+			if( !unitPtr->is_own() )
+				return 1;
+
 			if( unitPtr->spy_recno && unitPtr->true_nation_recno() == nation_array.player_recno )
 				return 0;
 
@@ -1350,6 +1356,12 @@ int Power::detect_select(int selX1, int selY1, int selX2, int selY2, int recallG
 			short inspectArray[MAX_UNIT_LIST];
 			int   inspectCount = 0;
 			int   bestUnitRecno = 0;
+			int   inspectMilitaryOnly = 0;		// with military units in the box, only take them (Alt takes all)
+
+			for( int pass=0 ; pass<2 ; pass++ )		// pass 0: find whether there are military units, pass 1: take the units
+			{
+			if( pass==0 && (mouse.event_skey_state & ALT_KEY_MASK) )
+				continue;
 
 			for( yLoc=selYLoc1 ; yLoc<=selYLoc2 ; yLoc++ )
 			{
@@ -1372,6 +1384,24 @@ int Power::detect_select(int selX1, int selY1, int selX2, int selY2, int recallG
 						{
 							continue;
 						}
+
+						if( pass==0 )		// only find whether there are military units in the box
+						{
+							if( !inspectMilitaryOnly && is_military_unit(unitPtr) )
+							{
+								unitPtr->update_abs_pos();
+
+								if( misc.is_touch( absSelX1, absSelY1, absSelX2, absSelY2,
+									 unitPtr->abs_x1, unitPtr->abs_y1, unitPtr->abs_x2, unitPtr->abs_y2 ) )
+								{
+									inspectMilitaryOnly = 1;
+								}
+							}
+							continue;
+						}
+
+						if( inspectMilitaryOnly && !is_military_unit(unitPtr) )
+							continue;
 
 						//--- big units are in several locations, add them once ---//
 
@@ -1403,6 +1433,7 @@ int Power::detect_select(int selX1, int selY1, int selX2, int selY2, int recallG
 					}
 				}
 			}
+			}		// for pass
 
 			if( bestUnitRecno )
 			{

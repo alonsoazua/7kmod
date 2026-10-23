@@ -119,7 +119,7 @@ En los menús de entrenamiento y producción, `↑` y `↓` mueven la selección
 | Clic izquierdo | Selecciona una unidad, edificio o pueblo. |
 | Arrastrar con clic izquierdo | Selecciona tus unidades dentro del recuadro. **(mod)** Si hay al menos una unidad militar (soldados, generales, rey, armas, barcos de guerra, Fryhtans), solo se seleccionan las militares; si solo hay civiles, se seleccionan todas. |
 | `Alt` + arrastrar **(mod)** | Selecciona todas tus unidades dentro del recuadro, militares y civiles, como en el juego original. |
-| Recuadro sin unidades tuyas **(mod)** | Si dentro hay unidades de otros reinos (o Fryhtans salvajes, rebeldes…), selecciona la más importante (rey, general, luego la de más vida) y el botón `>` del panel muestra la lista de todas las del recuadro. |
+| Recuadro sin unidades tuyas **(mod)** | Si dentro hay unidades de otros reinos (o Fryhtans salvajes, rebeldes…), selecciona la más importante (rey, general, luego la de más vida) y el botón `>` del panel muestra la lista de todas las del recuadro. Si hay unidades militares, solo toma las militares (con `Alt`, todas). |
 | `Shift` + clic o recuadro | Agrega o quita unidades de la selección actual. |
 | `Ctrl` + clic izquierdo | Selección precisa: solo lo que está justo bajo el cursor. Sin Ctrl, el juego también toma unidades grandes o en movimiento cercanas. |
 | Clic derecho en el terreno | Mueve las unidades seleccionadas. |
