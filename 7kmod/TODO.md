@@ -63,6 +63,20 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     `GAME_VERSION_7KMOD` (296 → 297 o la que siga).
   - Por definir: si también aplica a las guaridas Fryhtan (Fryhtan Lair).
   - Actualizar `CHANGELOG-gameplay.md` y `COMBAT_ANALYSIS.md`.
+- [ ] **El bono del general en batalla también aplica al rey** (gameplay).
+  - Hoy el general en el mapa con al menos 4 de sus soldados a 10 casillas o
+    menos recibe su propio liderazgo como bono de daño y +1 de armadura, pero
+    el rey no (`Unit::general_buff_active` en `src/OUNITIF.cpp` exige
+    `RANK_GENERAL`). Cambiar para que acepte también `RANK_KING`.
+  - Mismas condiciones: solo cuentan las unidades que lo tienen como líder
+    (las que salen del fuerte con él con el botón de patrulla o en la defensa
+    automática).
+  - El rey suele tener liderazgo alto (hasta 100), así que con sus tropas
+    llegaría a +100% de daño y +1 de armadura.
+  - El panel del rey muestra el bono igual que el del general (flecha hacia
+    arriba).
+  - Actualizar `CHANGELOG-gameplay.md` (quitar "No aplica al rey") y la sección
+    8 de `COMBAT_ANALYSIS.md`.
 
 ---
 
