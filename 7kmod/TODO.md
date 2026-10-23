@@ -39,6 +39,20 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     - No se cuentan como soldados del fuerte: no entrenan, no cuentan para la
       lealtad del general ni para sus botones.
   - Actualizar el changelog de 7kmod.
+- [ ] **Selección con prioridad militar** (comodidad: va en 7kmod y pasa a
+  gameplay con el rebase).
+  - Hoy el recuadro de selección (`Power::detect_select` en `src/OPOWER.cpp`)
+    toma todas tus unidades dentro de él.
+  - Si el recuadro incluye al menos una unidad militar, solo se seleccionan las
+    militares. Si solo hay civiles, se seleccionan como hoy.
+  - Con `Alt` presionado (hoy no hace nada en la selección) se seleccionan
+    todas, como antes.
+  - Militares: soldados, generales, rey, armas de asedio, barcos de guerra
+    (Caravel, Galleon) y los Fryhtans de tu reino.
+  - Civiles: constructores, mineros, trabajadores, investigadores, espías,
+    caravanas y barcos Trader y Transport.
+  - Shift + recuadro (agregar a la selección) sigue la misma regla.
+  - Actualizar `KEYBINDINGS.md` y el changelog de 7kmod.
 
 ---
 
