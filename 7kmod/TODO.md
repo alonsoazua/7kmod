@@ -9,66 +9,7 @@ queda solo con mejoras de comodidad (interfaz) sobre la 2.15.7.
 
 Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo en partida.
 
-- [ ] **Corregir: el fondo de la lista de unidades se aclara cada vez más**
-  (7kmod).
-  - En el panel de la lista de unidades seleccionadas, el fondo se vuelve más
-    blanco cada vez que cambia la lista (por ejemplo, cuando muere una
-    unidad).
-  - Causa (revisada en el código): cuando la lista cambia, `unit_list_disp`
-    (`src/OUNITLST.cpp`) vuelve a pintar el panel por su cuenta con
-    `vga_util.d3_panel_up`. Ese panel no es opaco: aclara lo que ya hay debajo
-    (`adjust_brightness` sobre el fondo), y como debajo ya estaba el panel
-    aclarado de antes, cada repintado lo aclara un poco más. En un repintado
-    normal (`info.disp()`) el juego primero restaura el fondo, por eso solo se
-    aclara una vez.
-  - Corrección: cuando la lista cambie, pedir el repintado completo con
-    `info.disp()` en lugar de repintar el panel directamente.
-  - **El mismo problema en el fuerte:** `FirmCamp::disp_camp_info` repinta su
-    panel con `d3_panel_up` cuando cambia el general que está fuera del fuerte
-    (cuando sale, muere o regresa), así que ese panel también se aclara. Misma
-    corrección.
-  - Revisar si queda algún otro repintado parcial con `d3_panel_up` en el
-    código del mod.
-- [ ] **Barra de vida en el mapa para las unidades de otros reinos del
-  recuadro** (7kmod).
-  - Hoy el juego dibuja la barra de vida sobre las unidades seleccionadas
-    (`Unit::draw_selected`, llamado desde `Unit::draw` y
-    `Unit::draw_outlined` en `src/OUNITDRW.cpp` cuando `selected_flag` está
-    activo). Al seleccionar con el recuadro unidades de otros reinos, solo la
-    unidad elegida queda seleccionada; las demás están en la lista aparte
-    (`unit_list_set_inspect`) y no muestran su barra.
-  - Cambio: mientras la unidad mostrada en el panel sea una de esa lista,
-    todas las unidades de la lista muestran su barra de vida sobre ellas en
-    el mapa, igual que las unidades seleccionadas.
-  - Hace falta una función en `OUNITLST` que diga si una unidad está en la
-    lista activa (la lista y la unidad del panel), y usarla en `Unit::draw` y
-    `Unit::draw_outlined` junto a `selected_flag`.
-  - No se muestra el ícono de habilidad que acompaña a la barra en las
-    unidades enemigas, igual que hoy con una sola unidad enemiga
-    seleccionada.
-- [ ] **Corregir: a la lista de unidades de otros reinos se agregan unidades
-  que no estaban en el recuadro** (7kmod).
-  - Ejemplo: un recuadro sobre Fryhtans peleando contra un reino; por un
-    momento apareció en la lista un soldado del otro lado del mapa que iba
-    saliendo de su fuerte.
-  - Causa (revisada en el código): la lista guarda los números de registro
-    de las unidades (`inspect_unit_array` en `src/OUNITLST.cpp`). Cuando una
-    unidad muere o entra a un edificio, su número queda libre, y el juego lo
-    reutiliza enseguida para la siguiente unidad que se crea
-    (`DynArrayB::linkin`: sin intervalo de espera, el último número liberado
-    es el primero que se reutiliza). Un soldado que sale de un fuerte es una
-    unidad nueva, así que puede recibir el número del Fryhtan que acababa de
-    morir y aparecer en la lista.
-  - Corrección: guardar junto a cada número algo que identifique a la unidad
-    (por ejemplo su tipo `unit_id`, su `name_id` y su reino al momento del
-    recuadro) y quitar de la lista las que ya no coincidan.
-  - Revisar si la lista de unidades propias seleccionadas tiene el mismo
-    problema (no debería: usa `selected_flag` de cada unidad, que una unidad
-    nueva no tiene).
-- [ ] **Corregir: posición de Alert / At ease en el fuerte** (7kmod).
-  - **Alert / At ease en la posición 1 de la página 2** (a la izquierda,
-    `INFO_X1`), no a la derecha. El botón de espías, que hoy ocupa la
-    posición 1 de la página 2, pasa a la posición 2.
+(vacío)
 
 ---
 
