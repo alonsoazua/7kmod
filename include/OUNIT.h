@@ -869,6 +869,7 @@ private:
 	//------------ move sub-functions --------------//
 	void  move_to_now_with_filter(int destX, int destY, short* selectedUnitArray, int selectedCount);
 	void  move_to_now(int destX, int destY, short* selectedUnitArray, int selectedCount);
+	int   move_in_formation(int destX, int destY, short* selectedUnitArray, int selectedCount);		// 7kmod-pathing
 	void  construct_sorted_array(short* selectedUnitArray, int selectedCount);
 	void  determine_position_to_construct_table(int selectedCount, int destXLoc, int destYLoc, char mobileType);
 

@@ -11,6 +11,23 @@ Si los cambios funcionan bien en partidas, se pasarán a `7kmod-gameplay` (o a
 
 ## [Sin publicar]
 
+### Agregado
+- **Movimiento en formación, "caja mágica" (0.3.0):** al mover un grupo de unidades
+  terrestres, si el grupo está junto (cabe en un cuadro de 10×10 casillas) y das
+  clic fuera del área que ocupa, cada unidad va al punto del clic más su posición
+  relativa al centro del grupo, así que el grupo llega con la misma forma en que
+  estaba. Cada unidad busca su propio camino a su lugar (no comparten camino), para
+  que no se crucen. Si el lugar de una unidad no es caminable, está ocupado o queda
+  en otra región, se usa la casilla libre más cercana. Si das clic dentro del área
+  del grupo, si el grupo está disperso, si hay más de 100 unidades o si alguna no es
+  de tamaño 1×1, se juntan alrededor del clic como en el juego original.
+  - Las unidades se mueven cada una a su velocidad (no a la del más lento): la
+    velocidad es un dato compartido por tipo de unidad y el juego la usa en muchas
+    comprobaciones de llegada y ataque, así que cambiarla por unidad es arriesgado.
+    Como la mayoría de los soldados tienen velocidad 4, en la práctica la formación
+    se mantiene; las que sí se separan son las mezclas con armas de asedio, Zulúes
+    (5) o Fryhtans.
+
 ### Corregido
 - **Rodeos en movimientos cortos (0.2.1):** con la heurística nueva, al mover una
   unidad unas pocas casillas en línea recta a veces daba un rodeo. Como un paso en
