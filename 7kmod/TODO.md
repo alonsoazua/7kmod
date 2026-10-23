@@ -23,6 +23,31 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     volver a dibujar el panel del fuerte (por ejemplo, revisar que el fuerte
     siga seleccionado antes de redibujar, o devolver un código distinto).
     Revisar lo mismo con el clic en el general oscurecido.
+- [ ] **Botón Withdraw en el fuerte** (comodidad: va en 7kmod y pasa a
+  gameplay con el rebase).
+  - Hace que todas las unidades que salieron del fuerte regresen a él: el
+    general (o rey), los soldados, las armas y los Fryhtans. Son las mismas
+    que el panel muestra oscurecidas (las que tienen ese fuerte en
+    `home_camp_firm_recno` y siguen en el mapa), pero sin el límite de
+    lugares libres.
+  - Usa la orden de regresar al fuerte que ya existe:
+    `UnitArray::return_camp(remoteAction, unitArray, count)`, que ya tiene su
+    mensaje de red (`MSG_UNITS_RETURN_CAMP`) para multijugador. Revisar que
+    mande el mensaje también cuando recibe la lista de unidades.
+  - Se desactiva si no hay unidades fuera del fuerte.
+  - **Posición:** en el lugar del botón Alert / At ease (defensa automática),
+    en la página 1 de los botones del fuerte.
+  - **El botón Alert / At ease pasa a la página 2,** en la misma posición
+    (a la derecha). Hoy la página 2 solo existe si tienes espías dentro del
+    fuerte (`Firm::button_page` devuelve 0 si `player_spy_count` es 0). Con
+    este cambio, los fuertes propios siempre tienen página 2, con las flechas
+    para cambiar de página; el botón de espías sigue en la página 2 cuando hay
+    espías.
+  - Ícono: reutilizar el de "regresar al fuerte" del panel de la unidad
+    (`RETCAMP`).
+  - Tooltip "Withdraw: all the units of this fort outside of it return".
+  - Actualizar `KEYBINDINGS.md` si se le asigna una tecla, y el changelog de
+    7kmod.
 
 ---
 
