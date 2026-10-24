@@ -118,6 +118,15 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     (cambia la versión de las partidas guardadas, como con las tecnologías del mod).
   - Por confirmar: el máximo de ×4 con 3 espías.
 
+- [ ] **Porcentaje de éxito del soborno.** En el menú de soborno, cada botón de monto
+  muestra la probabilidad de éxito, por ejemplo "Offer $1,000 (35%)" (montos: $500,
+  $1,000, $1,500, $2,000, $3,000 y $4,000).
+  - Se calcula con la misma fórmula del juego (ver `SPYING.md`, sección 5), entre 0%
+    y 100%.
+  - Si el objetivo es un espía de otro reino, el soborno siempre falla, pero el
+    porcentaje se muestra como si fuera una unidad normal, para no revelar que es
+    espía.
+
 ---
 
 ## Ideas por confirmar
