@@ -196,10 +196,18 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   - El límite de 1 reporte por reino cada 30 días ya no hace falta: como mínimo pasan
     60 días.
 
-- [ ] **Balance de los accidentes.** Probabilidad normal de 1 cada 2 años a **1 cada 3
-  años** por edificio (1 entre 1,095 al día). **La Sede de Poder (Seat of Power) queda
+- [ ] **Balance de los accidentes.** Probabilidad normal de 1 cada 2 años a **1 cada 5
+  años** por edificio (1 entre 1,825 al día). **La Sede de Poder (Seat of Power) queda
   fuera.** No cambian los multiplicadores de los espías (×2, ×3, ×4) ni los límites por
-  reino (1 normal y 3 por espías al año).
+  reino (1 normal y 3 por espías en 365 días).
+  - Por reino, sin espías (con el límite de 1 cada 365 días):
+
+    | Edificios | Accidentes en promedio | Al menos uno en el primer año |
+    |---|---|---|
+    | 1 | 1 cada 6 años | 18% |
+    | 4 | 1 cada 2.25 años | 55% |
+    | 10 | 1 cada 1.5 años | 86% |
+    | 20 | 1 cada 1.25 años | 98% |
 
 - [ ] **Fondo de los reportes de inteligencia.** En la pestaña "Intelligence", el
   detalle del reporte se dibuja sobre un panel sólido. Cambiarlo a fondo transparente,
