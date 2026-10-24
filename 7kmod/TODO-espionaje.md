@@ -97,20 +97,26 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   trabajadores (minas, fábricas, War Factory, Tower of Science, etc.; no los
   fuertes), de cualquier reino, puede ocurrir un accidente en el que mueren **1 o
   2 trabajadores**.
-  - Probabilidad normal: **1 accidente cada 2 años** por edificio en promedio (se
-    revisa cada día, 1 entre 730).
-  - **Con un espía enemigo en modo Sabotaje** en el edificio, la probabilidad se
-    **duplica** (1 cada año).
-  - Si el edificio es tuyo aparece un mensaje, por ejemplo: "An accident occurred at
-    the Mine near <pueblo>. 2 workers died."
+  - Probabilidad normal: 1 entre 730 al día por edificio (1 cada 2 años en
+    promedio).
+  - **Espías enemigos en modo Sabotaje** en el edificio la aumentan y se acumulan:
+    1 espía ×2, 2 espías ×3, 3 o más ×4.
+  - **Límites por reino** (el reino dueño de los edificios), en los últimos 365 días:
+    - Accidentes normales: **máximo 1 al año**.
+    - Accidentes causados por espías: **máximo 3 al año**.
+    - Cuando ocurre un accidente en un edificio con espías, se decide si fue normal
+      o causado por los espías según su parte de la probabilidad (con 1 espía, la
+      mitad de las veces cada uno). Si ese tipo ya llegó a su límite, no pasa nada.
+  - **Mensajes:**
+    - Si el edificio es tuyo: "An accident occurred at the Mine near <pueblo>. 2
+      workers died."
+    - Si lo causó tu espía en un edificio enemigo: "Your spy caused an accident at
+      the <reino> Mine near <pueblo>. 1 worker died."
   - Los trabajadores que mueren son de los normales, nunca un espía. Si viven en un
     pueblo, el pueblo pierde esa población.
-  - Por confirmar: si varios espías en Sabotaje suman (×2, ×3...) o el máximo es ×2;
-    si tu espía debe avisarte cuando provoca un accidente en un edificio enemigo; la
-    probabilidad normal (ver la nota).
-  - Nota: la probabilidad es por edificio, así que un reino con 20 edificios
-    tendría unos 10 accidentes al año y perdería unos 15 trabajadores al año, sin
-    espías de por medio. Puede ser mucho a mitad o al final de la partida.
+  - Hay que guardar en la partida la fecha de los últimos accidentes de cada reino
+    (cambia la versión de las partidas guardadas, como con las tecnologías del mod).
+  - Por confirmar: el máximo de ×4 con 3 espías.
 
 ---
 
