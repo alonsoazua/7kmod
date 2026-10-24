@@ -34,21 +34,25 @@ class Spy;
 
 //------- Propaganda in independent towns --------//
 
-#define PROPAGANDA_MAX_MONTH_DEC			10		// maximum resistance decrease of a race in a month, from all the spies of a nation
+#define PROPAGANDA_SKILL_DIVIDER			15		// the skill of the spies is divided by this for the resistance decrease and the join chance
+#define PROPAGANDA_MAX_MONTH_DEC			7		// maximum resistance decrease of a race in a month, from all the spies of a nation
 #define PROPAGANDA_MIN_RESISTANCE		30		// without a linked fort with a general, propaganda doesn't decrease resistance below this
 #define PROPAGANDA_MAX_INFLUENCE			20		// maximum bonus to the influence of a linked fort
-#define PROPAGANDA_MAX_JOIN_CHANCE		30		// maximum chance (%) in a month that a villager joins the nation
+#define PROPAGANDA_MAX_JOIN_CHANCE		20		// maximum chance (%) in a month that a villager joins the nation
 #define PROPAGANDA_MAX_JOIN_SKILL		70		// maximum skill level of a villager that joins
 
 //------- Accidents in firms --------//
 
-#define ACCIDENT_DAILY_CHANCE				730	// 1 in 730 a day for each firm with workers: 1 in 2 years
+#define ACCIDENT_DAILY_CHANCE				1825	// 1 in 1825 a day for each firm with workers: 1 in 5 years
 #define ACCIDENT_MAX_SPY_MULTIPLIER		4		// spies in sabotage mode multiply the chance: 1 spy x2, 2 spies x3, 3 or more x4
 #define ACCIDENT_MAX_SPY_PER_YEAR		3		// accidents caused by spies, for each nation, in 365 days
 
 //------- Intelligence reports --------//
 
-#define INTEL_GATHER_DAYS					30		// days of gathering for a report, a nation gets at most one report of another nation in this time
+#define INTEL_MAX_GATHER_DAYS			180	// days of gathering for a report with INTEL_MIN_GATHER_SKILL or less (the total skill of the spies)
+#define INTEL_MIN_GATHER_DAYS			60		// days of gathering for a report with INTEL_FULL_GATHER_SKILL or more
+#define INTEL_MIN_GATHER_SKILL			20
+#define INTEL_FULL_GATHER_SKILL			200
 #define MAX_INTEL_REPORT					60		// reports kept for all nations
 #define MAX_INTEL_REPORT_PER_NATION		30		// reports kept for each nation
 #define INTEL_NAME_LEN						50		// as NationBase::NATION_NAME_LEN

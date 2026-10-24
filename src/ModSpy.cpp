@@ -134,11 +134,11 @@ int ModSpy::has_linked_general_camp(Town* townPtr, int nationRecno)
 // Called every 30 days for each independent town.
 //
 // - The resistance of each race towards the nation of the spies decreases by
-//   the skill of the spies / 10, at most PROPAGANDA_MAX_MONTH_DEC. Spies of
+//   the skill of the spies / PROPAGANDA_SKILL_DIVIDER, at most PROPAGANDA_MAX_MONTH_DEC. Spies of
 //   another race count a quarter. Without a linked fort with a general, it
 //   doesn't go below PROPAGANDA_MIN_RESISTANCE.
 // - There is a chance that a villager leaves the town and joins the nation:
-//   for each race, the skill of the spies / 10 * the population of the race
+//   for each race, the skill of the spies / PROPAGANDA_SKILL_DIVIDER * the population of the race
 //   / 30 %, at most PROPAGANDA_MAX_JOIN_CHANCE % in total.
 //
 void ModSpy::process_propaganda(Town* townPtr)
@@ -199,7 +199,7 @@ void ModSpy::process_propaganda(Town* townPtr)
 			if( nonSpyPop <= 0 || effSkill[n][r] == 0 )
 				continue;
 
-			float decValue = MIN( (float) PROPAGANDA_MAX_MONTH_DEC, (float) effSkill[n][r] / 10 );
+			float decValue = MIN( (float) PROPAGANDA_MAX_MONTH_DEC, (float) effSkill[n][r] / PROPAGANDA_SKILL_DIVIDER );
 			float* resistancePtr = &townPtr->race_resistance_array[r][n];
 
 			if( *resistancePtr > minResistance )
@@ -210,7 +210,7 @@ void ModSpy::process_propaganda(Town* townPtr)
 					*resistancePtr = minResistance;
 			}
 
-			joinChance[r] = (float) effSkill[n][r] / 10 * nonSpyPop / 30;
+			joinChance[r] = (float) effSkill[n][r] / PROPAGANDA_SKILL_DIVIDER * nonSpyPop / 30;
 			totalJoinChance += joinChance[r];
 		}
 
@@ -355,7 +355,7 @@ int ModSpy::propaganda_influence_bonus(Town* townPtr, int nationRecno, int raceI
 void ModSpy::process_accident(Firm* firmPtr)
 {
 	if( !firmPtr->nation_recno || !firmPtr->worker_array || firmPtr->worker_count==0 ||
-		 firmPtr->firm_id == FIRM_CAMP )
+		 firmPtr->firm_id == FIRM_CAMP || firmPtr->firm_id == FIRM_BASE )		// not forts and seats of power
 	{
 		return;
 	}
@@ -461,14 +461,19 @@ void ModSpy::process_accident(Firm* firmPtr)
 //
 // Called every day. For each nation and target nation, if the nation has at
 // least a spy gathering intelligence in a town or firm of the target nation,
-// the days of gathering increase. After INTEL_GATHER_DAYS, the spy with the
-// highest skill makes a report.
+// the days of gathering increase. The days needed for a report depend on the
+// total skill of the spies gathering there: INTEL_MAX_GATHER_DAYS with
+// INTEL_MIN_GATHER_SKILL or less, INTEL_MIN_GATHER_DAYS with
+// INTEL_FULL_GATHER_SKILL or more. The spy with the highest skill makes the
+// report.
 //
 void ModSpy::gather_intelligence()
 {
 	short bestSpyArray[MAX_NATION][MAX_NATION];
+	int   totalSkillArray[MAX_NATION][MAX_NATION];
 
 	memset( bestSpyArray, 0, sizeof(bestSpyArray) );
+	memset( totalSkillArray, 0, sizeof(totalSkillArray) );
 
 	int spyCount = spy_array.size();
 
@@ -492,6 +497,8 @@ void ModSpy::gather_intelligence()
 
 		short* bestPtr = &bestSpyArray[spyPtr->true_nation_recno-1][targetNationRecno-1];
 
+		totalSkillArray[spyPtr->true_nation_recno-1][targetNationRecno-1] += spyPtr->spy_skill;
+
 		if( !*bestPtr || spy_array[*bestPtr]->spy_skill < spyPtr->spy_skill )
 			*bestPtr = i;
 	}
@@ -503,7 +510,11 @@ void ModSpy::gather_intelligence()
 			if( !bestSpyArray[n][t] )
 				continue;
 
-			if( ++intel_progress[n][t] >= INTEL_GATHER_DAYS )
+			int totalSkill = MAX( INTEL_MIN_GATHER_SKILL, MIN(INTEL_FULL_GATHER_SKILL, totalSkillArray[n][t]) );
+			int neededDays = INTEL_MAX_GATHER_DAYS - (totalSkill - INTEL_MIN_GATHER_SKILL) *
+								  (INTEL_MAX_GATHER_DAYS - INTEL_MIN_GATHER_DAYS) / (INTEL_FULL_GATHER_SKILL - INTEL_MIN_GATHER_SKILL);
+
+			if( ++intel_progress[n][t] >= neededDays )
 			{
 				intel_progress[n][t] = 0;
 				make_report( spy_array[bestSpyArray[n][t]], t+1 );

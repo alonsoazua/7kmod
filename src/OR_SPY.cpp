@@ -426,7 +426,7 @@ static void disp_intel(int refreshFlag)
 
 	//------- the selected report -------//
 
-	vga_back.d3_panel_down( SPY_BROWSE_X1, INTEL_DETAIL_Y1, SPY_BROWSE_X2, SPY_BROWSE_Y2 );
+	//--- the background of the report is transparent, as in the other report windows ---//
 
 	IntelReport* reportPtr = reportCount ? mod_spy.get_player_report(browse_intel_recno) : NULL;
 
@@ -435,7 +435,7 @@ static void disp_intel(int refreshFlag)
 	else
 	{
 		font_san.put_paragraph( SPY_BROWSE_X1+10, INTEL_DETAIL_Y1+10, SPY_BROWSE_X2-10, SPY_BROWSE_Y2-10,
-			_("No intelligence reports yet. Set a spy in a town or building of another kingdom to \"Gather Intel\": after 30 days it makes a report. You get at most one report of each kingdom every 30 days.") );
+			_("No intelligence reports yet. Set a spy in a town or building of another kingdom to \"Gather Intel\": it makes a report after 2 to 6 months, faster with more spying skill. Several spies in the same kingdom add up their skill.") );
 	}
 }
 //----------- End of static function disp_intel -----------//
