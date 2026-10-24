@@ -164,6 +164,43 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     partidas guardadas).
   - Por confirmar: si la IA debe usarlo (hoy la IA no usa "Steal secrets").
 
+- [ ] **Balance de la propaganda (resistencia), −33%.** Efecto directo de habilidad ÷
+  10 a **habilidad ÷ 15** por espía cada 30 días, y máximo al mes de 10 a **7** puntos
+  por raza. Con habilidad 50: de 5 a 3.3 puntos al mes.
+  - No cambian: el mínimo de 30 sin fuerte, la regla de la raza (una cuarta parte
+    para otras razas) ni el bono a la influencia del fuerte (habilidad ÷ 5, máximo
+    +20).
+
+- [ ] **Balance de los aldeanos que se unen, −33%.** Probabilidad al mes de
+  habilidad ÷ 10 a **habilidad ÷ 15** × población de la raza ÷ 30 %, y máximo de 30% a
+  **20%**. Con 1 espía de habilidad 50 en un pueblo de 30: de 5% a 3.3% al mes.
+
+- [ ] **Gather Intel: de 2 a 6 meses según la habilidad acumulada.** El tiempo para un
+  reporte depende de la **suma de la habilidad** de tus espías en "Gather Intel" en ese
+  reino (antes, 30 días fijos):
+  - Suma 20 o menos: **180 días** (6 meses). Suma 200 o más: **60 días** (2 meses).
+    En medio, proporcional: días = 180 − (suma − 20) × 120 ÷ 180.
+
+    | Espías en Gather Intel | Suma | Días |
+    |---|---|---|
+    | 1 de habilidad 20 | 20 | 180 |
+    | 1 de habilidad 50 | 50 | 160 |
+    | 1 de habilidad 100 | 100 | 127 |
+    | 2 de habilidad 50 | 100 | 127 |
+    | 3 de habilidad 50 | 150 | 93 |
+    | 2 de habilidad 100 | 200 | 60 |
+
+  - Se calcula cada día con los espías que están recolectando en ese momento. El
+    reporte lo sigue haciendo el espía de más habilidad (su habilidad decide las
+    secciones y la precisión).
+  - El límite de 1 reporte por reino cada 30 días ya no hace falta: como mínimo pasan
+    60 días.
+
+- [ ] **Balance de los accidentes.** Probabilidad normal de 1 cada 2 años a **1 cada 3
+  años** por edificio (1 entre 1,095 al día). **La Sede de Poder (Seat of Power) queda
+  fuera.** No cambian los multiplicadores de los espías (×2, ×3, ×4) ni los límites por
+  reino (1 normal y 3 por espías al año).
+
 ---
 
 ## Ideas por confirmar
