@@ -93,6 +93,25 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
 
   - Por confirmar: los números.
 
+- [ ] **Accidentes en los edificios con trabajadores.** En cualquier edificio con
+  trabajadores (minas, fábricas, War Factory, Tower of Science, etc.; no los
+  fuertes), de cualquier reino, puede ocurrir un accidente en el que mueren **1 o
+  2 trabajadores**.
+  - Probabilidad normal: **1 accidente cada 2 años** por edificio en promedio (se
+    revisa cada día, 1 entre 730).
+  - **Con un espía enemigo en modo Sabotaje** en el edificio, la probabilidad se
+    **duplica** (1 cada año).
+  - Si el edificio es tuyo aparece un mensaje, por ejemplo: "An accident occurred at
+    the Mine near <pueblo>. 2 workers died."
+  - Los trabajadores que mueren son de los normales, nunca un espía. Si viven en un
+    pueblo, el pueblo pierde esa población.
+  - Por confirmar: si varios espías en Sabotaje suman (×2, ×3...) o el máximo es ×2;
+    si tu espía debe avisarte cuando provoca un accidente en un edificio enemigo; la
+    probabilidad normal (ver la nota).
+  - Nota: la probabilidad es por edificio, así que un reino con 20 edificios
+    tendría unos 10 accidentes al año y perdería unos 15 trabajadores al año, sin
+    espías de por medio. Puede ser mucho a mitad o al final de la partida.
+
 ---
 
 ## Ideas por confirmar
