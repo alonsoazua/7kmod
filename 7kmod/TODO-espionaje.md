@@ -127,10 +127,47 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     porcentaje se muestra como si fuera una unidad normal, para no revelar que es
     espía.
 
+
+- [ ] **Reportes de inteligencia (reemplaza "Steal secrets").** En vez de abrir las
+  pantallas de reportes del enemigo en vivo, el espía genera un **reporte resumido
+  con fecha**, que se guarda y se consulta después.
+  - **Obtenerlo:** un espía dentro de un pueblo o edificio enemigo pasa al modo
+    **"Gather Intelligence"**. Después de **30 días** en ese modo se genera el
+    reporte y el espía sigue en su lugar. Mientras recolecta lo pueden atrapar, como
+    en los otros modos activos (Sabotaje, Sembrar discordia). Ya no hay exposición
+    al cerrar la pantalla (así desaparece el error del original, ver `SPYING.md`,
+    sección 9).
+  - **Límite:** **1 reporte por reino cada 30 días**, sin importar cuántos espías
+    tengas en él. Si varios espías terminan, el reporte lo hace el de más habilidad;
+    los demás siguen recolectando hasta que pasen los 30 días.
+  - **Contenido**, según la habilidad del espía (igual que hoy):
+
+    | Sección | Habilidad | Qué incluye |
+    |---|---|---|
+    | Pueblos | 20 | número de pueblos, población total, lealtad promedio |
+    | Economía | 30 | tesoro, comida, ingresos y gastos anuales |
+    | Comercio | 30 | número de mercados y caravanas |
+    | Reino | 40 | reputación, relaciones con otros reinos |
+    | Tecnología | 40 | lista de tecnologías y su nivel |
+    | Militar | 50 | soldados, generales, armas de asedio, barcos, fuertes |
+    | Espías | 90 | número de espías y dónde están |
+
+  - **Precisión:** los números salen como un rango aproximado según la habilidad, con
+    un error de ±(100 − habilidad) ÷ 2 % (±40% con habilidad 20, ±25% con 50, ±5% con
+    90, exacto con 100). Por ejemplo, "80–120 soldiers". El valor real queda en un
+    punto al azar dentro del rango, para que no se pueda deducir tomando el centro.
+    Las tecnologías y las relaciones se muestran tal cual.
+  - **Dónde se consulta:** en el reporte de Espías, una pestaña nueva
+    **"Intelligence"** con la lista de reportes (reino, fecha, espía) y, al hacer clic
+    en uno, su detalle.
+  - **Se guardan** los últimos 30 reportes en la partida (cambia la versión de las
+    partidas guardadas).
+  - Por confirmar: si la IA debe usarlo (hoy la IA no usa "Steal secrets").
+
 ---
 
 ## Ideas por confirmar
 
-- **Corregir la exposición al ver secretos** (error del original, ver `SPYING.md`,
-  sección 9): pasar el tipo de reporte en vez del número del espía, y usar una
-  probabilidad que baje de forma continua con la habilidad de sobra.
+- ~~**Corregir la exposición al ver secretos**~~ (error del original, ver `SPYING.md`,
+  sección 9): ya no hace falta si se hacen los reportes de inteligencia, que
+  reemplazan esa pantalla.
