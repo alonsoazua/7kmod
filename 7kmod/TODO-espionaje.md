@@ -16,15 +16,21 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   - Hoy: baja la resistencia hacia tu reino de la gente de la raza del espía en
     habilidad ÷ 5 ÷ población de esa raza, cada 30 días (0.1 a 2 puntos al mes).
   - **Efecto directo:** cada 30 días, habilidad ÷ 10 por espía, sin dividir entre la
-    población (2 puntos con habilidad 20, 10 con habilidad 100). Las otras razas del
-    pueblo bajan a la mitad, para que un pueblo mixto no necesite un espía de cada
-    raza. **Máximo 10 puntos al mes por pueblo** entre todos los espías, para que
-    llenar un pueblo de espías no lo haga instantáneo.
+    población (2 puntos con habilidad 20, 10 con habilidad 100). **Máximo 10 puntos
+    al mes por pueblo** entre todos los espías, para que llenar un pueblo de espías
+    no lo haga instantáneo.
+  - **La raza importa mucho:** un espía tiene el efecto completo sobre la gente de
+    su misma raza y solo **una cuarta parte** sobre las otras razas del pueblo (hoy
+    no tiene ningún efecto sobre ellas). Un espía chino en un pueblo maya rinde
+    poco: lo pensado es contratar un espía maya en una Inn y mandarlo al pueblo
+    maya. Aplica a todos los efectos de la propaganda (directo, influencia del
+    fuerte y aldeanos que se unen).
   - **Sin un fuerte tuyo enlazado** (con general), la propaganda no baja la
     resistencia de **30**: solo ablanda. Sin fuerte, el último empujón tiene que
     venir de atacar el pueblo (las donaciones ya requieren un fuerte enlazado).
   - **Con un fuerte enlazado**, la propaganda puede bajarla hasta 0, y además
-    **sube la influencia del fuerte**: habilidad ÷ 5 por espía, **máximo +20**. La
+    **sube la influencia del fuerte**: habilidad ÷ 5 por espía de la raza del
+    general del fuerte (÷ 20 si es de otra raza), **máximo +20**. La
     meta del fuerte (100 − influencia) baja, así que un general de liderazgo medio
     ya no se queda atorado.
   - Caso de uso: un general de liderazgo 60 a mitad de partida (misma raza que el
@@ -55,19 +61,22 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   independiente con espías tuyos en Propaganda tiene una probabilidad de que **un**
   aldeano lo deje y aparezca a su lado como unidad tuya. **Máximo 1 por pueblo al
   mes** (por reino).
-  - La idea es **conseguir aldeanos de razas que no tienes**, así que no depende de
-    la resistencia ni de la raza del espía.
-  - Probabilidad al mes = suma de la habilidad de tus espías en Propaganda ÷ 10 ×
-    población del pueblo ÷ 30 %, **máximo 30%**. Más espías y más habilidad lo hacen
-    más probable, y un pueblo grande más que uno chico.
-  - El aldeano es de cualquier raza del pueblo, al azar según cuántos habitantes
-    tiene cada una. El pueblo nunca se queda sin habitantes (los espías no
-    cuentan).
+  - La idea es **conseguir aldeanos de razas que no tienes** (con un espía de esa
+    raza, contratado en una Inn), así que no depende de la resistencia.
+  - Probabilidad al mes, por cada raza del pueblo = suma de la habilidad de tus
+    espías en Propaganda de esa raza (los de otras razas cuentan una cuarta parte)
+    ÷ 10 × población de esa raza ÷ 30 %. Se suman las razas, **máximo 30%** en
+    total. Más espías y más habilidad lo hacen más probable, y un pueblo grande más
+    que uno chico.
+  - El aldeano es de una de las razas del pueblo, al azar según la probabilidad de
+    cada una (casi siempre de la raza de tus espías). El pueblo nunca se queda sin
+    habitantes (los espías no cuentan).
   - Calidad: combate de los defensores del pueblo ±10 (10 a 70 según el pueblo).
     Habilidad de trabajo o liderazgo (al azar entre construcción, minería,
     fabricación, investigación o liderazgo): 10 + al azar de 0 a la suma de la
     habilidad de los espías ÷ 2, **máximo 70**. Lealtad inicial: 60.
-  - Estimaciones, probabilidad al mes (entre paréntesis, aldeanos al año en
+  - Estimaciones con espías de la raza del pueblo (con espías de otra raza, una
+    cuarta parte), probabilidad al mes (entre paréntesis, aldeanos al año en
     promedio):
 
     | Espías | Calidad hasta | Pueblo 10 | Pueblo 30 | Pueblo 60 |
