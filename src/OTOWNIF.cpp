@@ -1909,7 +1909,11 @@ void Town::disp_spy_menu(int refreshFlag)
 			x+=BUTTON_ACTION_WIDTH;
 		}
 
-		if( nation_recno && nation_recno != nation_array.player_recno )
+		//--- 7kmod-gameplay: the view secret button is replaced by the "Gather Intel" action mode ---//
+
+		button_spy_view_secret.reset();
+
+		if( 0 )
 		{
 			button_spy_view_secret.paint( x, y, 'A', "VSECRET" );
 			x+=BUTTON_ACTION_WIDTH;
@@ -1987,7 +1991,7 @@ int Town::detect_spy_menu()
 
 	//----- view secret report ------/
 
-	if( nation_recno && nation_recno != nation_array.player_recno )
+	if( 0 )		// 7kmod-gameplay: replaced by the "Gather Intel" action mode
 	{
 		if( button_spy_view_secret.detect() )
 		{

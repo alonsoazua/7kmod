@@ -94,6 +94,10 @@ enum { NEWS_DIPLOMACY=1,
 		 NEWS_UNIT_TRAINED,
 		 NEWS_WEAPON_SHIP_BUILT,
 		 NEWS_GENERAL_HONORS,		// 7kmod: a general of the player asks for honors
+		 NEWS_FIRM_ACCIDENT,			// 7kmod-gameplay: an accident in a firm of the player
+		 NEWS_SPY_ACCIDENT,			// 7kmod-gameplay: a spy of the player caused an accident in an enemy firm
+		 NEWS_VILLAGER_JOINED,		// 7kmod-gameplay: a villager of an independent town joined the player through propaganda
+		 NEWS_INTEL_REPORT,			// 7kmod-gameplay: a spy of the player made an intelligence report
 	  };
 
 //------- Define struct News ---------//
@@ -187,6 +191,10 @@ public:
 	void  unit_trained();
 	void  weapon_ship_built();
 	void  general_honors();
+	void  firm_accident();			// 7kmod-gameplay
+	void  spy_accident();
+	void  villager_joined();
+	void  intel_report();
 
 	void  write_record(NewsGF *r);
 	void  read_record(NewsGF *r);
@@ -257,6 +265,10 @@ public:
 	void  assassinator_caught(int spyRecno, int targetRankId);
 	void  general_die(int unitRecno);
 	void  general_honors(int unitRecno);		// 7kmod
+	void  firm_accident(int firmRecno, int deathCount);		// 7kmod-gameplay
+	void  spy_accident(int firmRecno, int deathCount);
+	void  villager_joined(int unitRecno, int townNameId);
+	void  intel_report(int targetNationRecno);
 	void  raw_exhaust(int rawId, int xLoc, int yLoc);
 	void  tech_researched(int techId, int techVersion);
 	void  lightning_damage(int xLoc, int yLoc, int objectId, int recno, int objectDie);

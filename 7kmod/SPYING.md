@@ -5,8 +5,11 @@ Referencia de cómo funciona el espionaje en Seven Kingdoms: Ancient Adversaries
 `src/OSPYA.cpp`, `src/OFIRMIF3.cpp`, `src/OUNIT.cpp`, `src/OSYS2.cpp`,
 `src/ONATIONB.cpp`).
 
-Ninguno de los cambios de 7kmod, 7kmod-gameplay ni 7kmod-pathing modifica el
-espionaje: todo lo de este documento es del juego original.
+Todo lo de este documento es del juego original, que es como funciona en la rama
+`7kmod`. **La rama `7kmod-gameplay` (y `7kmod-pathing`) cambia el espionaje:**
+Propaganda en pueblos independientes, aldeanos que se unen, accidentes, porcentaje
+de éxito del soborno y reportes de inteligencia en lugar de "Steal secrets". Ver
+`CHANGELOG-gameplay.md` y `TODO-espionaje.md`.
 
 ## 1. Cómo se consigue un espía
 

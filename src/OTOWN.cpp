@@ -34,6 +34,7 @@
 #include <OPLANT.h>
 #include <ODATE.h>
 #include <OSPY.h>
+#include <ModSpy.h>
 #include <OCONFIG.h>
 #include <OF_MARK.h>
 #include <OF_CAMP.h>
@@ -425,6 +426,16 @@ void Town::next_day()
 			update_resistance();
 		}
 		LOG_MSG(misc.get_random_seed());
+
+		if( town_array.is_deleted(townRecno) )
+			return;
+	}
+
+	//------ 7kmod-gameplay: propaganda of spies in independent towns -------//
+
+	if( nation_recno==0 && info.game_date%30 == town_recno%30 )
+	{
+		mod_spy.process_propaganda(this);
 
 		if( town_array.is_deleted(townRecno) )
 			return;
@@ -1499,7 +1510,11 @@ void Town::update_target_resistance()
 		unitPtr = unit_array[firmPtr->overseer_recno];
 
 		curValue = race_target_resistance_array[unitPtr->race_id-1][unitPtr->nation_recno-1];
-		newValue = 100-camp_influence(firmPtr->overseer_recno);
+
+		//--- 7kmod-gameplay: the propaganda of the nation's spies in the town increases the influence ---//
+
+		newValue = 100 - MIN( 100, camp_influence(firmPtr->overseer_recno) +
+									 mod_spy.propaganda_influence_bonus(this, unitPtr->nation_recno, unitPtr->race_id) );
 
 		err_when( newValue < 0 );
 

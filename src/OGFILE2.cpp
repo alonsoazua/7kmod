@@ -27,6 +27,7 @@
 
 #include <OBULLET.h>
 #include <OFIRM.h>
+#include <ModSpy.h>
 #include <OFIRMDIE.h>
 #include <OGAME.h>
 #include <OGFILE.h>
@@ -457,6 +458,13 @@ int GameFile::write_file_3(File* filePtr)
 	if( !mod_tech_res.write_file(filePtr) )
 		return 0;
 
+	// ##### 7kmod-gameplay: GAME_VERSION >= GAME_VERSION_7KMOD_SPYING ##### //
+
+	write_book_mark( filePtr, BOOK_MARK+291 );
+
+	if( !mod_spy.write_file(filePtr) )
+		return 0;
+
 	return 1;
 }
 //---------- End of function GameFile::write_file_3 -------//
@@ -733,6 +741,7 @@ int GameFile::read_file_3(File* filePtr)
 	if( game_file_array.load_file_game_version < GAME_VERSION_7KMOD_MOD_TECH )
 	{
 		mod_tech_res.reset();
+		mod_spy.reset();
 		return 1;
 	}
 
@@ -751,6 +760,20 @@ int GameFile::read_file_3(File* filePtr)
 		modTechCount = MAX_MOD_TECH_BEFORE_ELITE_WORKERS;
 
 	if( !mod_tech_res.read_file(filePtr, modTechCount) )
+		return 0;
+
+	//--- 7kmod-gameplay: espionage ---//
+
+	if( game_file_array.load_file_game_version < GAME_VERSION_7KMOD_SPYING )
+	{
+		mod_spy.reset();
+		return 1;
+	}
+
+	if( !read_book_mark( filePtr, BOOK_MARK+291 ) )
+		return 0;
+
+	if( !mod_spy.read_file(filePtr) )
 		return 0;
 
 	return 1;

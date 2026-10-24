@@ -96,6 +96,10 @@ static NewsInfo news_info_array[] =
 	{ &News::unit_trained, 0 },
 	{ &News::weapon_ship_built, 0 },
 	{ &News::general_honors, 1 },			// 7kmod
+	{ &News::firm_accident, 0 },			// 7kmod-gameplay
+	{ &News::spy_accident, 0 },
+	{ &News::villager_joined, 0 },
+	{ &News::intel_report, 0 },
 };
 
 //------- Define static variables --------//
@@ -1175,6 +1179,96 @@ void News::general_honors()
 	}
 }
 //------- End of function News::general_honors -----//
+
+
+//------ Begin of function News::firm_accident -----//
+//
+// 7kmod-gameplay: an accident in a firm of the player.
+//
+// short_para1 - firm id.
+// short_para2 - name id. of the closest town
+// short_para3 - number of workers that died
+//
+void News::firm_accident()
+{
+	//---------------- Text Format -----------------//
+	//
+	// An accident occurred at your <firm> near <town>. <n> worker(s) died.
+	//
+	//----------------------------------------------//
+
+	if( short_para3 == 1 )
+	{
+		// TRANSLATORS: An accident occurred at your <Firm> near <Town>. 1 worker died.
+		snprintf(str, MAX_STR_LEN+1, _("An accident occurred at your %s near %s. 1 worker died."),
+					_(firm_res[short_para1]->name), town_res.get_name(short_para2) );
+	}
+	else
+	{
+		// TRANSLATORS: An accident occurred at your <Firm> near <Town>. <Number> workers died.
+		snprintf(str, MAX_STR_LEN+1, _("An accident occurred at your %s near %s. %d workers died."),
+					_(firm_res[short_para1]->name), town_res.get_name(short_para2), short_para3 );
+	}
+}
+//------- End of function News::firm_accident -----//
+
+
+//------ Begin of function News::spy_accident -----//
+//
+// 7kmod-gameplay: a spy of the player caused an accident in an enemy firm.
+//
+void News::spy_accident()
+{
+	//---------------- Text Format -----------------//
+	//
+	// Your spy caused an accident at the <firm> of <nation> near <town>.
+	// <n> worker(s) died.
+	//
+	//----------------------------------------------//
+
+	if( short_para3 == 1 )
+	{
+		// TRANSLATORS: Your spy caused an accident at the <Firm> of <Kingdom> near <Town>. 1 worker died.
+		snprintf(str, MAX_STR_LEN+1, _("Your spy caused an accident at the %s of %s near %s. 1 worker died."),
+					_(firm_res[short_para1]->name), nation_name1(), town_res.get_name(short_para2) );
+	}
+	else
+	{
+		// TRANSLATORS: Your spy caused an accident at the <Firm> of <Kingdom> near <Town>. <Number> workers died.
+		snprintf(str, MAX_STR_LEN+1, _("Your spy caused an accident at the %s of %s near %s. %d workers died."),
+					_(firm_res[short_para1]->name), nation_name1(), town_res.get_name(short_para2), short_para3 );
+	}
+}
+//------- End of function News::spy_accident -----//
+
+
+//------ Begin of function News::villager_joined -----//
+//
+// 7kmod-gameplay: a villager of an independent town joined the player.
+//
+// short_para1 - name id. of the town
+// short_para2 - race id. of the villager
+//
+void News::villager_joined()
+{
+	// TRANSLATORS: A <Race> villager from the independent village of <Town> has joined your kingdom.
+	snprintf(str, MAX_STR_LEN+1, _("A %s villager from the independent village of %s has joined your kingdom."),
+				_(race_res[short_para2]->adjective), town_res.get_name(short_para1) );
+}
+//------- End of function News::villager_joined -----//
+
+
+//------ Begin of function News::intel_report -----//
+//
+// 7kmod-gameplay: a spy of the player made an intelligence report.
+//
+void News::intel_report()
+{
+	// TRANSLATORS: Your spy has completed an intelligence report on <Kingdom>. See the Spy report.
+	snprintf(str, MAX_STR_LEN+1, _("Your spy has completed an intelligence report on %s. See the Spy report."),
+				nation_name1() );
+}
+//------- End of function News::intel_report -----//
 
 
 //------ Begin of function News::unit_assassinated -----//

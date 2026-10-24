@@ -30,6 +30,7 @@
 #include <OWORLD.h>
 #include <OBUTTON.h>
 #include <OFIRM.h>
+#include <ModSpy.h>
 #include <OTOWN.h>
 #include <ONATION.h>
 #include <ORACERES.h>
@@ -376,6 +377,11 @@ void Spy::process_town_action()
 {
 	Town* townPtr = town_array[spy_place_para];
 
+	//--- 7kmod-gameplay: the propaganda in independent towns is processed by the town, see ModSpy::process_propaganda() ---//
+
+	if( townPtr->nation_recno == 0 )
+		return;
+
 	if( action_mode == SPY_SOW_DISSENT )
 	{
 		if( townPtr->race_pop_array[race_id-1] > townPtr->race_spy_count_array[race_id-1] )	// only when there are non-spy people
@@ -472,10 +478,17 @@ void Spy::process_firm_action()
 //
 void Spy::set_next_action_mode()
 {
+	//--- 7kmod-gameplay: gathering intelligence is possible in the towns and firms of other nations ---//
+
+	int placeNationRecno = spy_place_nation_recno();
+	int canGatherIntel = placeNationRecno && placeNationRecno != true_nation_recno;
+
 	if( spy_place==SPY_TOWN )
 	{
 		if( action_mode == SPY_IDLE )
 			set_action_mode(SPY_SOW_DISSENT);
+		else if( action_mode == SPY_SOW_DISSENT && canGatherIntel )
+			set_action_mode(SPY_GATHER_INTEL);
 		else
 			set_action_mode(SPY_IDLE);
 	}
@@ -495,6 +508,13 @@ void Spy::set_next_action_mode()
 				break;
 
 			case SPY_SOW_DISSENT:
+				if( canGatherIntel )
+				{
+					set_action_mode(SPY_GATHER_INTEL);
+					break;
+				}
+
+			default:
 				set_action_mode(SPY_IDLE);
 				break;
 		}
@@ -639,10 +659,16 @@ const char* Spy::action_str()
 		}
 
 		case SPY_SOW_DISSENT:
-			return _("Sow Dissent");
+			if( spy_place==SPY_TOWN && town_array[spy_place_para]->nation_recno == 0 )		// 7kmod-gameplay
+				return _("Propaganda");
+			else
+				return _("Sow Dissent");
 
 		case SPY_SABOTAGE:
 			return _("Sabotage");
+
+		case SPY_GATHER_INTEL:		// 7kmod-gameplay
+			return _("Gather Intel");
 
 		default:
 			err_here();

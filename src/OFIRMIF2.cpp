@@ -172,8 +172,13 @@ void Firm::disp_spy_menu(int refreshFlag)
 				button_capture.reset();
 
 			//---------- view secret button -----------//
+			//
+			// 7kmod-gameplay: replaced by the "Gather Intel" action mode and the
+			// intelligence reports of the spy report.
+			//
+			//------------------------------------------//
 
-			if( nation_recno && nation_recno != nation_array.player_recno )
+			if( 0 )
 			{
 				button_view_secret.paint( x, y, 'A', "VSECRET" );
 				x+=BUTTON_ACTION_WIDTH;

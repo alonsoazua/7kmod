@@ -9,7 +9,7 @@ Checklist para mejorar el espionaje de forma sustancial. Cómo funciona hoy: ver
 
 Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo en partida.
 
-- [ ] **Propaganda en pueblos independientes.** En un pueblo independiente, el modo
+- [x] **Propaganda en pueblos independientes.** En un pueblo independiente, el modo
   "Sow Dissent" se llama **"Propaganda"** (en el juego, en inglés). La idea es que
   los espías **ablanden la resistencia**: una forma de hacerse de un pueblo más
   rápido y sin gastar en donaciones, pero sin poder conquistarlo solos.
@@ -62,7 +62,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     resistencia de su raza llegue a 30 y la IA no tenga un fuerte enlazado con
     general.
 
-- [ ] **Aldeanos que se unen por la propaganda.** Cada 30 días, un pueblo
+- [x] **Aldeanos que se unen por la propaganda.** Cada 30 días, un pueblo
   independiente con espías tuyos en Propaganda tiene una probabilidad de que **un**
   aldeano lo deje y aparezca a su lado como unidad tuya. **Máximo 1 por pueblo al
   mes** (por reino).
@@ -93,7 +93,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
 
   - Por confirmar: los números.
 
-- [ ] **Accidentes en los edificios con trabajadores.** En cualquier edificio con
+- [x] **Accidentes en los edificios con trabajadores.** En cualquier edificio con
   trabajadores (minas, fábricas, War Factory, Tower of Science, etc.; no los
   fuertes), de cualquier reino, puede ocurrir un accidente en el que mueren **1 o
   2 trabajadores**.
@@ -118,7 +118,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     (cambia la versión de las partidas guardadas, como con las tecnologías del mod).
   - Por confirmar: el máximo de ×4 con 3 espías.
 
-- [ ] **Porcentaje de éxito del soborno.** En el menú de soborno, cada botón de monto
+- [x] **Porcentaje de éxito del soborno.** En el menú de soborno, cada botón de monto
   muestra la probabilidad de éxito, por ejemplo "Offer $1,000 (35%)" (montos: $500,
   $1,000, $1,500, $2,000, $3,000 y $4,000).
   - Se calcula con la misma fórmula del juego (ver `SPYING.md`, sección 5), entre 0%
@@ -128,7 +128,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     espía.
 
 
-- [ ] **Reportes de inteligencia (reemplaza "Steal secrets").** En vez de abrir las
+- [x] **Reportes de inteligencia (reemplaza "Steal secrets").** En vez de abrir las
   pantallas de reportes del enemigo en vivo, el espía genera un **reporte resumido
   con fecha**, que se guarda y se consulta después.
   - **Obtenerlo:** un espía dentro de un pueblo o edificio enemigo pasa al modo

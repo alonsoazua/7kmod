@@ -53,7 +53,7 @@ static Button3D button_cancel;
 
 //------ declare static functions -------//
 
-static void disp_bribe_button(int y, int bribeAmount, int buttonUp);
+static void disp_bribe_button(int y, int bribeAmount, int buttonUp, int succeedChance= -1);
 
 
 //--------- Begin of function Firm::disp_bribe_menu ---------//
@@ -92,7 +92,7 @@ void Firm::disp_bribe_menu(int refreshFlag)
 
 		for( int i=0 ; i<BRIBE_AMOUNT_COUNT ; i++ )
 		{
-			disp_bribe_button( y, bribe_amount_array[i], 1);
+			disp_bribe_button( y, bribe_amount_array[i], 1, bribe_display_chance(bribe_amount_array[i]) );
 
 			err_when( bribe_amount_array[i] > MAX_BRIBE_AMOUNT );
 
@@ -156,7 +156,7 @@ void Firm::detect_bribe_menu()
 	{
 		if( mouse.single_click(INFO_X1, y, INFO_X2, y+BRIBE_OPTION_HEIGHT-1) )
 		{
-			disp_bribe_button( y, bribe_amount_array[i], 0);		// 0-display pressed button
+			disp_bribe_button( y, bribe_amount_array[i], 0, bribe_display_chance(bribe_amount_array[i]) );		// 0-display pressed button
 
 			while( mouse.left_press )
 			{
@@ -208,6 +208,21 @@ void Firm::detect_bribe_menu()
 //----------- End of function Firm::detect_bribe_menu -----------//
 
 
+//--------- Begin of function Firm::bribe_display_chance ---------//
+//
+// 7kmod-gameplay: the chance of success of a bribe shown in the bribe menu,
+// 0 to 100. If the target is a spy of another nation, the bribe always fails,
+// but the chance is shown as for a normal unit, so that the spy isn't revealed.
+//
+int Firm::bribe_display_chance(int bribeAmount)
+{
+	int chance = spy_bribe_succeed_chance(bribeAmount, action_spy_recno, selected_worker_id, 1);		// 1-ignore whether the target is a spy
+
+	return MAX( 0, MIN(100, chance) );
+}
+//----------- End of function Firm::bribe_display_chance -----------//
+
+
 //--------- Begin of function Firm::validate_cur_bribe ---------//
 //
 // Whether the current bribe action is still valid.
@@ -227,7 +242,7 @@ int Firm::validate_cur_bribe()
 
 //-------- Begin of static function disp_bribe_button --------//
 //
-static void disp_bribe_button(int y, int bribeAmount, int buttonUp)
+static void disp_bribe_button(int y, int bribeAmount, int buttonUp, int succeedChance)
 {
 	if( buttonUp )
 		vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+BRIBE_OPTION_HEIGHT-1 );
@@ -242,8 +257,16 @@ static void disp_bribe_button(int y, int bribeAmount, int buttonUp)
 	{
 		String str;
 
-		// TRANSLATORS: Offer <Amount>
-		snprintf( str, MAX_STR_LEN+1, _("Offer %s"), misc.format(bribeAmount,2) );
+		if( succeedChance >= 0 )		// 7kmod-gameplay: show the chance of success
+		{
+			// TRANSLATORS: Offer <Amount> (<Chance>%)
+			snprintf( str, MAX_STR_LEN+1, _("Offer %s (%d%%)"), misc.format(bribeAmount,2), succeedChance );
+		}
+		else
+		{
+			// TRANSLATORS: Offer <Amount>
+			snprintf( str, MAX_STR_LEN+1, _("Offer %s"), misc.format(bribeAmount,2) );
+		}
 
 		font_san.center_put( INFO_X1, y, INFO_X2, y+BRIBE_OPTION_HEIGHT-1, str );
 	}
@@ -393,7 +416,7 @@ int Firm::spy_bribe(int bribeAmount, short briberSpyRecno, short workerId)
 // return: <int> 1 - bribing succeeded
 //					  0 - bribing failed
 //
-int Firm::spy_bribe_succeed_chance(int bribeAmount, short briberSpyRecno, short workerId)
+int Firm::spy_bribe_succeed_chance(int bribeAmount, short briberSpyRecno, short workerId, int ignoreTargetSpy)
 {
 	Spy* spyPtr = spy_array[briberSpyRecno];
 
@@ -431,7 +454,7 @@ int Firm::spy_bribe_succeed_chance(int bribeAmount, short briberSpyRecno, short 
 
 	int succeedChance;
 
-	if( targetSpyRecno )		// if the bribe target is also a spy
+	if( targetSpyRecno && !ignoreTargetSpy )		// if the bribe target is also a spy
 	{
 		err_when( spy_array[targetSpyRecno]->true_nation_recno == spyPtr->true_nation_recno );		// the player shouldn't be able to bribe units of his own
 

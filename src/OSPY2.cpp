@@ -23,6 +23,7 @@
 
 #include <OINFO.h>
 #include <OFIRM.h>
+#include <ModSpy.h>
 #include <OTOWN.h>
 #include <ONATION.h>
 #include <OSPY.h>
@@ -72,7 +73,11 @@ void Spy::think_town_spy()
 
 		//--- if the resistance has already drop low enough, the spy no longer needs to be in the town ---//
 
-		if( townPtr->race_loyalty_array[race_id-1] < MIN_INDEPENDENT_DEFEND_LOYALTY  )
+		//--- 7kmod-gameplay: independent towns have resistance, not loyalty. Without a linked fort ---//
+		//--- with a general, the propaganda doesn't decrease it below PROPAGANDA_MIN_RESISTANCE     ---//
+
+		if( townPtr->race_resistance_array[race_id-1][true_nation_recno-1] <= PROPAGANDA_MIN_RESISTANCE &&
+			 !ModSpy::has_linked_general_camp(townPtr, true_nation_recno) )
 		{
 			mobilize_town_spy();
 		}

@@ -744,6 +744,98 @@ void NewsArray::general_honors(int unitRecno)
 //------- End of function NewsArray::general_honors -----//
 
 
+//------ Begin of function NewsArray::firm_accident -----//
+//
+// 7kmod-gameplay: an accident in a firm of the player.
+//
+// short_para1 - firm id.
+// short_para2 - name id. of the closest town
+// short_para3 - number of workers that died
+//
+void NewsArray::firm_accident(int firmRecno, int deathCount)
+{
+	Firm* firmPtr = firm_array[firmRecno];
+
+	News* newsPtr = add_news( NEWS_FIRM_ACCIDENT, NEWS_NORMAL, firmPtr->nation_recno );
+
+	if( !newsPtr )
+		return;
+
+	newsPtr->short_para1 = firmPtr->firm_id;
+	newsPtr->short_para2 = firmPtr->closest_town_name_id ? firmPtr->closest_town_name_id : firmPtr->get_closest_town_name_id();
+	newsPtr->short_para3 = deathCount;
+
+	newsPtr->set_loc( firmPtr->center_x, firmPtr->center_y, NEWS_LOC_FIRM, firmRecno );
+}
+//------- End of function NewsArray::firm_accident -----//
+
+
+//------ Begin of function NewsArray::spy_accident -----//
+//
+// 7kmod-gameplay: a spy of the player caused an accident in an enemy firm.
+//
+// nation_name1() - the nation of the firm
+//
+// short_para1 - firm id.
+// short_para2 - name id. of the closest town
+// short_para3 - number of workers that died
+//
+void NewsArray::spy_accident(int firmRecno, int deathCount)
+{
+	Firm* firmPtr = firm_array[firmRecno];
+
+	News* newsPtr = add_news( NEWS_SPY_ACCIDENT, NEWS_NORMAL, firmPtr->nation_recno, 0, 1 );		// 1-force adding the news
+
+	if( !newsPtr )
+		return;
+
+	newsPtr->short_para1 = firmPtr->firm_id;
+	newsPtr->short_para2 = firmPtr->closest_town_name_id ? firmPtr->closest_town_name_id : firmPtr->get_closest_town_name_id();
+	newsPtr->short_para3 = deathCount;
+
+	newsPtr->set_loc( firmPtr->center_x, firmPtr->center_y, NEWS_LOC_FIRM, firmRecno );
+}
+//------- End of function NewsArray::spy_accident -----//
+
+
+//------ Begin of function NewsArray::villager_joined -----//
+//
+// 7kmod-gameplay: a villager of an independent town joined the player
+// through the propaganda of his spies.
+//
+// short_para1 - name id. of the town
+// short_para2 - race id. of the villager
+//
+void NewsArray::villager_joined(int unitRecno, int townNameId)
+{
+	Unit* unitPtr = unit_array[unitRecno];
+
+	News* newsPtr = add_news( NEWS_VILLAGER_JOINED, NEWS_NORMAL, unitPtr->nation_recno );
+
+	if( !newsPtr )
+		return;
+
+	newsPtr->short_para1 = townNameId;
+	newsPtr->short_para2 = unitPtr->race_id;
+
+	newsPtr->set_loc( unitPtr->next_x_loc(), unitPtr->next_y_loc(), NEWS_LOC_UNIT, unitRecno, unitPtr->name_id );
+}
+//------- End of function NewsArray::villager_joined -----//
+
+
+//------ Begin of function NewsArray::intel_report -----//
+//
+// 7kmod-gameplay: a spy of the player made an intelligence report.
+//
+// nation_name1() - the nation of the report
+//
+void NewsArray::intel_report(int targetNationRecno)
+{
+	add_news( NEWS_INTEL_REPORT, NEWS_NORMAL, targetNationRecno, 0, 1 );		// 1-force adding the news
+}
+//------- End of function NewsArray::intel_report -----//
+
+
 //------ Begin of function NewsArray::raw_exhaust -----//
 //
 // short_para1 - raw id.

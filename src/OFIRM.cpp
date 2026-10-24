@@ -33,6 +33,7 @@
 #include <ONEWS.h>
 #include <OSYS.h>
 #include <OSPY.h>
+#include <ModSpy.h>
 #include <OSITE.h>
 #include <OINFO.h>
 #include <ONEWS.h>
@@ -1628,6 +1629,10 @@ void Firm::next_day()
 
 	if( info.game_date%30 == firm_recno%30 )
 		spy_array.catch_spy(SPY_FIRM, firm_recno);
+
+	//------ 7kmod-gameplay: accidents -------//
+
+	mod_spy.process_accident(this);
 
 	//----- process workers from other town -----//
 

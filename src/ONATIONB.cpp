@@ -30,6 +30,7 @@
 #include <ONEWS.h>
 #include <OWORLD.h>
 #include <OFIRM.h>
+#include <ModSpy.h>
 #include <OGAME.h>
 #include <OPOWER.h>
 #include <OREGIONS.h>
@@ -156,6 +157,7 @@ void NationBase::init(int nationType, int raceId, int colorSchemeId, uint32_t pl
 
 	tech_res.init_nation_tech(nation_recno);
 	mod_tech_res.init_nation(nation_recno);		// 7kmod-gameplay
+	mod_spy.init_nation(nation_recno);				// 7kmod-gameplay
 
 	//------- reset all god knowledge --------//
 

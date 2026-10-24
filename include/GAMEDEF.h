@@ -42,7 +42,8 @@ extern const int GAME_VERSION;
 #define GAME_VERSION_7KMOD_ELITE_WORKERS	295		// 7kmod-gameplay: ModTechRes with the Elite Workers technology
 #define GAME_VERSION_7KMOD_BUILDING_REPAIR	296	// 7kmod-gameplay: ModTechRes with the Building Repair technology
 #define GAME_VERSION_7KMOD_FRYHTAN_SLAYERS	297	// 7kmod-gameplay: ModTechRes with the Fryhtan Slayers technology
-#define GAME_VERSION_7KMOD	297
+#define GAME_VERSION_7KMOD_SPYING		298	// 7kmod-gameplay: ModSpy (accidents, intelligence reports)
+#define GAME_VERSION_7KMOD	298
 
 //-------- Define constant ------------//
 

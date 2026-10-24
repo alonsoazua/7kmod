@@ -30,6 +30,7 @@
 #include <OWORLD.h>
 #include <OBUTTON.h>
 #include <OFIRM.h>
+#include <ModSpy.h>
 #include <OTOWN.h>
 #include <ONATION.h>
 #include <ORACERES.h>
@@ -209,6 +210,10 @@ void SpyArray::next_day()
 
 	if( info.game_date%15==0 )
 		process_sabotage();
+
+	//---- 7kmod-gameplay: intelligence reports ----//
+
+	mod_spy.next_day();
 }
 //---------- End of function SpyArray::next_day ----------//
 

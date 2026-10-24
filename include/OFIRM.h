@@ -313,7 +313,8 @@ public:
 	void 		set_worker_home_town(int townRecno, char remoteAction, int workerId=0);
 	int 		can_spy_bribe(int bribeWorkerId, int briberNationRecno);
 	int 		spy_bribe(int bribeAmount, short briber, short workerId);
-	int 		spy_bribe_succeed_chance(int bribeAmount, short briberSpyRecno, short workerId);
+	int 		spy_bribe_succeed_chance(int bribeAmount, short briberSpyRecno, short workerId, int ignoreTargetSpy=0);
+	int		bribe_display_chance(int bribeAmount);		// 7kmod-gameplay
 	int 		validate_cur_bribe();
 
 	//------------------- defense --------------------//

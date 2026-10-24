@@ -19,6 +19,23 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 ## [Sin publicar]
 
 ### Agregado
+- **Espionaje: Propaganda en pueblos independientes.** En un pueblo independiente el modo "Sow Dissent" del espía se llama **"Propaganda"** y es mucho más potente (ver `SPYING.md` y `TODO-espionaje.md`):
+  - Cada 30 días baja la resistencia hacia tu reino en habilidad ÷ 10 por espía, sin dividir entre la población (antes habilidad ÷ 5 ÷ población de su raza). **Máximo 10 puntos al mes** por raza entre todos tus espías.
+  - **La raza importa:** efecto completo sobre la gente de la raza del espía y una cuarta parte sobre las otras razas del pueblo (antes, ninguno). Lo pensado es contratar en una Inn un espía de la raza del pueblo.
+  - **Los espías solos no conquistan:** sin un fuerte tuyo enlazado al pueblo y con general, la propaganda no baja la resistencia de 30. Un fuerte vacío o con el enlace desactivado no cuenta.
+  - **Sube la influencia del fuerte enlazado:** habilidad ÷ 5 por espía de la raza del general del fuerte (÷ 20 si es de otra raza), máximo +20. La meta del fuerte (100 − influencia) baja, así que un general de liderazgo medio ya no se queda atorado.
+  - **Aldeanos que se unen:** cada 30 días, un pueblo independiente con tus espías en Propaganda tiene una probabilidad de que **un** aldeano lo deje y se una a tu reino (máximo 1 por pueblo al mes). Probabilidad: suma por raza de la habilidad de tus espías (los de otra raza cuentan una cuarta parte) ÷ 10 × población de esa raza ÷ 30 %, **máximo 30%**. El aldeano tiene el combate de los defensores del pueblo ±10, una habilidad al azar (construcción, minería, fabricación, investigación o liderazgo) de 10 a 10 + la habilidad de los espías ÷ 2 (máximo 70) y lealtad 60. El pueblo nunca se queda vacío. Aparece un mensaje.
+  - **La IA** ya usaba este modo en pueblos independientes, así que usa la propaganda. Ahora saca a su espía del pueblo cuando la resistencia de su raza llega a 30 y no tiene un fuerte enlazado con general (antes revisaba la lealtad, que los pueblos independientes no tienen).
+- **Espionaje: accidentes.** En cualquier edificio con trabajadores (no los fuertes), de cualquier reino, puede ocurrir un accidente que mata a 1 o 2 trabajadores (nunca a un espía): 1 entre 730 al día (1 cada 2 años en promedio). Los espías enemigos en **Sabotaje** lo hacen más probable y se acumulan: 1 espía ×2, 2 espías ×3, 3 o más ×4. Límites por reino en 365 días: 1 accidente normal y 3 causados por espías. Mensajes: "An accident occurred at your <edificio> near <pueblo>..." y, si lo causó tu espía, "Your spy caused an accident at the <edificio> of <reino>...".
+- **Espionaje: porcentaje de éxito del soborno.** Cada botón del menú de soborno muestra la probabilidad de éxito, por ejemplo "Offer $1,000 (35%)". Si el objetivo es un espía de otro reino el soborno siempre falla, pero el porcentaje se muestra como para una unidad normal, para no delatarlo.
+- **Espionaje: reportes de inteligencia** (reemplazan "Steal secrets", que se quitó):
+  - Modo nuevo del espía, **"Gather Intel"**, en pueblos y edificios de otros reinos. Mientras recolecta lo pueden atrapar, como en los otros modos activos.
+  - Después de 30 días de recolección se genera un reporte con fecha. **Máximo 1 reporte de cada reino cada 30 días**, sin importar cuántos espías tengas en él; lo hace el espía de más habilidad.
+  - Secciones según la habilidad del espía: Pueblos (20), Economía (30), Comercio (30), Reino (40), Tecnología (40), Militar (50), Espías (90).
+  - Los números salen como un rango con un error de ±(100 − habilidad) ÷ 2 % (exactos con habilidad 100); el valor real queda en un punto al azar del rango. Las tecnologías y las relaciones son exactas.
+  - Se consultan en el reporte de Espías, pestaña nueva **"Intelligence"**: la lista de reportes (fecha, reino, espía, habilidad) y el detalle del seleccionado. Se guardan los últimos 30 reportes de cada reino.
+  - Al terminar un reporte aparece un mensaje. La IA no usa este modo.
+  - Ya no existe la exposición del espía al cerrar los reportes secretos, ni su error del original (ver `SPYING.md`, sección 9).
 - **Invocar Fryhtan:** botón nuevo en la Sede de Poder (icono de contratar unidad, último lugar de la fila) que invoca un Fryhtan de tu reino con combate 50. Cada raza tiene su Fryhtan aliado, según la raza de la Sede:
   - Normandos → Holgh, Mayas → Deezboanz, Griegos → Sauroid, Vikingos → Haubudam, Persas → Rokken.
   - Chinos → Wyrm, Japoneses → Rattus, Egipcios → Karrotten, Mughules → Doink, Zulúes → Broosken.
@@ -60,7 +77,7 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 - **Versión en el menú principal:** se muestra la versión de esta rama y la de `7kmod` en la que está basada, por ejemplo "7kmod-gameplay 0.1.0 (7kmod 0.1.0)". La versión está en `include/ModVersion.h`.
 
 ### Compatibilidad
-- **Partidas guardadas:** versión 297 (296 agrega Building Repair y 297 Fryhtan Slayers). Las partidas anteriores se siguen cargando (las tecnologías nuevas quedan sin investigar). Los Fryhtans de un reino se guardan como unidades normales.
+- **Partidas guardadas:** versión 298 (296 agrega Building Repair, 297 Fryhtan Slayers y 298 el espionaje: fechas de los accidentes, progreso de la recolección y reportes de inteligencia). Las partidas anteriores se siguen cargando (las tecnologías nuevas quedan sin investigar y sin reportes de inteligencia). Los Fryhtans de un reino se guardan como unidades normales.
 - **Multijugador:** invocar un Fryhtan usa el mensaje de red nuevo `MSG_F_BASE_INVOKE_FRYHTAN`. Todos los jugadores necesitan el mismo ejecutable.
 - La IA no invoca Fryhtans.
 - **Balance de razas:** no cambia el formato de las partidas guardadas; al cargar una partida se aplican las reglas nuevas. En multijugador, todos necesitan el mismo ejecutable.
