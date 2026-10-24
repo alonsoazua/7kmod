@@ -45,8 +45,40 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     la propaganda es la opción lenta y barata, las donaciones la rápida y cara.
   - Ojo: el fuerte solo baja la resistencia de la raza de su general (las otras
     razas del pueblo no tienen meta). La propaganda es la que baja las demás.
-  - Por confirmar: si la IA debe usar la propaganda (hoy la IA ya pone espías en
-    pueblos).
+  - **La IA:** ya usa este modo en pueblos independientes (`Spy::think_town_spy`), así
+    que aprovecha la propaganda sin cambios. Ajuste: hoy decide sacar al espía según
+    la lealtad del pueblo, pero un pueblo independiente tiene resistencia, no
+    lealtad (descuido del original). Cambiarlo para que el espía salga cuando la
+    resistencia de su raza llegue a 30 y la IA no tenga un fuerte enlazado.
+
+- [ ] **Aldeanos que se unen por la propaganda.** Cada 30 días, un pueblo
+  independiente con espías tuyos en Propaganda tiene una probabilidad de que **un**
+  aldeano lo deje y aparezca a su lado como unidad tuya. **Máximo 1 por pueblo al
+  mes** (por reino).
+  - Probabilidad al mes = suma de la habilidad de tus espías en Propaganda ÷ 5 ×
+    población del pueblo ÷ 30 × (100 − resistencia) ÷ 100 %, **máximo 30%**. Más
+    espías y más habilidad lo hacen más probable, un pueblo grande más que uno chico,
+    y casi no pasa mientras la resistencia es alta.
+  - El aldeano es de la raza de uno de los espías (al azar, según su habilidad), y la
+    resistencia de la fórmula es la de esa raza. El pueblo nunca se queda sin
+    habitantes (los espías no cuentan).
+  - Calidad: combate de los defensores del pueblo ±10 (10 a 70 según el pueblo).
+    Habilidad de trabajo o liderazgo (al azar entre construcción, minería,
+    fabricación, investigación o liderazgo): 10 + al azar de 0 a la suma de la
+    habilidad de los espías ÷ 2, **máximo 70**. Lealtad inicial: 50 + (100 −
+    resistencia) ÷ 2.
+  - Estimaciones, probabilidad al mes (entre paréntesis, aldeanos al año en
+    promedio):
+
+    | Espías | Calidad hasta | Pueblo 10 | Pueblo 30 | Pueblo 60 |
+    |---|---|---|---|---|
+    | 1 de habilidad 50, resistencia 70 | 35 | 1% (0.1) | 3% (0.4) | 6% (0.7) |
+    | 1 de habilidad 50, resistencia 30 | 35 | 2% (0.3) | 7% (0.8) | 14% (1.7) |
+    | 2 de habilidad 50, resistencia 30 | 60 | 5% (0.6) | 14% (1.7) | 28% (3.4) |
+    | 3 de habilidad 50, resistencia 30 | 70 | 7% (0.8) | 21% (2.5) | 30% (3.6) |
+    | 2 de habilidad 100, resistencia 30 | 70 | 9% (1.1) | 28% (3.4) | 30% (3.6) |
+
+  - Por confirmar: los números.
 
 ---
 
