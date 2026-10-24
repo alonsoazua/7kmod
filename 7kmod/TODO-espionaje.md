@@ -169,7 +169,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   por raza. Con habilidad 50: de 5 a 3.3 puntos al mes.
   - No cambian: el mínimo de 30 sin fuerte, la regla de la raza (una cuarta parte
     para otras razas) ni el bono a la influencia del fuerte (habilidad ÷ 5, máximo
-    +20).
+    +20, confirmado que se queda así).
 
 - [ ] **Balance de los aldeanos que se unen, −33%.** Probabilidad al mes de
   habilidad ÷ 10 a **habilidad ÷ 15** × población de la raza ÷ 30 %, y máximo de 30% a
@@ -200,6 +200,11 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   años** por edificio (1 entre 1,095 al día). **La Sede de Poder (Seat of Power) queda
   fuera.** No cambian los multiplicadores de los espías (×2, ×3, ×4) ni los límites por
   reino (1 normal y 3 por espías al año).
+
+- [ ] **Fondo de los reportes de inteligencia.** En la pestaña "Intelligence", el
+  detalle del reporte se dibuja sobre un panel sólido. Cambiarlo a fondo transparente,
+  como en las demás ventanas de reportes. La barra de títulos de las columnas (Date,
+  Kingdom, Spy, Skill) y las pestañas se quedan en gris sólido.
 
 ---
 
