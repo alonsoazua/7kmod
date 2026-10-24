@@ -21,7 +21,13 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     (4 a 20 puntos al mes).
   - **Las otras razas del pueblo** también bajan su resistencia, a la mitad del
     efecto. Así un pueblo mixto no necesita un espía de cada raza.
-  - Por confirmar: los números; si el bono del fuerte debe ser ×2 o depender del
+  - **Los espías solos no conquistan:** la propaganda "ablanda la resistencia", pero
+    no puede bajarla de un mínimo. **Sin un fuerte tuyo enlazado, no baja de 30.**
+    Con un fuerte enlazado (con general) puede bajar hasta 0, porque entonces la
+    conquista depende de tener presencia militar. Sin fuerte, el último empujón
+    tendría que venir de atacar el pueblo (las donaciones ya requieren un fuerte
+    enlazado).
+  - Por confirmar: los números (incluido el mínimo de 30); si el bono del fuerte debe ser ×2 o depender del
     liderazgo del general; si la IA debe usar la propaganda (hoy la IA ya pone
     espías en pueblos).
 
