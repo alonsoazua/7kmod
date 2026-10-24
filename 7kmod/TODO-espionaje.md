@@ -25,10 +25,14 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     poco: lo pensado es contratar un espía maya en una Inn y mandarlo al pueblo
     maya. Aplica a todos los efectos de la propaganda (directo, influencia del
     fuerte y aldeanos que se unen).
-  - **Sin un fuerte tuyo enlazado** (con general), la propaganda no baja la
-    resistencia de **30**: solo ablanda. Sin fuerte, el último empujón tiene que
+  - **Sin un fuerte tuyo enlazado con general**, la propaganda no baja la
+    resistencia de **30**: solo ablanda. Un fuerte vacío (sin general) o con el
+    enlace desactivado no cuenta, para que no baste con construir un fuerte vacío y
+    mandar espías. Es la misma regla que el juego ya usa para la influencia del
+    fuerte y para las donaciones. Sin fuerte, el último empujón tiene que
     venir de atacar el pueblo (las donaciones ya requieren un fuerte enlazado).
-  - **Con un fuerte enlazado**, la propaganda puede bajarla hasta 0, y además
+  - **Con un fuerte enlazado que tenga general**, la propaganda puede bajarla hasta
+    0, y además
     **sube la influencia del fuerte**: habilidad ÷ 5 por espía de la raza del
     general del fuerte (÷ 20 si es de otra raza), **máximo +20**. La
     meta del fuerte (100 − influencia) baja, así que un general de liderazgo medio
@@ -55,7 +59,8 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     que aprovecha la propaganda sin cambios. Ajuste: hoy decide sacar al espía según
     la lealtad del pueblo, pero un pueblo independiente tiene resistencia, no
     lealtad (descuido del original). Cambiarlo para que el espía salga cuando la
-    resistencia de su raza llegue a 30 y la IA no tenga un fuerte enlazado.
+    resistencia de su raza llegue a 30 y la IA no tenga un fuerte enlazado con
+    general.
 
 - [ ] **Aldeanos que se unen por la propaganda.** Cada 30 días, un pueblo
   independiente con espías tuyos en Propaganda tiene una probabilidad de que **un**
