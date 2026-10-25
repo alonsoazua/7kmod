@@ -64,6 +64,8 @@ void ModSpy::reset()
 
 	sabotage_record_count = 0;
 	memset( sabotage_record_array, 0, sizeof(sabotage_record_array) );
+
+	memset( spy_cooldown_array, 0, sizeof(spy_cooldown_array) );
 }
 //----------- End of function ModSpy::reset ---------//
 
@@ -142,13 +144,17 @@ int ModSpy::has_linked_general_camp(Town* townPtr, int nationRecno)
 //
 // Called every 30 days for each independent town.
 //
-// - The resistance of each race towards the nation of the spies decreases by
-//   the skill of the spies / PROPAGANDA_SKILL_DIVIDER, at most PROPAGANDA_MAX_MONTH_DEC. Spies of
-//   another race count a quarter. Without a linked fort with a general, it
+// Only the spy with the highest skill of each nation counts, for each race
+// (a spy of another race counts a quarter of his skill).
+//
+// - The resistance of each race towards the nation decreases by the skill of
+//   the best spy / PROPAGANDA_SKILL_DIVIDER, halved below
+//   PROPAGANDA_HALF_RESISTANCE. Without a linked fort with a general, it
 //   doesn't go below PROPAGANDA_MIN_RESISTANCE.
 // - There is a chance that a villager leaves the town and joins the nation:
-//   for each race, the skill of the spies / PROPAGANDA_SKILL_DIVIDER * the population of the race
-//   / 30 %, at most PROPAGANDA_MAX_JOIN_CHANCE % in total.
+//   for each race, the skill of the best spy / PROPAGANDA_JOIN_SKILL_DIVIDER *
+//   the population of the race / 30 %, at most PROPAGANDA_MAX_JOIN_CHANCE % in
+//   total.
 //
 void ModSpy::process_propaganda(Town* townPtr)
 {
@@ -183,7 +189,11 @@ void ModSpy::process_propaganda(Town* townPtr)
 		hasSpy[n] = 1;
 
 		for( int r=0 ; r<MAX_RACE ; r++ )
-			effSkill[n][r] += spyPtr->race_id == r+1 ? spyPtr->spy_skill : spyPtr->spy_skill/4;
+		{
+			int skill = spyPtr->race_id == r+1 ? spyPtr->spy_skill : spyPtr->spy_skill/4;
+
+			effSkill[n][r] = MAX( effSkill[n][r], skill );		// only the best spy counts
+		}
 	}
 
 	//------ process the propaganda of each nation -------//
@@ -208,8 +218,11 @@ void ModSpy::process_propaganda(Town* townPtr)
 			if( nonSpyPop <= 0 || effSkill[n][r] == 0 )
 				continue;
 
-			float decValue = MIN( (float) PROPAGANDA_MAX_MONTH_DEC, (float) effSkill[n][r] / PROPAGANDA_SKILL_DIVIDER );
+			float decValue = (float) effSkill[n][r] / PROPAGANDA_SKILL_DIVIDER;
 			float* resistancePtr = &townPtr->race_resistance_array[r][n];
+
+			if( *resistancePtr < (float) PROPAGANDA_HALF_RESISTANCE )
+				decValue /= 2;
 
 			if( *resistancePtr > minResistance )
 			{
@@ -219,7 +232,7 @@ void ModSpy::process_propaganda(Town* townPtr)
 					*resistancePtr = minResistance;
 			}
 
-			joinChance[r] = (float) effSkill[n][r] / PROPAGANDA_SKILL_DIVIDER * nonSpyPop / 30;
+			joinChance[r] = (float) effSkill[n][r] / PROPAGANDA_JOIN_SKILL_DIVIDER * nonSpyPop / 30;
 			totalJoinChance += joinChance[r];
 		}
 
@@ -320,8 +333,9 @@ void ModSpy::add_villager(Town* townPtr, int nationRecno, int raceId, int totalS
 //--------- Begin of function ModSpy::propaganda_influence_bonus --------//
 //
 // The bonus of the propaganda of a nation to the influence of its linked fort
-// on an independent town: skill / 5 for each spy of the race of the general
-// (skill / 20 for other races), at most PROPAGANDA_MAX_INFLUENCE.
+// on an independent town: the best spy of the nation, skill / 5 for a spy of
+// the race of the general (skill / 20 for other races), at most
+// PROPAGANDA_MAX_INFLUENCE.
 //
 // <int> raceId - the race of the general of the fort
 //
@@ -342,7 +356,7 @@ int ModSpy::propaganda_influence_bonus(Town* townPtr, int nationRecno, int raceI
 		if( spyPtr->spy_place == SPY_TOWN && spyPtr->spy_place_para == townPtr->town_recno &&
 			 spyPtr->action_mode == SPY_SOW_DISSENT && spyPtr->true_nation_recno == nationRecno )
 		{
-			bonus += spyPtr->race_id == raceId ? spyPtr->spy_skill/5 : spyPtr->spy_skill/20;
+			bonus = MAX( bonus, spyPtr->race_id == raceId ? spyPtr->spy_skill/5 : spyPtr->spy_skill/20 );		// only the best spy counts
 		}
 	}
 
@@ -389,7 +403,8 @@ void ModSpy::process_accident(Firm* firmPtr)
 
 		Spy* spyPtr = spy_array[spyRecno];
 
-		if( spyPtr->action_mode == SPY_SABOTAGE && spyPtr->true_nation_recno != firmPtr->nation_recno )
+		if( spyPtr->action_mode == SPY_SABOTAGE && spyPtr->true_nation_recno != firmPtr->nation_recno &&
+			 !is_spy_in_cooldown(spyPtr) )		// a spy that caused an accident can't cause another one for a while
 		{
 			saboteurSkill += spyPtr->spy_skill;
 
@@ -486,6 +501,8 @@ void ModSpy::process_accident(Firm* firmPtr)
 		record.spy_name_id  = bestSaboteur->name_id;
 
 		add_sabotage_record( &record );
+
+		set_spy_cooldown( bestSaboteur );
 	}
 
 	//-------- news ---------//
@@ -819,6 +836,57 @@ void ModSpy::del_report(int reportId)
 //----------- End of function ModSpy::del_report ---------//
 
 
+//--------- Begin of function ModSpy::is_spy_in_cooldown --------//
+//
+// Whether the spy caused an accident in the last ACCIDENT_SPY_COOLDOWN_DAYS.
+//
+int ModSpy::is_spy_in_cooldown(Spy* spyPtr)
+{
+	for( int i=0 ; i<MAX_SPY_COOLDOWN ; i++ )
+	{
+		SpyCooldown* cooldownPtr = spy_cooldown_array+i;
+
+		if( cooldownPtr->spy_recno == spyPtr->spy_recno && cooldownPtr->spy_name_id == spyPtr->name_id )
+			return info.game_date - cooldownPtr->accident_date < ACCIDENT_SPY_COOLDOWN_DAYS;
+	}
+
+	return 0;
+}
+//----------- End of function ModSpy::is_spy_in_cooldown ---------//
+
+
+//--------- Begin of function ModSpy::set_spy_cooldown --------//
+//
+void ModSpy::set_spy_cooldown(Spy* spyPtr)
+{
+	//--- the entry of the spy, or an empty or expired one, or the oldest one ---//
+
+	int bestId=0;
+
+	for( int i=0 ; i<MAX_SPY_COOLDOWN ; i++ )
+	{
+		SpyCooldown* cooldownPtr = spy_cooldown_array+i;
+
+		if( cooldownPtr->spy_recno == spyPtr->spy_recno )
+		{
+			bestId = i;
+			break;
+		}
+
+		if( cooldownPtr->accident_date < spy_cooldown_array[bestId].accident_date ||
+			 cooldownPtr->spy_recno == 0 )
+		{
+			bestId = i;
+		}
+	}
+
+	spy_cooldown_array[bestId].spy_recno	  = spyPtr->spy_recno;
+	spy_cooldown_array[bestId].spy_name_id	  = spyPtr->name_id;
+	spy_cooldown_array[bestId].accident_date = info.game_date;
+}
+//----------- End of function ModSpy::set_spy_cooldown ---------//
+
+
 //--------- Begin of function ModSpy::add_sabotage_record --------//
 //
 void ModSpy::add_sabotage_record(SabotageRecord* recordPtr)
@@ -981,6 +1049,11 @@ int ModSpy::write_file(File* filePtr)
 		return 0;
 	}
 
+	//--- GAME_VERSION_7KMOD_SPY_COOLDOWN ---//
+
+	if( !filePtr->file_write(spy_cooldown_array, sizeof(spy_cooldown_array)) )
+		return 0;
+
 	return 1;
 }
 //----------- End of function ModSpy::write_file ---------//
@@ -991,7 +1064,10 @@ int ModSpy::write_file(File* filePtr)
 // <int> hasSabotageRecord - whether the saved game has the accidents caused
 //                            by spies (GAME_VERSION_7KMOD_SABOTAGE_LOG)
 //
-int ModSpy::read_file(File* filePtr, int hasSabotageRecord)
+// <int> hasSpyCooldown    - whether the saved game has the cooldown of the
+//                            spies (GAME_VERSION_7KMOD_SPY_COOLDOWN)
+//
+int ModSpy::read_file(File* filePtr, int hasSabotageRecord, int hasSpyCooldown)
 {
 	reset();
 
@@ -1034,6 +1110,12 @@ int ModSpy::read_file(File* filePtr, int hasSabotageRecord)
 	{
 		return 0;
 	}
+
+	if( !hasSpyCooldown )
+		return 1;
+
+	if( !filePtr->file_read(spy_cooldown_array, sizeof(spy_cooldown_array)) )
+		return 0;
 
 	return 1;
 }

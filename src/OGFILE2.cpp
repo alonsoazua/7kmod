@@ -191,7 +191,11 @@ int GameFile::read_file(File* filePtr)
 	if(game_file_array.load_file_game_version > GAME_VERSION)
 		return -1;		// the executing program can't handle saved game in future version
 
-	game_file_array.same_version = ( game_file_array.load_file_game_version/100==GAME_VERSION/100 );
+	//--- 7kmod: same_version tells version 1 saved games apart. All the versions from 200 ---//
+	//--- (2.00 and the 7kmod versions, which reached 300) have the same base format.       ---//
+
+	game_file_array.same_version = ( game_file_array.load_file_game_version/100==GAME_VERSION/100 ) ||
+											 ( game_file_array.load_file_game_version >= 200 && GAME_VERSION >= 200 );
 	//#### end alex 5/3 ####//
 
 	//------------------------------------------------//
@@ -773,7 +777,8 @@ int GameFile::read_file_3(File* filePtr)
 	if( !read_book_mark( filePtr, BOOK_MARK+291 ) )
 		return 0;
 
-	if( !mod_spy.read_file(filePtr, game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_SABOTAGE_LOG) )
+	if( !mod_spy.read_file(filePtr, game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_SABOTAGE_LOG,
+								  game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_SPY_COOLDOWN) )
 		return 0;
 
 	return 1;

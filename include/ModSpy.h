@@ -34,8 +34,9 @@ class Spy;
 
 //------- Propaganda in independent towns --------//
 
-#define PROPAGANDA_SKILL_DIVIDER			15		// the skill of the spies is divided by this for the resistance decrease and the join chance
-#define PROPAGANDA_MAX_MONTH_DEC			7		// maximum resistance decrease of a race in a month, from all the spies of a nation
+#define PROPAGANDA_SKILL_DIVIDER			20		// the resistance decreases by the skill of the best spy / this in a month
+#define PROPAGANDA_HALF_RESISTANCE		30		// below this resistance the decrease is halved
+#define PROPAGANDA_JOIN_SKILL_DIVIDER	12		// the join chance is the skill of the best spy / this * the population / 30 %
 #define PROPAGANDA_MIN_RESISTANCE		30		// without a linked fort with a general, propaganda doesn't decrease resistance below this
 #define PROPAGANDA_MAX_INFLUENCE			20		// maximum bonus to the influence of a linked fort
 #define PROPAGANDA_MAX_JOIN_CHANCE		20		// maximum chance (%) in a month that a villager joins the nation
@@ -43,7 +44,9 @@ class Spy;
 
 //------- Accidents in firms --------//
 
-#define ACCIDENT_DAILY_CHANCE				1825	// 1 in 1825 a day for each firm with workers: 1 in 5 years
+#define ACCIDENT_DAILY_CHANCE				3650	// 1 in 3650 a day for each firm with workers: 1 in 10 years
+#define ACCIDENT_SPY_COOLDOWN_DAYS		180	// a spy that caused an accident can't cause another one in this time
+#define MAX_SPY_COOLDOWN					100	// spies in cooldown kept
 #define ACCIDENT_SPY_SKILL_DIVIDER		10		// spies in sabotage mode multiply the chance: 1 + the total skill of the spies / 10
 #define ACCIDENT_MAX_SPY_MULTIPLIER		16		// maximum multiplier
 #define MAX_SABOTAGE_RECORD				60		// accidents caused by spies kept for all nations
@@ -132,6 +135,17 @@ struct SabotageRecord
 };
 #pragma pack()
 
+//------- Define struct SpyCooldown: the last accident caused by a spy --------//
+
+#pragma pack(1)
+struct SpyCooldown
+{
+	int16_t  spy_recno;
+	uint16_t spy_name_id;					// to check that the spy recno hasn't been reused
+	int32_t  accident_date;
+};
+#pragma pack()
+
 //------- Define class ModSpy --------//
 
 class ModSpy
@@ -146,6 +160,8 @@ public:
 
 	int16_t			sabotage_record_count;
 	SabotageRecord sabotage_record_array[MAX_SABOTAGE_RECORD];		// in date order
+
+	SpyCooldown		spy_cooldown_array[MAX_SPY_COOLDOWN];			// spy_recno 0 - empty
 
 public:
 	void	reset();
@@ -175,7 +191,7 @@ public:
 	int	player_sabotage_death_count();
 
 	int	write_file(File* filePtr);
-	int	read_file(File* filePtr, int hasSabotageRecord);
+	int	read_file(File* filePtr, int hasSabotageRecord, int hasSpyCooldown);
 
 private:
 	void	add_villager(Town* townPtr, int nationRecno, int raceId, int totalSkill);
@@ -185,6 +201,8 @@ private:
 	void	del_report(int reportId);
 	void	add_sabotage_record(SabotageRecord* recordPtr);
 	void	del_sabotage_record(int recordId);
+	int	is_spy_in_cooldown(Spy* spyPtr);
+	void	set_spy_cooldown(Spy* spyPtr);
 };
 
 extern ModSpy mod_spy;

@@ -44,7 +44,8 @@ extern const int GAME_VERSION;
 #define GAME_VERSION_7KMOD_FRYHTAN_SLAYERS	297	// 7kmod-gameplay: ModTechRes with the Fryhtan Slayers technology
 #define GAME_VERSION_7KMOD_SPYING		298	// 7kmod-gameplay: ModSpy (accidents, intelligence reports)
 #define GAME_VERSION_7KMOD_SABOTAGE_LOG	299	// 7kmod-gameplay: ModSpy, accidents caused by spies
-#define GAME_VERSION_7KMOD	299
+#define GAME_VERSION_7KMOD_SPY_COOLDOWN	300	// 7kmod-gameplay: ModSpy, cooldown of the spies after an accident
+#define GAME_VERSION_7KMOD	300
 
 //-------- Define constant ------------//
 

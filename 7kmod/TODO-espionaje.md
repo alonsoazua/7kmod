@@ -246,7 +246,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   - Se guardan en la partida los últimos 30 accidentes de cada reino.
   - Al final de la lista, el total de accidentes y de trabajadores muertos.
 
-- [ ] **Accidentes normales: 1 cada 10 años por edificio** (antes 1 cada 5): 1 entre
+- [x] **Accidentes normales: 1 cada 10 años por edificio** (antes 1 cada 5): 1 entre
   3,650 al día. Por reino, sin espías (con el límite de 1 cada 365 días):
 
   | Edificios | Accidentes en promedio | Al menos uno en el primer año |
@@ -261,7 +261,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     al año en el edificio: habilidad 50 (×6) 0.5; habilidad 100 (×11) 1; máximo (×16)
     1.5.
 
-- [ ] **Espera de 6 meses después de un accidente.** El espía al que se le atribuye un
+- [x] **Espera de 6 meses después de un accidente.** El espía al que se le atribuye un
   accidente (el de más habilidad en Sabotaje en el edificio) no puede causar otro en
   **180 días**.
   - Mientras espera, su habilidad no cuenta para el multiplicador del sabotaje. Los
@@ -271,7 +271,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     pueden atrapar igual.
   - Se guarda en la partida la fecha del último accidente de cada espía.
 
-- [ ] **Balance de la propaganda: solo cuenta el mejor espía.** Problema visto en
+- [x] **Balance de la propaganda: solo cuenta el mejor espía.** Problema visto en
   partida: al acumular 2 o 3 espías la resistencia baja rápido a 30 incluso sin fuerte,
   y luego un general de liderazgo 20–30, que casi no hace nada, basta para que los
   espías quiten el resto. Ahora, en cada pueblo, **solo cuenta el espía de más
