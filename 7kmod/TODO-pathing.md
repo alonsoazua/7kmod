@@ -49,6 +49,15 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   queda, pero desactivado (`UnitArray::set_group_speed` no asigna unidad lenta), por si
   se retoma después. La reunión antes de marchar (0.6) no cambia.
 
+- [ ] **Apurarse al reunirse (+50%).** Mientras el grupo se reúne antes de marchar, las
+  unidades que van hacia su lugar en la reunión se mueven un 50% más rápido, como en Age
+  of Mythology y Age of Empires IV. No se cambia la velocidad (es un dato compartido por
+  tipo de unidad): se procesa **un paso de movimiento extra cada 2 cuadros**, con las
+  mismas revisiones de bloqueo, llegada y giro que un paso normal.
+  - Solo durante la reunión y solo hacia el lugar de la reunión. Al marchar, al recibir
+    otra orden o al entrar en combate, cada unidad vuelve a su velocidad normal.
+  - Con la espera máxima de unos 3 segundos, el efecto dura poco.
+
 ---
 
 ## Descartado por ahora
