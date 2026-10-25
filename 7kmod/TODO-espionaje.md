@@ -261,6 +261,16 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     al año en el edificio: habilidad 50 (×6) 0.5; habilidad 100 (×11) 1; máximo (×16)
     1.5.
 
+- [ ] **Espera de 6 meses después de un accidente.** El espía al que se le atribuye un
+  accidente (el de más habilidad en Sabotaje en el edificio) no puede causar otro en
+  **180 días**.
+  - Mientras espera, su habilidad no cuenta para el multiplicador del sabotaje. Los
+    demás espías del edificio sí, y el siguiente accidente se le atribuye al de más
+    habilidad que no esté esperando.
+  - El espía sigue en Sabotaje: sigue bajando la productividad del edificio y lo
+    pueden atrapar igual.
+  - Se guarda en la partida la fecha del último accidente de cada espía.
+
 ---
 
 ## Ideas por confirmar
