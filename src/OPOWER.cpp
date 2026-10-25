@@ -270,8 +270,8 @@ static int is_military_unit(Unit* unitPtr)
 			if( !unitPtr->is_own() )
 				return 1;
 
-			if( unitPtr->spy_recno && unitPtr->true_nation_recno() == nation_array.player_recno )
-				return 0;
+			//--- the player's own spies count by their visible skill, as the other units: ---//
+			//--- spies that look like soldiers are selected with the army                  ---//
 
 			switch( unitPtr->skill.skill_id )
 			{
