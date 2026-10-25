@@ -33,7 +33,7 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
   - El reporte tarda **de 2 a 6 meses** según la suma de la habilidad de tus espías en Gather Intel en ese reino: 180 días con 20 o menos, 60 días con 200 o más, proporcional en medio (por ejemplo 160 días con 1 espía de 50). Se recibe un reporte de cada reino a la vez, sin importar cuántos espías tengas en él; lo hace el espía de más habilidad.
   - Secciones según la habilidad del espía: Pueblos (20), Economía (30), Comercio (30), Reino (40), Tecnología (40), Militar (50), Espías (90).
   - Los números salen como un rango con un error de ±(100 − habilidad) ÷ 2 % (exactos con habilidad 100); el valor real queda en un punto al azar del rango. Las tecnologías y las relaciones son exactas.
-  - Se consultan en el reporte de Espías, pestaña nueva **"Intelligence"**: la lista de reportes (fecha, reino, espía, habilidad) y el detalle del seleccionado, con fondo transparente como las demás ventanas de reportes. Se guardan los últimos 30 reportes de cada reino.
+  - Se consultan en el reporte de Espías, pestaña nueva **"Intelligence"**: la lista de reportes (fecha, reino, espía, habilidad) y el detalle del seleccionado, con el mismo fondo blanco translúcido que las listas de las demás ventanas de reportes. Se guardan los últimos 30 reportes de cada reino.
   - Al terminar un reporte aparece un mensaje. La IA no usa este modo.
   - Ya no existe la exposición del espía al cerrar los reportes secretos, ni su error del original (ver `SPYING.md`, sección 9).
 - **Invocar Fryhtan:** botón nuevo en la Sede de Poder (icono de contratar unidad, último lugar de la fila) que invoca un Fryhtan de tu reino con combate 50. Cada raza tiene su Fryhtan aliado, según la raza de la Sede:

@@ -28,6 +28,7 @@
 #include <ORACERES.h>
 #include <OIMGRES.h>
 #include <OVBROWIF.h>
+#include <vga_util.h>
 #include <OSPY.h>
 #include <OINFO.h>
 #include <OMOUSE.h>
@@ -426,7 +427,9 @@ static void disp_intel(int refreshFlag)
 
 	//------- the selected report -------//
 
-	//--- the background of the report is transparent, as in the other report windows ---//
+	//--- the background of the report is light and translucent, as the lists of the other report windows ---//
+
+	vga_util.d3_panel_down( SPY_BROWSE_X1, INTEL_DETAIL_Y1, SPY_BROWSE_X2, SPY_BROWSE_Y2 );
 
 	IntelReport* reportPtr = reportCount ? mod_spy.get_player_report(browse_intel_recno) : NULL;
 
