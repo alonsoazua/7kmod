@@ -336,7 +336,9 @@ static int formation_role(Unit* unitPtr)
 
 #define FORM_UP_MIN_DIST		15		// a scattered group farther than this from the destination gathers first
 #define MAX_FORM_UP_GROUP		20
-#define FORM_UP_MAX_FRAMES		400	// the group marches after this even if some units haven't arrived
+#define FORM_UP_MAX_FRAMES		150	// the group marches after this even if the units aren't ready
+#define FORM_UP_NEAR_DIST		2		// a unit is ready when it is this near its place
+#define FORM_UP_READY_PERCENT	80		// the group marches when this % of the units are ready
 
 struct FormUpGroup
 {
@@ -345,6 +347,8 @@ struct FormUpGroup
 	short		unit_count;
 	short		unit_recno_array[100];
 	uint16_t	unit_name_id_array[100];
+	short		place_x_array[100];		// the place of each unit in the formation where the group gathers
+	short		place_y_array[100];
 	int		frame_count;
 };
 
@@ -357,7 +361,7 @@ static int			 form_up_disabled = 0;
 // 7kmod-pathing: remember a group that is gathering, to order it to march
 // to the destination when it has gathered (see process_form_up()).
 //
-void UnitArray::add_form_up(int destX, int destY, short* selectedUnitArray, int selectedCount)
+void UnitArray::add_form_up(int destX, int destY, short* selectedUnitArray, int selectedCount, short* placeXArray, short* placeYArray)
 {
 	if( form_up_count >= MAX_FORM_UP_GROUP )		// the oldest one marches now
 	{
@@ -380,6 +384,8 @@ void UnitArray::add_form_up(int destX, int destY, short* selectedUnitArray, int 
 	{
 		groupPtr->unit_recno_array[i]	 = selectedUnitArray[i];
 		groupPtr->unit_name_id_array[i] = operator[](selectedUnitArray[i])->name_id;
+		groupPtr->place_x_array[i]		 = placeXArray[i];
+		groupPtr->place_y_array[i]		 = placeYArray[i];
 	}
 }
 //----------- End of function UnitArray::add_form_up -----------//
@@ -387,10 +393,10 @@ void UnitArray::add_form_up(int destX, int destY, short* selectedUnitArray, int 
 
 //--------- Begin of function UnitArray::process_form_up ---------//
 //
-// 7kmod-pathing: called every frame. When all the units of a gathering group
-// have arrived (or after FORM_UP_MAX_FRAMES), the group marches to the
-// destination in formation. The units that got another order, died or left
-// are not counted.
+// 7kmod-pathing: called every frame. When FORM_UP_READY_PERCENT % of the
+// units of a gathering group are ready (within FORM_UP_NEAR_DIST of their
+// place), or after FORM_UP_MAX_FRAMES, the whole group marches to the
+// destination. The units that got another order, died or left are not counted.
 //
 void UnitArray::process_form_up()
 {
@@ -398,7 +404,7 @@ void UnitArray::process_form_up()
 	{
 		FormUpGroup* groupPtr = form_up_array+g;
 		short validArray[100];
-		int   validCount=0, allArrived=1;
+		int   validCount=0, readyCount=0;
 
 		for( int i=0 ; i<groupPtr->unit_count ; i++ )
 		{
@@ -418,11 +424,15 @@ void UnitArray::process_form_up()
 
 			validArray[validCount++] = unitRecno;
 
-			if( unitPtr->cur_action != SPRITE_IDLE )
-				allArrived = 0;
+			if( MAX( abs(unitPtr->next_x_loc()-groupPtr->place_x_array[i]),
+						abs(unitPtr->next_y_loc()-groupPtr->place_y_array[i]) ) <= FORM_UP_NEAR_DIST )
+			{
+				readyCount++;
+			}
 		}
 
-		if( validCount==0 || allArrived || ++groupPtr->frame_count > FORM_UP_MAX_FRAMES )
+		if( validCount==0 || readyCount*100 >= validCount*FORM_UP_READY_PERCENT ||
+			 ++groupPtr->frame_count > FORM_UP_MAX_FRAMES )
 		{
 			int destX = groupPtr->dest_x_loc, destY = groupPtr->dest_y_loc;
 
@@ -701,7 +711,7 @@ int UnitArray::move_in_formation(int destX, int destY, short* selectedUnitArray,
 	//------- the group marches to the destination when it has gathered -------//
 
 	if( formUp )
-		add_form_up(destX, destY, selectedUnitArray, selectedCount);
+		add_form_up(destX, destY, selectedUnitArray, selectedCount, placeXArray, placeYArray);
 
 	return 1;
 }

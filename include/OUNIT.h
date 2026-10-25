@@ -883,7 +883,7 @@ private:
 	void  move_to_now_gather(int destX, int destY, short* selectedUnitArray, int selectedCount);		// 7kmod-pathing: the original move_to_now()
 	int   move_in_formation(int destX, int destY, short* selectedUnitArray, int selectedCount);		// 7kmod-pathing
 	void  set_group_speed(short* selectedUnitArray, int selectedCount);										// 7kmod-pathing
-	void  add_form_up(int destX, int destY, short* selectedUnitArray, int selectedCount);					// 7kmod-pathing
+	void  add_form_up(int destX, int destY, short* selectedUnitArray, int selectedCount, short* placeXArray, short* placeYArray);	// 7kmod-pathing
 	void  process_form_up();																								// 7kmod-pathing
 	void  construct_sorted_array(short* selectedUnitArray, int selectedCount);
 	void  determine_position_to_construct_table(int selectedCount, int destXLoc, int destYLoc, char mobileType);

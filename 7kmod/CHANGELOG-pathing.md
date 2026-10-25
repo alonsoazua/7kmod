@@ -15,9 +15,12 @@ Si los cambios funcionan bien en partidas, se pasarán a `7kmod-gameplay` (o a
 - **Juntarse antes de marchar (0.6.0)**, como en Age of Empires II: si un grupo disperso
   (el caso de la formación nueva) se manda a un destino a más de 15 casillas, primero se
   reúne en formación **donde está** (centrada en el centro del grupo, con el frente hacia
-  el destino) y, cuando todas las unidades llegaron a su lugar, marcha al destino
-  conservando la formación.
-  - Si alguna unidad tarda mucho (unos 400 cuadros), el grupo marcha sin ella.
+  el destino) y luego marcha al destino conservando la formación.
+  - Desde 0.6.1 la reunión es más suelta: una unidad cuenta como lista si está a 2
+    casillas o menos de su lugar, y el grupo marcha cuando el 80% está listo, o a los
+    150 cuadros (unos 7 segundos) aunque no lo esté. Las que faltan reciben la orden de
+    marcha igual. En 0.6.0 se esperaba a que todas llegaran exactamente a su lugar
+    (hasta 400 cuadros).
   - Las unidades que reciben otra orden, mueren o se van no cuentan.
   - Los grupos juntos o con destino cercano se mueven como antes.
   - No se guarda en la partida: si guardas mientras un grupo se está reuniendo, al
