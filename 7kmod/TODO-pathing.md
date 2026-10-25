@@ -14,10 +14,16 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   del más lento (un Zulú con soldados de velocidad 4 se salta 1 de cada 5 cuadros), y se
   ve como una pausa constante. Nuevo:
   - Las unidades se mueven a **su propia velocidad**.
-  - Solo si en el grupo hay una unidad **más lenta**, cada unidad compara lo que le falta
-    para llegar con lo que le falta a la más lenta. Si va **más de 3 casillas adelante**,
-    se detiene y **espera** hasta que la diferencia baje a 1 casilla; luego sigue.
-  - Si la más lenta llegó, se detuvo, recibió otra orden o murió, ya no se espera.
+  - Solo si en el grupo hay una unidad **más lenta**, cada unidad compara **lo que ha
+    avanzado desde la orden** (no lo que le falta) con lo que ha avanzado la más lenta.
+    Si avanzó **más de 3 casillas más** que ella, se detiene y **espera** hasta que la
+    diferencia baje a 1 casilla; luego sigue. Así, en un grupo disperso, una unidad lenta
+    que empezó lejos no deja a las demás paradas: todas avanzan desde donde estaban.
+  - Solo se espera a las unidades lentas que empezaron **cerca** (a 10 casillas o menos
+    de la unidad al dar la orden). Las que estaban lejos no cuentan.
+  - Si la más lenta llegó, recibió otra orden, murió o **lleva un rato sin moverse**
+    (bloqueada, más de 2 segundos de juego), ya no se espera, para que una unidad atorada
+    no deje parado al grupo.
   - Deja de aplicarse igual que hoy: al llegar, al recibir otra orden o al entrar en
     combate.
   - Por confirmar: las 3 casillas para detenerse y 1 para seguir.
