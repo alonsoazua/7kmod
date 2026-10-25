@@ -9,7 +9,7 @@ queda solo con mejoras de comodidad (interfaz) sobre la 2.15.7.
 
 Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo en partida.
 
-- [ ] **Los disparos a distancia ya no se bloquean por edificios ni obstáculos.** Hoy, un
+- [x] **Los disparos a distancia ya no se bloquean por edificios ni obstáculos.** Hoy, un
   proyectil recto (flechas, jabalinas, etc.) no puede pasar por casillas no caminables:
   edificios, murallas, montañas y otros obstáculos del mapa
   (`BulletArray::bullet_path_possible`, `src/OBULLETA.cpp`). Las unidades ya no

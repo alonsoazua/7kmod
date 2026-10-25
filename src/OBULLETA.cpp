@@ -117,6 +117,11 @@ int BulletArray::bullet_path_possible(short startXLoc, short startYLoc, char att
 												  short destXLoc, short destYLoc, char targetMobileType,
 												  char bulletSpeed, short bulletSpriteId)
 {
+	//--- 7kmod-gameplay: ranged attacks are not blocked by buildings or obstacles, ---//
+	//--- straight bullets fly over everything as the projectiles do               ---//
+
+	return 1;
+
 	if(attackerMobileType==UNIT_AIR || targetMobileType==UNIT_AIR)
 		return 1;
 
