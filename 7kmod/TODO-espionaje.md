@@ -214,6 +214,11 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   como en las demás ventanas de reportes. La barra de títulos de las columnas (Date,
   Kingdom, Spy, Skill) y las pestañas se quedan en gris sólido.
 
+- [ ] **Muertes en los accidentes normales.** Hoy mueren 1 o 2 trabajadores (50% cada
+  uno). En los accidentes normales (no causados por espías), **el 90% de las veces
+  muere 1 trabajador** y el 10%, 2. Los causados por espías se quedan en 1 o 2 al 50%
+  (por confirmar).
+
 ---
 
 ## Ideas por confirmar
