@@ -330,14 +330,6 @@ void UnitArray::draw_dot()
 			//#endif
 			if( config.show_ai_info || !playerNationRecno || unitPtr->is_nation(playerNationRecno) )
 			{
-				//--- 7kmod-pathing: while the group gathers, a line to the unit's place at the destination ---//
-
-				if( unitPtr->is_forming_up() && is_form_up_group(unitPtr->form_up_group_id) )
-				{
-					vga_back.line( MAP_X1 + unitPtr->form_up_place_x_loc, MAP_Y1 + unitPtr->form_up_place_y_loc,
-										MAP_X1 + unitPtr->form_up_dest_x_loc, MAP_Y1 + unitPtr->form_up_dest_y_loc, lineColor );
-				}
-
 				resultNodeRecno = unitPtr->result_node_recno;
 				resultNodeCount = unitPtr->result_node_count;
 				if(resultNodeCount && resultNodeRecno<=resultNodeCount)
@@ -385,6 +377,19 @@ void UnitArray::draw_dot()
 				}
 				//#### end alex 27/10 ####//
 			}
+		}
+	}
+
+	//--- 7kmod-pathing: while a selected group gathers, a line from where it gathers to its destination ---//
+
+	if( config.show_unit_path & 2 )
+	{
+		for( i=form_up_group_count() ; i>0 ; i-- )
+		{
+			int centerX, centerY, destX, destY;
+
+			if( get_selected_form_up(i, centerX, centerY, destX, destY) )
+				anim_line.draw_line(&vga_back, MAP_X1+destX, MAP_Y1+destY, MAP_X1+centerX, MAP_Y1+centerY, 0, 2);
 		}
 	}
 

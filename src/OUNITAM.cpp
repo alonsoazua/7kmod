@@ -336,7 +336,7 @@ static int formation_role(Unit* unitPtr)
 
 #define FORM_UP_MIN_DIST		15		// a scattered group farther than this from the destination gathers first
 #define MAX_FORM_UP_GROUP		20
-#define FORM_UP_MAX_FRAMES		65		// the group marches after this even if the units aren't ready (about 3 seconds)
+#define FORM_UP_MAX_FRAMES		45		// the group marches after this even if the units aren't ready (about 2 seconds)
 #define FORM_UP_NEAR_DIST		2		// a unit is ready when it is this near its place
 #define FORM_UP_READY_PERCENT	80		// the group marches when this % of the units are ready
 
@@ -344,6 +344,7 @@ struct FormUpGroup
 {
 	uint32_t group_id;
 	short		dest_x_loc, dest_y_loc;
+	short		center_x_loc, center_y_loc;		// the center of the formation where the group gathers
 	short		unit_count;
 	short		unit_recno_array[100];
 	uint16_t	unit_name_id_array[100];
@@ -378,6 +379,8 @@ void UnitArray::add_form_up(int destX, int destY, short* selectedUnitArray, int 
 	groupPtr->group_id	  = operator[](selectedUnitArray[0])->unit_group_id;
 	groupPtr->dest_x_loc	  = destX;
 	groupPtr->dest_y_loc	  = destY;
+	groupPtr->center_x_loc = centerX;
+	groupPtr->center_y_loc = centerY;
 	groupPtr->unit_count	  = MIN(selectedCount, 100);
 	groupPtr->frame_count  = 0;
 
@@ -402,6 +405,47 @@ void UnitArray::add_form_up(int destX, int destY, short* selectedUnitArray, int 
 //----------- End of function UnitArray::add_form_up -----------//
 
 
+//--------- Begin of function UnitArray::get_selected_form_up --------//
+//
+// 7kmod-pathing: a gathering group with a selected unit, to show where it goes.
+//
+// <int> recNo - 1 to the number of gathering groups
+//
+// return: <int> 1 - the group has a selected unit of the player, the locations are returned
+//               0 - no selected unit, or no such group
+//
+int UnitArray::get_selected_form_up(int recNo, int& centerX, int& centerY, int& destX, int& destY)
+{
+	if( recNo < 1 || recNo > form_up_count )
+		return 0;
+
+	FormUpGroup* groupPtr = form_up_array+recNo-1;
+
+	for( int i=0 ; i<groupPtr->unit_count ; i++ )
+	{
+		int unitRecno = groupPtr->unit_recno_array[i];
+
+		if( is_deleted(unitRecno) )
+			continue;
+
+		Unit* unitPtr = operator[](unitRecno);
+
+		if( unitPtr->selected_flag && unitPtr->unit_group_id == groupPtr->group_id &&
+			 unitPtr->name_id == groupPtr->unit_name_id_array[i] && unitPtr->is_own() )
+		{
+			centerX = groupPtr->center_x_loc;
+			centerY = groupPtr->center_y_loc;
+			destX   = groupPtr->dest_x_loc;
+			destY   = groupPtr->dest_y_loc;
+			return 1;
+		}
+	}
+
+	return 0;
+}
+//----------- End of function UnitArray::get_selected_form_up -----------//
+
+
 //--------- Begin of function UnitArray::is_form_up_group ---------//
 //
 // 7kmod-pathing: whether the group is still gathering.
@@ -417,6 +461,15 @@ int UnitArray::is_form_up_group(uint32_t groupId)
 	return 0;
 }
 //----------- End of function UnitArray::is_form_up_group -----------//
+
+
+//--------- Begin of function UnitArray::form_up_group_count ---------//
+//
+int UnitArray::form_up_group_count()
+{
+	return form_up_count;
+}
+//----------- End of function UnitArray::form_up_group_count -----------//
 
 
 //--------- Begin of function UnitArray::process_form_up ---------//

@@ -58,7 +58,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     otra orden o al entrar en combate, cada unidad vuelve a su velocidad normal.
   - Con la espera máxima de unos 3 segundos, el efecto dura poco.
 
-- [ ] **Marca de destino en vez de líneas durante la reunión.** Visto en pruebas: la
+- [x] **Marca de destino en vez de líneas durante la reunión.** Visto en pruebas: la
   línea recta de 0.7.0 queda muy lejos del camino real en distancias medianas y largas,
   porque el camino real rodea ríos, bosques, montañas y edificios. Se quitan esas líneas
   y, mientras el grupo se reúne, se muestra una **marca en el destino** (el punto del
@@ -70,7 +70,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     En el minimapa la diferencia con el camino real casi no se nota y sirve para ver
     hacia dónde va el grupo.
 
-- [ ] **Espera máxima de la reunión: 2 segundos.** De 65 cuadros (unos 3 segundos) a
+- [x] **Espera máxima de la reunión: 2 segundos.** De 65 cuadros (unos 3 segundos) a
   **unos 45 cuadros (unos 2 segundos a la velocidad normal)** (`FORM_UP_MAX_FRAMES`).
 
 ---

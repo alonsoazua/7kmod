@@ -185,15 +185,6 @@ static void draw_unit_path_on_zoom_map(int displayLayer)
 		}
 		// ##### end Gilbert 9/10 #######//
 
-		//--- 7kmod-pathing: while the group gathers, a straight line to the unit's place at the destination ---//
-
-		if( unitPtr->is_forming_up() && unit_array.is_form_up_group(unitPtr->form_up_group_id) )
-		{
-			get_zoom_pos(unitPtr->form_up_place_x_loc * ZOOM_LOC_WIDTH, unitPtr->form_up_place_y_loc * ZOOM_LOC_HEIGHT, lineFromX, lineFromY);
-			get_zoom_pos(unitPtr->form_up_dest_x_loc * ZOOM_LOC_WIDTH, unitPtr->form_up_dest_y_loc * ZOOM_LOC_HEIGHT, lineToX, lineToY);
-			anim_line.draw_line(&vga_back, lineFromX, lineFromY, lineToX, lineToY);
-		}
-
 		//--------------- draw unit's path ----------------//
 
 		resultNodeRecno = unitPtr->result_node_recno;
@@ -287,6 +278,33 @@ static void draw_unit_way_point_on_zoom_map()
 	}
 }
 //------------ end of static function draw_unit_way_point_on_zoom_map -----------//
+
+
+//------------ begin of static function draw_form_up_dest_on_zoom_map -----------//
+//
+// 7kmod-pathing: while a selected group gathers before marching, a marker at
+// its destination (the path lines would only go to the places where it gathers).
+//
+static void draw_form_up_dest_on_zoom_map()
+{
+	char *chPtr = image_icon.get_ptr("WAYPOINT");
+	short chOffsetX = - (*(short *)chPtr / 2);
+	short chOffsetY = - (*(1+(short *)chPtr) / 2);
+
+	for( int i=unit_array.form_up_group_count() ; i>0 ; i-- )
+	{
+		int centerX, centerY, destX, destY;
+
+		if( !unit_array.get_selected_form_up(i, centerX, centerY, destX, destY) )
+			continue;
+
+		short x = (destX - world.zoom_matrix->top_x_loc)*ZOOM_LOC_WIDTH + ZOOM_X1 + ZOOM_LOC_WIDTH/2;
+		short y = (destY - world.zoom_matrix->top_y_loc)*ZOOM_LOC_HEIGHT + ZOOM_Y1 + ZOOM_LOC_HEIGHT/2;
+
+		world.zoom_matrix->put_bitmap_clip(x+chOffsetX, y+chOffsetY, chPtr);
+	}
+}
+//------------ end of static function draw_form_up_dest_on_zoom_map -----------//
 
 
 //-------- Begin of function ZoomMatrix::ZoomMatrix ----------//
@@ -1685,6 +1703,7 @@ void ZoomMatrix::draw_objects()
 
 	draw_unit_path_on_zoom_map(AIR_DISP_LAYER_MASK);
 	draw_unit_way_point_on_zoom_map();
+	draw_form_up_dest_on_zoom_map();		// 7kmod-pathing
 	draw_objects_now(&air_disp_sort_array);
 	// ##### end Gilbert 9/10 ######//
 

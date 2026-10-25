@@ -16,16 +16,18 @@ Si los cambios funcionan bien en partidas, se pasarán a `7kmod-gameplay` (o a
   unidades que van a su lugar de la reunión se mueven un 50% más rápido (un paso de
   movimiento extra cada 2 cuadros, con las mismas revisiones que un paso normal; la
   velocidad de las unidades no se cambia). Al marchar vuelven a su velocidad normal.
-- **Línea de camino durante la reunión (0.7.0):** mientras el grupo se reúne, cada unidad
-  seleccionada muestra una línea recta desde su lugar en la reunión hasta su lugar en el
-  destino, en el mapa y en el minimapa. Al marchar se ve el camino real, como siempre.
+- **Destino visible durante la reunión (0.7.1):** mientras un grupo seleccionado se
+  reúne, en el mapa se muestra una marca en el destino (el icono de los puntos de ruta)
+  y en el minimapa una línea animada desde el centro de la reunión hasta el destino. Al
+  marchar se ven los caminos reales, como siempre. En 0.7.0 eran líneas rectas por
+  unidad en el mapa, que en distancias medianas y largas quedaban lejos del camino real.
 - **Juntarse antes de marchar (0.6.0)**, como en Age of Empires II: si un grupo disperso
   (el caso de la formación nueva) se manda a un destino a más de 15 casillas, primero se
   reúne en formación **donde está** (centrada en el centro del grupo, con el frente hacia
   el destino) y luego marcha al destino conservando la formación.
   - Desde 0.6.1 la reunión es más suelta: una unidad cuenta como lista si está a 2
     casillas o menos de su lugar, y el grupo marcha cuando el 80% está listo, o a los
-    65 cuadros (unos 3 segundos; 150 en 0.6.1) aunque no lo esté. Las que faltan reciben la orden de
+    45 cuadros (unos 2 segundos; 150 en 0.6.1 y 65 en 0.7.0) aunque no lo esté. Las que faltan reciben la orden de
     marcha igual. En 0.6.0 se esperaba a que todas llegaran exactamente a su lugar
     (hasta 400 cuadros).
   - Las unidades que reciben otra orden, mueren o se van no cuentan.

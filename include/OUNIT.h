@@ -847,6 +847,8 @@ public:
 	//---------- move main functions -------------//
 	void  move_to(int destX, int destY, int divided, short* selectedUnitArray, int selectedCount, char remoteAction);
 	int   is_form_up_group(uint32_t groupId);																			// 7kmod-pathing
+	int   form_up_group_count();
+	int   get_selected_form_up(int recNo, int& centerX, int& centerY, int& destX, int& destY);
 
 	//------------- attack main functions ----------//
 	// ###### patch begin Gilbert 5/8 ######//
