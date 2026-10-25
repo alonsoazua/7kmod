@@ -773,7 +773,7 @@ int GameFile::read_file_3(File* filePtr)
 	if( !read_book_mark( filePtr, BOOK_MARK+291 ) )
 		return 0;
 
-	if( !mod_spy.read_file(filePtr) )
+	if( !mod_spy.read_file(filePtr, game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_SABOTAGE_LOG) )
 		return 0;
 
 	return 1;

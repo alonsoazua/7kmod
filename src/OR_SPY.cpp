@@ -33,6 +33,7 @@
 #include <OINFO.h>
 #include <OMOUSE.h>
 #include <ODATE.h>
+#include <OTOWNRES.h>
 #include <OTECHRES.h>
 #include <ModTech.h>
 #include <ModSpy.h>
@@ -48,7 +49,7 @@ enum { SPY_BROWSE_X1 = ZOOM_X1+6,
 
 //------ 7kmod-gameplay: tabs and the intelligence reports ------//
 
-enum { SPY_TAB_SPIES, SPY_TAB_INTEL, SPY_TAB_COUNT };
+enum { SPY_TAB_SPIES, SPY_TAB_INTEL, SPY_TAB_SABOTAGE, SPY_TAB_COUNT };
 
 enum { SPY_TAB_Y1 = SPY_BROWSE_Y1,
 		 SPY_TAB_Y2 = SPY_BROWSE_Y1+20,
@@ -63,6 +64,7 @@ enum { INTEL_BROWSE_Y1 = SPY_LIST_Y1+22,
 
 static VBrowseIF browse_spy;
 static VBrowseIF browse_intel;				// 7kmod-gameplay
+static VBrowseIF browse_sabotage;
 static char		  spy_report_tab = SPY_TAB_SPIES;
 static short	  browse_intel_recno = 1;
 
@@ -76,6 +78,8 @@ static int  detect_tabs();
 static void disp_intel(int refreshFlag);
 static void put_intel_rec(int recNo, int x, int y, int refreshFlag);
 static void disp_intel_detail(IntelReport* reportPtr);
+static void disp_sabotage(int refreshFlag);
+static void put_sabotage_rec(int recNo, int x, int y, int refreshFlag);
 
 //--------- Begin of function Info::disp_spy ---------//
 //
@@ -96,6 +100,12 @@ void Info::disp_spy(int refreshFlag)
 	if( spy_report_tab == SPY_TAB_INTEL )
 	{
 		disp_intel(refreshFlag);
+		return;
+	}
+
+	if( spy_report_tab == SPY_TAB_SABOTAGE )
+	{
+		disp_sabotage(refreshFlag);
 		return;
 	}
 
@@ -157,6 +167,12 @@ void Info::detect_spy()
 		if( browse_intel.detect() )
 			browse_intel_recno = browse_intel.recno();
 
+		return;
+	}
+
+	if( spy_report_tab == SPY_TAB_SABOTAGE )
+	{
+		browse_sabotage.detect();
 		return;
 	}
 
@@ -351,7 +367,7 @@ static void put_spy_rec(int recNo, int x, int y, int refreshFlag)
 //
 static void disp_tabs()
 {
-	static const char* tabStr[SPY_TAB_COUNT] = { N_("Spies"), N_("Intelligence") };
+	static const char* tabStr[SPY_TAB_COUNT] = { N_("Spies"), N_("Intelligence"), N_("Sabotage") };
 
 	int x=SPY_BROWSE_X1;
 
@@ -661,3 +677,90 @@ static void disp_intel_detail(IntelReport* reportPtr)
 	}
 }
 //----------- End of static function disp_intel_detail -----------//
+
+
+//-------- Begin of static function disp_sabotage --------//
+//
+// 7kmod-gameplay: the accidents caused by the spies of the player.
+//
+static void disp_sabotage(int refreshFlag)
+{
+	int x=SPY_BROWSE_X1+9;
+	int y=SPY_LIST_Y1+4;
+
+	vga_back.d3_panel_up(SPY_BROWSE_X1, SPY_LIST_Y1, SPY_BROWSE_X2, SPY_LIST_Y1+20 );
+
+	font_san.put( x	 , y, _("Date") );
+	font_san.put( x+90 , y, _("Kingdom") );
+	font_san.put( x+250, y, _("Building") );
+	font_san.put( x+345, y, _("Near") );
+	font_san.put( x+430, y, _("Deaths") );
+	font_san.put( x+478, y, _("Spy") );
+
+	int recordCount = mod_spy.player_sabotage_count();
+
+	if( refreshFlag == INFO_REPAINT )
+	{
+		browse_sabotage.init( SPY_BROWSE_X1, SPY_LIST_Y1+22, SPY_BROWSE_X2, SPY_BROWSE_Y2-20,
+									 0, 18, recordCount, put_sabotage_rec, 1 );
+
+		browse_sabotage.open(1);
+	}
+	else
+	{
+		browse_sabotage.paint();
+		browse_sabotage.open(browse_sabotage.recno(), recordCount);
+	}
+
+	//--------- total ---------//
+
+	vga_back.d3_panel_up(SPY_BROWSE_X1, SPY_BROWSE_Y2-18, SPY_BROWSE_X2, SPY_BROWSE_Y2 );
+
+	String str;
+
+	// TRANSLATORS: Accidents caused: <Number>    Workers killed: <Number>
+	snprintf( str, MAX_STR_LEN+1, _("Accidents caused: %s    Workers killed: %s"),
+				 misc.format(recordCount), misc.format(mod_spy.player_sabotage_death_count()) );
+
+	font_san.put( x, SPY_BROWSE_Y2-16, str );
+
+	if( recordCount==0 )
+	{
+		font_san.put_paragraph( SPY_BROWSE_X1+10, SPY_LIST_Y1+30, SPY_BROWSE_X2-30, SPY_LIST_Y1+90,
+			_("Your spies have not caused any accidents yet. Set spies in a building of another kingdom to \"Sabotage\": the more spying skill, the more likely an accident is.") );
+	}
+}
+//----------- End of static function disp_sabotage -----------//
+
+
+//-------- Begin of static function put_sabotage_rec --------//
+//
+static void put_sabotage_rec(int recNo, int x, int y, int refreshFlag)
+{
+	SabotageRecord* recordPtr = mod_spy.get_player_sabotage(recNo);
+
+	if( !recordPtr )
+		return;
+
+	x+=3;
+	y+=3;
+
+	font_san.put( x+6, y, date.date_str(recordPtr->accident_date, 1) );
+
+	vga_back.bar( x+96, y, x+108, y+12, recordPtr->target_nation_color );
+	vga_back.rect( x+96, y, x+108, y+12, 1, recordPtr->target_nation_color+2 );
+
+	font_san.put( x+113, y, recordPtr->target_nation_name, 0, x+250 );
+
+	if( recordPtr->firm_id )
+		font_san.put( x+256, y, _(firm_res[recordPtr->firm_id]->name), 0, x+345 );
+
+	if( recordPtr->town_name_id )
+		font_san.put( x+351, y, town_res.get_name(recordPtr->town_name_id), 0, x+430 );
+
+	font_san.put( x+450, y, recordPtr->death_count );
+
+	if( recordPtr->spy_race_id )
+		font_san.put( x+484, y, race_res[recordPtr->spy_race_id]->get_single_name(recordPtr->spy_name_id), 0, SPY_BROWSE_X2-20 );
+}
+//----------- End of static function put_sabotage_rec -----------//

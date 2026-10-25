@@ -61,6 +61,9 @@ void ModSpy::reset()
 
 	intel_report_count = 0;
 	memset( intel_report_array, 0, sizeof(intel_report_array) );
+
+	sabotage_record_count = 0;
+	memset( sabotage_record_array, 0, sizeof(sabotage_record_array) );
 }
 //----------- End of function ModSpy::reset ---------//
 
@@ -89,6 +92,12 @@ void ModSpy::init_nation(int nationRecno)
 	{
 		if( intel_report_array[i].spy_nation_recno == nationRecno )
 			del_report(i);
+	}
+
+	for( int i=sabotage_record_count-1 ; i>=0 ; i-- )
+	{
+		if( sabotage_record_array[i].spy_nation_recno == nationRecno )
+			del_sabotage_record(i);
 	}
 }
 //----------- End of function ModSpy::init_nation ---------//
@@ -345,9 +354,12 @@ int ModSpy::propaganda_influence_bonus(Town* townPtr, int nationRecno, int raceI
 //--------- Begin of function ModSpy::process_accident --------//
 //
 // Called every day for each firm. In a firm with workers (not forts), an
-// accident kills 1 or 2 workers, 1 in ACCIDENT_DAILY_CHANCE a day. Enemy
-// spies in sabotage mode multiply the chance (1 spy x2, 2 spies x3, 3 or
-// more x4).
+// accident kills workers, 1 in ACCIDENT_DAILY_CHANCE a day. Enemy spies in
+// sabotage mode multiply the chance by 1 + their total skill /
+// ACCIDENT_SPY_SKILL_DIVIDER, at most ACCIDENT_MAX_SPY_MULTIPLIER.
+//
+// Normal accidents kill 1 worker 90% of the time and 2 workers 10% of the
+// time. Accidents caused by spies kill 1 or 2 workers (50% each).
 //
 // Each nation has at most 1 accident not caused by spies and
 // ACCIDENT_MAX_SPY_PER_YEAR accidents caused by spies in 365 days.
@@ -362,7 +374,8 @@ void ModSpy::process_accident(Firm* firmPtr)
 
 	//----- count the saboteurs and the workers that are not spies -----//
 
-	int saboteurCount=0, spyNationRecno=0, normalWorkerCount=0;
+	int saboteurSkill=0, normalWorkerCount=0;
+	Spy* bestSaboteur=NULL;
 
 	for( int i=0 ; i<firmPtr->worker_count ; i++ )
 	{
@@ -378,24 +391,25 @@ void ModSpy::process_accident(Firm* firmPtr)
 
 		if( spyPtr->action_mode == SPY_SABOTAGE && spyPtr->true_nation_recno != firmPtr->nation_recno )
 		{
-			saboteurCount++;
+			saboteurSkill += spyPtr->spy_skill;
 
-			if( !spyNationRecno )
-				spyNationRecno = spyPtr->true_nation_recno;
+			if( !bestSaboteur || spyPtr->spy_skill > bestSaboteur->spy_skill )
+				bestSaboteur = spyPtr;
 		}
 	}
 
 	if( normalWorkerCount==0 )
 		return;
 
-	int multiplier = 1 + MIN( saboteurCount, ACCIDENT_MAX_SPY_MULTIPLIER-1 );
+	int multiplier = MIN( ACCIDENT_MAX_SPY_MULTIPLIER, 1 + saboteurSkill / ACCIDENT_SPY_SKILL_DIVIDER );
 
 	if( misc.random(ACCIDENT_DAILY_CHANCE) >= multiplier )
 		return;
 
 	//---- was it caused by the spies? (their part of the chance) ----//
 
-	int bySpy = saboteurCount > 0 && misc.random(multiplier) > 0;
+	int bySpy = multiplier > 1 && misc.random(multiplier) > 0;
+	int spyNationRecno = bySpy ? bestSaboteur->true_nation_recno : 0;
 	int n = firmPtr->nation_recno-1;
 	int gameDate = info.game_date;
 
@@ -427,7 +441,14 @@ void ModSpy::process_accident(Firm* firmPtr)
 
 	//------ 1 or 2 workers die -------//
 
-	int deathCount = MIN( normalWorkerCount, 1+misc.random(2) );
+	int deathCount;
+
+	if( bySpy )
+		deathCount = 1 + misc.random(2);
+	else
+		deathCount = misc.random(10)==0 ? 2 : 1;
+
+	deathCount = MIN( normalWorkerCount, deathCount );
 
 	for( int k=0 ; k<deathCount ; k++ )
 	{
@@ -444,6 +465,27 @@ void ModSpy::process_accident(Firm* firmPtr)
 				break;
 			}
 		}
+	}
+
+	//-------- the record of the accidents caused by spies ---------//
+
+	if( bySpy )
+	{
+		SabotageRecord record;
+
+		memset( &record, 0, sizeof(record) );
+
+		record.accident_date		 = gameDate;
+		record.spy_nation_recno	 = spyNationRecno;
+		strncpy( record.target_nation_name, nation_array[firmPtr->nation_recno]->nation_name(), INTEL_NAME_LEN );
+		record.target_nation_color = nation_array[firmPtr->nation_recno]->nation_color;
+		record.firm_id		  = firmPtr->firm_id;
+		record.town_name_id = firmPtr->closest_town_name_id ? firmPtr->closest_town_name_id : firmPtr->get_closest_town_name_id();
+		record.death_count  = deathCount;
+		record.spy_race_id  = bestSaboteur->race_id;
+		record.spy_name_id  = bestSaboteur->name_id;
+
+		add_sabotage_record( &record );
 	}
 
 	//-------- news ---------//
@@ -777,6 +819,100 @@ void ModSpy::del_report(int reportId)
 //----------- End of function ModSpy::del_report ---------//
 
 
+//--------- Begin of function ModSpy::add_sabotage_record --------//
+//
+void ModSpy::add_sabotage_record(SabotageRecord* recordPtr)
+{
+	int nationRecordCount=0, oldestNationRecordId=-1;
+
+	for( int i=0 ; i<sabotage_record_count ; i++ )
+	{
+		if( sabotage_record_array[i].spy_nation_recno == recordPtr->spy_nation_recno )
+		{
+			if( oldestNationRecordId < 0 )
+				oldestNationRecordId = i;
+
+			nationRecordCount++;
+		}
+	}
+
+	if( nationRecordCount >= MAX_SABOTAGE_RECORD_PER_NATION )
+		del_sabotage_record( oldestNationRecordId );
+
+	else if( sabotage_record_count >= MAX_SABOTAGE_RECORD )
+		del_sabotage_record( 0 );
+
+	sabotage_record_array[sabotage_record_count++] = *recordPtr;		// in date order
+}
+//----------- End of function ModSpy::add_sabotage_record ---------//
+
+
+//--------- Begin of function ModSpy::del_sabotage_record --------//
+//
+void ModSpy::del_sabotage_record(int recordId)
+{
+	memmove( sabotage_record_array+recordId, sabotage_record_array+recordId+1,
+				sizeof(SabotageRecord) * (sabotage_record_count-recordId-1) );
+
+	sabotage_record_count--;
+}
+//----------- End of function ModSpy::del_sabotage_record ---------//
+
+
+//--------- Begin of function ModSpy::player_sabotage_count --------//
+//
+int ModSpy::player_sabotage_count()
+{
+	int count=0;
+
+	for( int i=0 ; i<sabotage_record_count ; i++ )
+	{
+		if( sabotage_record_array[i].spy_nation_recno == info.viewing_nation_recno )
+			count++;
+	}
+
+	return count;
+}
+//----------- End of function ModSpy::player_sabotage_count ---------//
+
+
+//--------- Begin of function ModSpy::player_sabotage_death_count --------//
+//
+int ModSpy::player_sabotage_death_count()
+{
+	int count=0;
+
+	for( int i=0 ; i<sabotage_record_count ; i++ )
+	{
+		if( sabotage_record_array[i].spy_nation_recno == info.viewing_nation_recno )
+			count += sabotage_record_array[i].death_count;
+	}
+
+	return count;
+}
+//----------- End of function ModSpy::player_sabotage_death_count ---------//
+
+
+//--------- Begin of function ModSpy::get_player_sabotage --------//
+//
+// <int> recNo - 1 is the latest accident
+//
+SabotageRecord* ModSpy::get_player_sabotage(int recNo)
+{
+	for( int i=sabotage_record_count-1 ; i>=0 ; i-- )
+	{
+		if( sabotage_record_array[i].spy_nation_recno == info.viewing_nation_recno )
+		{
+			if( --recNo == 0 )
+				return sabotage_record_array+i;
+		}
+	}
+
+	return NULL;
+}
+//----------- End of function ModSpy::get_player_sabotage ---------//
+
+
 //--------- Begin of function ModSpy::player_report_count --------//
 //
 int ModSpy::player_report_count()
@@ -835,6 +971,16 @@ int ModSpy::write_file(File* filePtr)
 		return 0;
 	}
 
+	//--- GAME_VERSION_7KMOD_SABOTAGE_LOG ---//
+
+	filePtr->file_put_short(sabotage_record_count);
+
+	if( sabotage_record_count > 0 &&
+		 !filePtr->file_write(sabotage_record_array, sizeof(SabotageRecord) * sabotage_record_count) )
+	{
+		return 0;
+	}
+
 	return 1;
 }
 //----------- End of function ModSpy::write_file ---------//
@@ -842,7 +988,10 @@ int ModSpy::write_file(File* filePtr)
 
 //--------- Begin of function ModSpy::read_file --------//
 //
-int ModSpy::read_file(File* filePtr)
+// <int> hasSabotageRecord - whether the saved game has the accidents caused
+//                            by spies (GAME_VERSION_7KMOD_SABOTAGE_LOG)
+//
+int ModSpy::read_file(File* filePtr, int hasSabotageRecord)
 {
 	reset();
 
@@ -865,6 +1014,23 @@ int ModSpy::read_file(File* filePtr)
 
 	if( intel_report_count > 0 &&
 		 !filePtr->file_read(intel_report_array, sizeof(IntelReport) * intel_report_count) )
+	{
+		return 0;
+	}
+
+	if( !hasSabotageRecord )
+		return 1;
+
+	sabotage_record_count = filePtr->file_get_short();
+
+	if( sabotage_record_count < 0 || sabotage_record_count > MAX_SABOTAGE_RECORD )
+	{
+		sabotage_record_count = 0;
+		return 0;
+	}
+
+	if( sabotage_record_count > 0 &&
+		 !filePtr->file_read(sabotage_record_array, sizeof(SabotageRecord) * sabotage_record_count) )
 	{
 		return 0;
 	}

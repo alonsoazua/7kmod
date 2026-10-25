@@ -44,7 +44,10 @@ class Spy;
 //------- Accidents in firms --------//
 
 #define ACCIDENT_DAILY_CHANCE				1825	// 1 in 1825 a day for each firm with workers: 1 in 5 years
-#define ACCIDENT_MAX_SPY_MULTIPLIER		4		// spies in sabotage mode multiply the chance: 1 spy x2, 2 spies x3, 3 or more x4
+#define ACCIDENT_SPY_SKILL_DIVIDER		10		// spies in sabotage mode multiply the chance: 1 + the total skill of the spies / 10
+#define ACCIDENT_MAX_SPY_MULTIPLIER		16		// maximum multiplier
+#define MAX_SABOTAGE_RECORD				60		// accidents caused by spies kept for all nations
+#define MAX_SABOTAGE_RECORD_PER_NATION	30		// accidents caused by spies kept for each nation
 #define ACCIDENT_MAX_SPY_PER_YEAR		3		// accidents caused by spies, for each nation, in 365 days
 
 //------- Intelligence reports --------//
@@ -112,6 +115,23 @@ struct IntelReport
 };
 #pragma pack()
 
+//------- Define struct SabotageRecord: an accident caused by spies --------//
+
+#pragma pack(1)
+struct SabotageRecord
+{
+	int32_t  accident_date;
+	int8_t   spy_nation_recno;				// the nation of the spies that caused it
+	char	   target_nation_name[INTEL_NAME_LEN+1];
+	uint8_t  target_nation_color;
+	int16_t  firm_id;
+	int16_t  town_name_id;					// the closest town of the firm
+	int8_t   death_count;
+	int8_t   spy_race_id;					// the spy with the highest skill in sabotage mode
+	uint16_t spy_name_id;
+};
+#pragma pack()
+
 //------- Define class ModSpy --------//
 
 class ModSpy
@@ -123,6 +143,9 @@ public:
 
 	int16_t		intel_report_count;
 	IntelReport intel_report_array[MAX_INTEL_REPORT];
+
+	int16_t			sabotage_record_count;
+	SabotageRecord sabotage_record_array[MAX_SABOTAGE_RECORD];		// in date order
 
 public:
 	void	reset();
@@ -145,8 +168,14 @@ public:
 	int	player_report_count();
 	IntelReport* get_player_report(int recNo);		// 1 - the latest
 
+	//--- accidents caused by the spies of the player ---//
+
+	int	player_sabotage_count();
+	SabotageRecord* get_player_sabotage(int recNo);		// 1 - the latest
+	int	player_sabotage_death_count();
+
 	int	write_file(File* filePtr);
-	int	read_file(File* filePtr);
+	int	read_file(File* filePtr, int hasSabotageRecord);
 
 private:
 	void	add_villager(Town* townPtr, int nationRecno, int raceId, int totalSkill);
@@ -154,6 +183,8 @@ private:
 	void	make_report(Spy* spyPtr, int targetNationRecno);
 	void	add_report(IntelReport* reportPtr);
 	void	del_report(int reportId);
+	void	add_sabotage_record(SabotageRecord* recordPtr);
+	void	del_sabotage_record(int recordId);
 };
 
 extern ModSpy mod_spy;

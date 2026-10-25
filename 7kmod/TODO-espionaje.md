@@ -214,12 +214,12 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   como en las demás ventanas de reportes. La barra de títulos de las columnas (Date,
   Kingdom, Spy, Skill) y las pestañas se quedan en gris sólido.
 
-- [ ] **Muertes en los accidentes normales.** Hoy mueren 1 o 2 trabajadores (50% cada
+- [x] **Muertes en los accidentes normales.** Hoy mueren 1 o 2 trabajadores (50% cada
   uno). En los accidentes normales (no causados por espías), **el 90% de las veces
   muere 1 trabajador** y el 10%, 2. Los causados por espías se quedan en 1 o 2 al 50%
   (confirmado, para probar).
 
-- [ ] **El sabotaje provoca muchos más accidentes, según la habilidad.** Hoy solo
+- [x] **El sabotaje provoca muchos más accidentes, según la habilidad.** Hoy solo
   cuenta el número de espías (×2, ×3, ×4) y un espía de habilidad 100 provoca en
   promedio 1 accidente cada 5 años en el edificio. Nuevo: el multiplicador depende de la
   **suma de la habilidad** de los espías enemigos en Sabotaje en el edificio:
@@ -238,7 +238,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     normal o de los espías según su parte de la probabilidad (con ×11, 10 de cada 11
     son de los espías).
 
-- [ ] **Pestaña "Sabotage" en el reporte de Espías.** Una tercera pestaña, junto a
+- [x] **Pestaña "Sabotage" en el reporte de Espías.** Una tercera pestaña, junto a
   "Spies" e "Intelligence", con la lista de los accidentes que han causado tus espías,
   del más reciente al más antiguo.
   - Columnas: fecha, reino (con su color), edificio, pueblo cercano, trabajadores
