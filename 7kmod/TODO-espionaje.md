@@ -219,6 +219,25 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   muere 1 trabajador** y el 10%, 2. Los causados por espías se quedan en 1 o 2 al 50%
   (por confirmar).
 
+- [ ] **El sabotaje provoca muchos más accidentes, según la habilidad.** Hoy solo
+  cuenta el número de espías (×2, ×3, ×4) y un espía de habilidad 100 provoca en
+  promedio 1 accidente cada 5 años en el edificio. Nuevo: el multiplicador depende de la
+  **suma de la habilidad** de los espías enemigos en Sabotaje en el edificio:
+  **1 + suma ÷ 10, máximo ×16**. La probabilidad normal sigue siendo 1 entre 1,825 al
+  día.
+
+  | Espías en Sabotaje | Multiplicador | Accidentes por espías al año en ese edificio |
+  |---|---|---|
+  | 1 de habilidad 20 | ×3 | 0.4 |
+  | 1 de habilidad 50 | ×6 | 1 |
+  | 1 de habilidad 100 | ×11 | 2 |
+  | 3 de habilidad 50 o 2 de 100 | ×16 (máximo) | 3 |
+
+  - Sigue el límite por reino: 3 accidentes causados por espías en 365 días.
+  - Cuando ocurre un accidente en un edificio con espías, se sigue decidiendo si fue
+    normal o de los espías según su parte de la probabilidad (con ×11, 10 de cada 11
+    son de los espías).
+
 ---
 
 ## Ideas por confirmar
