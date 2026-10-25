@@ -58,6 +58,14 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     otra orden o al entrar en combate, cada unidad vuelve a su velocidad normal.
   - Con la espera máxima de unos 3 segundos, el efecto dura poco.
 
+- [ ] **Marca de destino en vez de líneas durante la reunión.** Visto en pruebas: la
+  línea recta de 0.7.0 queda muy lejos del camino real en distancias medianas y largas,
+  porque el camino real rodea ríos, bosques, montañas y edificios. Se quitan esas líneas
+  y, mientras el grupo se reúne, se muestra una **marca en el destino** (el punto del
+  clic), con el icono de los puntos de ruta (`WAYPOINT`), en el mapa (y un punto en el
+  minimapa). Solo se ve si alguna unidad del grupo está seleccionada. Al marchar se
+  quita la marca y se ven los caminos reales, como siempre.
+
 ---
 
 ## Descartado por ahora
