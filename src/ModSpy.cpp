@@ -276,6 +276,159 @@ void ModSpy::process_propaganda(Town* townPtr)
 //----------- End of function ModSpy::process_propaganda ---------//
 
 
+//--------- Begin of function ModSpy::process_counter_spy --------//
+//
+// Called every 30 days for each independent town. Only the spy with the
+// highest skill of each nation in counter-spy mode counts.
+//
+// - A counter-spy may catch and execute a spy of another nation in
+//   propaganda mode: skill * COUNTER_SPY_CATCH_FACTOR / (100 + skill of the
+//   spy) % for each spy. At most one spy is caught in a month in a town.
+// - Counter-spies of two nations may find each other: skill *
+//   COUNTER_SPY_FIND_FACTOR / (100 + skill of the other) %. The one that finds
+//   the other starts a confrontation and wins with (skill +
+//   COUNTER_SPY_INITIATIVE_BONUS) / (skill + COUNTER_SPY_INITIATIVE_BONUS +
+//   skill of the other). The one that loses is executed. At most one
+//   confrontation in a month in a town.
+//
+void ModSpy::process_counter_spy(Town* townPtr)
+{
+	if( townPtr->nation_recno )
+		return;
+
+	int   townRecno = townPtr->town_recno;
+	int	townNameId = townPtr->town_name_id;
+	short counterSpyArray[MAX_NATION];		// the best counter-spy of each nation
+	short propagandaSpyArray[MAX_INTEL_REPORT];
+	int   propagandaSpyCount=0;
+
+	memset( counterSpyArray, 0, sizeof(counterSpyArray) );
+
+	int spyCount = spy_array.size();
+
+	for( int i=1 ; i<=spyCount ; i++ )
+	{
+		if( spy_array.is_deleted(i) )
+			continue;
+
+		Spy* spyPtr = spy_array[i];
+
+		if( spyPtr->spy_place != SPY_TOWN || spyPtr->spy_place_para != townRecno || !spyPtr->true_nation_recno )
+			continue;
+
+		if( spyPtr->action_mode == SPY_COUNTER_SPY )
+		{
+			short* bestPtr = &counterSpyArray[spyPtr->true_nation_recno-1];
+
+			if( !*bestPtr || spy_array[*bestPtr]->spy_skill < spyPtr->spy_skill )
+				*bestPtr = i;
+		}
+		else if( spyPtr->action_mode == SPY_SOW_DISSENT && propagandaSpyCount < MAX_INTEL_REPORT )
+		{
+			propagandaSpyArray[propagandaSpyCount++] = i;
+		}
+	}
+
+	int firstNation = misc.random(MAX_NATION);		// so that no nation is always processed first
+
+	//------- catch a spy in propaganda mode -------//
+
+	int caught = 0;
+
+	for( int k=0 ; k<MAX_NATION && !caught ; k++ )
+	{
+		int n = (firstNation+k) % MAX_NATION;
+
+		if( !counterSpyArray[n] )
+			continue;
+
+		Spy* counterSpy = spy_array[counterSpyArray[n]];
+
+		for( int j=0 ; j<propagandaSpyCount ; j++ )
+		{
+			if( spy_array.is_deleted(propagandaSpyArray[j]) )
+				continue;
+
+			Spy* targetSpy = spy_array[propagandaSpyArray[j]];
+
+			if( targetSpy->true_nation_recno == n+1 )		// not the spies of the same nation
+				continue;
+
+			int chance = counterSpy->spy_skill * COUNTER_SPY_CATCH_FACTOR * 10 / (100 + targetSpy->spy_skill);		// per thousand
+
+			if( misc.random(1000) >= chance )
+				continue;
+
+			//------- the spy is caught and executed --------//
+
+			int targetNationRecno = targetSpy->true_nation_recno;
+
+			if( n+1 == nation_array.player_recno )
+				news_array.counter_spy_caught(townNameId, targetNationRecno);
+
+			targetSpy->get_killed(1);		// 1-news for the player if it's his spy
+			caught = 1;
+			break;
+		}
+	}
+
+	if( town_array.is_deleted(townRecno) )
+		return;
+
+	//------- confrontation between counter-spies -------//
+
+	for( int k=0 ; k<MAX_NATION ; k++ )
+	{
+		int n = (firstNation+k) % MAX_NATION;
+
+		if( !counterSpyArray[n] || spy_array.is_deleted(counterSpyArray[n]) )
+			continue;
+
+		Spy* counterSpy = spy_array[counterSpyArray[n]];
+		int  found = 0;
+
+		for( int m=0 ; m<MAX_NATION ; m++ )
+		{
+			if( m==n || !counterSpyArray[m] || spy_array.is_deleted(counterSpyArray[m]) )
+				continue;
+
+			Spy* otherSpy = spy_array[counterSpyArray[m]];
+
+			int chance = counterSpy->spy_skill * COUNTER_SPY_FIND_FACTOR * 10 / (100 + otherSpy->spy_skill);		// per thousand
+
+			if( misc.random(1000) >= chance )
+				continue;
+
+			//------- the confrontation --------//
+
+			int winChance = 1000 * (counterSpy->spy_skill + COUNTER_SPY_INITIATIVE_BONUS) /
+								 (counterSpy->spy_skill + COUNTER_SPY_INITIATIVE_BONUS + otherSpy->spy_skill);
+
+			int  starterWins = misc.random(1000) < winChance;
+			Spy* winnerSpy = starterWins ? counterSpy : otherSpy;
+			Spy* loserSpy  = starterWins ? otherSpy : counterSpy;
+
+			int winnerNationRecno = winnerSpy->true_nation_recno;
+			int loserNationRecno  = loserSpy->true_nation_recno;
+
+			if( winnerNationRecno == nation_array.player_recno )
+				news_array.spy_confrontation(townNameId, loserNationRecno, 1);		// 1-the player's spy won
+
+			else if( loserNationRecno == nation_array.player_recno )
+				news_array.spy_confrontation(townNameId, winnerNationRecno, 0);
+
+			loserSpy->get_killed(0);		// 0-no news, the confrontation news is shown instead
+			found = 1;
+			break;
+		}
+
+		if( found )		// at most one confrontation in a month in a town
+			break;
+	}
+}
+//----------- End of function ModSpy::process_counter_spy ---------//
+
+
 //--------- Begin of function ModSpy::add_villager --------//
 //
 // A villager of an independent town joins a nation through propaganda.

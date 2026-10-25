@@ -489,6 +489,8 @@ void Spy::set_next_action_mode()
 			set_action_mode(SPY_SOW_DISSENT);
 		else if( action_mode == SPY_SOW_DISSENT && canGatherIntel )
 			set_action_mode(SPY_GATHER_INTEL);
+		else if( action_mode == SPY_SOW_DISSENT && placeNationRecno == 0 )		// counter-espionage in independent towns
+			set_action_mode(SPY_COUNTER_SPY);
 		else
 			set_action_mode(SPY_IDLE);
 	}
@@ -669,6 +671,9 @@ const char* Spy::action_str()
 
 		case SPY_GATHER_INTEL:		// 7kmod-gameplay
 			return _("Gather Intel");
+
+		case SPY_COUNTER_SPY:		// 7kmod-gameplay
+			return _("Counter-Spy");
 
 		default:
 			err_here();

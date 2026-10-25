@@ -439,6 +439,11 @@ void Town::next_day()
 
 		if( town_array.is_deleted(townRecno) )
 			return;
+
+		mod_spy.process_counter_spy(this);
+
+		if( town_array.is_deleted(townRecno) )
+			return;
 	}
 
 	//------ think town people migration -------//

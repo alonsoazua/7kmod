@@ -48,6 +48,7 @@ enum { SPY_IDLE,
 		 SPY_SOW_DISSENT,		// "Propaganda" in independent towns (7kmod-gameplay)
 		 SPY_SABOTAGE,
 		 SPY_GATHER_INTEL,	// 7kmod-gameplay: intelligence reports, see ModSpy
+		 SPY_COUNTER_SPY,		// 7kmod-gameplay: counter-espionage in independent towns, see ModSpy
 	  };
 
 //---------- Define class Spy ---------//

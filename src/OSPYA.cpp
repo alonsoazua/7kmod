@@ -562,6 +562,12 @@ int SpyArray::catch_spy(int spyPlace, int spyPlacePara)
 
 		nationRecno = townPtr->nation_recno;
 		totalPop    = townPtr->population;
+
+		//--- 7kmod-gameplay: independent towns don't catch spies, only the counter-spies of ---//
+		//--- other nations do (ModSpy::process_counter_spy())                               ---//
+
+		if( nationRecno == 0 )
+			return 0;
 	}
 	else if( spyPlace == SPY_FIRM )
 	{

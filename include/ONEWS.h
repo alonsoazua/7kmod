@@ -98,6 +98,8 @@ enum { NEWS_DIPLOMACY=1,
 		 NEWS_SPY_ACCIDENT,			// 7kmod-gameplay: a spy of the player caused an accident in an enemy firm
 		 NEWS_VILLAGER_JOINED,		// 7kmod-gameplay: a villager of an independent town joined the player through propaganda
 		 NEWS_INTEL_REPORT,			// 7kmod-gameplay: a spy of the player made an intelligence report
+		 NEWS_COUNTER_SPY_CAUGHT,	// 7kmod-gameplay: a counter-spy of the player caught a spy in an independent town
+		 NEWS_SPY_CONFRONTATION,	// 7kmod-gameplay: a confrontation between counter-spies in an independent town
 	  };
 
 //------- Define struct News ---------//
@@ -195,6 +197,8 @@ public:
 	void  spy_accident();
 	void  villager_joined();
 	void  intel_report();
+	void  counter_spy_caught();
+	void  spy_confrontation();
 
 	void  write_record(NewsGF *r);
 	void  read_record(NewsGF *r);
@@ -269,6 +273,8 @@ public:
 	void  spy_accident(int firmRecno, int deathCount);
 	void  villager_joined(int unitRecno, int townNameId);
 	void  intel_report(int targetNationRecno);
+	void  counter_spy_caught(int townNameId, int spyNationRecno);
+	void  spy_confrontation(int townNameId, int otherNationRecno, int playerWon);
 	void  raw_exhaust(int rawId, int xLoc, int yLoc);
 	void  tech_researched(int techId, int techVersion);
 	void  lightning_damage(int xLoc, int yLoc, int objectId, int recno, int objectDie);

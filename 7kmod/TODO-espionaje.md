@@ -308,13 +308,13 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   - La calidad del aldeano usa también la habilidad del mejor espía: 10 + al azar de 0 a
     habilidad ÷ 2 (máximo 60 con un espía de 100).
 
-- [ ] **Los pueblos independientes ya no atrapan espías.** Hoy, cada 30 días, un pueblo
+- [x] **Los pueblos independientes ya no atrapan espías.** Hoy, cada 30 días, un pueblo
   independiente puede atrapar y ejecutar a un espía activo (1 entre 100 + habilidad al
   mes, ~8% al año). Se quita: en un pueblo independiente solo te pueden atrapar los
   espías de otros reinos con contraespionaje (siguiente punto). En los pueblos y
   edificios de otros reinos todo sigue igual.
 
-- [ ] **Contraespionaje en pueblos independientes.** Modo nuevo del espía en un pueblo
+- [x] **Contraespionaje en pueblos independientes.** Modo nuevo del espía en un pueblo
   independiente, **"Counter-Spy"** (el ciclo queda Sleep → Propaganda → Counter-Spy).
   Cada 30 días intenta atrapar a los espías de **otros reinos** que estén en
   **Propaganda** en ese pueblo. Los dormidos y los que también hacen contraespionaje no
@@ -355,7 +355,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
       "Your spy was executed in a confrontation with a spy of <reino> in <pueblo>.", y
       del otro lado lo mismo.
 
-- [ ] **Selección militar: incluir a tus espías que parecen soldados** (QoL, va en la
+- [x] **Selección militar: incluir a tus espías que parecen soldados** (QoL, va en la
   rama `7kmod`). Hoy, al seleccionar con el recuadro, solo se toman las unidades
   militares (ver `KEYBINDINGS.md`) y tus espías se dejan fuera siempre
   (`is_military_unit()` en `src/OPOWER.cpp`). Ahora, un espía tuyo se selecciona junto

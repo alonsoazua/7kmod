@@ -836,6 +836,48 @@ void NewsArray::intel_report(int targetNationRecno)
 //------- End of function NewsArray::intel_report -----//
 
 
+//------ Begin of function NewsArray::counter_spy_caught -----//
+//
+// 7kmod-gameplay: a counter-spy of the player caught and executed a spy of
+// another nation in an independent town.
+//
+// nation_name1() - the nation of the spy
+// short_para1    - name id. of the town
+//
+void NewsArray::counter_spy_caught(int townNameId, int spyNationRecno)
+{
+	News* newsPtr = add_news( NEWS_COUNTER_SPY_CAUGHT, NEWS_NORMAL, spyNationRecno, 0, 1 );		// 1-force adding the news
+
+	if( !newsPtr )
+		return;
+
+	newsPtr->short_para1 = townNameId;
+}
+//------- End of function NewsArray::counter_spy_caught -----//
+
+
+//------ Begin of function NewsArray::spy_confrontation -----//
+//
+// 7kmod-gameplay: a confrontation between a counter-spy of the player and a
+// counter-spy of another nation in an independent town.
+//
+// nation_name1() - the other nation
+// short_para1    - name id. of the town
+// short_para2    - 1 if the player's spy won
+//
+void NewsArray::spy_confrontation(int townNameId, int otherNationRecno, int playerWon)
+{
+	News* newsPtr = add_news( NEWS_SPY_CONFRONTATION, NEWS_NORMAL, otherNationRecno, 0, 1 );		// 1-force adding the news
+
+	if( !newsPtr )
+		return;
+
+	newsPtr->short_para1 = townNameId;
+	newsPtr->short_para2 = playerWon;
+}
+//------- End of function NewsArray::spy_confrontation -----//
+
+
 //------ Begin of function NewsArray::raw_exhaust -----//
 //
 // short_para1 - raw id.

@@ -42,6 +42,12 @@ class Spy;
 #define PROPAGANDA_MAX_JOIN_CHANCE		20		// maximum chance (%) in a month that a villager joins the nation
 #define PROPAGANDA_MAX_JOIN_SKILL		70		// maximum skill level of a villager that joins
 
+//------- Counter-espionage in independent towns --------//
+
+#define COUNTER_SPY_CATCH_FACTOR			10		// chance (%) to catch a spy in propaganda: skill * this / (100 + skill of the spy)
+#define COUNTER_SPY_FIND_FACTOR			5		// chance (%) to find a counter-spy of another nation: skill * this / (100 + his skill)
+#define COUNTER_SPY_INITIATIVE_BONUS	30		// the counter-spy that starts a confrontation wins with (skill + this) / (skill + this + his skill)
+
 //------- Accidents in firms --------//
 
 #define ACCIDENT_DAILY_CHANCE				3650	// 1 in 3650 a day for each firm with workers: 1 in 10 years
@@ -174,6 +180,10 @@ public:
 	void	process_propaganda(Town* townPtr);
 	int	propaganda_influence_bonus(Town* townPtr, int nationRecno, int raceId);
 	static int	has_linked_general_camp(Town* townPtr, int nationRecno);
+
+	//--- counter-espionage in independent towns ---//
+
+	void	process_counter_spy(Town* townPtr);
 
 	//--- accidents ---//
 

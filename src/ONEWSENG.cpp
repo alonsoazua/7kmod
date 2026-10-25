@@ -100,6 +100,8 @@ static NewsInfo news_info_array[] =
 	{ &News::spy_accident, 0 },
 	{ &News::villager_joined, 0 },
 	{ &News::intel_report, 0 },
+	{ &News::counter_spy_caught, 0 },
+	{ &News::spy_confrontation, 0 },
 };
 
 //------- Define static variables --------//
@@ -1269,6 +1271,41 @@ void News::intel_report()
 				nation_name1() );
 }
 //------- End of function News::intel_report -----//
+
+
+//------ Begin of function News::counter_spy_caught -----//
+//
+// 7kmod-gameplay: a counter-spy of the player caught a spy in an independent town.
+//
+void News::counter_spy_caught()
+{
+	// TRANSLATORS: Your spy has caught and executed a spy of <Kingdom> in the independent village of <Town>.
+	snprintf(str, MAX_STR_LEN+1, _("Your spy has caught and executed a spy of %s in the independent village of %s."),
+				nation_name1(), town_res.get_name(short_para1) );
+}
+//------- End of function News::counter_spy_caught -----//
+
+
+//------ Begin of function News::spy_confrontation -----//
+//
+// 7kmod-gameplay: a confrontation between counter-spies in an independent town.
+//
+void News::spy_confrontation()
+{
+	if( short_para2 )
+	{
+		// TRANSLATORS: Your spy confronted a spy of <Kingdom> in <Town> and executed him.
+		snprintf(str, MAX_STR_LEN+1, _("Your spy confronted a spy of %s in %s and executed him."),
+					nation_name1(), town_res.get_name(short_para1) );
+	}
+	else
+	{
+		// TRANSLATORS: Your spy was executed in a confrontation with a spy of <Kingdom> in <Town>.
+		snprintf(str, MAX_STR_LEN+1, _("Your spy was executed in a confrontation with a spy of %s in %s."),
+					nation_name1(), town_res.get_name(short_para1) );
+	}
+}
+//------- End of function News::spy_confrontation -----//
 
 
 //------ Begin of function News::unit_assassinated -----//
