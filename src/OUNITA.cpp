@@ -603,6 +603,10 @@ void UnitArray::process()
 	if(idle_blocked_unit_reset_count<50)
 		idle_blocked_unit_reset_count++; // the ability to restart idle blocked attacking unit
 
+	//--- 7kmod-pathing: scattered groups that have gathered march to their destination ---//
+
+	process_form_up();
+
 	//------- process Sprite ---------//
 
 	SpriteArray::process();

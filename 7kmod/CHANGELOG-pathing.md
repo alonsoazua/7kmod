@@ -11,6 +11,18 @@ Si los cambios funcionan bien en partidas, se pasarán a `7kmod-gameplay` (o a
 
 ## [Sin publicar]
 
+### Agregado
+- **Juntarse antes de marchar (0.6.0)**, como en Age of Empires II: si un grupo disperso
+  (el caso de la formación nueva) se manda a un destino a más de 15 casillas, primero se
+  reúne en formación **donde está** (centrada en el centro del grupo, con el frente hacia
+  el destino) y, cuando todas las unidades llegaron a su lugar, marcha al destino
+  conservando la formación.
+  - Si alguna unidad tarda mucho (unos 400 cuadros), el grupo marcha sin ella.
+  - Las unidades que reciben otra orden, mueren o se van no cuentan.
+  - Los grupos juntos o con destino cercano se mueven como antes.
+  - No se guarda en la partida: si guardas mientras un grupo se está reuniendo, al
+    cargar se queda reunido donde estaba y hay que volver a mandarlo.
+
 ### Cambiado
 - **Velocidad del grupo: esperar solo cuando van muy adelante (0.5.0).** Antes (0.4.0)
   las unidades rápidas de un grupo hacían pausas todo el tiempo para ir a la velocidad

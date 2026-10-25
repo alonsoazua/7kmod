@@ -332,6 +332,119 @@ static int formation_role(Unit* unitPtr)
 //----------- End of static function formation_role -----------//
 
 
+//------- 7kmod-pathing: scattered groups that gather before marching -------//
+
+#define FORM_UP_MIN_DIST		15		// a scattered group farther than this from the destination gathers first
+#define MAX_FORM_UP_GROUP		20
+#define FORM_UP_MAX_FRAMES		400	// the group marches after this even if some units haven't arrived
+
+struct FormUpGroup
+{
+	uint32_t group_id;
+	short		dest_x_loc, dest_y_loc;
+	short		unit_count;
+	short		unit_recno_array[100];
+	uint16_t	unit_name_id_array[100];
+	int		frame_count;
+};
+
+static FormUpGroup form_up_array[MAX_FORM_UP_GROUP];		// not saved: after loading a game, the units stay where they gathered
+static int			 form_up_count = 0;
+static int			 form_up_disabled = 0;
+
+//--------- Begin of function UnitArray::add_form_up ---------//
+//
+// 7kmod-pathing: remember a group that is gathering, to order it to march
+// to the destination when it has gathered (see process_form_up()).
+//
+void UnitArray::add_form_up(int destX, int destY, short* selectedUnitArray, int selectedCount)
+{
+	if( form_up_count >= MAX_FORM_UP_GROUP )		// the oldest one marches now
+	{
+		form_up_array[0].frame_count = FORM_UP_MAX_FRAMES+1;
+		process_form_up();
+
+		if( form_up_count >= MAX_FORM_UP_GROUP )
+			return;
+	}
+
+	FormUpGroup* groupPtr = form_up_array + form_up_count++;
+
+	groupPtr->group_id	  = operator[](selectedUnitArray[0])->unit_group_id;
+	groupPtr->dest_x_loc	  = destX;
+	groupPtr->dest_y_loc	  = destY;
+	groupPtr->unit_count	  = MIN(selectedCount, 100);
+	groupPtr->frame_count  = 0;
+
+	for( int i=0 ; i<groupPtr->unit_count ; i++ )
+	{
+		groupPtr->unit_recno_array[i]	 = selectedUnitArray[i];
+		groupPtr->unit_name_id_array[i] = operator[](selectedUnitArray[i])->name_id;
+	}
+}
+//----------- End of function UnitArray::add_form_up -----------//
+
+
+//--------- Begin of function UnitArray::process_form_up ---------//
+//
+// 7kmod-pathing: called every frame. When all the units of a gathering group
+// have arrived (or after FORM_UP_MAX_FRAMES), the group marches to the
+// destination in formation. The units that got another order, died or left
+// are not counted.
+//
+void UnitArray::process_form_up()
+{
+	for( int g=form_up_count-1 ; g>=0 ; g-- )
+	{
+		FormUpGroup* groupPtr = form_up_array+g;
+		short validArray[100];
+		int   validCount=0, allArrived=1;
+
+		for( int i=0 ; i<groupPtr->unit_count ; i++ )
+		{
+			int unitRecno = groupPtr->unit_recno_array[i];
+
+			if( is_deleted(unitRecno) )
+				continue;
+
+			Unit* unitPtr = operator[](unitRecno);
+
+			if( unitPtr->name_id != groupPtr->unit_name_id_array[i] || unitPtr->unit_group_id != groupPtr->group_id ||
+				 !unitPtr->is_visible() || unitPtr->hit_points <= 0 || unitPtr->action_mode2 != ACTION_MOVE &&
+				 unitPtr->action_mode2 != ACTION_STOP )
+			{
+				continue;		// it got another order
+			}
+
+			validArray[validCount++] = unitRecno;
+
+			if( unitPtr->cur_action != SPRITE_IDLE )
+				allArrived = 0;
+		}
+
+		if( validCount==0 || allArrived || ++groupPtr->frame_count > FORM_UP_MAX_FRAMES )
+		{
+			int destX = groupPtr->dest_x_loc, destY = groupPtr->dest_y_loc;
+
+			//------ remove the group ------//
+
+			memmove( form_up_array+g, form_up_array+g+1, sizeof(FormUpGroup)*(form_up_count-g-1) );
+			form_up_count--;
+
+			//------ march to the destination, keeping the formation ------//
+
+			if( validCount > 0 )
+			{
+				form_up_disabled = 1;
+				move_to(destX, destY, 0, validArray, validCount, COMMAND_AUTO);
+				form_up_disabled = 0;
+			}
+		}
+	}
+}
+//----------- End of function UnitArray::process_form_up -----------//
+
+
 //--------- Begin of function UnitArray::move_in_formation ---------//
 //
 // 7kmod-pathing: move a group of land units in formation, like the "magic box"
@@ -398,6 +511,9 @@ int UnitArray::move_in_formation(int destX, int destY, short* selectedUnitArray,
 
 	short placeXArray[FORMATION_MAX_UNIT], placeYArray[FORMATION_MAX_UNIT];		// the wanted place of each unit
 
+	int slotX = destX, slotY = destY;		// the center of the new formation
+	int formUp = 0;							// whether the scattered group gathers before marching
+
 	int boxWidth = maxX-minX+1, boxHeight = maxY-minY+1;
 
 	if( boxWidth <= FORMATION_MAX_SPAN && boxHeight <= FORMATION_MAX_SPAN &&
@@ -427,6 +543,15 @@ int UnitArray::move_in_formation(int destX, int destY, short* selectedUnitArray,
 
 		if( MAX(abs(vecX), abs(vecY)) < FORMATION_MIN_DIST )
 			return 0;
+
+		//--- a far destination: first gather in formation where the group is, then march (as in AoE II) ---//
+
+		if( !form_up_disabled && MAX(abs(vecX), abs(vecY)) > FORM_UP_MIN_DIST )
+		{
+			formUp = 1;
+			slotX  = centerX;
+			slotY  = centerY;
+		}
 
 		//--- the direction of the movement, in one of the 8 directions ---//
 
@@ -508,16 +633,18 @@ int UnitArray::move_in_formation(int destX, int destY, short* selectedUnitArray,
 				int sideOffset = i - (rowUnits-1)/2;
 				short id = orderArray[firstId+i];
 
-				placeXArray[id] = destX + sideOffset*sideX + rowOffset*frontX;
-				placeYArray[id] = destY + sideOffset*sideY + rowOffset*frontY;
+				placeXArray[id] = slotX + sideOffset*sideX + rowOffset*frontX;
+				placeYArray[id] = slotY + sideOffset*sideY + rowOffset*frontY;
 			}
 		}
 	}
 
 	//------- the closest free location around each place (the place itself first) -------//
 
-	int destRegionId = world.get_loc(destX, destY)->region_id;
-	uint32_t groupId = operator[](selectedUnitArray[0])->unit_group_id;
+	Unit* firstUnit = operator[](selectedUnitArray[0]);
+	int destRegionId = formUp ? world.get_loc(firstUnit->next_x_loc(), firstUnit->next_y_loc())->region_id :
+										 world.get_loc(destX, destY)->region_id;
+	uint32_t groupId = firstUnit->unit_group_id;
 
 	for( i=0 ; i<selectedCount ; i++ )
 	{
@@ -570,6 +697,11 @@ int UnitArray::move_in_formation(int destX, int destY, short* selectedUnitArray,
 
 		unitPtr->move_to( placeXArray[i], placeYArray[i], 1 );
 	}
+
+	//------- the group marches to the destination when it has gathered -------//
+
+	if( formUp )
+		add_form_up(destX, destY, selectedUnitArray, selectedCount);
 
 	return 1;
 }
