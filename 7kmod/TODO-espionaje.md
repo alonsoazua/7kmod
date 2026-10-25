@@ -271,6 +271,38 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     pueden atrapar igual.
   - Se guarda en la partida la fecha del último accidente de cada espía.
 
+- [ ] **Balance de la propaganda, opción B (−50%).** Problema visto en partida: con 2 o 3
+  espías la resistencia baja rápido a 30 incluso sin fuerte, y luego un general de
+  liderazgo 20–30, que casi no hace nada, basta para que los espías quiten el resto.
+  - Efecto directo: de habilidad ÷ 15 a **habilidad ÷ 30**, y máximo al mes de 7 a **4**.
+  - **Debajo de 30 de resistencia el efecto directo se reduce a la mitad** (solo pasa con
+    un fuerte enlazado con general, porque sin él no baja de 30).
+  - Aldeanos que se unen: de habilidad ÷ 15 a **habilidad ÷ 30**, y máximo de 20% a
+    **10%** al mes.
+  - El bono a la influencia del fuerte (habilidad ÷ 5, máximo +20) no cambia.
+  - Simulación, resistencia inicial 80 (meses hasta que el pueblo se une):
+
+    | Caso | Actual | Opción B + mitad bajo 30 |
+    |---|---|---|
+    | Sin fuerte, 2 espías de 50: hasta 30 | 7.5 | 15 |
+    | Sin fuerte, 3 espías de 50: hasta 30 | 7 | 13 |
+    | General de 20–30 + 2 espías de 50 | 9 | 24 |
+    | General de 20–30 + 3 espías de 50 | 9 | 20 |
+    | General de 60 + 1 espía de 50 | 8 | 16 |
+    | General de 60 + 2 espías de 50 | 5 | 8 |
+
+  - Aldeanos que se unen con la opción B, probabilidad al mes (entre paréntesis,
+    aldeanos al año en promedio), con espías de la raza del pueblo:
+
+    | Espías | Pueblo 10 | Pueblo 20 | Pueblo 30 | Pueblo 60 |
+    |---|---|---|---|---|
+    | 1 de habilidad 30 | 0.3% (0.04) | 0.7% (0.08) | 1% (0.12) | 2% (0.24) |
+    | 1 de habilidad 50 | 0.6% (0.07) | 1.1% (0.13) | 1.7% (0.2) | 3.3% (0.4) |
+    | 1 de 100 o 2 de 50 | 1.1% (0.13) | 2.2% (0.27) | 3.3% (0.4) | 6.7% (0.8) |
+    | 3 de habilidad 50 | 1.7% (0.2) | 3.3% (0.4) | 5% (0.6) | 10% (1.2) |
+    | 2 de habilidad 100 | 2.2% (0.27) | 4.4% (0.53) | 6.7% (0.8) | 10% (1.2) |
+    | 3 de habilidad 100 | 3.3% (0.4) | 6.7% (0.8) | 10% (1.2) | 10% (1.2) |
+
 ---
 
 ## Ideas por confirmar
