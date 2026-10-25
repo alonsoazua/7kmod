@@ -271,37 +271,41 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     pueden atrapar igual.
   - Se guarda en la partida la fecha del último accidente de cada espía.
 
-- [ ] **Balance de la propaganda, opción B (−50%).** Problema visto en partida: con 2 o 3
-  espías la resistencia baja rápido a 30 incluso sin fuerte, y luego un general de
-  liderazgo 20–30, que casi no hace nada, basta para que los espías quiten el resto.
-  - Efecto directo: de habilidad ÷ 15 a **habilidad ÷ 30**, y máximo al mes de 7 a **4**.
-  - **Debajo de 30 de resistencia el efecto directo se reduce a la mitad** (solo pasa con
-    un fuerte enlazado con general, porque sin él no baja de 30).
-  - Aldeanos que se unen: de habilidad ÷ 15 a **habilidad ÷ 30**, y máximo de 20% a
-    **10%** al mes.
-  - El bono a la influencia del fuerte (habilidad ÷ 5, máximo +20) no cambia.
-  - Simulación, resistencia inicial 80 (meses hasta que el pueblo se une):
+- [ ] **Balance de la propaganda: solo cuenta el mejor espía.** Problema visto en
+  partida: al acumular 2 o 3 espías la resistencia baja rápido a 30 incluso sin fuerte,
+  y luego un general de liderazgo 20–30, que casi no hace nada, basta para que los
+  espías quiten el resto. Ahora, en cada pueblo, **solo cuenta el espía de más
+  habilidad de cada reino** (con la regla de la raza: uno de otra raza cuenta una cuarta
+  parte), para la resistencia, el bono al fuerte y los aldeanos. Tener más espías ya no
+  acelera nada.
+  - **Resistencia:** habilidad del mejor espía **÷ 20** al mes (por confirmar: ÷ 15, ÷ 20
+    o ÷ 30). **Debajo de 30 el efecto se reduce a la mitad** (solo pasa con un fuerte
+    enlazado con general, porque sin él no baja de 30). El máximo de 7 al mes ya no hace
+    falta.
+  - **Bono a la influencia del fuerte:** habilidad del mejor espía ÷ 5 (÷ 20 si es de
+    otra raza que el general), máximo +20.
+  - Simulación, resistencia inicial 80 (meses):
 
-    | Caso | Actual | Opción B + mitad bajo 30 |
+    | Caso | Mejor espía 50: ÷15 / ÷20 / ÷30 | Mejor espía 100: ÷15 / ÷20 / ÷30 |
     |---|---|---|
-    | Sin fuerte, 2 espías de 50: hasta 30 | 7.5 | 15 |
-    | Sin fuerte, 3 espías de 50: hasta 30 | 7 | 13 |
-    | General de 20–30 + 2 espías de 50 | 9 | 24 |
-    | General de 20–30 + 3 espías de 50 | 9 | 20 |
-    | General de 60 + 1 espía de 50 | 8 | 16 |
-    | General de 60 + 2 espías de 50 | 5 | 8 |
+    | Sin fuerte, hasta 30 | 15 / 20 / 30 | 8 / 10 / 15 |
+    | General de 20–30, hasta unirse | 26 / 34 / 50 | 13 / 17 / 24 |
+    | General de 60, hasta unirse | 10 / 12 / 16 | 6 / 7 / 8 |
 
-  - Aldeanos que se unen con la opción B, probabilidad al mes (entre paréntesis,
-    aldeanos al año en promedio), con espías de la raza del pueblo:
+  - **Aldeanos que se unen:** probabilidad al mes = habilidad del mejor espía **÷ 12** ×
+    población de la raza ÷ 30 %, **máximo 20%**. Un espía de 100 en un pueblo de 60 trae
+    unos 2 aldeanos al año. Probabilidad al mes (entre paréntesis, aldeanos al año),
+    con un espía de la raza del pueblo:
 
-    | Espías | Pueblo 10 | Pueblo 20 | Pueblo 30 | Pueblo 60 |
+    | Habilidad del mejor espía | Pueblo 10 | Pueblo 20 | Pueblo 30 | Pueblo 60 |
     |---|---|---|---|---|
-    | 1 de habilidad 30 | 0.3% (0.04) | 0.7% (0.08) | 1% (0.12) | 2% (0.24) |
-    | 1 de habilidad 50 | 0.6% (0.07) | 1.1% (0.13) | 1.7% (0.2) | 3.3% (0.4) |
-    | 1 de 100 o 2 de 50 | 1.1% (0.13) | 2.2% (0.27) | 3.3% (0.4) | 6.7% (0.8) |
-    | 3 de habilidad 50 | 1.7% (0.2) | 3.3% (0.4) | 5% (0.6) | 10% (1.2) |
-    | 2 de habilidad 100 | 2.2% (0.27) | 4.4% (0.53) | 6.7% (0.8) | 10% (1.2) |
-    | 3 de habilidad 100 | 3.3% (0.4) | 6.7% (0.8) | 10% (1.2) | 10% (1.2) |
+    | 30 | 0.8% (0.1) | 1.7% (0.2) | 2.5% (0.3) | 5% (0.6) |
+    | 50 | 1.4% (0.17) | 2.8% (0.33) | 4.2% (0.5) | 8.3% (1) |
+    | 80 | 2.2% (0.27) | 4.4% (0.53) | 6.7% (0.8) | 13.3% (1.6) |
+    | 100 | 2.8% (0.33) | 5.6% (0.67) | 8.3% (1) | 16.7% (2) |
+
+  - La calidad del aldeano usa también la habilidad del mejor espía: 10 + al azar de 0 a
+    habilidad ÷ 2 (máximo 60 con un espía de 100).
 
 ---
 
