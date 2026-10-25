@@ -278,19 +278,20 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   habilidad de cada reino** (con la regla de la raza: uno de otra raza cuenta una cuarta
   parte), para la resistencia, el bono al fuerte y los aldeanos. Tener más espías ya no
   acelera nada.
-  - **Resistencia:** habilidad del mejor espía **÷ 20** al mes (por confirmar: ÷ 15, ÷ 20
-    o ÷ 30). **Debajo de 30 el efecto se reduce a la mitad** (solo pasa con un fuerte
+  - **Resistencia:** habilidad del mejor espía **÷ 20** al mes (confirmado; antes se
+    sumaban todos los espías ÷ 15, máximo 7). **Debajo de 30 el efecto se reduce a la mitad** (solo pasa con un fuerte
     enlazado con general, porque sin él no baja de 30). El máximo de 7 al mes ya no hace
     falta.
   - **Bono a la influencia del fuerte:** habilidad del mejor espía ÷ 5 (÷ 20 si es de
     otra raza que el general), máximo +20.
-  - Simulación, resistencia inicial 80 (meses):
+  - Simulación, resistencia inicial 80 (meses, actual → con el ajuste):
 
-    | Caso | Mejor espía 50: ÷15 / ÷20 / ÷30 | Mejor espía 100: ÷15 / ÷20 / ÷30 |
-    |---|---|---|
-    | Sin fuerte, hasta 30 | 15 / 20 / 30 | 8 / 10 / 15 |
-    | General de 20–30, hasta unirse | 26 / 34 / 50 | 13 / 17 / 24 |
-    | General de 60, hasta unirse | 10 / 12 / 16 | 6 / 7 / 8 |
+    | Espías | Sin fuerte, hasta 30 | General de 20–30 | General de 60 |
+    |---|---|---|---|
+    | 1 de 50 | 15 → 20 | 18 → 34 | 8 → 12 |
+    | 1 de 100 | 8 → 10 | 9 → 17 | 5 → 7 |
+    | 2 o 3 de 50 | 8 → 20 | 9 → 34 | 5 → 12 |
+    | 2 de 100 | 8 → 10 | 9 → 17 | 5 → 7 |
 
   - **Aldeanos que se unen:** probabilidad al mes = habilidad del mejor espía **÷ 12** ×
     población de la raza ÷ 30 %, **máximo 20%**. Un espía de 100 en un pueblo de 60 trae
