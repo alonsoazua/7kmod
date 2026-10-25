@@ -28,6 +28,14 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     combate.
   - Por confirmar: las 3 casillas para detenerse y 1 para seguir.
 
+- [ ] **Línea de camino mientras el grupo se reúne.** Al reunirse antes de marchar
+  (0.6), el camino de cada unidad solo llega a su lugar de la reunión, así que casi no
+  se ve la línea hasta que el grupo marcha. Mientras el grupo se reúne, cada unidad
+  seleccionada muestra además una **línea recta** desde su lugar en la reunión hasta su
+  lugar en el destino (el destino más su posición en la formación), con el mismo estilo
+  animado de siempre, en el mapa (`draw_unit_path_on_zoom_map`, `src/OWORLD_Z.cpp`) y en
+  el minimapa (`src/OUNITA.cpp`). Al marchar se reemplaza por el camino real.
+
 ---
 
 ## Descartado por ahora
