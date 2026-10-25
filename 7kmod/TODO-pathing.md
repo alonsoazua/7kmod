@@ -62,9 +62,16 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   línea recta de 0.7.0 queda muy lejos del camino real en distancias medianas y largas,
   porque el camino real rodea ríos, bosques, montañas y edificios. Se quitan esas líneas
   y, mientras el grupo se reúne, se muestra una **marca en el destino** (el punto del
-  clic), con el icono de los puntos de ruta (`WAYPOINT`), en el mapa (y un punto en el
-  minimapa). Solo se ve si alguna unidad del grupo está seleccionada. Al marchar se
-  quita la marca y se ven los caminos reales, como siempre.
+  clic), con el icono de los puntos de ruta (`WAYPOINT`), en el mapa. Solo se ve si
+  alguna unidad del grupo está seleccionada. Al marchar se quita la marca y se ven los
+  caminos reales, como siempre.
+  - **En el minimapa** sí se ve una **línea recta** desde el centro de la reunión hasta
+    el destino, con la misma línea animada que usan los puntos de ruta en el minimapa.
+    En el minimapa la diferencia con el camino real casi no se nota y sirve para ver
+    hacia dónde va el grupo.
+
+- [ ] **Espera máxima de la reunión: 2 segundos.** De 65 cuadros (unos 3 segundos) a
+  **unos 45 cuadros (unos 2 segundos a la velocidad normal)** (`FORM_UP_MAX_FRAMES`).
 
 ---
 
