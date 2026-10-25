@@ -241,12 +241,16 @@ public:
 	char        blocked_by_member;
 	char        swapping;
 
-	//--- 7kmod-pathing: the speed of the group the unit moves with, see Unit::process_move() (not saved) ---//
-	int         group_move_speed;
+	//--- 7kmod-pathing: waiting for a slower unit of the group, see Unit::process_move() (not saved) ---//
 	uint32_t    group_move_group_id;
-	int         group_move_acc;
+	short       group_slow_recno;		// the slower unit to wait for, 0 if none
+	short       group_start_x_loc;		// the location of the unit when the group was ordered to move
+	short       group_start_y_loc;
+	char        group_waiting;			// whether the unit is waiting for the slower unit
+	short       group_wait_frames;
 
 	int         move_speed()      { return sprite_info->speed*100 / MAX(1, sprite_info->frames_per_step); }
+	int         group_move_progress();
 
 	short       leader_unit_recno;   // recno of this unit's leader
 

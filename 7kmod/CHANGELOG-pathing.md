@@ -11,6 +11,20 @@ Si los cambios funcionan bien en partidas, se pasarán a `7kmod-gameplay` (o a
 
 ## [Sin publicar]
 
+### Cambiado
+- **Velocidad del grupo: esperar solo cuando van muy adelante (0.5.0).** Antes (0.4.0)
+  las unidades rápidas de un grupo hacían pausas todo el tiempo para ir a la velocidad
+  del más lento, y una sola unidad lenta lejana frenaba a toda la selección. Ahora cada
+  unidad se mueve a su propia velocidad, y solo espera a la unidad más lenta que estaba
+  **a 10 casillas o menos** de ella al dar la orden:
+  - Compara lo que ha avanzado desde la orden con lo que ha avanzado la lenta. Si avanzó
+    más de 3 casillas más, se detiene hasta que la diferencia baje a 1 casilla.
+  - Deja de esperarla si la lenta llegó, se detuvo, recibió otra orden o murió, o si
+    lleva esperando unos 60 cuadros (la lenta puede estar bloqueada); en ese caso ya no
+    la vuelve a esperar en ese movimiento.
+  - Como antes, deja de aplicarse al llegar, al recibir otra orden o al entrar en
+    combate, y no se guarda en la partida.
+
 ### Agregado
 - **Formación nueva para grupos dispersos (0.4.0):** si el grupo no está junto (no
   cabe en un cuadro de 10×10 o sus unidades ocupan menos de la mitad del cuadro, como

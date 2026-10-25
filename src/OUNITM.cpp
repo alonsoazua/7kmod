@@ -1660,25 +1660,65 @@ int Unit::avail_node_enough_for_search(short x1, short y1, short x2, short y2)
 //----------- End of function Unit::avail_node_enough_for_search -----------//
 
 
+//--------- Begin of function Unit::group_move_progress --------//
+//
+// 7kmod-pathing: how many locations the unit has advanced towards its
+// destination since the group was ordered to move.
+//
+int Unit::group_move_progress()
+{
+	int startDist = MAX( abs(group_start_x_loc-move_to_x_loc), abs(group_start_y_loc-move_to_y_loc) );
+	int curDist   = MAX( abs(next_x_loc()-move_to_x_loc), abs(next_y_loc()-move_to_y_loc) );
+
+	return startDist - curDist;
+}
+//----------- End of function Unit::group_move_progress ----------//
+
+
 //--------- Begin of function Unit::process_move --------//
 // process unit movement
 //
 void Unit::process_move()
 {
-	//--- 7kmod-pathing: a faster unit of a group pauses from time to time, to move at the speed of the slowest one ---//
+	//--- 7kmod-pathing: a faster unit of a group waits when it is too far ahead of a slower one ---//
 
-	if( group_move_speed && group_move_group_id==unit_group_id && action_mode2==ACTION_MOVE )
+	#define GROUP_WAIT_LEAD			3		// starts waiting when it has advanced this more locations than the slower unit
+	#define GROUP_RESUME_LEAD		1		// stops waiting when the difference is this or less
+	#define GROUP_MAX_WAIT_FRAMES	60		// the slower unit may be blocked: stop waiting for it after this
+
+	if( group_slow_recno && group_move_group_id==unit_group_id && action_mode2==ACTION_MOVE )
 	{
-		int mySpeed = move_speed();
+		Unit* slowUnit = unit_array.is_deleted(group_slow_recno) ? NULL : unit_array[group_slow_recno];
 
-		if( group_move_speed < mySpeed )
+		if( !slowUnit || slowUnit->unit_group_id != group_move_group_id || slowUnit->action_mode2 != ACTION_MOVE ||
+			 slowUnit->cur_action == SPRITE_IDLE || !slowUnit->is_visible() )
 		{
-			group_move_acc += group_move_speed;
+			group_slow_recno = 0;		// it has arrived, stopped, got another order or died
+			group_waiting = 0;
+		}
+		else
+		{
+			int lead = group_move_progress() - slowUnit->group_move_progress();
 
-			if( group_move_acc < mySpeed )
+			if( group_waiting )
+			{
+				if( lead <= GROUP_RESUME_LEAD )
+					group_waiting = 0;
+
+				else if( ++group_wait_frames > GROUP_MAX_WAIT_FRAMES )
+				{
+					group_waiting = 0;
+					group_slow_recno = 0;		// don't wait for it any more
+				}
+				else
+					return;
+			}
+			else if( lead > GROUP_WAIT_LEAD )
+			{
+				group_waiting = 1;
+				group_wait_frames = 0;
 				return;
-
-			group_move_acc -= mySpeed;
+			}
 		}
 	}
 
@@ -1749,7 +1789,8 @@ void Unit::process_move()
 	{
 		move_to_x_loc = next_x_loc();
 		move_to_y_loc = next_y_loc();
-		group_move_speed = 0;		// 7kmod-pathing
+		group_slow_recno = 0;		// 7kmod-pathing
+		group_waiting = 0;
 	}
 
 	//--------------------------------------------------------//

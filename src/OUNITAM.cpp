@@ -578,35 +578,54 @@ int UnitArray::move_in_formation(int destX, int destY, short* selectedUnitArray,
 
 //--------- Begin of function UnitArray::set_group_speed ---------//
 //
-// 7kmod-pathing: the faster units of a group that has been ordered to move
-// pause from time to time, so that they move at the speed of the slowest unit
-// of the group (see Unit::process_move()). The speed itself is not changed, as
-// it is shared by all the units of the same type.
+// 7kmod-pathing: the units of a group move at their own speed, but a faster
+// unit waits when it has advanced too much more than a slower unit of the
+// group that started near it (see Unit::process_move()). Each unit waits for
+// the slowest unit that was within GROUP_SLOW_NEAR_DIST locations.
 //
 void UnitArray::set_group_speed(short* selectedUnitArray, int selectedCount)
 {
-	int i, minSpeed = 0;
+	#define GROUP_SLOW_NEAR_DIST	10
+
+	int i, j;
 
 	for( i=0 ; i<selectedCount ; i++ )
 	{
-		Unit* unitPtr = operator[](selectedUnitArray[i]);
-
-		if( unitPtr->mobile_type != UNIT_LAND )
+		if( operator[](selectedUnitArray[i])->mobile_type != UNIT_LAND )
 			return;
-
-		int speed = unitPtr->move_speed();
-
-		if( !minSpeed || speed < minSpeed )
-			minSpeed = speed;
 	}
 
 	for( i=0 ; i<selectedCount ; i++ )
 	{
 		Unit* unitPtr = operator[](selectedUnitArray[i]);
 
-		unitPtr->group_move_speed    = selectedCount > 1 ? minSpeed : 0;
 		unitPtr->group_move_group_id = unitPtr->unit_group_id;
-		unitPtr->group_move_acc      = 0;
+		unitPtr->group_start_x_loc   = unitPtr->next_x_loc();
+		unitPtr->group_start_y_loc   = unitPtr->next_y_loc();
+		unitPtr->group_waiting       = 0;
+		unitPtr->group_wait_frames   = 0;
+		unitPtr->group_slow_recno    = 0;
+
+		//--- the slowest unit near it that is slower than it ---//
+
+		int mySpeed = unitPtr->move_speed(), slowSpeed = mySpeed;
+
+		for( j=0 ; j<selectedCount ; j++ )
+		{
+			Unit* otherUnit = operator[](selectedUnitArray[j]);
+
+			if( otherUnit == unitPtr )
+				continue;
+
+			int dist = MAX( abs(otherUnit->next_x_loc()-unitPtr->next_x_loc()), abs(otherUnit->next_y_loc()-unitPtr->next_y_loc()) );
+			int speed = otherUnit->move_speed();
+
+			if( dist <= GROUP_SLOW_NEAR_DIST && speed < slowSpeed )
+			{
+				slowSpeed = speed;
+				unitPtr->group_slow_recno = otherUnit->sprite_recno;
+			}
+		}
 	}
 }
 //----------- End of function UnitArray::set_group_speed -----------//

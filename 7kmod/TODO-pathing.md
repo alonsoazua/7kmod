@@ -9,7 +9,7 @@ pendientes de gameplay están en `TODO.md`.
 
 Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo en partida.
 
-- [ ] **Velocidad del grupo: esperar solo cuando van muy adelante.** Hoy (0.4.0) las
+- [x] **Velocidad del grupo: esperar solo cuando van muy adelante.** Hoy (0.4.0) las
   unidades rápidas de un grupo se saltan cuadros todo el tiempo para ir a la velocidad
   del más lento (un Zulú con soldados de velocidad 4 se salta 1 de cada 5 cuadros), y se
   ve como una pausa constante. Nuevo:
