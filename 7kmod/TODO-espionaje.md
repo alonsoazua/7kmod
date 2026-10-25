@@ -333,6 +333,27 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   - Mensajes: "Your spy has caught and executed a spy of <reino> in the independent
     village of <pueblo>." y, para el otro reino, el aviso normal de espía ejecutado.
   - La IA no usa este modo (por confirmar).
+  - **Confrontación entre contraespías.** Si en el mismo pueblo hay espías de
+    contraespionaje de dos reinos, se buscan entre ellos (solo el mejor de cada reino).
+    - Cada 30 días, el contraespía de cada reino tiene una probabilidad de encontrar al
+      del otro reino: su habilidad × 5 ÷ (100 + habilidad del otro) %. Es la mitad que
+      contra un espía en Propaganda, porque el otro también está alerta.
+    - Si lo encuentra, inicia la confrontación. El que la inicia tiene ventaja: gana con
+      probabilidad (su habilidad + 30) ÷ (su habilidad + 30 + habilidad del otro). El
+      que pierde es ejecutado, así que si el otro es mucho mejor espía, el que intentó
+      asesinarlo puede terminar ejecutado.
+
+      | Quien inicia | Contra 30 | Contra 50 | Contra 100 |
+      |---|---|---|---|
+      | 30 | 67% | 55% | 38% |
+      | 50 | 73% | 62% | 44% |
+      | 100 | 81% | 72% | 57% |
+
+      (probabilidad de que gane el que inicia)
+    - Como mucho una confrontación al mes por pueblo.
+    - Mensajes: "Your spy confronted a spy of <reino> in <pueblo> and executed him." o
+      "Your spy was executed in a confrontation with a spy of <reino> in <pueblo>.", y
+      del otro lado lo mismo.
 
 ---
 
