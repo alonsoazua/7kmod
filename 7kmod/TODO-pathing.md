@@ -36,6 +36,13 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   animado de siempre, en el mapa (`draw_unit_path_on_zoom_map`, `src/OWORLD_Z.cpp`) y en
   el minimapa (`src/OUNITA.cpp`). Al marchar se reemplaza por el camino real.
 
+- [ ] **Espera máxima de la reunión: 3 segundos.** Bajar el tiempo máximo que el grupo
+  espera antes de marchar de 150 cuadros (unos 7 segundos) a **unos 65 cuadros (unos 3
+  segundos a la velocidad normal)** (`FORM_UP_MAX_FRAMES`, `src/OUNITAM.cpp`). El tiempo
+  real depende de la velocidad del juego, porque se cuenta en cuadros. El resto no
+  cambia: marcha antes si el 80% de las unidades ya está a 2 casillas o menos de su
+  lugar.
+
 ---
 
 ## Descartado por ahora
