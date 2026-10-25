@@ -308,6 +308,32 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   - La calidad del aldeano usa también la habilidad del mejor espía: 10 + al azar de 0 a
     habilidad ÷ 2 (máximo 60 con un espía de 100).
 
+- [ ] **Los pueblos independientes ya no atrapan espías.** Hoy, cada 30 días, un pueblo
+  independiente puede atrapar y ejecutar a un espía activo (1 entre 100 + habilidad al
+  mes, ~8% al año). Se quita: en un pueblo independiente solo te pueden atrapar los
+  espías de otros reinos con contraespionaje (siguiente punto). En los pueblos y
+  edificios de otros reinos todo sigue igual.
+
+- [ ] **Contraespionaje en pueblos independientes.** Modo nuevo del espía en un pueblo
+  independiente, **"Counter-Spy"** (el ciclo queda Sleep → Propaganda → Counter-Spy).
+  Cada 30 días intenta atrapar a los espías de **otros reinos** que estén en
+  **Propaganda** en ese pueblo. Los dormidos y los que también hacen contraespionaje no
+  se pueden atrapar.
+  - Como en la propaganda, solo cuenta tu espía de contraespionaje de más habilidad.
+  - Probabilidad al mes de atrapar a cada espía enemigo en Propaganda = habilidad de tu
+    mejor espía × 10 ÷ (100 + habilidad del espía enemigo) %. Si atrapa a uno, lo
+    ejecuta (como mucho uno al mes por pueblo).
+
+    | Tu espía | Enemigo de 30 | Enemigo de 50 | Enemigo de 100 |
+    |---|---|---|---|
+    | 30 | 2.3% (~24% al año) | 2% (~22%) | 1.5% (~17%) |
+    | 50 | 3.8% (~37%) | 3.3% (~33%) | 2.5% (~26%) |
+    | 100 | 7.7% (~62%) | 6.7% (~56%) | 5% (~46%) |
+
+  - Mensajes: "Your spy has caught and executed a spy of <reino> in the independent
+    village of <pueblo>." y, para el otro reino, el aviso normal de espía ejecutado.
+  - La IA no usa este modo (por confirmar).
+
 ---
 
 ## Ideas por confirmar
