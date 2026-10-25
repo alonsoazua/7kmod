@@ -355,6 +355,15 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
       "Your spy was executed in a confrontation with a spy of <reino> in <pueblo>.", y
       del otro lado lo mismo.
 
+- [ ] **Selección militar: incluir a tus espías que parecen soldados** (QoL, va en la
+  rama `7kmod`). Hoy, al seleccionar con el recuadro, solo se toman las unidades
+  militares (ver `KEYBINDINGS.md`) y tus espías se dejan fuera siempre
+  (`is_military_unit()` en `src/OPOWER.cpp`). Ahora, un espía tuyo se selecciona junto
+  con el ejército si su habilidad visible es de soldado (sin habilidad o liderazgo),
+  igual que cualquier otra unidad. Los espías con habilidad de civil (construcción,
+  minería, etc.) se siguen dejando fuera, y con Alt se seleccionan todos como hasta
+  ahora.
+
 ---
 
 ## Ideas por confirmar
