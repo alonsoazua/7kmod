@@ -9,7 +9,20 @@ queda solo con mejoras de comodidad (interfaz) sobre la 2.15.7.
 
 Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo en partida.
 
-(vacío)
+- [ ] **Los disparos a distancia ya no se bloquean por edificios ni obstáculos.** Hoy, un
+  proyectil recto (flechas, jabalinas, etc.) no puede pasar por casillas no caminables:
+  edificios, murallas, montañas y otros obstáculos del mapa
+  (`BulletArray::bullet_path_possible`, `src/OBULLETA.cpp`). Las unidades ya no
+  bloqueaban (esa revisión está desactivada en el original), y los proyectiles curvos
+  (tipo 'P', como los de las armas de asedio) nunca se revisan. Cuando el tiro está
+  bloqueado, el arquero busca otra casilla desde donde disparar y se mueve, a veces
+  quedando pegado al enemigo. Con el cambio, todos los disparos pasan por encima de
+  todo, como los proyectiles curvos.
+  - Aplica a todas las unidades a distancia de todos los reinos (también la IA, los
+    Fryhtans como el Doink y los barcos).
+  - Efecto secundario: se puede disparar a unidades detrás de murallas o al otro lado
+    de una montaña, si están dentro del alcance.
+  - Va en `7kmod-gameplay` (y por lo tanto en `7kmod-pathing`).
 
 ---
 
