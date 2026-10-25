@@ -43,6 +43,12 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   cambia: marcha antes si el 80% de las unidades ya está a 2 casillas o menos de su
   lugar.
 
+- [ ] **Desactivar la espera a las unidades lentas** (0.5.0). Visto en pruebas: se
+  comporta con fallas. Las unidades de un grupo vuelven a moverse cada una a su propia
+  velocidad, sin esperar a las más lentas (como en el juego original). El código se
+  queda, pero desactivado (`UnitArray::set_group_speed` no asigna unidad lenta), por si
+  se retoma después. La reunión antes de marchar (0.6) no cambia.
+
 ---
 
 ## Descartado por ahora
