@@ -246,20 +246,20 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   - Se guardan en la partida los últimos 30 accidentes de cada reino.
   - Al final de la lista, el total de accidentes y de trabajadores muertos.
 
-- [ ] **Accidentes normales: 1 cada 7 años por edificio** (antes 1 cada 5): 1 entre
-  2,555 al día. Por reino, sin espías (con el límite de 1 cada 365 días):
+- [ ] **Accidentes normales: 1 cada 10 años por edificio** (antes 1 cada 5): 1 entre
+  3,650 al día. Por reino, sin espías (con el límite de 1 cada 365 días):
 
   | Edificios | Accidentes en promedio | Al menos uno en el primer año |
   |---|---|---|
-  | 1 | 1 cada 8 años | 13% |
-  | 4 | 1 cada 2.75 años | 44% |
-  | 10 | 1 cada 1.7 años | 76% |
-  | 20 | 1 cada 1.35 años | 94% |
+  | 1 | 1 cada 11 años | 10% |
+  | 4 | 1 cada 3.5 años | 33% |
+  | 10 | 1 cada 2 años | 63% |
+  | 20 | 1 cada 1.5 años | 86% |
 
-  - Por confirmar: el multiplicador del sabotaje se aplica sobre esta probabilidad, así
-    que con 1 cada 7 años los espías también causarían menos (habilidad 100: de 2 a 1.4
-    accidentes al año en el edificio). ¿Se deja así, o se separa para que el sabotaje
-    siga causando lo mismo?
+  - El multiplicador del sabotaje se aplica sobre esta probabilidad, así que los espías
+    también causan menos, en proporción (confirmado, para probar). Accidentes causados
+    al año en el edificio: habilidad 50 (×6) 0.5; habilidad 100 (×11) 1; máximo (×16)
+    1.5.
 
 ---
 
