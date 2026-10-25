@@ -28,7 +28,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     combate.
   - Por confirmar: las 3 casillas para detenerse y 1 para seguir.
 
-- [ ] **Línea de camino mientras el grupo se reúne.** Al reunirse antes de marchar
+- [x] **Línea de camino mientras el grupo se reúne.** Al reunirse antes de marchar
   (0.6), el camino de cada unidad solo llega a su lugar de la reunión, así que casi no
   se ve la línea hasta que el grupo marcha. Mientras el grupo se reúne, cada unidad
   seleccionada muestra además una **línea recta** desde su lugar en la reunión hasta su
@@ -36,20 +36,20 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   animado de siempre, en el mapa (`draw_unit_path_on_zoom_map`, `src/OWORLD_Z.cpp`) y en
   el minimapa (`src/OUNITA.cpp`). Al marchar se reemplaza por el camino real.
 
-- [ ] **Espera máxima de la reunión: 3 segundos.** Bajar el tiempo máximo que el grupo
+- [x] **Espera máxima de la reunión: 3 segundos.** Bajar el tiempo máximo que el grupo
   espera antes de marchar de 150 cuadros (unos 7 segundos) a **unos 65 cuadros (unos 3
   segundos a la velocidad normal)** (`FORM_UP_MAX_FRAMES`, `src/OUNITAM.cpp`). El tiempo
   real depende de la velocidad del juego, porque se cuenta en cuadros. El resto no
   cambia: marcha antes si el 80% de las unidades ya está a 2 casillas o menos de su
   lugar.
 
-- [ ] **Desactivar la espera a las unidades lentas** (0.5.0). Visto en pruebas: se
+- [x] **Desactivar la espera a las unidades lentas** (0.5.0). Visto en pruebas: se
   comporta con fallas. Las unidades de un grupo vuelven a moverse cada una a su propia
   velocidad, sin esperar a las más lentas (como en el juego original). El código se
   queda, pero desactivado (`UnitArray::set_group_speed` no asigna unidad lenta), por si
   se retoma después. La reunión antes de marchar (0.6) no cambia.
 
-- [ ] **Apurarse al reunirse (+50%).** Mientras el grupo se reúne antes de marchar, las
+- [x] **Apurarse al reunirse (+50%).** Mientras el grupo se reúne antes de marchar, las
   unidades que van hacia su lugar en la reunión se mueven un 50% más rápido, como en Age
   of Mythology y Age of Empires IV. No se cambia la velocidad (es un dato compartido por
   tipo de unidad): se procesa **un paso de movimiento extra cada 2 cuadros**, con las

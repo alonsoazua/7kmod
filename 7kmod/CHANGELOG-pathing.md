@@ -12,13 +12,20 @@ Si los cambios funcionan bien en partidas, se pasarán a `7kmod-gameplay` (o a
 ## [Sin publicar]
 
 ### Agregado
+- **Apurarse al reunirse (0.7.0):** mientras el grupo se reúne antes de marchar, las
+  unidades que van a su lugar de la reunión se mueven un 50% más rápido (un paso de
+  movimiento extra cada 2 cuadros, con las mismas revisiones que un paso normal; la
+  velocidad de las unidades no se cambia). Al marchar vuelven a su velocidad normal.
+- **Línea de camino durante la reunión (0.7.0):** mientras el grupo se reúne, cada unidad
+  seleccionada muestra una línea recta desde su lugar en la reunión hasta su lugar en el
+  destino, en el mapa y en el minimapa. Al marchar se ve el camino real, como siempre.
 - **Juntarse antes de marchar (0.6.0)**, como en Age of Empires II: si un grupo disperso
   (el caso de la formación nueva) se manda a un destino a más de 15 casillas, primero se
   reúne en formación **donde está** (centrada en el centro del grupo, con el frente hacia
   el destino) y luego marcha al destino conservando la formación.
   - Desde 0.6.1 la reunión es más suelta: una unidad cuenta como lista si está a 2
     casillas o menos de su lugar, y el grupo marcha cuando el 80% está listo, o a los
-    150 cuadros (unos 7 segundos) aunque no lo esté. Las que faltan reciben la orden de
+    65 cuadros (unos 3 segundos; 150 en 0.6.1) aunque no lo esté. Las que faltan reciben la orden de
     marcha igual. En 0.6.0 se esperaba a que todas llegaran exactamente a su lugar
     (hasta 400 cuadros).
   - Las unidades que reciben otra orden, mueren o se van no cuentan.
@@ -27,6 +34,9 @@ Si los cambios funcionan bien en partidas, se pasarán a `7kmod-gameplay` (o a
     cargar se queda reunido donde estaba y hay que volver a mandarlo.
 
 ### Cambiado
+- **Desactivada la espera a las unidades lentas (0.7.0):** en las pruebas se comportaba con
+  fallas. Cada unidad del grupo vuelve a moverse a su propia velocidad, como en el juego
+  original. El código se queda desactivado por si se retoma.
 - **Velocidad del grupo: esperar solo cuando van muy adelante (0.5.0).** Antes (0.4.0)
   las unidades rápidas de un grupo hacían pausas todo el tiempo para ir a la velocidad
   del más lento, y una sola unidad lenta lejana frenaba a toda la selección. Ahora cada

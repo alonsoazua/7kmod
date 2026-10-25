@@ -336,7 +336,7 @@ static int formation_role(Unit* unitPtr)
 
 #define FORM_UP_MIN_DIST		15		// a scattered group farther than this from the destination gathers first
 #define MAX_FORM_UP_GROUP		20
-#define FORM_UP_MAX_FRAMES		150	// the group marches after this even if the units aren't ready
+#define FORM_UP_MAX_FRAMES		65		// the group marches after this even if the units aren't ready (about 3 seconds)
 #define FORM_UP_NEAR_DIST		2		// a unit is ready when it is this near its place
 #define FORM_UP_READY_PERCENT	80		// the group marches when this % of the units are ready
 
@@ -361,7 +361,8 @@ static int			 form_up_disabled = 0;
 // 7kmod-pathing: remember a group that is gathering, to order it to march
 // to the destination when it has gathered (see process_form_up()).
 //
-void UnitArray::add_form_up(int destX, int destY, short* selectedUnitArray, int selectedCount, short* placeXArray, short* placeYArray)
+void UnitArray::add_form_up(int destX, int destY, short* selectedUnitArray, int selectedCount, short* placeXArray, short* placeYArray,
+									 int centerX, int centerY)
 {
 	if( form_up_count >= MAX_FORM_UP_GROUP )		// the oldest one marches now
 	{
@@ -386,9 +387,36 @@ void UnitArray::add_form_up(int destX, int destY, short* selectedUnitArray, int 
 		groupPtr->unit_name_id_array[i] = operator[](selectedUnitArray[i])->name_id;
 		groupPtr->place_x_array[i]		 = placeXArray[i];
 		groupPtr->place_y_array[i]		 = placeYArray[i];
+
+		//--- for hurrying to the place and for the path line to the destination ---//
+
+		Unit* unitPtr = operator[](selectedUnitArray[i]);
+
+		unitPtr->form_up_group_id	  = groupPtr->group_id;
+		unitPtr->form_up_place_x_loc = placeXArray[i];
+		unitPtr->form_up_place_y_loc = placeYArray[i];
+		unitPtr->form_up_dest_x_loc  = MAX( 0, MIN(MAX_WORLD_X_LOC-1, destX + placeXArray[i] - centerX) );
+		unitPtr->form_up_dest_y_loc  = MAX( 0, MIN(MAX_WORLD_Y_LOC-1, destY + placeYArray[i] - centerY) );
 	}
 }
 //----------- End of function UnitArray::add_form_up -----------//
+
+
+//--------- Begin of function UnitArray::is_form_up_group ---------//
+//
+// 7kmod-pathing: whether the group is still gathering.
+//
+int UnitArray::is_form_up_group(uint32_t groupId)
+{
+	for( int i=0 ; i<form_up_count ; i++ )
+	{
+		if( form_up_array[i].group_id == groupId )
+			return 1;
+	}
+
+	return 0;
+}
+//----------- End of function UnitArray::is_form_up_group -----------//
 
 
 //--------- Begin of function UnitArray::process_form_up ---------//
@@ -711,7 +739,7 @@ int UnitArray::move_in_formation(int destX, int destY, short* selectedUnitArray,
 	//------- the group marches to the destination when it has gathered -------//
 
 	if( formUp )
-		add_form_up(destX, destY, selectedUnitArray, selectedCount, placeXArray, placeYArray);
+		add_form_up(destX, destY, selectedUnitArray, selectedCount, placeXArray, placeYArray, slotX, slotY);
 
 	return 1;
 }
@@ -728,6 +756,7 @@ int UnitArray::move_in_formation(int destX, int destY, short* selectedUnitArray,
 void UnitArray::set_group_speed(short* selectedUnitArray, int selectedCount)
 {
 	#define GROUP_SLOW_NEAR_DIST	10
+	#define GROUP_WAIT_ENABLED		0		// disabled for now: it didn't work well in the tests
 
 	int i, j;
 
@@ -749,6 +778,9 @@ void UnitArray::set_group_speed(short* selectedUnitArray, int selectedCount)
 		unitPtr->group_slow_recno    = 0;
 
 		//--- the slowest unit near it that is slower than it ---//
+
+		if( !GROUP_WAIT_ENABLED )
+			continue;
 
 		int mySpeed = unitPtr->move_speed(), slowSpeed = mySpeed;
 

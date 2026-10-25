@@ -249,6 +249,16 @@ public:
 	char        group_waiting;			// whether the unit is waiting for the slower unit
 	short       group_wait_frames;
 
+	//--- 7kmod-pathing: gathering before marching, see UnitArray::process_form_up() (not saved) ---//
+	uint32_t    form_up_group_id;		// the unit is gathering while its unit_group_id is this
+	short       form_up_place_x_loc;	// its place where the group gathers
+	short       form_up_place_y_loc;
+	short       form_up_dest_x_loc;		// its place at the destination, for the path line
+	short       form_up_dest_y_loc;
+	char        form_up_step_toggle;		// for the extra step every 2 frames when hurrying
+
+	int         is_forming_up()   { return form_up_group_id && form_up_group_id==unit_group_id && action_mode2==ACTION_MOVE; }
+
 	int         move_speed()      { return sprite_info->speed*100 / MAX(1, sprite_info->frames_per_step); }
 	int         group_move_progress();
 
@@ -836,6 +846,7 @@ public:
 
 	//---------- move main functions -------------//
 	void  move_to(int destX, int destY, int divided, short* selectedUnitArray, int selectedCount, char remoteAction);
+	int   is_form_up_group(uint32_t groupId);																			// 7kmod-pathing
 
 	//------------- attack main functions ----------//
 	// ###### patch begin Gilbert 5/8 ######//
@@ -883,7 +894,7 @@ private:
 	void  move_to_now_gather(int destX, int destY, short* selectedUnitArray, int selectedCount);		// 7kmod-pathing: the original move_to_now()
 	int   move_in_formation(int destX, int destY, short* selectedUnitArray, int selectedCount);		// 7kmod-pathing
 	void  set_group_speed(short* selectedUnitArray, int selectedCount);										// 7kmod-pathing
-	void  add_form_up(int destX, int destY, short* selectedUnitArray, int selectedCount, short* placeXArray, short* placeYArray);	// 7kmod-pathing
+	void  add_form_up(int destX, int destY, short* selectedUnitArray, int selectedCount, short* placeXArray, short* placeYArray, int centerX, int centerY);	// 7kmod-pathing
 	void  process_form_up();																								// 7kmod-pathing
 	void  construct_sorted_array(short* selectedUnitArray, int selectedCount);
 	void  determine_position_to_construct_table(int selectedCount, int destXLoc, int destYLoc, char mobileType);

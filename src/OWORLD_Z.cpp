@@ -185,6 +185,15 @@ static void draw_unit_path_on_zoom_map(int displayLayer)
 		}
 		// ##### end Gilbert 9/10 #######//
 
+		//--- 7kmod-pathing: while the group gathers, a straight line to the unit's place at the destination ---//
+
+		if( unitPtr->is_forming_up() && unit_array.is_form_up_group(unitPtr->form_up_group_id) )
+		{
+			get_zoom_pos(unitPtr->form_up_place_x_loc * ZOOM_LOC_WIDTH, unitPtr->form_up_place_y_loc * ZOOM_LOC_HEIGHT, lineFromX, lineFromY);
+			get_zoom_pos(unitPtr->form_up_dest_x_loc * ZOOM_LOC_WIDTH, unitPtr->form_up_dest_y_loc * ZOOM_LOC_HEIGHT, lineToX, lineToY);
+			anim_line.draw_line(&vga_back, lineFromX, lineFromY, lineToX, lineToY);
+		}
+
 		//--------------- draw unit's path ----------------//
 
 		resultNodeRecno = unitPtr->result_node_recno;

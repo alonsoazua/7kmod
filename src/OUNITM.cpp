@@ -1800,6 +1800,20 @@ void Unit::process_move()
 	// has not reached its destination.
 	//--------------------------------------------------------//
 	err_when(cur_action==SPRITE_MOVE && (cur_x!=go_x || cur_y!=go_y) && (cur_x==next_x && cur_y==next_y));
+
+	//--- 7kmod-pathing: a unit going to its place where its group gathers hurries: 50% faster, ---//
+	//--- one more step every 2 frames, with the same checks as a normal step                   ---//
+
+	static int extraStep = 0;
+
+	if( !extraStep && cur_action==SPRITE_MOVE && is_forming_up() &&
+		 (form_up_step_toggle ^= 1) &&
+		 move_to_x_loc == form_up_place_x_loc && move_to_y_loc == form_up_place_y_loc )
+	{
+		extraStep = 1;
+		process_move();
+		extraStep = 0;
+	}
 }
 //---------- End of function Unit::process_move ----------//
 

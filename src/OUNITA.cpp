@@ -330,6 +330,14 @@ void UnitArray::draw_dot()
 			//#endif
 			if( config.show_ai_info || !playerNationRecno || unitPtr->is_nation(playerNationRecno) )
 			{
+				//--- 7kmod-pathing: while the group gathers, a line to the unit's place at the destination ---//
+
+				if( unitPtr->is_forming_up() && is_form_up_group(unitPtr->form_up_group_id) )
+				{
+					vga_back.line( MAP_X1 + unitPtr->form_up_place_x_loc, MAP_Y1 + unitPtr->form_up_place_y_loc,
+										MAP_X1 + unitPtr->form_up_dest_x_loc, MAP_Y1 + unitPtr->form_up_dest_y_loc, lineColor );
+				}
+
 				resultNodeRecno = unitPtr->result_node_recno;
 				resultNodeCount = unitPtr->result_node_count;
 				if(resultNodeCount && resultNodeRecno<=resultNodeCount)
