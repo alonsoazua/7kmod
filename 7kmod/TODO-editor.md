@@ -200,6 +200,28 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
 
 ---
 
+## Correcciones
+
+- [ ] **Armas colocadas sin la tecnología del reino** (visto en pruebas: cañones y
+  unicornios a veces sin gráfico, sin atacar, y a veces el juego truena). En las armas,
+  `nation_contribution` guarda la **versión del arma** (`get_weapon_version()`, I a III).
+  `Unit::init_unit_id()` (`src/OUNIT.cpp`) solo la pone si el reino ya tiene esa
+  tecnología; si no, queda en 0. Con versión 0, `Unit::fix_attack_info()` no elige el
+  ataque de una versión: deja todos los ataques de todas las versiones, y al elegir el
+  gráfico del ataque se sale de los datos. Por eso falla a veces: solo cuando el reino no
+  tiene la tecnología del arma (en una partida nueva casi nunca la tiene). Es el mismo
+  error que el juego original ya corrige en `FirmWar::change_nation()` (`src/OF_WAR.cpp`)
+  para las fábricas de armas que cambian de reino.
+  - Corrección: al colocar un arma, si la versión quedó en 0, ponerle la versión de la
+    tecnología del reino o, si no la tiene, la versión I (`set_weapon_version()` y
+    `fix_attack_info()`).
+  - Opcional: una opción **Version** (I, II, III) en la paleta de Units para las armas,
+    hasta la versión máxima de cada una.
+  - También al cambiar de reino con Set Owner un arma que ya tiene versión no se afecta;
+    revisar que ninguna otra ruta del editor cree armas con versión 0.
+
+---
+
 ## Riesgos y puntos por revisar
 
 - **Compatibilidad:** un `.SCN` del mod (versión de guardado 300) no abre en el juego
