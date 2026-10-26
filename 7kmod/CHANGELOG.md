@@ -63,6 +63,8 @@ incluye todo lo de `7kmod` y documenta lo suyo en `CHANGELOG-gameplay.md`.
 - **Documentación:** en `ADVANCED_CONFIG.md`, la lista de acciones para `bindkey` estaba incompleta; faltaban `KEYEVENT_CHEAT_ENABLE1` a `3`, `KEYEVENT_SEL_GROUP_7` a `9` y `KEYEVENT_SET_GROUP_1` a `9`.
 - **Nombres repetidos en las noticias:** en mensajes con dos nombres, como "El espía <nombre> del reino de <rey> ha sido descubierto y ejecutado", el nombre de la unidad salía igual al del rey. La función que arma los nombres usaba una sola memoria compartida, y con el compilador de los ejecutables del mod el segundo nombre sobrescribía al primero. Es un error del juego original que no se nota en la versión oficial por el orden en que su compilador evalúa los nombres.
 
+- **Cierre del juego después de un escenario:** después de jugar cualquier escenario, el juego tronaba al cerrarse ("double free"). Al empezar un escenario se hace una copia de la configuración avanzada para restaurarla al final, y la copia compartía con la original el texto de `mp_service_addr`, que se liberaba dos veces. Es un error del juego original; no afectaba las partidas.
+
 ### Compatibilidad
 - Sin cambios en las partidas guardadas ni en el multijugador.
 

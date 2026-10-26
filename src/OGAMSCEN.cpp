@@ -171,6 +171,7 @@ int Game::run_scenario(ScenInfo* scenInfo)
 				str2 += "config.txt";
 
 				backup = config_adv;
+				backup.mp_service_addr = NULL;		// 7kmod: the copy doesn't share the allocated string (it would be freed twice)
 				config_adv.load(str2);
 			}
 
@@ -191,7 +192,11 @@ int Game::run_scenario(ScenInfo* scenInfo)
 			battle.run_loaded();
 
 			if( config_adv.scenario_config )
+			{
+				char* serviceAddr = config_adv.mp_service_addr;		// 7kmod: keep the allocated string of config_adv
 				config_adv = backup;
+				config_adv.mp_service_addr = serviceAddr;
+			}
 		}
 		else
 		{
