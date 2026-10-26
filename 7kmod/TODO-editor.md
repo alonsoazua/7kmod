@@ -333,6 +333,33 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
   - El mapa nuevo borra los datos del escenario (nombre, descripción, dificultad, bonus y
     archivo), como un escenario nuevo. También funciona desde un escenario abierto con
     **Edit**.
+- [ ] **Cambiar la raza (pendiente).** Objetivo: si haces un mapa y al final decides
+  jugarlo con otra raza, debe ser fácil cambiarla. Fila **Race** (`<` `>`) en el cuadro
+  de lo seleccionado; el cuadro crece unos 20 píxeles hacia arriba y la paleta se hace un
+  poco más corta (las unidades ya tienen Combat y Leadership).
+  - **Pueblo:** los aldeanos sin trabajo pasan a la raza nueva, con la misma población.
+    Los que trabajan en edificios conservan su raza (son trabajadores del edificio).
+  - **Edificio:** cambia su `race_id` y su dibujo (`firm_build_id` de esa raza). Si el
+    dibujo de la otra raza ocupa otro tamaño, ese edificio no permite cambiar la raza.
+    Soldados y trabajadores de adentro no cambian. Las guaridas no tienen raza.
+  - **Unidades** (soldados, generales, trabajadores, aldeanos; también varias
+    seleccionadas): la figura depende de la raza (`unit_id`), así que se crea una unidad
+    nueva de esa raza en el mismo lugar y se quita la anterior. Conserva reino, rango,
+    combate, liderazgo o habilidad y nivel; recibe un nombre de la raza nueva y queda
+    seleccionada. No aplica a armas, barcos, Fryhtans ni unidades dentro de edificios.
+  - **Rey:** la raza del rey es la del reino (`nation->race_id`): lealtad por raza,
+    resistencia y rendición de pueblos independientes, reclutar, ícono en los reportes,
+    IA, y el nombre del reino sale del nombre del rey. Cambiar la raza del rey cambia la
+    del reino: se crea un rey nuevo de esa raza (mismo combate y liderazgo) y se pone
+    como rey del reino. La lealtad se ajusta sola con el tiempo.
+    - Por definir: si el rey recibe un nombre de la raza nueva (cambia el nombre del
+      reino) o conserva el suyo.
+    - Con **Seats of Power Unlocked**, el reino debe conocer el Seat of Power de la raza
+      nueva en vez de la vieja.
+- [ ] **Bajar la población sin el grito (pendiente).** El `<` de Population en el editor
+  quita aldeanos sin el sonido de muerte (`Town::kill_town_people` llama a
+  `se_res.sound(... "DIE")`); lo demás igual (primero los que no tienen trabajo, los
+  espías se cuentan bien).
 - **Fuera de alcance por ahora:** disparadores y eventos ("si pasa X, aparece Y"). El
   juego no tiene sistema de eventos; sería un proyecto aparte (ver `IDEAS.md` si se
   retoma).
