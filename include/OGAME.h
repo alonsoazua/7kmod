@@ -116,6 +116,7 @@ public:
 	int 			select_run_scenario();
 	int 			select_scenario(int scenCount, ScenInfo* scenInfoArray);
 	int 			run_scenario(ScenInfo* scenInfo);
+	void			editor_new_scenario();			// 7kmod-editor: ModEditor.cpp
 
 	void 			demo_disp_ad_page();
 	void			demo_disp_logo();

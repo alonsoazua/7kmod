@@ -3,7 +3,8 @@
 Rama `7kmod-editor`, basada en `7kmod`, para que los escenarios funcionen en las tres
 versiones del mod (`7kaa-mod.exe`, `7kaa-gameplay.exe` y `7kaa-pathing.exe`).
 
-**Estado:** diseño en refinamiento. Todavía no hay nada implementado.
+**Estado:** Fase 0 (MVP) implementada. El resto del diseño sigue en refinamiento.
+Ejecutable: `7kaa-editor.exe`. Cambios en `CHANGELOG-editor.md`.
 
 ---
 
@@ -104,6 +105,26 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
 
 ## Fases
 
+- [x] **Fase 0: MVP (acceso, interfaz, probar y salir).**
+  - **Acceso:** botón **New** en la pantalla Scenario (arriba de "Your Name"); lleva a la
+    pantalla de opciones de New Game y de ahí al editor con el mapa generado (el mismo
+    contenido que una partida nueva). **Edit** aparece oscurecido.
+  - **Modo editor:** pausa forzada (las teclas de velocidad no hacen nada y no aparece
+    "Game Paused"), todo el mapa visible sin tocar lo explorado (el editor solo lo
+    **dibuja** visible: `loc_reveal_all_flag` en `Location::explored()` y
+    `visibility()`), sin órdenes a las unidades, solo funcionan F11, F12 y Esc.
+  - **Barra superior** sobre los botones de los reportes: Scenario, Kingdoms, Goals y
+    Save oscurecidos; **Test (F12)** y **Exit** funcionan; ayuda al dejar el ratón.
+  - **Panel derecho:** pestañas Units, Towns, Buildings y Nature (por ahora con un texto
+    de lo que vendrá) y **Selected:** el nombre y el reino de lo seleccionado. Clic para
+    seleccionar; clic derecho o Esc para quitar la selección.
+  - **Test:** guarda `EDITOR.TMP` (en la carpeta de configuración) y juega normal, con la
+    niebla y los objetivos elegidos. **F12** o **Return to Editor** (en lugar de
+    "Training" en el menú del juego) cargan la copia y regresan al editor como estaba.
+    Durante la prueba, "Load Game" está desactivado.
+  - **Exit:** pregunta y regresa al menú principal.
+  - Menú del juego en el editor: Save Game, Load Game, Training y Retire desactivados.
+  - Si la partida de prueba termina (victoria o derrota), se regresa al menú principal.
 - [ ] **Fase 1: Save as Scenario.** Guardar la partida actual en `SCENMOD` con su `.SCT`
   (pedir nombre, dificultad, bonus y descripción) y su `.SCP` (generado del minimapa).
   Agregar la carpeta `SCENMOD` a la lista de escenarios. Con los trucos actuales ya

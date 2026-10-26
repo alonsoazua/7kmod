@@ -43,6 +43,7 @@
 #include <OGAME.h>
 #include <OWORLD.h>
 #include <OSYS.h>
+#include <ModEditor.h>
 #include <ORAWRES.h>
 #include <OTALKRES.h>
 #include <OWEATHER.h>
@@ -397,6 +398,14 @@ void Sys::detect_button()
 		// ##### begin Gilbert 5/11 #######//
 		in_game_menu.enter(!remote.is_enable());
 		// ##### end Gilbert 5/11 #######//
+		return;
+	}
+
+	//------- 7kmod-editor: the buttons of the editor -------//
+
+	if( mod_editor.is_editing() )
+	{
+		mod_editor.detect_top_bar();
 		return;
 	}
 
@@ -802,6 +811,14 @@ void Sys::detect_view()
 	int enableAction;			// some action is not enabled, when paused.
 	enableAction = config.frame_speed > 0 || !remote.is_enable();	// allow action when paused in single player
 
+	//--- 7kmod-editor: no commands in the editor mode, the side panel is the editor's ---//
+
+	if( mod_editor.is_editing() )
+	{
+		enableAction = 0;
+		mod_editor.detect_panel();
+	}
+
 	if( enableAction )
 		info.detect();
 
@@ -897,6 +914,14 @@ void Sys::detect_view()
 	else
 	{
 		mouse_cursor.set_frame(0);
+	}
+
+	//------- 7kmod-editor: the clicks of the editor -------//
+
+	if( mod_editor.is_editing() )
+	{
+		mod_editor.detect_view();
+		return;
 	}
 
 	//----------- detect action ------------//
@@ -1010,7 +1035,7 @@ void Sys::disp_zoom()
 
 	//--- 7kmod: show that the game is paused (by the player or when the window loses focus) ---//
 
-	if( config.frame_speed == 0 )
+	if( config.frame_speed == 0 && !mod_editor.is_editing() )		// 7kmod-editor: the editor is always paused
 	{
 		const char* pausedStr = _("Game Paused");
 
@@ -1134,6 +1159,15 @@ void Sys::disp_frames_per_second()
 //									needed in Game::game_end, nation_array.player_recno has not yet set to 0
 void Sys::disp_view_mode(int observeMode)
 {
+	//------- 7kmod-editor: the buttons of the editor -------//
+
+	if( mod_editor.is_editing() )
+	{
+		image_button.put_front( 0,0, "SCROLL-B");
+		mod_editor.disp_top_bar();
+		return;
+	}
+
 	// ------- display highlight ----------//
  	const int MIN_MODE_TO_DISPLAY = 1;
 	const int MAX_MODE_TO_DISPLAY = 8;

@@ -29,6 +29,7 @@
 #include <OVGABUF.h>
 #include <OIMGRES.h>
 #include <OBUTT3D.h>
+#include <OBUTTON.h>
 #include <OSLIDCUS.h>
 #include <OBOX.h>
 #include <OPOWER.h>
@@ -94,6 +95,14 @@ enum {
 //		 NAME_FIELD_Y2 = 566,
 };
 // ####### end Gilbert 1/11 #########//
+
+//------ 7kmod-editor: New and Edit buttons, above the name field ------//
+
+enum { EDITOR_NEW_X1 = 95,
+		 EDITOR_EDIT_X1 = 215,
+		 EDITOR_BUTTON_Y1 = 520,
+		 EDITOR_BUTTON_WIDTH = 110,
+		 EDITOR_BUTTON_HEIGHT = 23 };
 
 
 #define TU_USE_BACKUP_SURFACE
@@ -165,6 +174,7 @@ void draw_checkbox(int x, int y, CHECKBOX_STATE checked)
 //
 // return : <int> >0 - id. of the scenario selected. 
 //                 0 - cancel
+//                -1 - 7kmod-editor: the New button, a new scenario in the editor
 //
 int Game::select_scenario(int scenCount, ScenInfo* scenInfoArray)
 {
@@ -209,6 +219,15 @@ int Game::select_scenario(int scenCount, ScenInfo* scenInfoArray)
 	startButton.create(menuX1+373, menuY1+529, "START-U", "START-D",1, 0);
 	cancelButton.create(menuX1+548, menuY1+529, "CANCEL-U", "CANCEL-D", 1, 0);
 	// ###### end Gilbert 1/11 ########//
+
+	//------ 7kmod-editor: New and Edit buttons ------//
+
+	Button editorNewButton, editorEditButton;
+	editorNewButton.create_text( menuX1+EDITOR_NEW_X1, menuY1+EDITOR_BUTTON_Y1, menuX1+EDITOR_NEW_X1+EDITOR_BUTTON_WIDTH-1,
+										  menuY1+EDITOR_BUTTON_Y1+EDITOR_BUTTON_HEIGHT-1, _("New") );
+	editorEditButton.create_text( menuX1+EDITOR_EDIT_X1, menuY1+EDITOR_BUTTON_Y1, menuX1+EDITOR_EDIT_X1+EDITOR_BUTTON_WIDTH-1,
+										  menuY1+EDITOR_BUTTON_Y1+EDITOR_BUTTON_HEIGHT-1, _("Edit") );
+	editorEditButton.enable_flag = 0;		// Phase 0: only new scenarios
 
 	SlideVBar scrollBar;
 	scrollBar.init_scroll(menuX1+SCROLL_X1, menuY1+SCROLL_Y1, menuX1+SCROLL_X2, menuY1+SCROLL_Y2,
@@ -319,6 +338,11 @@ int Game::select_scenario(int scenCount, ScenInfo* scenInfoArray)
 				scrollDown.paint();
 				startButton.paint();
 				cancelButton.paint();
+
+				editorNewButton.paint();
+				editorEditButton.paint();
+				vga_front.adjust_brightness( editorEditButton.x1+1, editorEditButton.y1+1,
+					editorEditButton.x2-1, editorEditButton.y2-1, -5 );		// disabled
 
 				textScrollUp.paint();
 				textScrollDown.paint();
@@ -611,6 +635,12 @@ int Game::select_scenario(int scenCount, ScenInfo* scenInfoArray)
 			// load button
 			refreshFlag = TUOPTION_ALL;
 			retFlag = browseRecno;
+			break;
+		}
+		else if( editorNewButton.detect() )		// 7kmod-editor: new scenario
+		{
+			refreshFlag = TUOPTION_ALL;
+			retFlag = -1;
 			break;
 		}
 	}

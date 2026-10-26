@@ -44,6 +44,7 @@
 #include <OUNIT.h>
 #include <OCOLTBL.h>
 #include <OINFO.h>
+#include <ModEditor.h>
 #include <OOPTMENU.h>
 #include "gettext.h"
 
@@ -302,9 +303,14 @@ void Info::disp()
 
 	vga.use_front();
 
+	//------ 7kmod-editor: the side panel of the editor ------//
+
+	if( mod_editor.is_editing() )
+		mod_editor.disp_panel(INFO_REPAINT);
+
 	//------ if units/firm selected, display info --------//
 
-	if( firm_array.selected_recno )
+	else if( firm_array.selected_recno )
 	{
 		firm_array[firm_array.selected_recno]->disp_info_both(INFO_REPAINT);
 	}
@@ -355,7 +361,10 @@ void Info::update()
 
 	//-------------------------------------------//
 
-	if( firm_array.selected_recno )
+	if( mod_editor.is_editing() )		// 7kmod-editor: the side panel of the editor
+		mod_editor.disp_panel(INFO_UPDATE);
+
+	else if( firm_array.selected_recno )
 	{
 		firm_array[firm_array.selected_recno]->disp_info_both(INFO_UPDATE);
 	}

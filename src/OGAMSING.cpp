@@ -35,6 +35,7 @@
 #include <OGET.h>
 #include <OBATTLE.h>
 #include <OGAME.h>
+#include <ModEditor.h>
 #include <OCONFIG.h>
 #include <OMUSIC.h>
 #include <OBUTTCUS.h>
@@ -113,6 +114,32 @@ void Game::single_player_game(int noAI)
 	deinit();
 }
 //--------- End of function Game::single_player_game ---------//
+
+
+//-------- Begin of function Game::editor_new_scenario --------//
+//
+// 7kmod-editor: the "New" button of the scenario screen: select the options
+// of the map as in "New Game", then open it in the editor.
+//
+void Game::editor_new_scenario()
+{
+	sys.is_mp_game = 0;
+
+	if( !select_option() )
+		return;
+
+	config.save("CONFIG.DAT");
+
+	mod_editor.reset();
+	mod_editor.editing_flag = 1;			// Sys::run() enters the editor mode
+
+	init();
+	battle.run(0);
+	deinit();
+
+	mod_editor.reset();
+}
+//--------- End of function Game::editor_new_scenario ---------//
 
 
 

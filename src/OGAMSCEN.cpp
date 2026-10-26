@@ -130,8 +130,19 @@ int Game::select_run_scenario()
 
 	int rc = select_scenario( scenInfoSize, scenInfoArray );
 
-	if( rc )
+	if( rc > 0 )
 		run_scenario( scenInfoArray+rc-1 );
+
+	//------ 7kmod-editor: New button ------//
+
+	else if( rc == -1 )
+	{
+		mem_del(scenInfoArray);
+		scenInfoArray = NULL;
+
+		editor_new_scenario();
+		return 1;
+	}
 
 	//-------------------------------------------//
 
