@@ -75,21 +75,11 @@ static const char* bar_button_str[EDITOR_BAR_COUNT] =
 	N_("Scenario"), N_("Kingdoms"), N_("Goals"), N_("Save"), N_("Test (F12)"), N_("Exit")
 };
 
-static char bar_button_enabled[EDITOR_BAR_COUNT] = { 0, 0, 0, 1, 1, 1 };		// Phase 1: Save, Test and Exit
+static char bar_button_enabled[EDITOR_BAR_COUNT] = { 1, 1, 1, 1, 1, 1 };
 
-//------- the side panel --------//
-
-enum { TAB_WIDTH=98, TAB_HEIGHT=20 };
-
-static const char* tab_str[EDITOR_TAB_COUNT] =
-{
-	N_("Units"), N_("Towns"), N_("Buildings"), N_("Nature")
-};
 
 //------- Declare static functions --------//
 
-static void	put_button(int x1, int y1, int x2, int y2, const char* str, int enabled, int pushed);
-static void	disp_selected(int x1, int y1, int x2, int y2);
 
 
 //-------- Begin of function ModEditor::ModEditor --------//
@@ -115,6 +105,14 @@ void ModEditor::reset()
 	scen_difficulty = 1;
 	scen_bonus = 50;
 	scen_file_name[0] = 0;
+
+	owner_nation_recno = -1;		// set to the player in enter_edit_mode()
+	place_entry = -1;
+	place_race_id = 1;
+	place_combat_level = 20;
+	place_population = 20;
+	place_reserve = 10;
+	place_monster_id = 0;
 
 	loc_reveal_all_flag = 0;
 }
@@ -150,6 +148,19 @@ void ModEditor::enter_edit_mode()
 		sys.set_view_mode(MODE_NORMAL);
 
 	power.command_id = 0;
+
+	//------ the default kingdom of the objects placed: the player ------//
+
+	if( owner_nation_recno > 0 && nation_array.is_deleted(owner_nation_recno) )
+		owner_nation_recno = 0;
+
+	if( owner_nation_recno < 0 )		// first time
+	{
+		owner_nation_recno = nation_array.player_recno;
+
+		if( owner_nation_recno )
+			place_race_id = (~nation_array)->race_id;
+	}
 
 	sys.map_need_redraw = 1;
 	sys.zoom_need_redraw = 1;
@@ -268,7 +279,7 @@ void ModEditor::disp_top_bar()
 
 	for( int i=0 ; i<EDITOR_BAR_COUNT ; i++ )
 	{
-		put_button( bar_button_x[i], bar_button_y[i], bar_button_x[i]+bar_button_w[i]-1,
+		editor_put_button( bar_button_x[i], bar_button_y[i], bar_button_x[i]+bar_button_w[i]-1,
 						bar_button_y[i]+BAR_BUTTON_HEIGHT-1, _(bar_button_str[i]), bar_button_enabled[i], 0 );
 	}
 
@@ -323,7 +334,7 @@ void ModEditor::detect_top_bar()
 		if( !bar_button_enabled[i] )
 			continue;
 
-		if( !mouse.single_click( bar_button_x[i], bar_button_y[i], bar_button_x[i]+bar_button_w[i]-1,
+		if( !mouse.any_click( bar_button_x[i], bar_button_y[i], bar_button_x[i]+bar_button_w[i]-1,
 										 bar_button_y[i]+BAR_BUTTON_HEIGHT-1 ) )
 		{
 			continue;
@@ -331,6 +342,18 @@ void ModEditor::detect_top_bar()
 
 		switch( i )
 		{
+			case EDITOR_BAR_SCENARIO:
+				edit_scenario_info(0);
+				break;
+
+			case EDITOR_BAR_KINGDOMS:
+				edit_kingdoms();
+				break;
+
+			case EDITOR_BAR_GOALS:
+				edit_goals();
+				break;
+
 			case EDITOR_BAR_SAVE:
 				save_scenario();
 				break;
@@ -348,118 +371,6 @@ void ModEditor::detect_top_bar()
 	}
 }
 //--------- End of function ModEditor::detect_top_bar ---------//
-
-
-//-------- Begin of function ModEditor::disp_panel --------//
-//
-// Display the side panel of the editor. Called by Info::disp() and
-// Info::update().
-//
-void ModEditor::disp_panel(int refreshFlag)
-{
-	if( refreshFlag != INFO_REPAINT )
-		return;
-
-	int useBackBuf = vga.use_back_buf;
-
-	vga.use_back();
-
-	vga_back.put_bitmap( INFO_X1, INFO_Y1, info.info_background_bitmap );
-
-	int x=INFO_X1+4, y=INFO_Y1+4;
-
-	//------- title -------//
-
-	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+20 );
-	font_san.center_put( INFO_X1, y, INFO_X2, y+20, _("Scenario Editor") );
-	y += 26;
-
-	//------- tabs -------//
-
-	for( int i=0 ; i<EDITOR_TAB_COUNT ; i++ )
-	{
-		int tabX = x + (i%2) * (TAB_WIDTH+2);
-		int tabY = y + (i/2) * (TAB_HEIGHT+2);
-
-		put_button( tabX, tabY, tabX+TAB_WIDTH-1, tabY+TAB_HEIGHT-1, _(tab_str[i]), 1, panel_tab==i );
-	}
-
-	y += 2*(TAB_HEIGHT+2) + 4;
-
-	//------- the palette (next phase) -------//
-
-	int paletteY2 = INFO_Y2-76;
-
-	vga_util.d3_panel_down( INFO_X1, y, INFO_X2, paletteY2 );
-
-	static const char* paletteStr[EDITOR_TAB_COUNT] =
-	{
-		N_("Placing units (soldiers, weapons, ships, kings, generals and spies) will be available in the next phase of the editor."),
-		N_("Placing towns (race and population) will be available in the next phase of the editor."),
-		N_("Placing buildings (type, kingdom, finished or not) will be available in the next phase of the editor."),
-		N_("Placing natural resources and Fryhtan lairs will be available in the next phase of the editor."),
-	};
-
-	font_san.put_paragraph( INFO_X1+8, y+8, INFO_X2-8, paletteY2-6, _(paletteStr[(int)panel_tab]) );
-
-	//------- the selected object -------//
-
-	disp_selected( INFO_X1, paletteY2+4, INFO_X2, INFO_Y2 );
-
-	if( !useBackBuf )
-		vga.use_front();
-
-	vga_util.blt_buf( INFO_X1, INFO_Y1, INFO_X2, INFO_Y2, 0 );
-}
-//--------- End of function ModEditor::disp_panel ---------//
-
-
-//-------- Begin of function ModEditor::detect_panel --------//
-//
-void ModEditor::detect_panel()
-{
-	int x=INFO_X1+4, y=INFO_Y1+30;
-
-	for( int i=0 ; i<EDITOR_TAB_COUNT ; i++ )
-	{
-		int tabX = x + (i%2) * (TAB_WIDTH+2);
-		int tabY = y + (i/2) * (TAB_HEIGHT+2);
-
-		if( mouse.single_click( tabX, tabY, tabX+TAB_WIDTH-1, tabY+TAB_HEIGHT-1 ) )
-		{
-			if( panel_tab != i )
-			{
-				panel_tab = i;
-				info.disp();
-			}
-			return;
-		}
-	}
-}
-//--------- End of function ModEditor::detect_panel ---------//
-
-
-//-------- Begin of function ModEditor::detect_view --------//
-//
-// Detect the clicks of the editor mode on the map. Called by
-// Sys::detect_view() instead of the commands of the normal game.
-//
-// return: <int> 1 - a click was used
-//
-int ModEditor::detect_view()
-{
-	//---- right click on the map: deselect ----//
-
-	if( mouse.any_click(ZOOM_X1, ZOOM_Y1, ZOOM_X2, ZOOM_Y2, RIGHT_BUTTON) )
-	{
-		power.reset_selection();
-		info.disp();
-		return 1;
-	}
-
-	return 0;
-}
-//--------- End of function ModEditor::detect_view ---------//
 
 
 //-------- Begin of function ModEditor::process_key --------//
@@ -499,8 +410,15 @@ int ModEditor::process_key(unsigned scanCode, unsigned skeyState)
 			break;
 
 		case KEY_ESC:
-			power.reset_selection();
+			if( place_entry >= 0 )		// cancel placing
+				place_entry = -1;
+			else
+				power.reset_selection();
 			info.disp();
+			break;
+
+		case KEY_DEL:
+			delete_selected();
 			break;
 	}
 
@@ -538,11 +456,11 @@ void ModEditor::disp_menu_option(int x, int y)
 //--------- End of function ModEditor::disp_menu_option ---------//
 
 
-//-------- Begin of static function put_button --------//
+//-------- Begin of function editor_put_button --------//
 //
 // Display a button of the editor on the back buffer.
 //
-static void put_button(int x1, int y1, int x2, int y2, const char* str, int enabled, int pushed)
+void editor_put_button(int x1, int y1, int x2, int y2, const char* str, int enabled, int pushed)
 {
 	if( pushed )
 		vga_util.d3_panel_down( x1, y1, x2, y2 );
@@ -554,76 +472,6 @@ static void put_button(int x1, int y1, int x2, int y2, const char* str, int enab
 	if( !enabled )
 		vga_back.adjust_brightness( x1+1, y1+1, x2-1, y2-1, -8 );
 }
-//----------- End of static function put_button -----------//
+//----------- End of function editor_put_button -----------//
 
 
-//-------- Begin of static function disp_selected --------//
-//
-// Display the name and the kingdom of the selected object.
-//
-static void disp_selected(int x1, int y1, int x2, int y2)
-{
-	vga_util.d3_panel_up( x1, y1, x2, y2 );
-
-	int nationRecno = -1;		// -1: the object has no kingdom
-	String str;
-
-	if( firm_array.selected_recno )
-	{
-		Firm* firmPtr = firm_array[firm_array.selected_recno];
-		str = firmPtr->firm_name();
-		nationRecno = firmPtr->nation_recno;
-	}
-	else if( town_array.selected_recno )
-	{
-		Town* townPtr = town_array[town_array.selected_recno];
-		str = townPtr->town_name();
-		nationRecno = townPtr->nation_recno;
-	}
-	else if( site_array.selected_recno )
-	{
-		Site* sitePtr = site_array[site_array.selected_recno];
-
-		switch( sitePtr->site_type )
-		{
-			case SITE_RAW:
-				str = _(raw_res[sitePtr->object_id]->name);
-				break;
-			case SITE_SCROLL:
-				str = _("Scroll of Power");
-				break;
-			case SITE_GOLD_COIN:
-				str = _("Treasure");
-				break;
-		}
-	}
-	else if( unit_array.selected_recno )
-	{
-		Unit* unitPtr = unit_array[unit_array.selected_recno];
-		str = unitPtr->unit_name();
-		nationRecno = unitPtr->nation_recno;
-	}
-
-	font_san.put( x1+8, y1+6, _("Selected:") );
-
-	if( !str[0] )
-	{
-		font_san.put_paragraph( x1+8, y1+22, x2-8, y2-4, _("Nothing. Click on the map to select; right click or Esc to deselect.") );
-		return;
-	}
-
-	font_san.put( x1+8, y1+22, str, 0, x2-8 );
-
-	if( nationRecno > 0 && !nation_array.is_deleted(nationRecno) )
-	{
-		Nation* nationPtr = nation_array[nationRecno];
-
-		vga_back.bar( x1+8, y1+38, x1+20, y1+50, nationPtr->nation_color );
-		font_san.put( x1+26, y1+38, nationPtr->nation_name(), 0, x2-8 );
-	}
-	else if( nationRecno == 0 )
-	{
-		font_san.put( x1+8, y1+38, _("Independent") );
-	}
-}
-//----------- End of static function disp_selected -----------//

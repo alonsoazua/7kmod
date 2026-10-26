@@ -77,6 +77,16 @@ public:
 	short	scen_bonus;
 	char	scen_file_name[EDITOR_FILE_NAME_LEN+1];		// the file name it was last saved with, without the extension
 
+	//--- placing objects (phase 2) ---//
+
+	char	owner_nation_recno;		// the kingdom of the objects placed, 0 - independent
+	char	place_entry;				// the entry of the palette of the current tab being placed, -1 - none
+	char	place_race_id;				// the race of soldiers, generals, towns and buildings
+	short	place_combat_level;		// the combat level of soldiers and generals
+	short	place_population;			// the population of towns
+	short	place_reserve;				// the reserve of natural resources, in 1000s
+	short	place_monster_id;			// the Fryhtan of lairs
+
 public:
 	ModEditor();
 
@@ -105,6 +115,20 @@ public:
 
 	int	process_key(unsigned scanCode, unsigned skeyState);
 	int	detect_view();
+	int	detect_place();
+	int	get_place_area(int xLoc, int yLoc, int& locWidth, int& locHeight);		// for ZoomMatrix::draw_build_marker()
+
+	//--- the selected object ---//
+
+	void	delete_selected();
+	void	set_selected_owner();
+
+	//--- the windows (phase 3) ---//
+
+	int	edit_scenario_info(int saveFlag);
+	void	redraw_screen();
+	void	edit_kingdoms();
+	void	edit_goals();
 
 	//--- in-game menu during a test ---//
 
@@ -112,6 +136,8 @@ public:
 };
 
 extern ModEditor mod_editor;
+
+void editor_put_button(int x1, int y1, int x2, int y2, const char* str, int enabled, int pushed);		// on the back buffer
 extern char loc_reveal_all_flag;		// 1 - Location::explored() and visibility() see the whole map (the editor mode)
 
 #endif

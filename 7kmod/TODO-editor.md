@@ -3,7 +3,7 @@
 Rama `7kmod-editor`, basada en `7kmod`, para que los escenarios funcionen en las tres
 versiones del mod (`7kaa-mod.exe`, `7kaa-gameplay.exe` y `7kaa-pathing.exe`).
 
-**Estado:** Fases 0 (MVP) y 1 (guardar) implementadas. El resto del diseño sigue en refinamiento.
+**Estado:** Fases 0 a 3 implementadas (MVP, guardar, colocar y editar, ventanas). El resto del diseño sigue en refinamiento.
 Ejecutable: `7kaa-editor.exe`. Cambios en `CHANGELOG-editor.md`.
 
 ---
@@ -150,11 +150,46 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
     "(mod)" después del nombre. Se juegan con Start como cualquier escenario.
   - Pendiente para otras fases: el botón **Scenario** (editar estos datos sin guardar)
     sigue desactivado, y **Edit** (abrir un escenario guardado) es de la fase 4.
-- [ ] **Fase 2: Modo editor sobre el mapa.** Pausa, sin niebla, barra superior, paleta
-  de colocar (unidades, pueblos, edificios, recursos, guaridas), selección, borrar,
-  cambiar de dueño, propiedades de lo seleccionado. Botón Probar.
-- [ ] **Fase 3: Reinos, objetivos y datos del escenario.** Las ventanas Escenario,
-  Reinos y Objetivos.
+- [x] **Fase 2: Colocar y editar en el mapa** (panel derecho, `src/ModEditorPanel.cpp`).
+  - **Reino de lo que se coloca:** arriba del panel, `< ■ Reino >`, incluye
+    "Independent". Va en el panel y no en la barra superior porque la barra ya está llena.
+  - **Units:** Soldier y General (opciones Race y Combat, de 10 en 10; el general tiene
+    liderazgo igual a su combate), las 6 armas y los 4 barcos. Necesitan un reino.
+  - **Towns:** Town (opciones Race y Population, de 5 en 5). Con "Independent" es un
+    pueblo independiente con la resistencia normal; con un reino, lealtad 80.
+  - **Buildings:** Fort, Mine, Factory, Inn, Market, Tower of Science, War Factory y
+    Harbor (opción Race, para la apariencia). Se colocan terminados y vacíos, sin cobrar
+    su costo. Necesitan un reino.
+  - **Nature:** Clay, Copper, Iron (opción Reserve, de 1,000 en 1,000, hasta 20,000) y
+    Fryhtan Lair (opción Fryhtan: el tipo, solo los que tienen guarida).
+  - **Colocar:** clic en una entrada de la paleta (otra vez para soltarla); en el mapa se
+    ve el área con la marca del juego (con color: se puede; negra: no se puede); clic
+    coloca, se pueden colocar varios seguidos; clic derecho o Esc deja de colocar.
+    Mientras se coloca, los clics en el mapa no seleccionan.
+  - **Lo seleccionado** (abajo del panel): nombre, reino, una propiedad con `< >`
+    (Combat de una unidad, Population de un pueblo, Reserve de un recurso sin mina) y los
+    botones **Set Owner** (le pone el reino de arriba) y **Delete** (también la tecla
+    Supr). Con varias unidades seleccionadas, Set Owner y Delete aplican a todas.
+  - Delete: los edificios se borran sin ruinas y las unidades de adentro salen; las
+    guaridas se borran con sus Fryhtan; un recurso con mina no se borra; los reyes no se
+    borran ni cambian de reino.
+- [x] **Fase 3: Ventanas** (barra superior, `src/ModEditorWin.cpp` y `ModEditorSave.cpp`).
+  - **Scenario:** la misma ventana de Save, con OK, para editar nombre, dificultad,
+    bonus y descripción sin guardar. Cancel deja los datos como estaban.
+  - **Kingdoms:** una fila por reino con Treasure y Food (de 1,000 en 1,000) y
+    Reputation (de 10 en 10, de −100 a 100). Clic en el nombre elige el reino de abajo:
+    sus **tecnologías** (nivel de cada una con `< >`, botones "All technologies" y "No
+    technologies") y sus **relaciones** con cada reino: clic avanza y clic derecho
+    regresa entre No contact, War, Tense, Neutral, Friendly y Alliance (se aplica a los
+    dos reinos). Se cierra con Close o Esc.
+  - **Goals:** las metas de la pestaña Goals de New Game, con los mismos pasos y límites
+    (Fryhtan, población, puntaje económico, puntaje total, años). Al cerrar se calcula la
+    fecha límite como al empezar un escenario.
+  - Las ventanas se dibujan sobre una copia del mapa en cada cambio, para que el fondo
+    translúcido no se aclare.
+- **Pendiente (no entró en las fases 2 y 3):** reyes, espías y Seat of Power (necesitan
+  más lógica), agregar o quitar reinos y cambiar cuál es el del jugador (por ahora se
+  eligen en la pantalla de New Game), y propiedades de los edificios.
 - [ ] **Fase 4: Acceso desde la pantalla Scenario.** Botones New y Edit; mapa nuevo con
   el generador actual (tamaño, semilla, terreno).
 - [ ] **Fase 5 (opcional): Pintar terreno.** Altura, agua, bosques, rocas, con
@@ -183,5 +218,4 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
 
 ## Por definir
 
-- Qué propiedades se editan de cada cosa seleccionada.
 - Si el editor permite mapas de cualquier tamaño o solo el máximo.

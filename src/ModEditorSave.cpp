@@ -107,29 +107,32 @@ void ModEditor::init_scenario_dir()
 //--------- End of function ModEditor::init_scenario_dir ---------//
 
 
-//-------- Begin of function ModEditor::save_scenario --------//
+//-------- Begin of function ModEditor::edit_scenario_info --------//
 //
-void ModEditor::save_scenario()
+// The window of the data of the scenario: name, difficulty, score bonus and
+// description. The "Scenario" button of the editor (saveFlag 0) and the
+// "Save" button (saveFlag 1).
+//
+// return: <int> 1 - OK or Save, 0 - Cancel (the data are not changed)
+//
+int ModEditor::edit_scenario_info(int saveFlag)
 {
-	if( !editing_flag )
-		return;
-
-	init_scenario_dir();
-
 	const char* dirPath = sys.dir_scenario_path[EDITOR_SCENARIO_DIR_ID];
-
-	if( !dirPath[0] )
-	{
-		box.msg( _("The folder of the scenarios couldn't be created.") );
-		return;
-	}
 
 	if( scen_difficulty < DIFFICULTY_MIN )
 		scen_difficulty = DIFFICULTY_MIN;
 
+	//------- keep the data for Cancel -------//
+
+	char  oldName[EDITOR_NAME_LEN+1];
+	char  oldDesc[EDITOR_DESC_LINES][EDITOR_DESC_LEN+1];
+	short oldDifficulty = scen_difficulty, oldBonus = scen_bonus;
+
+	memcpy( oldName, scen_name, sizeof(oldName) );
+	memcpy( oldDesc, scen_desc, sizeof(oldDesc) );
+
 	//------- the dialog -------//
 
-	power.reset_selection();		// no selection marks in the picture
 	power.win_opened = 1;
 
 	int useBackBuf = vga.use_back_buf;
@@ -147,7 +150,7 @@ void ModEditor::save_scenario()
 	vga_util.d3_panel_up( DLG_X1, DLG_Y1, DLG_X2, DLG_Y2 );
 	vga_util.d3_panel_up( DLG_X1, DLG_Y1, DLG_X2, DLG_Y2 );		// twice: less translucent
 
-	font_san.center_put( DLG_X1, y, DLG_X2, y+16, _("Save Scenario") );
+	font_san.center_put( DLG_X1, y, DLG_X2, y+16, saveFlag ? _("Save Scenario") : _("Scenario") );
 	y += 30;
 
 	int nameY = y;
@@ -175,8 +178,11 @@ void ModEditor::save_scenario()
 	int fileY = y;
 	y += 22;
 
-	font_san.put_paragraph( LABEL_X, y, FIELD_X2, y+60,
-		_("The picture of the scenario is the middle of the map view: move the view before saving to choose it. The scenario will appear in Single Player > Scenario.") );
+	if( saveFlag )
+	{
+		font_san.put_paragraph( LABEL_X, y, FIELD_X2, y+60,
+			_("The picture of the scenario is the middle of the map view: move the view before saving to choose it. The scenario will appear in Single Player > Scenario.") );
+	}
 
 	vga.use_front();
 	vga_util.blt_buf( DLG_X1, DLG_Y1, DLG_X2, DLG_Y2, 0 );
@@ -195,7 +201,7 @@ void ModEditor::save_scenario()
 	buttonBonusDown.create_text( DLG_X1+410, valueY-3, DLG_X1+430, valueY+15, "<" );
 	buttonBonusUp.create_text( DLG_X1+434, valueY-3, DLG_X1+454, valueY+15, ">" );
 
-	buttonSave.create_text( (DLG_X1+DLG_X2)/2-110, DLG_Y2-34, (DLG_X1+DLG_X2)/2-10, DLG_Y2-10, _("Save") );
+	buttonSave.create_text( (DLG_X1+DLG_X2)/2-110, DLG_Y2-34, (DLG_X1+DLG_X2)/2-10, DLG_Y2-10, saveFlag ? _("Save") : _("OK") );
 	buttonCancel.create_text( (DLG_X1+DLG_X2)/2+10, DLG_Y2-34, (DLG_X1+DLG_X2)/2+110, DLG_Y2-10, _("Cancel") );
 
 	buttonDiffDown.paint();
@@ -289,7 +295,7 @@ void ModEditor::save_scenario()
 
 			//--- an existing file, saved with another name: ask before replacing it ---//
 
-			if( strcmp(fileName, scen_file_name) != 0 )
+			if( saveFlag && strcmp(fileName, scen_file_name) != 0 )
 			{
 				FilePath path(dirPath);
 				path += fileName;
@@ -316,9 +322,54 @@ void ModEditor::save_scenario()
 
 	power.win_opened = 0;
 
+	if( !rc )		// Cancel: restore the data
+	{
+		memcpy( scen_name, oldName, sizeof(oldName) );
+		memcpy( scen_desc, oldDesc, sizeof(oldDesc) );
+		scen_difficulty = oldDifficulty;
+		scen_bonus = oldBonus;
+	}
+
+	if( useBackBuf )
+		vga.use_back();
+
+	//------- redraw the screen -------//
+
+	if( !rc || !saveFlag )
+		redraw_screen();
+
+	return rc;
+}
+//--------- End of function ModEditor::edit_scenario_info ---------//
+
+
+//-------- Begin of function ModEditor::save_scenario --------//
+//
+void ModEditor::save_scenario()
+{
+	if( !editing_flag )
+		return;
+
+	init_scenario_dir();
+
+	const char* dirPath = sys.dir_scenario_path[EDITOR_SCENARIO_DIR_ID];
+
+	if( !dirPath[0] )
+	{
+		box.msg( _("The folder of the scenarios couldn't be created.") );
+		return;
+	}
+
+	power.reset_selection();		// no selection marks in the picture
+
+	if( !edit_scenario_info(1) )
+		return;
+
+	char fileName[EDITOR_FILE_NAME_LEN+1];
+	make_file_name( fileName, scen_name );
+
 	//------- save -------//
 
-	if( rc )
 	{
 		FilePath path(dirPath);
 		path += fileName;
@@ -371,11 +422,17 @@ void ModEditor::save_scenario()
 		}
 	}
 
-	//------- redraw the screen -------//
+	redraw_screen();
+}
+//--------- End of function ModEditor::save_scenario ---------//
 
-	if( useBackBuf )
-		vga.use_back();
 
+//-------- Begin of function ModEditor::redraw_screen --------//
+//
+// Redraw the whole screen after a window of the editor.
+//
+void ModEditor::redraw_screen()
+{
 	sys.zoom_need_redraw = 1;
 	sys.map_need_redraw = 1;
 	sys.need_redraw_flag = 1;
@@ -383,7 +440,7 @@ void ModEditor::save_scenario()
 	sys.disp_view_mode();
 	info.disp();
 }
-//--------- End of function ModEditor::save_scenario ---------//
+//--------- End of function ModEditor::redraw_screen ---------//
 
 
 //-------- Begin of static function make_file_name --------//

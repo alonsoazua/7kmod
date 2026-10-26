@@ -39,3 +39,18 @@ de `7kmod` está en `CHANGELOG.md`. El diseño y las fases están en `TODO-edito
     `MI-ESCENARIO`). Si ya existe, pregunta antes de reemplazarlo.
   - Los escenarios guardados aparecen en Single Player → Scenario con "(mod)" después del
     nombre y se juegan como los demás.
+- **Editor de escenarios, fases 2 y 3 (colocar, editar y ventanas):**
+  - **Panel derecho:** arriba, el reino de lo que se coloca (`< ■ Reino >`, incluye
+    Independent). Pestañas con paleta:
+    - **Units:** Soldier y General (raza y nivel de combate), armas y barcos.
+    - **Towns:** pueblo (raza y población); independiente si el reino es Independent.
+    - **Buildings:** Fort, Mine, Factory, Inn, Market, Tower of Science, War Factory y
+      Harbor, terminados, vacíos y sin costo.
+    - **Nature:** Clay, Copper, Iron (reserva) y guaridas de Fryhtan (tipo).
+  - **Colocar:** clic en la paleta y clic en el mapa, con la marca del juego (con color se
+    puede, negra no). Clic derecho o Esc deja de colocar.
+  - **Lo seleccionado:** nombre, reino, una propiedad con `< >` (combate, población o
+    reserva) y los botones **Set Owner** y **Delete** (o Supr).
+  - **Barra superior:** **Scenario** (nombre, dificultad, bonus y descripción sin
+    guardar), **Kingdoms** (dinero, comida, reputación, tecnologías y relaciones de cada
+    reino) y **Goals** (las metas de New Game).

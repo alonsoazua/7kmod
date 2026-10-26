@@ -901,6 +901,11 @@ void Sys::detect_view()
 	if( world.detect() )
 		return;
 
+	//--- 7kmod-editor: placing an object, the clicks on the map don't select ---//
+
+	if( mod_editor.is_editing() && mod_editor.detect_place() )
+		return;
+
 	if( view_mode == MODE_NORMAL )
 	{
 		if( world.detect_firm_town() )
