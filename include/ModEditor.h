@@ -44,6 +44,18 @@ enum { EDITOR_TAB_UNIT,
 
 #define EDITOR_TEST_FILE_NAME		"EDITOR.TMP"		// the copy of the scenario saved before testing it
 
+//------- the scenarios saved by the editor --------//
+
+#define EDITOR_SCENARIO_DIR_NAME	"SCENMOD"			// in the config directory of the game
+#define EDITOR_SCENARIO_DIR_ID		2						// the id of the directory in Sys::dir_scenario_path[]
+
+enum { EDITOR_NAME_LEN=40,				// the name of the scenario
+		 EDITOR_DESC_LINES=6,			// the lines of the description
+		 EDITOR_DESC_LEN=75,				// the characters of a line of the description
+		 EDITOR_FILE_NAME_LEN=20,		// the file name of the scenario, without the extension
+		 EDITOR_PICT_WIDTH=758,			// the picture of the scenario screen (.SCP)
+		 EDITOR_PICT_HEIGHT=142 };
+
 //------- Define class ModEditor --------//
 
 class ModEditor
@@ -57,6 +69,14 @@ public:
 	Button	button_bar[EDITOR_BAR_COUNT];
 	Button	button_tab[EDITOR_TAB_COUNT];
 
+	//--- the data of the scenario, for saving it (not saved in the game) ---//
+
+	char	scen_name[EDITOR_NAME_LEN+1];
+	char	scen_desc[EDITOR_DESC_LINES][EDITOR_DESC_LEN+1];
+	short	scen_difficulty;
+	short	scen_bonus;
+	char	scen_file_name[EDITOR_FILE_NAME_LEN+1];		// the file name it was last saved with, without the extension
+
 public:
 	ModEditor();
 
@@ -69,6 +89,11 @@ public:
 	void	start_test();
 	void	return_to_editor();
 	void	exit_editor();
+
+	//--- saving the scenario ---//
+
+	static void init_scenario_dir();
+	void	save_scenario();
 
 	//--- interface ---//
 

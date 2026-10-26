@@ -52,6 +52,7 @@
 #include <ORAWRES.h>
 #include <OREMOTE.h>
 #include <OWORLDMT.h>
+#include <string.h>
 #include "gettext.h"
 
 //------- Define static vars --------//
@@ -74,7 +75,7 @@ static const char* bar_button_str[EDITOR_BAR_COUNT] =
 	N_("Scenario"), N_("Kingdoms"), N_("Goals"), N_("Save"), N_("Test (F12)"), N_("Exit")
 };
 
-static char bar_button_enabled[EDITOR_BAR_COUNT] = { 0, 0, 0, 0, 1, 1 };		// Phase 0: only Test and Exit
+static char bar_button_enabled[EDITOR_BAR_COUNT] = { 0, 0, 0, 1, 1, 1 };		// Phase 1: Save, Test and Exit
 
 //------- the side panel --------//
 
@@ -108,6 +109,12 @@ void ModEditor::reset()
 	testing_flag = 0;
 	panel_tab = EDITOR_TAB_UNIT;
 	test_frame_speed = 0;
+
+	memset( scen_name, 0, sizeof(scen_name) );
+	memset( scen_desc, 0, sizeof(scen_desc) );
+	scen_difficulty = 1;
+	scen_bonus = 50;
+	scen_file_name[0] = 0;
 
 	loc_reveal_all_flag = 0;
 }
@@ -324,6 +331,10 @@ void ModEditor::detect_top_bar()
 
 		switch( i )
 		{
+			case EDITOR_BAR_SAVE:
+				save_scenario();
+				break;
+
 			case EDITOR_BAR_TEST:
 				start_test();
 				break;

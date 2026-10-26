@@ -3,7 +3,7 @@
 Rama `7kmod-editor`, basada en `7kmod`, para que los escenarios funcionen en las tres
 versiones del mod (`7kaa-mod.exe`, `7kaa-gameplay.exe` y `7kaa-pathing.exe`).
 
-**Estado:** Fase 0 (MVP) implementada. El resto del diseño sigue en refinamiento.
+**Estado:** Fases 0 (MVP) y 1 (guardar) implementadas. El resto del diseño sigue en refinamiento.
 Ejecutable: `7kaa-editor.exe`. Cambios en `CHANGELOG-editor.md`.
 
 ---
@@ -125,10 +125,31 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
   - **Exit:** pregunta y regresa al menú principal.
   - Menú del juego en el editor: Save Game, Load Game, Training y Retire desactivados.
   - Si la partida de prueba termina (victoria o derrota), se regresa al menú principal.
-- [ ] **Fase 1: Save as Scenario.** Guardar la partida actual en `SCENMOD` con su `.SCT`
-  (pedir nombre, dificultad, bonus y descripción) y su `.SCP` (generado del minimapa).
-  Agregar la carpeta `SCENMOD` a la lista de escenarios. Con los trucos actuales ya
-  permite crear escenarios.
+- [x] **Fase 1: Guardar el escenario.** El botón **Save** del editor abre la ventana
+  "Save Scenario" y guarda los tres archivos en `SCENMOD`.
+  - **Carpeta:** `SCENMOD` dentro de la carpeta de configuración del juego (la de las
+    partidas guardadas del mod: `%APPDATA%\7kfans.com\7kaa-mod\SCENMOD\`). Se crea sola.
+    Es la tercera carpeta de escenarios (`MAX_SCENARIO_PATH` 3,
+    `ModEditor::init_scenario_dir()`).
+  - **Ventana:** nombre (hasta 40 caracteres), dificultad (1 a 10, como los originales),
+    bonus (0 a 500, de 50 en 50), descripción (6 líneas de hasta 75 caracteres; Enter o
+    flecha abajo pasa a la siguiente) y el nombre del archivo que se va a usar.
+  - **Archivo:** sale del nombre: letras y números en mayúsculas, `-` en lugar de los
+    espacios, hasta 20 caracteres (`Mi Escenario` → `MI-ESCENARIO.SCN`). No se usa `_`
+    porque los textos del juego lo toman como subrayado. Si ya existe un escenario con ese
+    archivo (y no es el que se guardó en esta sesión), pregunta antes de reemplazarlo.
+  - **`.SCT`:** nombre, `Difficulty:N`, `Bonus:N`, la línea separadora y las líneas de
+    la descripción (sin las vacías del final).
+  - **`.SCP`:** la franja central (758×142) de la vista del mapa al guardar, dibujada en
+    dos partes para cubrir el ancho, con todo visible y sin selección.
+  - **`.SCN`:** la partida guardada tal como se jugará (con la niebla y lo explorado
+    reales, no lo que muestra el editor).
+  - Los datos de la ventana se recuerdan mientras el editor está abierto (también al
+    probar y volver).
+  - En la lista de escenarios aparecen con los demás, ordenados por dificultad, con
+    "(mod)" después del nombre. Se juegan con Start como cualquier escenario.
+  - Pendiente para otras fases: el botón **Scenario** (editar estos datos sin guardar)
+    sigue desactivado, y **Edit** (abrir un escenario guardado) es de la fase 4.
 - [ ] **Fase 2: Modo editor sobre el mapa.** Pausa, sin niebla, barra superior, paleta
   de colocar (unidades, pueblos, edificios, recursos, guaridas), selección, borrar,
   cambiar de dueño, propiedades de lo seleccionado. Botón Probar.
@@ -162,6 +183,5 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
 
 ## Por definir
 
-- Nombre de la carpeta (`SCENMOD`) y la marca en la lista.
 - Qué propiedades se editan de cada cosa seleccionada.
 - Si el editor permite mapas de cualquier tamaño o solo el máximo.

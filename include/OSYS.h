@@ -35,7 +35,7 @@ enum { COMMON_DATA_BUF_SIZE = 64*1024 };			// keep a 64K common buffer for all t
 
 #define FRAMES_PER_DAY	10			// no. of frames per day
 
-#define MAX_SCENARIO_PATH 2
+#define MAX_SCENARIO_PATH 3		// 7kmod-editor: the third is the scenarios of the editor (ModEditor::init_scenario_dir())
 
 
 //------------ sys_flag --------------//

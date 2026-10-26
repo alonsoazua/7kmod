@@ -29,3 +29,13 @@ de `7kmod` está en `CHANGELOG.md`. El diseño y las fases están en `TODO-edito
   - En el editor, el menú del juego desactiva Save Game, Load Game, Training y Retire.
     Durante la prueba se desactiva Load Game.
   - El menú principal muestra "7kmod-editor 0.1.0 (7kmod 0.1.0)".
+- **Editor de escenarios, fase 1 (guardar):**
+  - El botón **Save** del editor abre la ventana **Save Scenario**: nombre, dificultad
+    (1 a 10), bonus (0 a 500), descripción (6 líneas) y el archivo que se va a usar.
+  - Guarda el escenario en la carpeta `SCENMOD` de la carpeta de configuración del juego
+    (`%APPDATA%\7kfans.com\7kaa-mod\SCENMOD\`): la partida (`.SCN`), el texto (`.SCT`)
+    y la imagen (`.SCP`), que es la franja central de la vista del mapa al guardar.
+  - El nombre del archivo sale del nombre del escenario (`Mi Escenario` →
+    `MI-ESCENARIO`). Si ya existe, pregunta antes de reemplazarlo.
+  - Los escenarios guardados aparecen en Single Player → Scenario con "(mod)" después del
+    nombre y se juegan como los demás.

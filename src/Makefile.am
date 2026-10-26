@@ -10,6 +10,7 @@ bin_PROGRAMS = 7kaa
 	CmdLine.cpp \
 	LocaleRes.cpp \
 	ModEditor.cpp \
+	ModEditorSave.cpp \
 	OAI_ACT.cpp \
 	OAI_ACT2.cpp \
 	OAI_ATTK.cpp \

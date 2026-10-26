@@ -24,6 +24,7 @@
 
 #include <OSYS.h>
 #include <OGAME.h>
+#include <ModEditor.h>
 #include <OMOUSE.h>
 #include <OMOUSECR.h>
 #include <OVGABUF.h>
@@ -473,7 +474,15 @@ int Game::select_scenario(int scenCount, ScenInfo* scenInfoArray)
 								". ", 0, browseSlotX2 );
 
 							textX = font_bible.put(textX, browseSlotY1+TEXT_OFFSET_Y,
-								_(scenInfoArray[rec-1].scen_name), 0, browseSlotX2 );
+								_(scenInfoArray[rec-1].scen_name), 0, browseSlotX1+TEXT_OFFSET_X+395 );
+
+							//--- 7kmod-editor: mark the scenarios of the editor ---//
+
+							if( scenInfoArray[rec-1].dir_id == EDITOR_SCENARIO_DIR_ID )
+							{
+								font_bible.put(textX, browseSlotY1+TEXT_OFFSET_Y,
+									" (mod)", 0, browseSlotX1+TEXT_OFFSET_X+395 );
+							}
 
 							//---- display the scenario's play status ----//
 

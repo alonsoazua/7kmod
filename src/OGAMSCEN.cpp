@@ -33,6 +33,7 @@
 #include <OBOX.h>
 #include <OBATTLE.h>
 #include <OGAME.h>
+#include <ModEditor.h>
 #include <ONATIONA.h>
 #include <PlayerStats.h>
 #include <ConfigAdv.h>
@@ -56,6 +57,8 @@ int Game::select_run_scenario()
 	ScenInfo* scenInfoArray = NULL;
 	int scenInfoSize = 0;
 	int dirId;
+
+	ModEditor::init_scenario_dir();		// 7kmod-editor: the scenarios of the editor
 
 	for( dirId = 0; dirId < MAX_SCENARIO_PATH; ++dirId )
 	{
