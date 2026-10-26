@@ -190,6 +190,36 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
 - **Pendiente (no entró en las fases 2 y 3):** reyes, espías y Seat of Power (necesitan
   más lógica), agregar o quitar reinos y cambiar cuál es el del jugador (por ahora se
   eligen en la pantalla de New Game), y propiedades de los edificios.
+- [ ] **Fase 2b: Mover unidades y meterlas o sacarlas de edificios.** Todo al instante
+  (el editor está en pausa, una orden normal de mover no se cumpliría hasta probar).
+  - **Clic derecho cambia:** con unidades seleccionadas, clic derecho mueve o mete. Quitar
+    la selección pasa a Esc o a un clic izquierdo en un lugar vacío, como en el juego.
+  - **Mover:** clic derecho en el mapa pone las unidades seleccionadas ahí al instante
+    (como el truco `z` de `src/OSYS.cpp`). Un grupo se acomoda alrededor del punto en
+    casillas libres (`World::locate_space`, como al salir de un edificio). Barcos solo en
+    agua, y en agua solo barcos.
+  - **Meter:** clic derecho en un edificio o pueblo **de su mismo reino** (si no, primero
+    Set Owner; el editor no mezcla reinos en un edificio):
+    - **Fuerte:** un general (o el rey) y hasta 8 soldados. Si ya tiene general, el nuevo
+      lo reemplaza y el anterior sale.
+    - **Mina, fábrica, torre de ciencia, fábrica de armas:** solo trabajadores con la
+      habilidad de ese edificio.
+    - **Pueblo propio:** la unidad se vuelve habitante (como un aldeano que regresa).
+    - Las que no quepan o no sirvan se quedan afuera, con un mensaje de cuántas no
+      entraron.
+    - Atajo: colocar un Soldier o General de la paleta sobre un fuerte de su reino lo mete
+      directo.
+  - **Worker en la paleta de Units:** nueva entrada con opción **Skill** (Mining,
+    Manufacture, Research, Construction) y su nivel, para llenar minas, fábricas, torres
+    de ciencia y fábricas de armas.
+  - **Sacar:** al seleccionar un fuerte o edificio, el recuadro de lo seleccionado
+    muestra su gente ("General: <nombre>", "Soldiers: 5 / 8", o los trabajadores) y los
+    botones **Take out all** (todos salen alrededor del edificio) y **Take out general**
+    (en fuertes).
+  - Para después: una lista dentro del panel para sacar uno por uno.
+  - Fuera de esta fase: espías dentro de edificios enemigos (va con colocar espías).
+  - Se usan las funciones del juego para asignar y sacar unidades (`Firm::assign_unit`,
+    `assign_overseer`, `assign_worker`, `mobilize_worker`, `UnitArray::disappear_in_town`).
 - [ ] **Fase 4: Acceso desde la pantalla Scenario.** Botones New y Edit; mapa nuevo con
   el generador actual (tamaño, semilla, terreno).
 - [ ] **Fase 5 (opcional): Pintar terreno.** Altura, agua, bosques, rocas, con
