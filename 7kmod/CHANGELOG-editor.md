@@ -69,6 +69,13 @@ de `7kmod` está en `CHANGELOG.md`. El diseño y las fases están en `TODO-edito
     SCENMOD.
   - Quitar la selección: Esc o clic izquierdo en un lugar vacío (el clic derecho ahora
     mueve).
+- **Editor de escenarios, fase 5a y 5b (terreno):** pestaña **Terrain** con pincel de
+  1×1, 3×3 o 5×5:
+  - **Trees** (árboles del tipo de suelo), **Clear** (quita árboles, rocas y manchas de
+    tierra), **Small rock** y **Large rock**.
+  - **Dark grass**, **Light grass** y **Dirt**: pintan el suelo con sus transiciones
+    automáticas. No se pinta en costas, colinas, edificios, pueblos ni recursos, así que
+    el agua y las regiones no cambian.
 
 ### Corregido
 - **Armas colocadas con el editor:** a veces no tenían gráfico, no atacaban o hacían

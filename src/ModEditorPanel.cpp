@@ -50,6 +50,7 @@
 #include <ORACERES.h>
 #include <OMONSRES.h>
 #include <OSKILL.h>
+#include <OTERRAIN.h>
 #include <OTECHRES.h>
 #include <OMISC.h>
 #include "gettext.h"
@@ -70,7 +71,7 @@ enum { OWNER_Y1 = INFO_Y1+4,
 
 static const char* tab_str[EDITOR_TAB_COUNT] =
 {
-	N_("Units"), N_("Weapons"), N_("Towns"), N_("Buildings"), N_("Nature")
+	N_("Units"), N_("Weapons"), N_("Towns"), N_("Buildings"), N_("Nature"), N_("Terrain")
 };
 
 #define TAB_X(i)	(INFO_X1+4 + ((i)%TAB_COLUMNS) * (TAB_WIDTH+2))
@@ -85,7 +86,11 @@ enum { PLACE_SOLDIER=1,
 		 PLACE_TOWN,
 		 PLACE_FIRM,				// id: firm id
 		 PLACE_RAW,				// id: raw id
-		 PLACE_LAIR };
+		 PLACE_LAIR,
+		 PLACE_TREE,				// the Terrain tab (ModEditorTerrain.cpp)
+		 PLACE_ROCK,				// id: 0 - small, 1 - large
+		 PLACE_CLEAR,
+		 PLACE_GROUND };			// id: the terrain type
 
 struct PlaceEntry
 {
@@ -127,20 +132,28 @@ static PlaceEntry nature_entry_array[] =
 	{ PLACE_LAIR, 0 },
 };
 
+static PlaceEntry terrain_entry_array[] =
+{
+	{ PLACE_TREE, 0 }, { PLACE_CLEAR, 0 },
+	{ PLACE_ROCK, 0 }, { PLACE_ROCK, 1 },
+	{ PLACE_GROUND, TERRAIN_DARK_GRASS }, { PLACE_GROUND, TERRAIN_LIGHT_GRASS },
+	{ PLACE_GROUND, TERRAIN_DARK_DIRT },
+};
+
 static PlaceEntry* tab_entry_array[EDITOR_TAB_COUNT] =
-	{ unit_entry_array, weapon_entry_array, town_entry_array, firm_entry_array, nature_entry_array };
+	{ unit_entry_array, weapon_entry_array, town_entry_array, firm_entry_array, nature_entry_array, terrain_entry_array };
 
 static int tab_entry_count[EDITOR_TAB_COUNT] =
 {
 	sizeof(unit_entry_array)/sizeof(PlaceEntry), sizeof(weapon_entry_array)/sizeof(PlaceEntry),
 	sizeof(town_entry_array)/sizeof(PlaceEntry), sizeof(firm_entry_array)/sizeof(PlaceEntry),
-	sizeof(nature_entry_array)/sizeof(PlaceEntry)
+	sizeof(nature_entry_array)/sizeof(PlaceEntry), sizeof(terrain_entry_array)/sizeof(PlaceEntry)
 };
 
 //------- the options of the palettes --------//
 
 enum { OPTION_RACE=1, OPTION_COMBAT, OPTION_LEADERSHIP, OPTION_SKILL, OPTION_SKILL_LEVEL,
-		 OPTION_VERSION, OPTION_POPULATION, OPTION_RESERVE, OPTION_MONSTER };
+		 OPTION_VERSION, OPTION_POPULATION, OPTION_RESERVE, OPTION_MONSTER, OPTION_BRUSH };
 
 enum { MAX_OPTION = 3 };
 
@@ -171,6 +184,7 @@ static int	weapon_max_version(int unitId);
 static void	set_weapon_version(Unit* unitPtr, int version);
 static int	unit_firm_at(int unitId, int xLoc, int yLoc);
 static int	assign_to_firm(int unitRecno, int firmRecno);
+static int	terrain_place_type(PlaceEntry* entryPtr);
 static int	can_set_owner();
 static int	can_place_unit(int unitId, int xLoc, int yLoc);
 static int	place_object(PlaceEntry* entryPtr, int xLoc, int yLoc);
@@ -543,6 +557,13 @@ int ModEditor::get_place_area(int xLoc, int yLoc, int& locWidth, int& locHeight)
 			locWidth  = firm_res[FIRM_MONSTER]->loc_width;
 			locHeight = firm_res[FIRM_MONSTER]->loc_height;
 			return world.can_build_firm(xLoc, yLoc, FIRM_MONSTER) != 0;
+
+		case PLACE_TREE:
+		case PLACE_CLEAR:
+		case PLACE_ROCK:
+		case PLACE_GROUND:
+			return editor_terrain_area( terrain_place_type(entryPtr), entryPtr->id, xLoc, yLoc,
+												 place_brush, locWidth, locHeight );
 	}
 
 	return -1;
@@ -1090,6 +1111,12 @@ static int place_object(PlaceEntry* entryPtr, int xLoc, int yLoc)
 
 			return monster_res[monsterId]->build_firm_monster(xLoc, yLoc) != 0;
 		}
+
+		case PLACE_TREE:
+		case PLACE_CLEAR:
+		case PLACE_ROCK:
+		case PLACE_GROUND:
+			return editor_terrain_place( terrain_place_type(entryPtr), entryPtr->id, xLoc, yLoc, mod_editor.place_brush );
 	}
 
 	return 0;
@@ -1490,6 +1517,10 @@ static int get_options(char* optionArray)
 			optionArray[count++] = OPTION_RESERVE;
 			optionArray[count++] = OPTION_MONSTER;
 			break;
+
+		case EDITOR_TAB_TERRAIN:
+			optionArray[count++] = OPTION_BRUSH;
+			break;
 	}
 
 	return count;
@@ -1541,6 +1572,11 @@ static void option_str(int optionId, String& labelStr, String& valueStr)
 		case OPTION_RESERVE:
 			labelStr = _("Reserve");
 			valueStr = misc.format(mod_editor.place_reserve*1000);
+			break;
+
+		case OPTION_BRUSH:
+			labelStr = _("Brush");
+			snprintf( valueStr, MAX_STR_LEN+1, "%d x %d", mod_editor.place_brush, mod_editor.place_brush );
 			break;
 
 		case OPTION_MONSTER:
@@ -1615,6 +1651,10 @@ static void change_option(int optionId, int dir)
 		case OPTION_MONSTER:
 			mod_editor.place_monster_id = next_monster(mod_editor.place_monster_id, dir);
 			break;
+
+		case OPTION_BRUSH:
+			mod_editor.place_brush = MAX( 1, MIN(5, mod_editor.place_brush + dir*2) );
+			break;
 	}
 }
 //----------- End of static function change_option -----------//
@@ -1634,6 +1674,16 @@ static const char* entry_name(PlaceEntry* entryPtr)
 		case PLACE_FIRM:		return _(firm_res[entryPtr->id]->name);
 		case PLACE_RAW:		return _(raw_res[entryPtr->id]->name);
 		case PLACE_LAIR:		return _("Fryhtan Lair");
+		case PLACE_TREE:		return _("Trees");
+		case PLACE_CLEAR:		return _("Clear");
+		case PLACE_ROCK:		return entryPtr->id ? _("Large rock") : _("Small rock");
+		case PLACE_GROUND:
+			switch( entryPtr->id )
+			{
+				case TERRAIN_DARK_GRASS:	return _("Dark grass");
+				case TERRAIN_LIGHT_GRASS:	return _("Light grass");
+				default:							return _("Dirt");
+			}
 	}
 
 	return "";
@@ -1834,3 +1884,20 @@ static int detect_arrow_row(int y)
 	return 0;
 }
 //----------- End of static function detect_arrow_row -----------//
+
+
+//-------- Begin of static function terrain_place_type --------//
+//
+// return: <int> EDITOR_TERRAIN_??? of an entry of the Terrain tab
+//
+static int terrain_place_type(PlaceEntry* entryPtr)
+{
+	switch( entryPtr->type )
+	{
+		case PLACE_TREE:	return EDITOR_TERRAIN_TREE;
+		case PLACE_ROCK:	return EDITOR_TERRAIN_ROCK;
+		case PLACE_CLEAR:	return EDITOR_TERRAIN_CLEAR;
+		default:				return EDITOR_TERRAIN_GROUND;
+	}
+}
+//----------- End of static function terrain_place_type -----------//

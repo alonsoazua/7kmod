@@ -12,6 +12,7 @@ bin_PROGRAMS = 7kaa
 	ModEditor.cpp \
 	ModEditorPanel.cpp \
 	ModEditorSave.cpp \
+	ModEditorTerrain.cpp \
 	ModEditorWin.cpp \
 	OAI_ACT.cpp \
 	OAI_ACT2.cpp \

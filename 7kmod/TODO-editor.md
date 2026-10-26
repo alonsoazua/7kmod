@@ -3,7 +3,7 @@
 Rama `7kmod-editor`, basada en `7kmod`, para que los escenarios funcionen en las tres
 versiones del mod (`7kaa-mod.exe`, `7kaa-gameplay.exe` y `7kaa-pathing.exe`).
 
-**Estado:** Fases 0 a 4 implementadas (MVP, guardar, colocar y editar, mover y meter unidades, ventanas, Edit). Queda la fase 5 (opcional). El resto del diseño sigue en refinamiento.
+**Estado:** Fases 0 a 4 implementadas (MVP, guardar, colocar y editar, mover y meter unidades, ventanas, Edit). Fase 5: hechas 5a (árboles y rocas) y 5b (tipo de suelo); queda 5c (agua, tierra y colinas). El resto del diseño sigue en refinamiento.
 Ejecutable: `7kaa-editor.exe`. Cambios en `CHANGELOG-editor.md`.
 
 ---
@@ -236,7 +236,7 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
   - La descripción se acomoda en las líneas de la ventana, que ahora son **9** de 75
     caracteres (con 6 no cabían las de los escenarios originales). Al guardar, cada línea
     de la ventana queda como una línea del `.SCT`.
-- [ ] **Fase 5 (opcional): Pintar terreno.** Diseño (por confirmar), dividido en tres
+- [ ] **Fase 5 (opcional): Pintar terreno.** Dividido en tres
   partes de menor a mayor riesgo. Pestaña nueva **Terrain** en el panel, con pinceles de
   tamaño 1, 3 o 5 casillas (opción **Brush**); clic coloca, arrastrar no (por ahora).
 
@@ -257,12 +257,12 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
     (`set_harbor_bit`) y la IA (`region_array.init_region_stat`). Solo cambian si cambia
     qué es tierra y qué es agua.
 
-  - [ ] **5a: Árboles y rocas** (riesgo bajo). Entradas **Tree** (poner o quitar
+  - [x] **5a: Árboles y rocas** (riesgo bajo). Entradas **Tree** (poner o quitar
     árboles, con la planta que corresponda al terreno, como `plant_init`), **Rock**
     (rocas de los tamaños del juego) y **Clear** (quita árboles, rocas y manchas en el
     área del pincel). No cambian las regiones. Solo en casillas sin unidades, edificios,
     pueblos ni recursos.
-  - [ ] **5b: Tipo de suelo** (riesgo medio). Entradas **Dark grass**, **Light grass** y
+  - [x] **5b: Tipo de suelo** (riesgo medio). Entradas **Dark grass**, **Light grass** y
     **Dirt**: cambian el tipo de las esquinas del pincel y vuelven a elegir el
     `terrain_id` de las casillas tocadas y de las vecinas con `TerrainRes::scan`. Si dos
     tipos no tienen transición, se pinta el anillo intermedio automáticamente. Todo sigue
@@ -279,6 +279,29 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
   En las tres: después de pintar se vuelven a dibujar el mapa y el minimapa
   (`zoom_need_redraw`, `map_need_redraw`). Propuesta: hacer 5a y 5b primero y probarlas;
   5c después, solo si hace falta.
+
+  **Cómo quedaron 5a y 5b** (`src/ModEditorTerrain.cpp`):
+  - Pestaña **Terrain** (la sexta): **Trees**, **Clear**, **Small rock**, **Large rock**,
+    **Dark grass**, **Light grass** y **Dirt**, con la opción **Brush** (1×1, 3×3, 5×5,
+    centrado en la casilla). Las rocas no usan el pincel.
+  - **Trees:** un árbol ya crecido del tipo de suelo en cada casilla libre del pincel
+    (como `plant_init`). **Clear:** quita árboles, rocas (completas) y manchas de tierra
+    en el pincel; al quitar una roca se vuelve a poder construir donde estaba (se quita su
+    "power off", salvo en orillas del mapa, costas y junto a rocas o colinas).
+  - **Rocas:** chica (hasta 2×2) o grande (hasta 4×4), del tipo de suelo, como
+    `gen_rocks`; la marca es negra donde no caben.
+  - **Suelo:** se reconstruye el nivel de cada esquina (tipo y subtipo) desde las casillas
+    que la tocan. Revisé los 3 juegos de terreno: hay dibujo para cualquier casilla cuyas
+    4 esquinas estén a 3 niveles o menos (de 12). Las esquinas del pincel toman el nivel
+    medio del tipo elegido y las de alrededor lo siguen (hasta 4 anillos) para no pasar
+    de 3 niveles: así salen solos los anillos de transición (por ejemplo, de pasto a
+    tierra pasa por pasto claro). Si alguna casilla no tendría dibujo, no se pinta nada.
+  - No cambian (y frenan al pincel) las esquinas de casillas con mar, colinas, edificios,
+    pueblos, recursos naturales o casillas especiales. Así lo que se camina o navega no
+    cambia y las regiones siguen igual. Los árboles que no crecen en el suelo nuevo se
+    quitan.
+  - Se ve en bloques (las transiciones siguen la cuadrícula de esquinas). Para después:
+    pintar arrastrando el ratón.
 - **Fuera de alcance por ahora:** disparadores y eventos ("si pasa X, aparece Y"). El
   juego no tiene sistema de eventos; sería un proyecto aparte (ver `IDEAS.md` si se
   retoma).

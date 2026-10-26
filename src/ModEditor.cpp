@@ -118,6 +118,7 @@ void ModEditor::reset()
 	place_population = 20;
 	place_reserve = 10;
 	place_monster_id = 0;
+	place_brush = 3;
 	edit_scen_recno = 0;
 
 	loc_reveal_all_flag = 0;

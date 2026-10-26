@@ -41,7 +41,18 @@ enum { EDITOR_TAB_UNIT,
 		 EDITOR_TAB_TOWN,
 		 EDITOR_TAB_FIRM,
 		 EDITOR_TAB_NATURE,
+		 EDITOR_TAB_TERRAIN,			// trees, rocks and the ground (phase 5)
 		 EDITOR_TAB_COUNT };
+
+//------- the entries of the Terrain tab (ModEditorTerrain.cpp) --------//
+
+enum { EDITOR_TERRAIN_TREE=1,
+		 EDITOR_TERRAIN_ROCK,		// id: 0 - small, 1 - large
+		 EDITOR_TERRAIN_CLEAR,
+		 EDITOR_TERRAIN_GROUND };	// id: the terrain type
+
+int editor_terrain_place(int placeType, int placeId, int xLoc, int yLoc, int brushSize);
+int editor_terrain_area(int placeType, int placeId, int xLoc, int yLoc, int brushSize, int& locWidth, int& locHeight);
 
 #define EDITOR_TEST_FILE_NAME		"EDITOR.TMP"		// the copy of the scenario saved before testing it
 
@@ -91,6 +102,7 @@ public:
 	short	place_population;			// the population of towns
 	short	place_reserve;				// the reserve of natural resources, in 1000s
 	short	place_monster_id;			// the Fryhtan of lairs
+	char	place_brush;				// the size of the brush of the Terrain tab: 1, 3 or 5
 
 	short	edit_scen_recno;			// the scenario selected for "Edit" in the scenario screen (Game::select_scenario())
 
