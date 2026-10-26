@@ -236,8 +236,49 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
   - La descripción se acomoda en las líneas de la ventana, que ahora son **9** de 75
     caracteres (con 6 no cabían las de los escenarios originales). Al guardar, cada línea
     de la ventana queda como una línea del `.SCT`.
-- [ ] **Fase 5 (opcional): Pintar terreno.** Altura, agua, bosques, rocas, con
-  recálculo de regiones al salir del editor.
+- [ ] **Fase 5 (opcional): Pintar terreno.** Diseño (por confirmar), dividido en tres
+  partes de menor a mayor riesgo. Pestaña nueva **Terrain** en el panel, con pinceles de
+  tamaño 1, 3 o 5 casillas (opción **Brush**); clic coloca, arrastrar no (por ahora).
+
+  **Cómo está hecho el terreno del juego** (`src/OGENMAP.cpp`, `OGENHILL.cpp`,
+  `OW_PLANT.cpp`, `OW_ROCK.cpp`):
+  - El generador crea un mapa de alturas (plasma) y de él saca el tipo de terreno de cada
+    esquina: mar, pasto oscuro, pasto claro, tierra oscura. Cada casilla guarda un
+    `terrain_id`: un dibujo que une los tipos de sus 4 esquinas (`set_tera_id`,
+    `TerrainRes::scan`). El mapa de alturas no se guarda.
+  - Solo hay dibujos de transición entre tipos vecinos (mar–pasto oscuro, pasto oscuro–
+    pasto claro, pasto claro–tierra): no se puede poner mar junto a tierra sin los
+    anillos intermedios.
+  - Encima van, por separado: **colinas** (`gen_hills`, bloquean el paso), **árboles**
+    (`set_plant`, bloquean el paso, el juego los hace crecer y morir), **rocas**
+    (`add_rock`, bloquean) y **manchas de tierra** (`add_dirt`, decorativas).
+  - Las **regiones** (`set_region_id`) agrupan las casillas a las que se puede llegar por
+    tierra o por mar; de ellas dependen el pathfinding, los barcos, los puertos
+    (`set_harbor_bit`) y la IA (`region_array.init_region_stat`). Solo cambian si cambia
+    qué es tierra y qué es agua.
+
+  - [ ] **5a: Árboles y rocas** (riesgo bajo). Entradas **Tree** (poner o quitar
+    árboles, con la planta que corresponda al terreno, como `plant_init`), **Rock**
+    (rocas de los tamaños del juego) y **Clear** (quita árboles, rocas y manchas en el
+    área del pincel). No cambian las regiones. Solo en casillas sin unidades, edificios,
+    pueblos ni recursos.
+  - [ ] **5b: Tipo de suelo** (riesgo medio). Entradas **Dark grass**, **Light grass** y
+    **Dirt**: cambian el tipo de las esquinas del pincel y vuelven a elegir el
+    `terrain_id` de las casillas tocadas y de las vecinas con `TerrainRes::scan`. Si dos
+    tipos no tienen transición, se pinta el anillo intermedio automáticamente. Todo sigue
+    siendo tierra: no cambian las regiones. No se puede pintar debajo de edificios ni
+    pueblos.
+  - [ ] **5c: Agua, tierra y colinas** (riesgo alto). Entradas **Water** (con su anillo
+    de pasto oscuro a la orilla), **Land** y **Hill**. Cambian qué se puede caminar o
+    navegar, así que al salir del modo de pintar (o al probar o guardar) se recalcula:
+    banderas de cada casilla (`set_loc_flags`), regiones (`set_region_id`), puertos
+    (`set_harbor_bit`), estadísticas de regiones (`region_array.init_region_stat`), el
+    `region_id` de pueblos y edificios y las regiones de la IA (`update_ai_region`). Solo
+    en áreas vacías (sin unidades, edificios, pueblos ni recursos).
+
+  En las tres: después de pintar se vuelven a dibujar el mapa y el minimapa
+  (`zoom_need_redraw`, `map_need_redraw`). Propuesta: hacer 5a y 5b primero y probarlas;
+  5c después, solo si hace falta.
 - **Fuera de alcance por ahora:** disparadores y eventos ("si pasa X, aparece Y"). El
   juego no tiene sistema de eventos; sería un proyecto aparte (ver `IDEAS.md` si se
   retoma).
