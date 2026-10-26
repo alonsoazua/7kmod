@@ -76,6 +76,16 @@ de `7kmod` está en `CHANGELOG.md`. El diseño y las fases están en `TODO-edito
   - **Dark grass**, **Light grass** y **Dirt**: pintan el suelo con sus transiciones
     automáticas. No se pinta en costas, colinas, edificios, pueblos ni recursos, así que
     el agua y las regiones no cambian.
+- **Editor de escenarios, mapa nuevo:**
+  - **New** en la pantalla Scenario ya no muestra la pantalla de New Game: abre el
+    editor con un mapa nuevo con la configuración de la última partida y un Map I.D. al
+    azar.
+  - Botón **New** en la barra del editor: abre la ventana **New Map** con todas las
+    opciones de New Game (las básicas y las avanzadas, el nombre y el Map I.D., con
+    **Random Map I.D.**) y la dificultad calculada. **Create** pregunta (se pierden los
+    cambios sin guardar) y genera el mapa; **Cancel** cierra sin cambiar nada. Las metas
+    se siguen editando en **Goals**.
+  - El mapa nuevo empieza sin nombre ni descripción de escenario, como uno nuevo.
 
 ### Corregido
 - **Armas colocadas con el editor:** a veces no tenían gráfico, no atacaban o hacían

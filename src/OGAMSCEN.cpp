@@ -280,6 +280,17 @@ void Game::editor_edit_scenario(ScenInfo* scenInfo)
 	}
 
 	game.deinit();
+
+	//--- the New button of the editor: generate the new map ---//
+
+	if( mod_editor.new_map_flag )
+	{
+		if( sys.signal_exit_flag == 2 )
+			sys.signal_exit_flag = 0;
+
+		editor_new_map(mod_editor.new_map_seed);
+	}
+
 	mod_editor.reset();
 }
 //------------ End of function Game::editor_edit_scenario -----------//

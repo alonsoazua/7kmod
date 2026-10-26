@@ -118,28 +118,61 @@ void Game::single_player_game(int noAI)
 
 //-------- Begin of function Game::editor_new_scenario --------//
 //
-// 7kmod-editor: the "New" button of the scenario screen: select the options
-// of the map as in "New Game", then open it in the editor.
+// 7kmod-editor: the "New" button of the scenario screen: open a new map in
+// the editor, with the options of the last game (CONFIG.DAT) and a random
+// map I.D. The options can be changed with the New button of the editor.
 //
 void Game::editor_new_scenario()
 {
-	sys.is_mp_game = 0;
+	// the same corrections as the new game screen (select_option())
 
-	if( !select_option() )
-		return;
+	if( config.ai_nation_count < 1 )		// the last multiplayer game may set it to zero
+		config.ai_nation_count = MAX_NATION-1;
 
-	config.save("CONFIG.DAT");
+	if( config.difficulty_level != OPTION_CUSTOM )
+		config.change_difficulty(config.difficulty_level);
 
-	mod_editor.reset();
-	mod_editor.editing_flag = 1;			// Sys::run() enters the editor mode
+	config.difficulty_rating = config.single_player_difficulty();
 
-	init();
-	battle.run(0);
-	deinit();
+	editor_new_map(0);
+}
+//--------- End of function Game::editor_new_scenario ---------//
+
+
+//-------- Begin of function Game::editor_new_map --------//
+//
+// 7kmod-editor: generate a new map with the current config and open it in
+// the editor. When the New button of the editor creates another map
+// (ModEditor::new_map_flag), the main loop ends and the new map is
+// generated here.
+//
+// <int> randomSeed - the map I.D., 0 - random
+//
+void Game::editor_new_map(int randomSeed)
+{
+	do
+	{
+		sys.is_mp_game = 0;
+
+		mod_editor.reset();						// the data of the last scenario is erased
+		mod_editor.editing_flag = 1;			// Sys::run() enters the editor mode
+
+		info.init_random_seed(randomSeed);
+
+		init();
+		battle.run(0);
+		deinit();
+
+		randomSeed = mod_editor.new_map_seed;
+
+		if( mod_editor.new_map_flag && sys.signal_exit_flag == 2 )
+			sys.signal_exit_flag = 0;
+	}
+	while( mod_editor.new_map_flag );
 
 	mod_editor.reset();
 }
-//--------- End of function Game::editor_new_scenario ---------//
+//--------- End of function Game::editor_new_map ---------//
 
 
 

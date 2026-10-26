@@ -17,7 +17,7 @@
  */
 
 //Filename    : ModEditorWin.cpp
-//Description : 7kmod-editor: the windows Kingdoms and Goals (phase 3).
+//Description : 7kmod-editor: the windows Kingdoms and Goals (phase 3) and New Map.
 //
 // The windows are drawn over the map. Each change repaints the whole window
 // over a copy of the map view, so that the translucent panels don't get
@@ -38,6 +38,14 @@
 #include <OWORLDMT.h>
 #include <ONATION.h>
 #include <OTECHRES.h>
+#include <ORACERES.h>
+#include <OGAME.h>
+#include <OGETA.h>
+#include <OBOX.h>
+#include <OMISC.h>
+#include <GAMEDEF.h>
+#include <stdlib.h>
+#include <time.h>
 #include "gettext.h"
 
 //------- the window --------//
@@ -641,3 +649,417 @@ static int detect_value(int x, int y, int width)
 	return 0;
 }
 //----------- End of static function detect_value -----------//
+
+
+//------- the New Map window --------//
+
+enum { NM_OPT_RACE, NM_OPT_COLOR, NM_OPT_AI_COUNT, NM_OPT_DIFFICULTY, NM_OPT_TERRAIN, NM_OPT_LAND,
+		 NM_LEFT_COUNT,
+		 NM_OPT_EXPLORE = NM_LEFT_COUNT, NM_OPT_FOG, NM_OPT_CASH, NM_OPT_AI_CASH, NM_OPT_AGGRESSIVE,
+		 NM_OPT_MONSTER, NM_OPT_RANDOM_START, NM_OPT_RAW, NM_OPT_NEAR_RAW, NM_OPT_TOWNS,
+		 NM_OPT_TOWN_RESIST, NM_OPT_TOWN_EMERGE, NM_OPT_NATION_EMERGE, NM_OPT_EVENTS, NM_OPT_SEAT,
+		 NM_OPT_COUNT };
+
+enum { NM_ROW_Y1 = WIN_Y1+36,
+		 NM_ROW_HEIGHT = 24,
+		 NM_LEFT_X = WIN_X1+10,
+		 NM_LEFT_VALUE_X = WIN_X1+144,
+		 NM_LEFT_VALUE_W = 122,
+		 NM_RIGHT_X = WIN_X1+274,
+		 NM_RIGHT_VALUE_X = WIN_X2-120,
+		 NM_RIGHT_VALUE_W = 114,
+		 NM_NAME_Y = NM_ROW_Y1 + (NM_LEFT_COUNT+1)*NM_ROW_HEIGHT,
+		 NM_MAP_ID_Y = NM_NAME_Y + NM_ROW_HEIGHT,
+		 NM_RANDOM_Y = NM_MAP_ID_Y + NM_ROW_HEIGHT,
+		 NM_RATING_Y = NM_RANDOM_Y + NM_ROW_HEIGHT + 12,
+		 NM_MAP_ID_LEN = 11 };			// enough for a dword in decimal
+
+struct NewMapOption
+{
+	const char* label;
+	char			value_count;		// the number of values
+	char			is_number;			// 1 - the value is displayed as a number: min_value + index
+	char			min_value;
+	char			set_custom;			// 1 - changing it changes the difficulty to Custom, as in the new game screen
+	const char* value_str[6];
+};
+
+static NewMapOption new_map_option[NM_OPT_COUNT] =
+{
+	{ N_("Nationality"), MAX_RACE, 0, 0, 0, { NULL } },
+	{ N_("Your Color"), MAX_COLOR_SCHEME, 0, 0, 0, { NULL } },
+	{ N_("Computer Kingdoms"), MAX_NATION-1, 1, 1, 1, { NULL } },
+	{ N_("Difficulty"), 6, 0, 0, 0, { N_("Level I"), N_("Level II"), N_("Level III"), N_("Level IV"), N_("Level V"), N_("Custom") } },
+	{ N_("Terrain"), 3, 0, 0, 0, { N_("Standard"), N_("Snow"), N_("Badlands") } },
+	{ N_("Land Mass"), 3, 0, 0, 0, { N_("Small"), N_("Medium"), N_("Large") } },
+
+	{ N_("World Map"), 2, 0, 0, 1, { N_("Explored"), N_("Unexplored") } },
+	{ N_("Fog of War"), 2, 0, 0, 1, { N_("On"), N_("Off") } },
+	{ N_("Human's Treasure"), 4, 0, 0, 1, { N_("Small"), N_("Medium"), N_("Large"), N_("Very Large") } },
+	{ N_("Computer's Treasure"), 4, 0, 0, 1, { N_("Small"), N_("Medium"), N_("Large"), N_("Very Large") } },
+	{ N_("AI Aggressiveness"), 4, 0, 0, 1, { N_("Low"), N_("Medium"), N_("High"), N_("Very High") } },
+	{ N_("Fryhtans"), 3, 0, 0, 1, { N_("None"), N_("Defensive"), N_("Offensive") } },
+	{ N_("Random Kingdoms"), 2, 0, 0, 1, { N_("Yes"), N_("No") } },
+	{ N_("Resources at Start"), MAX_RAW_RES_SITE-MIN_RAW_RES_SITE+1, 1, MIN_RAW_RES_SITE, 1, { NULL } },
+	{ N_("Resources Nearby?"), 2, 0, 0, 1, { N_("Yes"), N_("No") } },
+	{ N_("Independent Villages"), 3, 0, 0, 1, { N_("Few"), N_("More"), N_("Many") } },
+	{ N_("Village Resistance"), 3, 0, 0, 1, { N_("Low"), N_("Medium"), N_("High") } },
+	{ N_("New Villages Emerge?"), 2, 0, 0, 1, { N_("Yes"), N_("No") } },
+	{ N_("New Kingdoms Emerge?"), 2, 0, 0, 1, { N_("Yes"), N_("No") } },
+	{ N_("Random Events"), 4, 0, 0, 1, { N_("Never"), N_("Seldom"), N_("Occasional"), N_("Frequent") } },
+	{ N_("Seats of Power"), 2, 0, 0, 0, { N_("Unlocked"), N_("Locked") } },
+};
+
+static char new_map_race_table[MAX_RACE] =		// the order of the races in the new game screen
+#if(MAX_RACE == 10)
+{
+	RACE_CHINESE, RACE_EGYPTIAN, RACE_GREEK, RACE_JAPANESE, RACE_MAYA,
+	RACE_INDIAN, RACE_NORMAN, RACE_PERSIAN, RACE_VIKING, RACE_ZULU
+};
+#else
+{
+	RACE_CHINESE, RACE_GREEK, RACE_JAPANESE, RACE_MAYA,
+	RACE_PERSIAN, RACE_NORMAN, RACE_VIKING
+};
+#endif
+
+static short new_map_town_count[3] = { 7, 15, 30 };		// Few, More, Many: as in the new game screen
+static short new_map_latitude[3] = { 45, 70, 20 };
+
+static int	 new_map_get(Config& cfg, int optionId);
+static void	 new_map_set(Config& cfg, int optionId, int index);
+static void	 new_map_option_pos(int optionId, int& labelX, int& valueX, int& valueWidth, int& y);
+static int	 new_map_random_seed();
+
+
+//-------- Begin of function ModEditor::edit_new_map --------//
+//
+// The window of a new map: the options of the new game screen and the map
+// I.D. "Create" ends the main loop and Game::editor_new_map() generates the
+// new map (new_map_flag). The goals are kept: they are in the Goals window.
+//
+void ModEditor::edit_new_map()
+{
+	Config tempConfig = config;
+
+	if( tempConfig.ai_nation_count < 1 )		// as in the new game screen
+		tempConfig.ai_nation_count = MAX_NATION-1;
+
+	char mapIdStr[NM_MAP_ID_LEN+1];
+	snprintf( mapIdStr, sizeof(mapIdStr), "%d", new_map_random_seed() );
+
+	power.win_opened = 1;
+
+	int useBackBuf = vga.use_back_buf;
+	char* viewBitmap = save_view();
+
+	GetAGroup getGroup(2);
+	int fieldsInited = 0;
+	int refresh = 1, rc = 0;
+
+	int centerX = (WIN_X1+WIN_X2)/2;
+
+	while( 1 )
+	{
+		sys.yield();
+		vga.flip();
+		mouse.get_event();
+
+		if( sys.signal_exit_flag == 1 )
+			break;
+
+		//------- display -------//
+
+		if( refresh )
+		{
+			rest_view(viewBitmap);
+			vga.use_back();
+
+			put_window( _("New Map") );
+
+			for( int i=0 ; i<NM_OPT_COUNT ; i++ )
+			{
+				NewMapOption* opt = new_map_option+i;
+				int labelX, valueX, valueWidth, y;
+
+				new_map_option_pos(i, labelX, valueX, valueWidth, y);
+
+				font_san.put( labelX, y+2, _(opt->label), 0, valueX-6 );
+
+				int index = new_map_get(tempConfig, i);
+				String str;
+
+				if( i == NM_OPT_RACE )
+					str = race_res[ new_map_race_table[index] ]->name;
+				else if( opt->is_number )
+					str = misc.format( opt->min_value + index );
+				else if( opt->value_str[0] )
+					str = _(opt->value_str[index]);
+
+				put_value( valueX, y, valueWidth, i==NM_OPT_COLOR ? "" : (char*)str );
+
+				if( i == NM_OPT_COLOR )
+				{
+					vga_back.bar( valueX+26, y+3, valueX+valueWidth-27, y+14,
+						game.color_remap_array[index+1].main_color );
+				}
+			}
+
+			//------- name and map I.D. -------//
+
+			font_san.put( NM_LEFT_X, NM_NAME_Y+2, _("Your Name"), 0, NM_LEFT_VALUE_X-6 );
+			vga_util.d3_panel_down( NM_LEFT_VALUE_X, NM_NAME_Y, NM_LEFT_VALUE_X+NM_LEFT_VALUE_W-1, NM_NAME_Y+17 );
+
+			font_san.put( NM_LEFT_X, NM_MAP_ID_Y+2, _("Map I.D."), 0, NM_LEFT_VALUE_X-6 );
+			vga_util.d3_panel_down( NM_LEFT_VALUE_X, NM_MAP_ID_Y, NM_LEFT_VALUE_X+NM_LEFT_VALUE_W-1, NM_MAP_ID_Y+17 );
+
+			editor_put_button( NM_LEFT_VALUE_X, NM_RANDOM_Y, NM_LEFT_VALUE_X+NM_LEFT_VALUE_W-1, NM_RANDOM_Y+17,
+				_("Random Map I.D."), 1, 0 );
+
+			//------- the difficulty rating -------//
+
+			String str;
+			str  = _("Difficulty Rating");
+			str += ": ";
+			str += misc.format( tempConfig.single_player_difficulty() );
+			font_san.put( NM_LEFT_X, NM_RATING_Y, str );
+
+			font_san.put_paragraph( NM_LEFT_X, NM_RATING_Y+24, NM_RIGHT_X-14, WIN_Y2-40,
+				_("The goals are in the Goals window. Create: a new map with these options. The scenario being edited will be lost.") );
+
+			//------- Create and Cancel -------//
+
+			editor_put_button( centerX-110, WIN_Y2-30, centerX-10, WIN_Y2-8, _("Create"), 1, 0 );
+			editor_put_button( centerX+10, WIN_Y2-30, centerX+110, WIN_Y2-8, _("Cancel"), 1, 0 );
+
+			vga.use_front();
+			vga_util.blt_buf( WIN_X1, WIN_Y1, WIN_X2, WIN_Y2, 0 );
+
+			//--- the text fields ---//
+
+			if( !fieldsInited )
+			{
+				getGroup[0].init( NM_LEFT_VALUE_X+4, NM_NAME_Y+1, NM_LEFT_VALUE_X+NM_LEFT_VALUE_W-5,
+					tempConfig.player_name, HUMAN_NAME_LEN, &font_san, 0, 0 );
+				getGroup[1].init( NM_LEFT_VALUE_X+4, NM_MAP_ID_Y+1, NM_LEFT_VALUE_X+NM_LEFT_VALUE_W-5,
+					mapIdStr, NM_MAP_ID_LEN, &font_san, 0, 0 );
+				getGroup.set_focus(1, 0);
+				fieldsInited = 1;		// the background of the fields is on the back buffer
+			}
+
+			refresh = 0;
+		}
+
+		vga.use_front();
+		getGroup.paint();
+
+		//------- detect -------//
+
+		getGroup.detect();
+
+		if( mouse.any_click( centerX+10, WIN_Y2-30, centerX+110, WIN_Y2-8 ) || mouse.key_code==KEY_ESC )
+			break;
+
+		if( mouse.any_click( centerX-110, WIN_Y2-30, centerX-10, WIN_Y2-8 ) )
+		{
+			if( !box.ask( _("Create a new map? Unsaved changes will be lost."), _("Yes"), _("No") ) )
+				continue;
+
+			rc = 1;
+			break;
+		}
+
+		if( mouse.any_click( NM_LEFT_VALUE_X, NM_RANDOM_Y, NM_LEFT_VALUE_X+NM_LEFT_VALUE_W-1, NM_RANDOM_Y+17 ) )
+		{
+			snprintf( mapIdStr, sizeof(mapIdStr), "%d", new_map_random_seed() );
+			getGroup[1].init( NM_LEFT_VALUE_X+4, NM_MAP_ID_Y+1, NM_LEFT_VALUE_X+NM_LEFT_VALUE_W-5,
+				mapIdStr, NM_MAP_ID_LEN, &font_san, 0, 0 );
+			getGroup.set_focus(1, 0);
+			continue;
+		}
+
+		for( int i=0 ; i<NM_OPT_COUNT ; i++ )
+		{
+			int labelX, valueX, valueWidth, y;
+
+			new_map_option_pos(i, labelX, valueX, valueWidth, y);
+
+			int dir = detect_value(valueX, y, valueWidth);
+
+			if( !dir )
+				continue;
+
+			NewMapOption* opt = new_map_option+i;
+			int index = new_map_get(tempConfig, i) + dir;
+
+			if( opt->is_number )		// numbers: limited, the others: cycle
+				index = MAX( 0, MIN(opt->value_count-1, index) );
+			else
+				index = (index + opt->value_count) % opt->value_count;
+
+			new_map_set(tempConfig, i, index);
+
+			if( opt->set_custom )
+				tempConfig.difficulty_level = OPTION_CUSTOM;
+
+			refresh = 1;
+			break;
+		}
+	}
+
+	mem_del(viewBitmap);
+
+	power.win_opened = 0;
+
+	if( useBackBuf )
+		vga.use_back();
+	else
+		vga.use_front();
+
+	if( !rc )
+	{
+		redraw_screen();
+		return;
+	}
+
+	//------- create: the main loop ends, Game::editor_new_map() generates the map -------//
+
+	tempConfig.difficulty_rating = tempConfig.single_player_difficulty();
+	config = tempConfig;
+	config.save("CONFIG.DAT");
+
+	new_map_seed = atol(mapIdStr);		// 0 (not a number) - random
+	new_map_flag = 1;
+
+	sys.signal_exit_flag = 2;
+}
+//--------- End of function ModEditor::edit_new_map ---------//
+
+
+//-------- Begin of static function new_map_option_pos --------//
+//
+static void new_map_option_pos(int optionId, int& labelX, int& valueX, int& valueWidth, int& y)
+{
+	if( optionId < NM_LEFT_COUNT )
+	{
+		labelX = NM_LEFT_X;
+		valueX = NM_LEFT_VALUE_X;
+		valueWidth = NM_LEFT_VALUE_W;
+		y = NM_ROW_Y1 + optionId*NM_ROW_HEIGHT;
+	}
+	else
+	{
+		labelX = NM_RIGHT_X;
+		valueX = NM_RIGHT_VALUE_X;
+		valueWidth = NM_RIGHT_VALUE_W;
+		y = NM_ROW_Y1 + (optionId-NM_LEFT_COUNT)*NM_ROW_HEIGHT;
+	}
+}
+//----------- End of static function new_map_option_pos -----------//
+
+
+//-------- Begin of static function new_map_get --------//
+//
+// return: <int> the index of the value of the option (0 to value_count-1)
+//
+static int new_map_get(Config& cfg, int optionId)
+{
+	switch( optionId )
+	{
+		case NM_OPT_RACE:
+			for( int i=0 ; i<MAX_RACE ; i++ )
+			{
+				if( new_map_race_table[i] == cfg.race_id )
+					return i;
+			}
+			return 0;
+
+		case NM_OPT_COLOR:			return MAX( 0, cfg.player_nation_color-1 );
+		case NM_OPT_AI_COUNT:		return cfg.ai_nation_count-1;
+		case NM_OPT_DIFFICULTY:		return cfg.difficulty_level;
+		case NM_OPT_TERRAIN:			return cfg.terrain_set-1;
+		case NM_OPT_LAND:				return cfg.land_mass-1;
+		case NM_OPT_EXPLORE:			return cfg.explore_whole_map ? 0 : 1;
+		case NM_OPT_FOG:				return cfg.fog_of_war ? 0 : 1;
+		case NM_OPT_CASH:				return cfg.start_up_cash-1;
+		case NM_OPT_AI_CASH:			return cfg.ai_start_up_cash-1;
+		case NM_OPT_AGGRESSIVE:		return cfg.ai_aggressiveness-1;
+		case NM_OPT_MONSTER:			return cfg.monster_type;
+		case NM_OPT_RANDOM_START:	return cfg.random_start_up ? 0 : 1;
+		case NM_OPT_RAW:				return cfg.start_up_raw_site - MIN_RAW_RES_SITE;
+		case NM_OPT_NEAR_RAW:		return cfg.start_up_has_mine_nearby ? 0 : 1;
+		case NM_OPT_TOWNS:			return cfg.start_up_independent_town >= 30 ? 2 : cfg.start_up_independent_town <= 7 ? 0 : 1;
+		case NM_OPT_TOWN_RESIST:	return cfg.independent_town_resistance-1;
+		case NM_OPT_TOWN_EMERGE:	return cfg.new_independent_town_emerge ? 0 : 1;
+		case NM_OPT_NATION_EMERGE:	return cfg.new_nation_emerge ? 0 : 1;
+		case NM_OPT_EVENTS:			return cfg.random_event_frequency;
+		case NM_OPT_SEAT:				return cfg.seat_of_power_unlocked ? 0 : 1;
+	}
+
+	return 0;
+}
+//----------- End of static function new_map_get -----------//
+
+
+//-------- Begin of static function new_map_set --------//
+//
+static void new_map_set(Config& cfg, int optionId, int index)
+{
+	switch( optionId )
+	{
+		case NM_OPT_RACE:				cfg.race_id = new_map_race_table[index]; break;
+		case NM_OPT_COLOR:			cfg.player_nation_color = index+1; break;
+		case NM_OPT_AI_COUNT:		cfg.ai_nation_count = index+1; break;
+
+		case NM_OPT_DIFFICULTY:
+			if( index == OPTION_CUSTOM )
+				cfg.difficulty_level = OPTION_CUSTOM;
+			else
+				cfg.change_difficulty(index);
+			break;
+
+		case NM_OPT_TERRAIN:
+			cfg.terrain_set = index+1;
+			cfg.latitude = new_map_latitude[index];
+			break;
+
+		case NM_OPT_LAND:				cfg.land_mass = index+1; break;
+		case NM_OPT_EXPLORE:			cfg.explore_whole_map = !index; break;
+		case NM_OPT_FOG:				cfg.fog_of_war = !index; break;
+		case NM_OPT_CASH:				cfg.start_up_cash = index+1; break;
+		case NM_OPT_AI_CASH:			cfg.ai_start_up_cash = index+1; break;
+		case NM_OPT_AGGRESSIVE:		cfg.ai_aggressiveness = index+1; break;
+		case NM_OPT_MONSTER:			cfg.monster_type = index; break;
+		case NM_OPT_RANDOM_START:	cfg.random_start_up = !index; break;
+		case NM_OPT_RAW:				cfg.start_up_raw_site = MIN_RAW_RES_SITE + index; break;
+		case NM_OPT_NEAR_RAW:		cfg.start_up_has_mine_nearby = !index; break;
+		case NM_OPT_TOWNS:			cfg.start_up_independent_town = new_map_town_count[index]; break;
+		case NM_OPT_TOWN_RESIST:	cfg.independent_town_resistance = index+1; break;
+		case NM_OPT_TOWN_EMERGE:	cfg.new_independent_town_emerge = !index; break;
+		case NM_OPT_NATION_EMERGE:	cfg.new_nation_emerge = !index; break;
+		case NM_OPT_EVENTS:			cfg.random_event_frequency = index; break;
+		case NM_OPT_SEAT:				cfg.seat_of_power_unlocked = !index; break;
+	}
+}
+//----------- End of static function new_map_set -----------//
+
+
+//-------- Begin of static function new_map_random_seed --------//
+//
+// A random map I.D., different each time (Info::init_random_seed(0) gives
+// the same one within a second).
+//
+static int new_map_random_seed()
+{
+	static unsigned count = 0;
+
+	unsigned seed = (unsigned) time(NULL);
+
+	seed = seed << 4 | seed >> (32-4);		// as Info::init_random_seed()
+	seed ^= (unsigned) misc.get_time() * 2654435761u + (++count) * 40503u;
+
+	int randomSeed = (int) (seed & 0x7fffffff);
+
+	return randomSeed ? randomSeed : 1;
+}
+//----------- End of static function new_map_random_seed -----------//

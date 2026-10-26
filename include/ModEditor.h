@@ -30,6 +30,7 @@ enum { EDITOR_BAR_SCENARIO,
 		 EDITOR_BAR_KINGDOMS,
 		 EDITOR_BAR_GOALS,
 		 EDITOR_BAR_SAVE,
+		 EDITOR_BAR_NEW,
 		 EDITOR_BAR_TEST,
 		 EDITOR_BAR_EXIT,
 		 EDITOR_BAR_COUNT };
@@ -106,6 +107,11 @@ public:
 
 	short	edit_scen_recno;			// the scenario selected for "Edit" in the scenario screen (Game::select_scenario())
 
+	//--- a new map (the New button: Game::editor_new_map() generates it after the main loop ends) ---//
+
+	char	new_map_flag;				// 1 - generate a new map with the new config after leaving the main loop
+	int	new_map_seed;				// its map I.D.
+
 public:
 	ModEditor();
 
@@ -152,6 +158,7 @@ public:
 	void	redraw_screen();
 	void	edit_kingdoms();
 	void	edit_goals();
+	void	edit_new_map();
 
 	//--- in-game menu during a test ---//
 

@@ -117,6 +117,7 @@ public:
 	int 			select_scenario(int scenCount, ScenInfo* scenInfoArray);
 	int 			run_scenario(ScenInfo* scenInfo);
 	void			editor_new_scenario();			// 7kmod-editor: OGAMSING.cpp
+	void			editor_new_map(int randomSeed);	// 7kmod-editor: OGAMSING.cpp
 	void			editor_edit_scenario(ScenInfo* scenInfo);		// 7kmod-editor: OGAMSCEN.cpp
 
 	void 			demo_disp_ad_page();

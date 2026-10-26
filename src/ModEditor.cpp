@@ -67,16 +67,16 @@ char loc_reveal_all_flag=0;
 enum { BAR_X1=2, BAR_Y1=2, BAR_X2=260, BAR_Y2=51 };
 enum { BAR_BUTTON_HEIGHT=20 };
 
-static short bar_button_x[EDITOR_BAR_COUNT] = { 5,  68, 131, 194,   5,  88 };
-static short bar_button_y[EDITOR_BAR_COUNT] = { 5,   5,   5,   5,  28,  28 };
-static short bar_button_w[EDITOR_BAR_COUNT] = { 62, 62,  62,  62,  80,  50 };
+static short bar_button_x[EDITOR_BAR_COUNT] = { 5,  68, 131, 194,   5,  58, 141 };
+static short bar_button_y[EDITOR_BAR_COUNT] = { 5,   5,   5,   5,  28,  28,  28 };
+static short bar_button_w[EDITOR_BAR_COUNT] = { 62, 62,  62,  62,  50,  80,  50 };
 
 static const char* bar_button_str[EDITOR_BAR_COUNT] =
 {
-	N_("Scenario"), N_("Kingdoms"), N_("Goals"), N_("Save"), N_("Test (F12)"), N_("Exit")
+	N_("Scenario"), N_("Kingdoms"), N_("Goals"), N_("Save"), N_("New"), N_("Test (F12)"), N_("Exit")
 };
 
-static char bar_button_enabled[EDITOR_BAR_COUNT] = { 1, 1, 1, 1, 1, 1 };
+static char bar_button_enabled[EDITOR_BAR_COUNT] = { 1, 1, 1, 1, 1, 1, 1 };
 
 
 //------- Declare static functions --------//
@@ -120,6 +120,8 @@ void ModEditor::reset()
 	place_monster_id = 0;
 	place_brush = 3;
 	edit_scen_recno = 0;
+	new_map_flag = 0;
+	new_map_seed = 0;
 
 	loc_reveal_all_flag = 0;
 }
@@ -290,7 +292,7 @@ void ModEditor::disp_top_bar()
 						bar_button_y[i]+BAR_BUTTON_HEIGHT-1, _(bar_button_str[i]), bar_button_enabled[i], 0 );
 	}
 
-	font_san.center_put( 140, 28, 256, 28+BAR_BUTTON_HEIGHT-1, _("Scenario Editor") );
+	font_san.center_put( 194, 28, 256, 28+BAR_BUTTON_HEIGHT-1, _("Editor") );
 
 	if( !useBackBuf )
 		vga.use_front();
@@ -312,6 +314,7 @@ void ModEditor::detect_top_bar()
 		N_("The kingdoms of the scenario: race, color, king, player or computer, treasure, food, technologies and relations."),
 		N_("The goals of the scenario."),
 		N_("Save the scenario."),
+		N_("Create a new map with the options of a new game. Unsaved changes will be lost."),
 		N_("Play the scenario from a copy. Press F12 or choose \"Return to Editor\" in the game menu to return to the editor as it was before the test."),
 		N_("Exit the editor and return to the main menu."),
 	};
@@ -363,6 +366,10 @@ void ModEditor::detect_top_bar()
 
 			case EDITOR_BAR_SAVE:
 				save_scenario();
+				break;
+
+			case EDITOR_BAR_NEW:
+				edit_new_map();
 				break;
 
 			case EDITOR_BAR_TEST:

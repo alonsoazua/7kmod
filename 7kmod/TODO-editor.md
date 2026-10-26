@@ -39,8 +39,9 @@ guardado normal, junto con su texto (`.SCT`) y su imagen (`.SCP`).
 
 - **Pantalla "Scenario"** (Single Player → Scenario, `src/OGAMSCE2.cpp`): agregar dos
   botones junto a **Start** y **Cancel**:
-  - **New:** la pantalla de configuración de "New Game" (tamaño del mapa, terreno,
-    reinos, semilla); en vez de jugar, abre el editor con ese mapa.
+  - **New:** abre el editor con un mapa nuevo, con la configuración de la última partida
+    (`CONFIG.DAT`) y una semilla al azar, sin pasar por la pantalla de "New Game". Las
+    opciones se cambian con el botón **New** del editor (ver "Mapa nuevo" en las fases).
   - **Edit:** abre en el editor el escenario seleccionado.
   - Los botones del juego son imágenes (`START-U`, `CANCEL-U`); los nuevos serían
     botones con texto, con la fuente del juego.
@@ -302,6 +303,36 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
     quitan.
   - Se ve en bloques (las transiciones siguen la cuadrícula de esquinas). Para después:
     pintar arrastrando el ratón.
+- [x] **Mapa nuevo (New) sin la pantalla de New Game.**
+  - **New** en la pantalla Scenario abre directo el editor con un mapa generado con la
+    configuración actual (`CONFIG.DAT`, con las mismas correcciones que la pantalla de New
+    Game: reinos de la computadora en 0 → 6, nivel de dificultad aplicado) y una semilla
+    al azar (`Game::editor_new_scenario()`, `src/OGAMSING.cpp`).
+  - Botón **New** en la barra del editor (segunda fila: **New**, **Test (F12)**,
+    **Exit** y el texto "Editor"). Abre la ventana **New Map**, del mismo estilo que
+    Kingdoms y Goals (`ModEditor::edit_new_map()`, `src/ModEditorWin.cpp`), con una copia
+    de la configuración:
+    - Izquierda: **Nationality**, **Your Color**, **Computer Kingdoms**, **Difficulty**
+      (Level I a V y Custom, como `change_difficulty`), **Terrain** (Standard, Snow,
+      Badlands), **Land Mass**, **Your Name**, **Map I.D.** (campo de texto) con el botón
+      **Random Map I.D.**, y el **Difficulty Rating** calculado.
+    - Derecha: **World Map**, **Fog of War**, **Human's Treasure**, **Computer's
+      Treasure**, **AI Aggressiveness**, **Fryhtans**, **Random Kingdoms**, **Resources at
+      Start**, **Resources Nearby?**, **Independent Villages**, **Village Resistance**,
+      **New Villages Emerge?**, **New Kingdoms Emerge?**, **Random Events** y **Seats of
+      Power** (Unlocked/Locked).
+    - Cada opción con `<` y `>`; las listas dan la vuelta y los números se detienen en
+      sus límites. Como en New Game, cambiar una opción avanzada (o los reinos de la
+      computadora) pone la dificultad en Custom; raza, color, terreno, masa de tierra,
+      nombre y Seats of Power no.
+    - Las metas no están en la ventana: se quedan las de la ventana **Goals**.
+    - **Create** pregunta "Create a new map? Unsaved changes will be lost."; con Yes
+      guarda la configuración en `CONFIG.DAT`, termina el ciclo principal y
+      `Game::editor_new_map()` genera el mapa con el Map I.D. (si no es un número, uno al
+      azar). **Cancel** o Esc cierran sin cambiar nada.
+  - El mapa nuevo borra los datos del escenario (nombre, descripción, dificultad, bonus y
+    archivo), como un escenario nuevo. También funciona desde un escenario abierto con
+    **Edit**.
 - **Fuera de alcance por ahora:** disparadores y eventos ("si pasa X, aparece Y"). El
   juego no tiene sistema de eventos; sería un proyecto aparte (ver `IDEAS.md` si se
   retoma).
