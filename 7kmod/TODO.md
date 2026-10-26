@@ -36,13 +36,16 @@ partes que asumen que una tecnología es un arma.
 - **Hechas:** Elite Warriors, Elite Workers, Building Repair y Fryhtan Slayers.
 - **Agregar una tecnología:** una entrada en el enum y en
   `mod_tech_info_array` (nombre, descripción, costo, niveles), su efecto con
-  `mod_tech_res.get_level(...)`, y subir `GAME_VERSION_7KMOD` con su
+  `mod_tech_res.get_level(...)`, su ícono en `src/ModTechIcon.cpp` (bitmap de
+  46×38 con índices de `PAL_STD.RES`, mismo orden que el enum), y subir `GAME_VERSION_7KMOD` con su
   `MAX_MOD_TECH_BEFORE_...` para leer las partidas anteriores
   (`GameFile::read_file_3` en `src/OGFILE2.cpp`).
 - **Pendientes:**
   - Costo real de Building Repair y Fryhtan Slayers (hoy es muy barato, solo para pruebas).
   - Que la IA investigue las tecnologías del mod.
-  - Íconos propios (hoy reutilizan imágenes del juego).
+  - [x] Íconos propios: cada tecnología tiene su ícono de 46×38 con la paleta del juego
+    (`src/ModTechIcon.cpp`), en el menú y en el panel de investigación. La descripción
+    pasó a la ayuda del botón.
   - Más tecnologías. Ideas: entrenar más rápido o más barato, minas o
     fábricas más productivas, bonos de lealtad.
 

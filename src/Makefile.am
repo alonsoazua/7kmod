@@ -11,6 +11,7 @@ bin_PROGRAMS = 7kaa
 	LocaleRes.cpp \
 	ModSpy.cpp \
 	ModTech.cpp \
+	ModTechIcon.cpp \
 	OAI_ACT.cpp \
 	OAI_ACT2.cpp \
 	OAI_ATTK.cpp \

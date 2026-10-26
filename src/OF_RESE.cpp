@@ -44,6 +44,7 @@
 #include <OBUTTCUS.h>
 #include "gettext.h"
 #include <ModTech.h>
+#include <OHELP.h>
 #include <ONEWS.h>
 #include <OINFO.h>
 
@@ -475,13 +476,12 @@ void FirmResearch::disp_research_info(int dispY1, int refreshFlag)
 	{
 		int x=INFO_X1+4, y=dispY1+4;
 
-		//--- same layout as the weapons, with a "Tech" box in place of the icon, ---//
-		//--- as the indicator has a fixed width and must start at the same position ---//
+		//--- the same layout as the weapons ---//
 
 		if( refreshFlag == INFO_REPAINT )
 		{
 			vga_util.d3_panel_down( x, y, x+TECH_LARGE_ICON_WIDTH+3, y+TECH_LARGE_ICON_HEIGHT+3, 2 );
-			font_san.center_put( x, y, x+TECH_LARGE_ICON_WIDTH+3, y+TECH_LARGE_ICON_HEIGHT+3, "Tech" );
+			vga_front.put_bitmap( x+2, y+2, (char*) mod_tech_res.icon(mod_tech_id) );
 
 			font_san.put( x+TECH_LARGE_ICON_WIDTH+10, y+4, mod_tech_res.name(mod_tech_id) );
 		}
@@ -817,6 +817,14 @@ int FirmResearch::detect_mod_tech_menu()
 {
 	for( int i=0 ; i<mod_tech_added_count ; i++ )
 	{
+		//--- the help: the name and the description of the technology ---//
+
+		ButtonCustom* buttonPtr = button_mod_tech_array+i;
+		int helpTechId = buttonPtr->custom_para.value;
+
+		help.set_custom_help( buttonPtr->x1, buttonPtr->y1, buttonPtr->x2, buttonPtr->y2,
+			mod_tech_res.name(helpTechId), mod_tech_res.des(helpTechId) );
+
 		if( button_mod_tech_array[i].detect() )
 		{
 			int modTechId = button_mod_tech_array[i].custom_para.value;
@@ -960,7 +968,10 @@ static void i_disp_mod_tech_button(ButtonCustom *button, int repaintBody)
 
 	int modTechId = button->custom_para.value;
 
-	font_bible.put( x1+8, y1+6, mod_tech_res.name(modTechId), 0, x2-4 );
-	font_san.put( x1+8, y1+28, mod_tech_res.des(modTechId), 0, x2-4 );
+	//--- the same layout as the weapons: the icon and the name; the description is in the help ---//
+
+	Vga::active_buf->put_bitmap( x1+4, y1+4, (char*) mod_tech_res.icon(modTechId) );
+
+	font_bible.put( x1+TECH_LARGE_ICON_WIDTH+12, y1+14, mod_tech_res.name(modTechId), 0, x2-4 );
 }
 //--------- End of static function i_disp_mod_tech_button ---------//

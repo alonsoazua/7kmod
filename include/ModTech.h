@@ -63,6 +63,7 @@ public:
 
 	const char*	name(int modTechId);
 	const char*	des(int modTechId);
+	const char*	icon(int modTechId);		// ModTechIcon.cpp
 	float			complex_level(int modTechId);
 	int			max_level(int modTechId);
 
