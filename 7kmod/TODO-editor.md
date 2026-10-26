@@ -230,8 +230,16 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
   - Corrección: al colocar un Soldier, darle `SKILL_LEADING` con un nivel, como los
     soldados que el juego crea al empezar una partida (`Battle::create_unit()`,
     `src/OBATTLE.cpp`).
-  - Por definir: el nivel de liderazgo del soldado. Propuesta: igual que su combate (como
-    ya se hace con el General), o una opción **Leadership** aparte en la paleta.
+  - **Decidido:**
+    - Combate por defecto de Soldier y General: **20** (como un soldado entrenado).
+    - Nueva opción **Leadership** en la paleta de Units, aparte de Combat, de 10 a 100 de
+      10 en 10, por defecto **20**. Aplica a Soldier y General, para poder hacer, por
+      ejemplo, un general de combate 100 y liderazgo bajo. El General deja de copiar su
+      liderazgo del combate.
+    - La paleta de Units queda con tres opciones (Race, Combat, Leadership): hay que
+      acomodar el texto "Click on the map to place it." para que no se encime.
+    - En **lo seleccionado**, las unidades humanas muestran Combat y también Leadership
+      (dos renglones con `< >`); el recuadro de abajo crece un renglón.
 
 ---
 
