@@ -54,3 +54,27 @@ de `7kmod` está en `CHANGELOG.md`. El diseño y las fases están en `TODO-edito
   - **Barra superior:** **Scenario** (nombre, dificultad, bonus y descripción sin
     guardar), **Kingdoms** (dinero, comida, reputación, tecnologías y relaciones de cada
     reino) y **Goals** (las metas de New Game).
+- **Editor de escenarios, fases 2b y 4:**
+  - **Mover:** con unidades seleccionadas, clic derecho en el mapa las pone ahí al
+    instante (un grupo se acomoda alrededor del punto; barcos solo en agua).
+  - **Meter:** clic derecho en un fuerte, edificio o pueblo de su reino las mete, con las
+    reglas del juego. Colocar un Soldier, General o Worker de la paleta sobre un edificio
+    de su reino lo mete directo.
+  - **Sacar:** al seleccionar un edificio, el panel muestra su general y sus soldados o
+    trabajadores, con los botones **All out** y **General out**.
+  - **Worker** en la paleta de Units, con habilidad (Mining, Manufacture, Research,
+    Construction) y nivel.
+  - **Edit** en la pantalla Scenario: abre el escenario seleccionado en el editor con su
+    nombre, dificultad, bonus y descripción. Un escenario original se guarda como copia en
+    SCENMOD.
+  - Quitar la selección: Esc o clic izquierdo en un lugar vacío (el clic derecho ahora
+    mueve).
+
+### Corregido
+- **Armas colocadas con el editor:** a veces no tenían gráfico, no atacaban o hacían
+  tronar el juego, porque quedaban sin versión cuando el reino no tenía su tecnología.
+  Ahora toda arma colocada tiene versión (opción **Version** en la nueva pestaña
+  **Weapons**, y también en lo seleccionado).
+- **Soldados colocados con el editor:** salían como Peasant porque no tenían la habilidad
+  de liderazgo. Ahora Soldier y General tienen la opción **Leadership** (20 por defecto)
+  además de Combat (20 por defecto), y lo seleccionado muestra las dos.

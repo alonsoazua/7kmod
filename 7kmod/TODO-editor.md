@@ -3,7 +3,7 @@
 Rama `7kmod-editor`, basada en `7kmod`, para que los escenarios funcionen en las tres
 versiones del mod (`7kaa-mod.exe`, `7kaa-gameplay.exe` y `7kaa-pathing.exe`).
 
-**Estado:** Fases 0 a 3 implementadas (MVP, guardar, colocar y editar, ventanas). El resto del diseño sigue en refinamiento.
+**Estado:** Fases 0 a 4 implementadas (MVP, guardar, colocar y editar, mover y meter unidades, ventanas, Edit). Queda la fase 5 (opcional). El resto del diseño sigue en refinamiento.
 Ejecutable: `7kaa-editor.exe`. Cambios en `CHANGELOG-editor.md`.
 
 ---
@@ -190,7 +190,7 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
 - **Pendiente (no entró en las fases 2 y 3):** reyes, espías y Seat of Power (necesitan
   más lógica), agregar o quitar reinos y cambiar cuál es el del jugador (por ahora se
   eligen en la pantalla de New Game), y propiedades de los edificios.
-- [ ] **Fase 2b: Mover unidades y meterlas o sacarlas de edificios.** Todo al instante
+- [x] **Fase 2b: Mover unidades y meterlas o sacarlas de edificios.** Todo al instante
   (el editor está en pausa, una orden normal de mover no se cumpliría hasta probar).
   - **Clic derecho cambia:** con unidades seleccionadas, clic derecho mueve o mete. Quitar
     la selección pasa a Esc o a un clic izquierdo en un lugar vacío, como en el juego.
@@ -216,12 +216,26 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
     muestra su gente ("General: <nombre>", "Soldiers: 5 / 8", o los trabajadores) y los
     botones **Take out all** (todos salen alrededor del edificio) y **Take out general**
     (en fuertes).
+  - Hecho. Notas de la implementación:
+    - Los botones quedaron como **All out** y **General out** (u **Overseer out**) por el
+      espacio.
+    - Las reglas son las del juego (`Unit::firm_can_assign()`): en un fuerte también
+      entran trabajadores (el juego permite entrenar a cualquier aldeano como soldado), y
+      un general nuevo reemplaza al que está, aunque sea el rey (el anterior sale).
+    - Si el edificio está lleno no se reemplaza a nadie: la unidad se queda afuera.
+    - Clic izquierdo en un lugar vacío o Esc quitan la selección.
   - Para después: una lista dentro del panel para sacar uno por uno.
   - Fuera de esta fase: espías dentro de edificios enemigos (va con colocar espías).
   - Se usan las funciones del juego para asignar y sacar unidades (`Firm::assign_unit`,
     `assign_overseer`, `assign_worker`, `mobilize_worker`, `UnitArray::disappear_in_town`).
-- [ ] **Fase 4: Acceso desde la pantalla Scenario.** Botones New y Edit; mapa nuevo con
-  el generador actual (tamaño, semilla, terreno).
+- [x] **Fase 4: Acceso desde la pantalla Scenario.** **New** (desde la fase 0) y **Edit**:
+  abre en el editor el escenario seleccionado (`Game::editor_edit_scenario()`,
+  `src/OGAMSCEN.cpp`) y lee su `.SCT` (nombre, dificultad, bonus y descripción). Al
+  guardar, un escenario de SCENMOD se reemplaza; uno original se guarda como copia en
+  SCENMOD con el nombre de archivo que sale de su nombre.
+  - La descripción se acomoda en las líneas de la ventana, que ahora son **9** de 75
+    caracteres (con 6 no cabían las de los escenarios originales). Al guardar, cada línea
+    de la ventana queda como una línea del `.SCT`.
 - [ ] **Fase 5 (opcional): Pintar terreno.** Altura, agua, bosques, rocas, con
   recálculo de regiones al salir del editor.
 - **Fuera de alcance por ahora:** disparadores y eventos ("si pasa X, aparece Y"). El
@@ -232,7 +246,7 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
 
 ## Correcciones
 
-- [ ] **Armas colocadas sin la tecnología del reino** (visto en pruebas: cañones y
+- [x] **Armas colocadas sin la tecnología del reino** (visto en pruebas: cañones y
   unicornios a veces sin gráfico, sin atacar, y a veces el juego truena). En las armas,
   `nation_contribution` guarda la **versión del arma** (`get_weapon_version()`, I a III).
   `Unit::init_unit_id()` (`src/OUNIT.cpp`) solo la pone si el reino ya tiene esa
@@ -242,15 +256,14 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
   tiene la tecnología del arma (en una partida nueva casi nunca la tiene). Es el mismo
   error que el juego original ya corrige en `FirmWar::change_nation()` (`src/OF_WAR.cpp`)
   para las fábricas de armas que cambian de reino.
-  - Corrección: al colocar un arma, si la versión quedó en 0, ponerle la versión de la
-    tecnología del reino o, si no la tiene, la versión I (`set_weapon_version()` y
-    `fix_attack_info()`).
-  - Opcional: una opción **Version** (I, II, III) en la paleta de Units para las armas,
-    hasta la versión máxima de cada una.
+  - Hecho: toda arma colocada recibe una versión (`set_weapon_version()` y
+    `fix_attack_info()`), la de la opción **Version** (I, II, III) de la paleta, limitada
+    a la versión máxima de esa arma (el nivel máximo de su tecnología).
+  - Hecho: lo seleccionado muestra **Version** con `< >` en las armas.
   - También al cambiar de reino con Set Owner un arma que ya tiene versión no se afecta;
     revisar que ninguna otra ruta del editor cree armas con versión 0.
 
-- [ ] **El "Soldier" de la paleta sale como Peasant** (visto en pruebas). En el juego, un
+- [x] **El "Soldier" de la paleta sale como Peasant** (visto en pruebas). En el juego, un
   soldado es una unidad humana con la habilidad de **liderazgo** (`SKILL_LEADING`); sin
   habilidad es un civil (`Unit::is_civilian()`, `src/OUNIT.cpp`) y el panel lo muestra
   como "Peasant" (`src/OUNITIF.cpp`). El editor crea el soldado con su nivel de combate,
@@ -268,8 +281,11 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
       liderazgo del combate.
     - La paleta de Units queda con tres opciones (Race, Combat, Leadership): hay que
       acomodar el texto "Click on the map to place it." para que no se encime.
-    - En **lo seleccionado**, las unidades humanas muestran Combat y también Leadership
-      (dos renglones con `< >`); el recuadro de abajo crece un renglón.
+    - En **lo seleccionado**, las unidades humanas muestran Combat y también su habilidad
+      (Leadership, o la de un trabajador) con `< >`; el recuadro de abajo crece un
+      renglón.
+  - Hecho como se decidió. Las armas y barcos pasaron a una pestaña nueva, **Weapons**
+    (ahora son 5 pestañas en 3 columnas), para que quepan las opciones.
 
 ---
 

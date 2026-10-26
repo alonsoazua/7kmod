@@ -50,30 +50,37 @@
 #include <ORACERES.h>
 #include <OMONSRES.h>
 #include <OSKILL.h>
+#include <OTECHRES.h>
+#include <OMISC.h>
 #include "gettext.h"
 
 //------- the layout of the panel --------//
 
 enum { OWNER_Y1 = INFO_Y1+4,
 		 TAB_Y1 = INFO_Y1+28,
-		 TAB_WIDTH = 98,
+		 TAB_COLUMNS = 3,
+		 TAB_WIDTH = 64,
 		 TAB_HEIGHT = 20,
 		 PALETTE_Y1 = INFO_Y1+74,
-		 PALETTE_Y2 = INFO_Y2-84,
+		 PALETTE_Y2 = INFO_Y2-104,
 		 ENTRY_WIDTH = 97,
 		 ENTRY_HEIGHT = 16,
 		 OPTION_HEIGHT = 20,
-		 SELECT_Y1 = INFO_Y2-80 };
+		 SELECT_Y1 = INFO_Y2-100 };
 
 static const char* tab_str[EDITOR_TAB_COUNT] =
 {
-	N_("Units"), N_("Towns"), N_("Buildings"), N_("Nature")
+	N_("Units"), N_("Weapons"), N_("Towns"), N_("Buildings"), N_("Nature")
 };
+
+#define TAB_X(i)	(INFO_X1+4 + ((i)%TAB_COLUMNS) * (TAB_WIDTH+2))
+#define TAB_Y(i)	(TAB_Y1 + ((i)/TAB_COLUMNS) * (TAB_HEIGHT+2))
 
 //------- the entries of the palettes --------//
 
 enum { PLACE_SOLDIER=1,
 		 PLACE_GENERAL,
+		 PLACE_WORKER,
 		 PLACE_UNIT,				// weapons and ships, id: unit id
 		 PLACE_TOWN,
 		 PLACE_FIRM,				// id: firm id
@@ -89,6 +96,11 @@ struct PlaceEntry
 static PlaceEntry unit_entry_array[] =
 {
 	{ PLACE_SOLDIER, 0 }, { PLACE_GENERAL, 0 },
+	{ PLACE_WORKER, 0 },
+};
+
+static PlaceEntry weapon_entry_array[] =
+{
 	{ PLACE_UNIT, UNIT_CATAPULT }, { PLACE_UNIT, UNIT_BALLISTA },
 	{ PLACE_UNIT, UNIT_FLAMETHROWER }, { PLACE_UNIT, UNIT_CANNON },
 	{ PLACE_UNIT, UNIT_EXPLOSIVE_CART }, { PLACE_UNIT, UNIT_F_BALLISTA },
@@ -116,29 +128,33 @@ static PlaceEntry nature_entry_array[] =
 };
 
 static PlaceEntry* tab_entry_array[EDITOR_TAB_COUNT] =
-	{ unit_entry_array, town_entry_array, firm_entry_array, nature_entry_array };
+	{ unit_entry_array, weapon_entry_array, town_entry_array, firm_entry_array, nature_entry_array };
 
 static int tab_entry_count[EDITOR_TAB_COUNT] =
 {
-	sizeof(unit_entry_array)/sizeof(PlaceEntry), sizeof(town_entry_array)/sizeof(PlaceEntry),
-	sizeof(firm_entry_array)/sizeof(PlaceEntry), sizeof(nature_entry_array)/sizeof(PlaceEntry)
+	sizeof(unit_entry_array)/sizeof(PlaceEntry), sizeof(weapon_entry_array)/sizeof(PlaceEntry),
+	sizeof(town_entry_array)/sizeof(PlaceEntry), sizeof(firm_entry_array)/sizeof(PlaceEntry),
+	sizeof(nature_entry_array)/sizeof(PlaceEntry)
 };
 
 //------- the options of the palettes --------//
 
-enum { OPTION_RACE=1, OPTION_COMBAT, OPTION_POPULATION, OPTION_RESERVE, OPTION_MONSTER };
+enum { OPTION_RACE=1, OPTION_COMBAT, OPTION_LEADERSHIP, OPTION_SKILL, OPTION_SKILL_LEVEL,
+		 OPTION_VERSION, OPTION_POPULATION, OPTION_RESERVE, OPTION_MONSTER };
 
-static char tab_option_array[EDITOR_TAB_COUNT][2] =
-{
-	{ OPTION_RACE, OPTION_COMBAT },
-	{ OPTION_RACE, OPTION_POPULATION },
-	{ OPTION_RACE, 0 },
-	{ OPTION_RESERVE, OPTION_MONSTER },
-};
+enum { MAX_OPTION = 3 };
 
-//------- the property of the selected object --------//
+static char worker_skill_array[] = { SKILL_MINING, SKILL_MFT, SKILL_RESEARCH, SKILL_CONSTRUCTION };
 
-enum { PROP_NONE, PROP_COMBAT, PROP_POPULATION, PROP_RESERVE };
+//------- right click: moving the selected units --------//
+
+enum { MAX_UNIT_PER_ORDER = 200 };
+
+//------- the properties of the selected object --------//
+
+enum { PROP_NONE, PROP_COMBAT, PROP_SKILL, PROP_VERSION, PROP_POPULATION, PROP_RESERVE };
+
+enum { MAX_PROP = 2 };
 
 //------- Declare static functions --------//
 
@@ -146,10 +162,15 @@ static const char* entry_name(PlaceEntry* entryPtr);
 static const char* owner_name(int nationRecno);
 static int	next_owner(int nationRecno, int dir);
 static int	next_monster(int monsterId, int dir);
+static int	get_options(char* optionArray);
 static void	option_str(int optionId, String& labelStr, String& valueStr);
 static void	change_option(int optionId, int dir);
-static int	selected_property(int& value);
-static void	change_property(int dir);
+static int	selected_properties(char* propArray, int* valueArray);
+static void	change_property(int propId, int dir);
+static int	weapon_max_version(int unitId);
+static void	set_weapon_version(Unit* unitPtr, int version);
+static int	unit_firm_at(int unitId, int xLoc, int yLoc);
+static int	assign_to_firm(int unitRecno, int firmRecno);
 static int	can_set_owner();
 static int	can_place_unit(int unitId, int xLoc, int yLoc);
 static int	place_object(PlaceEntry* entryPtr, int xLoc, int yLoc);
@@ -195,12 +216,7 @@ void ModEditor::disp_panel(int refreshFlag)
 	//------- tabs -------//
 
 	for( int i=0 ; i<EDITOR_TAB_COUNT ; i++ )
-	{
-		int tabX = INFO_X1+4 + (i%2) * (TAB_WIDTH+2);
-		int tabY = TAB_Y1 + (i/2) * (TAB_HEIGHT+2);
-
-		editor_put_button( tabX, tabY, tabX+TAB_WIDTH-1, tabY+TAB_HEIGHT-1, _(tab_str[i]), 1, panel_tab==i );
-	}
+		editor_put_button( TAB_X(i), TAB_Y(i), TAB_X(i)+TAB_WIDTH-1, TAB_Y(i)+TAB_HEIGHT-1, _(tab_str[i]), 1, panel_tab==i );
 
 	//------- the palette -------//
 
@@ -223,15 +239,13 @@ void ModEditor::disp_panel(int refreshFlag)
 
 	//------- the options -------//
 
-	for( int i=0 ; i<2 ; i++ )
+	char optionArray[MAX_OPTION];
+	int  optionCount = get_options(optionArray);
+
+	for( int i=0 ; i<optionCount ; i++ )
 	{
-		int optionId = tab_option_array[(int)panel_tab][i];
-
-		if( !optionId )
-			continue;
-
 		String labelStr, valueStr;
-		option_str( optionId, labelStr, valueStr );
+		option_str( optionArray[i], labelStr, valueStr );
 
 		put_arrow_row( y, labelStr, valueStr );
 		y += OPTION_HEIGHT;
@@ -281,10 +295,7 @@ void ModEditor::detect_panel()
 
 	for( int i=0 ; i<EDITOR_TAB_COUNT ; i++ )
 	{
-		int tabX = INFO_X1+4 + (i%2) * (TAB_WIDTH+2);
-		int tabY = TAB_Y1 + (i/2) * (TAB_HEIGHT+2);
-
-		if( mouse.any_click( tabX, tabY, tabX+TAB_WIDTH-1, tabY+TAB_HEIGHT-1 ) )
+		if( mouse.any_click( TAB_X(i), TAB_Y(i), TAB_X(i)+TAB_WIDTH-1, TAB_Y(i)+TAB_HEIGHT-1 ) )
 		{
 			if( panel_tab != i )
 			{
@@ -325,18 +336,16 @@ void ModEditor::detect_panel()
 
 	//------- the options -------//
 
-	for( int i=0 ; i<2 ; i++ )
+	char optionArray[MAX_OPTION];
+	int  optionCount = get_options(optionArray);
+
+	for( int i=0 ; i<optionCount ; i++ )
 	{
-		int optionId = tab_option_array[(int)panel_tab][i];
-
-		if( !optionId )
-			continue;
-
 		int dir = detect_arrow_row(y);
 
 		if( dir )
 		{
-			change_option(optionId, dir);
+			change_option(optionArray[i], dir);
 			info.disp();
 			return;
 		}
@@ -344,31 +353,54 @@ void ModEditor::detect_panel()
 		y += OPTION_HEIGHT;
 	}
 
-	//------- the selected object -------//
+	//------- the selected object: properties -------//
 
-	int value;
+	char propArray[MAX_PROP];
+	int  valueArray[MAX_PROP];
+	int  propCount = selected_properties(propArray, valueArray);
 
-	if( selected_property(value) != PROP_NONE )
+	for( int i=0 ; i<propCount ; i++ )
 	{
-		int dir = detect_arrow_row(SELECT_Y1+36);
+		int dir = detect_arrow_row(SELECT_Y1+36+i*20);
 
 		if( dir )
 		{
-			change_property(dir);
+			change_property(propArray[i], dir);
 			info.disp();
 			return;
 		}
 	}
 
-	int buttonY = SELECT_Y1+56;
+	//------- the selected building: take out its units -------//
 
-	if( mouse.any_click( INFO_X1+6, buttonY, INFO_X1+100, buttonY+19 ) )
+	if( firm_array.selected_recno )
+	{
+		int buttonY = SELECT_Y1+64;
+
+		if( mouse.any_click( INFO_X1+6, buttonY, INFO_X1+100, buttonY+15 ) )
+		{
+			take_out_all();
+			return;
+		}
+
+		if( mouse.any_click( INFO_X1+106, buttonY, INFO_X2-6, buttonY+15 ) )
+		{
+			take_out_general();
+			return;
+		}
+	}
+
+	//------- Set Owner and Delete -------//
+
+	int buttonY = SELECT_Y1+81;
+
+	if( mouse.any_click( INFO_X1+6, buttonY, INFO_X1+100, buttonY+16 ) )
 	{
 		set_selected_owner();
 		return;
 	}
 
-	if( mouse.any_click( INFO_X1+106, buttonY, INFO_X2-6, buttonY+19 ) )
+	if( mouse.any_click( INFO_X1+106, buttonY, INFO_X2-6, buttonY+16 ) )
 	{
 		delete_selected();
 		return;
@@ -386,12 +418,17 @@ void ModEditor::detect_panel()
 //
 int ModEditor::detect_view()
 {
-	//---- right click on the map: deselect ----//
+	//---- right click on the map: move the selected units, or put them in a building or town ----//
 
 	if( mouse.any_click(ZOOM_X1, ZOOM_Y1, ZOOM_X2, ZOOM_Y2, RIGHT_BUTTON) )
 	{
-		power.reset_selection();
-		info.disp();
+		if( unit_array.selected_recno )
+		{
+			int xLoc = world.zoom_matrix->top_x_loc + (mouse.click_x(RIGHT_BUTTON)-ZOOM_X1)/ZOOM_LOC_WIDTH;
+			int yLoc = world.zoom_matrix->top_y_loc + (mouse.click_y(RIGHT_BUTTON)-ZOOM_Y1)/ZOOM_LOC_HEIGHT;
+
+			order_selected(xLoc, yLoc);
+		}
 		return 1;
 	}
 
@@ -466,6 +503,7 @@ int ModEditor::get_place_area(int xLoc, int yLoc, int& locWidth, int& locHeight)
 	{
 		case PLACE_SOLDIER:
 		case PLACE_GENERAL:
+		case PLACE_WORKER:
 		case PLACE_UNIT:
 		{
 			int unitId = entryPtr->type==PLACE_UNIT ? entryPtr->id : race_res[place_race_id]->basic_unit_id;
@@ -474,7 +512,15 @@ int ModEditor::get_place_area(int xLoc, int yLoc, int& locWidth, int& locHeight)
 			locWidth  = spriteInfo->loc_width;
 			locHeight = spriteInfo->loc_height;
 
-			return owner_nation_recno > 0 && can_place_unit(unitId, xLoc, yLoc);
+			if( owner_nation_recno <= 0 )
+				return 0;
+
+			//--- on a building of the kingdom: the unit is put in it ---//
+
+			if( entryPtr->type != PLACE_UNIT && unit_firm_at(unitId, xLoc, yLoc) )
+				return 1;
+
+			return can_place_unit(unitId, xLoc, yLoc);
 		}
 
 		case PLACE_TOWN:
@@ -663,6 +709,204 @@ void ModEditor::set_selected_owner()
 //--------- End of function ModEditor::set_selected_owner ---------//
 
 
+//-------- Begin of function ModEditor::order_selected --------//
+//
+// Right click with units selected: put them in the building or town of
+// their kingdom at the location, or move them there, at once.
+//
+void ModEditor::order_selected(int xLoc, int yLoc)
+{
+	Location* locPtr = world.get_loc(xLoc, yLoc);
+
+	//------ the selected units on the map ------//
+
+	short unitRecnoArray[MAX_UNIT_PER_ORDER];
+	int   unitCount=0;
+
+	for( int i=unit_array.size() ; i>0 && unitCount<MAX_UNIT_PER_ORDER ; i-- )
+	{
+		if( unit_array.is_deleted(i) )
+			continue;
+
+		Unit* unitPtr = unit_array[i];
+
+		if( unitPtr->selected_flag && unitPtr->is_visible() )
+			unitRecnoArray[unitCount++] = i;
+	}
+
+	if( !unitCount )
+		return;
+
+	int failCount=0;
+
+	//------ put them in a building ------//
+
+	if( locPtr->is_firm() )
+	{
+		int firmRecno = locPtr->firm_recno();
+
+		for( int i=0 ; i<unitCount ; i++ )
+		{
+			if( !assign_to_firm(unitRecnoArray[i], firmRecno) )
+				failCount++;
+		}
+	}
+
+	//------ put them in a town ------//
+
+	else if( locPtr->is_town() )
+	{
+		Town* townPtr = town_array[locPtr->town_recno()];
+
+		for( int i=0 ; i<unitCount ; i++ )
+		{
+			Unit* unitPtr = unit_array[unitRecnoArray[i]];
+
+			if( unitPtr->nation_recno != townPtr->nation_recno || !unitPtr->race_id ||
+				 unitPtr->rank_id == RANK_KING || townPtr->population >= MAX_TOWN_POPULATION )
+			{
+				failCount++;
+				continue;
+			}
+
+			unitPtr->stop2();
+			townPtr->assign_unit(unitRecnoArray[i]);
+		}
+
+		townPtr->auto_set_layout();
+	}
+
+	//------ move them ------//
+
+	else
+	{
+		for( int i=0 ; i<unitCount ; i++ )
+		{
+			Unit* unitPtr = unit_array[unitRecnoArray[i]];
+			int   mobileType = unitPtr->mobile_type;
+
+			if( !locPtr->is_accessible(mobileType) )		// land units on land, ships on water
+			{
+				failCount++;
+				continue;
+			}
+
+			int oldXLoc = unitPtr->next_x_loc();
+			int oldYLoc = unitPtr->next_y_loc();
+			int destX = xLoc, destY = yLoc;
+
+			if( mobileType != UNIT_LAND )
+			{
+				destX &= ~1;
+				destY &= ~1;
+			}
+
+			unitPtr->stop2();
+			unitPtr->deinit_sprite(1);		// 1-keep it selected
+
+			if( world.locate_space( &destX, &destY, destX, destY, unitPtr->sprite_info->loc_width,
+											unitPtr->sprite_info->loc_height, mobileType ) )
+			{
+				unitPtr->init_sprite(destX, destY);
+			}
+			else
+			{
+				unitPtr->init_sprite(oldXLoc, oldYLoc);
+				failCount++;
+			}
+
+			unitPtr->stop2();
+		}
+	}
+
+	if( failCount )
+	{
+		String str;
+
+		snprintf( str, MAX_STR_LEN+1, ngettext("%d unit couldn't be moved or put there.",
+			"%d units couldn't be moved or put there.", failCount), failCount );
+
+		box.msg( str );
+	}
+
+	//------ recount the selection ------//
+
+	unit_array.selected_count = 0;
+	int selectedRecno = 0;
+
+	for( int i=unit_array.size() ; i>0 ; i-- )
+	{
+		if( !unit_array.is_deleted(i) && unit_array[i]->selected_flag && unit_array[i]->is_visible() )
+		{
+			unit_array.selected_count++;
+
+			if( !selectedRecno || unit_array[i]->rank_id > unit_array[selectedRecno]->rank_id )
+				selectedRecno = i;
+		}
+	}
+
+	unit_array.selected_recno = selectedRecno;
+
+	sys.zoom_need_redraw = 1;
+	sys.map_need_redraw = 1;
+	info.disp();
+}
+//--------- End of function ModEditor::order_selected ---------//
+
+
+//-------- Begin of function ModEditor::take_out_all --------//
+//
+// The units in the selected building come out next to it.
+//
+void ModEditor::take_out_all()
+{
+	if( !firm_array.selected_recno )
+		return;
+
+	Firm* firmPtr = firm_array[firm_array.selected_recno];
+
+	if( firmPtr->firm_id == FIRM_MONSTER )
+		return;
+
+	int firmRecno = firm_array.selected_recno;
+
+	if( firmPtr->worker_array && firmPtr->worker_count > 0 )
+		firmPtr->mobilize_all_workers(COMMAND_AUTO);
+
+	if( !firm_array.is_deleted(firmRecno) && firm_array[firmRecno]->overseer_recno )
+		firm_array[firmRecno]->mobilize_overseer();
+
+	power.reset_selection();
+
+	if( !firm_array.is_deleted(firmRecno) )
+		firm_array.selected_recno = firmRecno;		// keep the building selected
+
+	sys.zoom_need_redraw = 1;
+	info.disp();
+}
+//--------- End of function ModEditor::take_out_all ---------//
+
+
+//-------- Begin of function ModEditor::take_out_general --------//
+//
+void ModEditor::take_out_general()
+{
+	if( !firm_array.selected_recno )
+		return;
+
+	Firm* firmPtr = firm_array[firm_array.selected_recno];
+
+	if( firmPtr->firm_id == FIRM_MONSTER || !firmPtr->overseer_recno )
+		return;
+
+	firmPtr->mobilize_overseer();
+
+	sys.zoom_need_redraw = 1;
+	info.disp();
+}
+//--------- End of function ModEditor::take_out_general ---------//
+
+
 //-------- Begin of static function can_set_owner --------//
 //
 static int can_set_owner()
@@ -720,6 +964,7 @@ static int place_object(PlaceEntry* entryPtr, int xLoc, int yLoc)
 	{
 		case PLACE_SOLDIER:
 		case PLACE_GENERAL:
+		case PLACE_WORKER:
 		case PLACE_UNIT:
 		{
 			int unitId, rankId = RANK_SOLDIER;
@@ -732,7 +977,25 @@ static int place_object(PlaceEntry* entryPtr, int xLoc, int yLoc)
 			if( entryPtr->type == PLACE_GENERAL )
 				rankId = RANK_GENERAL;
 
-			if( unit_res[unitId]->mobile_type != UNIT_LAND )
+			//--- on a building of the kingdom: create the unit next to it and put it in ---//
+
+			int firmRecno = entryPtr->type != PLACE_UNIT ? unit_firm_at(unitId, xLoc, yLoc) : 0;
+
+			if( firmRecno )
+			{
+				Firm* firmPtr = firm_array[firmRecno];
+				SpriteInfo* spriteInfo = sprite_res[unit_res[unitId]->sprite_id];
+
+				xLoc = firmPtr->loc_x1;
+				yLoc = firmPtr->loc_y1;
+
+				if( !world.locate_space( &xLoc, &yLoc, firmPtr->loc_x2, firmPtr->loc_y2,
+												 spriteInfo->loc_width, spriteInfo->loc_height ) )
+				{
+					return 0;
+				}
+			}
+			else if( unit_res[unitId]->mobile_type != UNIT_LAND )
 			{
 				xLoc &= ~1;
 				yLoc &= ~1;
@@ -745,16 +1008,32 @@ static int place_object(PlaceEntry* entryPtr, int xLoc, int yLoc)
 
 			Unit* unitPtr = unit_array[unitRecno];
 
-			if( unit_res[unitId]->unit_class == UNIT_CLASS_HUMAN )
+			switch( entryPtr->type )
 			{
-				unitPtr->set_combat_level( mod_editor.place_combat_level );
-
-				if( rankId == RANK_GENERAL )
-				{
+				case PLACE_SOLDIER:		// a soldier has the leadership skill, without skill it is a peasant
+				case PLACE_GENERAL:
+					unitPtr->set_combat_level( mod_editor.place_combat_level );
 					unitPtr->skill.set_skill(SKILL_LEADING);
-					unitPtr->skill.skill_level = mod_editor.place_combat_level;
-				}
+					unitPtr->skill.skill_level = mod_editor.place_leadership;
+					break;
+
+				case PLACE_WORKER:
+					unitPtr->set_combat_level( CITIZEN_COMBAT_LEVEL );
+					unitPtr->skill.set_skill( mod_editor.place_skill_id );
+					unitPtr->skill.skill_level = mod_editor.place_skill_level;
+					break;
+
+				case PLACE_UNIT:
+					//--- weapons: the version must be set, or the attack of the weapon is wrong (it may crash) ---//
+
+					if( unit_res[unitId]->unit_class == UNIT_CLASS_WEAPON )
+						set_weapon_version( unitPtr, mod_editor.place_weapon_version );
+					break;
 			}
+
+			if( firmRecno && !assign_to_firm(unitRecno, firmRecno) )
+				box.msg( _("The unit can't be put in this building; it has been placed next to it.") );
+
 			return 1;
 		}
 
@@ -854,8 +1133,8 @@ static int can_place_unit(int unitId, int xLoc, int yLoc)
 
 //-------- Begin of static function disp_selected --------//
 //
-// Display the selected object: its name, its kingdom, a property and the
-// buttons Set Owner and Delete.
+// Display the selected object: its name, its kingdom, its properties (or
+// the units in a building) and the buttons.
 //
 static void disp_selected(int y1)
 {
@@ -912,7 +1191,8 @@ static void disp_selected(int y1)
 	if( !str[0] )
 	{
 		font_san.put( x1+8, y1+5, _("Selected:") );
-		font_san.put_paragraph( x1+8, y1+22, x2-8, y2-4, _("Nothing. Click on the map to select; right click or Esc to deselect.") );
+		font_san.put_paragraph( x1+8, y1+22, x2-8, y2-4,
+			_("Nothing. Click to select, Esc to deselect. Right click moves the units or puts them in a building.") );
 		return;
 	}
 
@@ -933,46 +1213,111 @@ static void disp_selected(int y1)
 		font_san.put( x, y1+19, owner_name(nationRecno), 0, x2-8 );
 	}
 
-	//------- the property -------//
+	//------- a building: its units and the buttons to take them out -------//
 
-	int value;
-	int propId = selected_property(value);
-
-	if( propId != PROP_NONE )
+	if( firm_array.selected_recno )
 	{
-		static const char* propStr[] = { "", N_("Combat"), N_("Population"), N_("Reserve") };
+		Firm* firmPtr = firm_array[firm_array.selected_recno];
+		int y = y1+36;
 
-		String valueStr;
-		valueStr = misc.format(value);
+		if( firm_res[firmPtr->firm_id]->need_overseer )
+		{
+			str = _("General");
 
-		int enabled = !(propId==PROP_RESERVE && site_array[site_array.selected_recno]->has_mine);
+			if( firmPtr->firm_id != FIRM_CAMP )
+				str = _("Overseer");
 
-		put_arrow_row( y1+36, _(propStr[propId]), valueStr, enabled );
+			str += ": ";
+
+			if( firmPtr->overseer_recno )
+				str += unit_array[firmPtr->overseer_recno]->unit_name(0);
+			else
+				str += _("None");
+
+			font_san.put( x1+8, y, str, 0, x2-8 );
+			y += 14;
+		}
+
+		if( firmPtr->worker_array )
+		{
+			snprintf( str, MAX_STR_LEN+1, "%s: %d / %d",
+				firmPtr->firm_id==FIRM_CAMP ? _("Soldiers") : _("Workers"), firmPtr->worker_count, MAX_WORKER );
+
+			font_san.put( x1+8, y, str, 0, x2-8 );
+		}
+
+		if( firmPtr->firm_id != FIRM_MONSTER )
+		{
+			int buttonY = y1+64;
+
+			editor_put_button( x1+6, buttonY, x1+100, buttonY+15, _("All out"),
+				firmPtr->overseer_recno || firmPtr->worker_count, 0 );
+
+			editor_put_button( x1+106, buttonY, x2-6, buttonY+15,
+				firmPtr->firm_id==FIRM_CAMP ? _("General out") : _("Overseer out"),
+				firmPtr->overseer_recno != 0, 0 );
+		}
+	}
+
+	//------- the properties -------//
+
+	else
+	{
+		static const char* propStr[] = { "", N_("Combat"), "", N_("Version"), N_("Population"), N_("Reserve") };
+
+		char propArray[MAX_PROP];
+		int  valueArray[MAX_PROP];
+		int  propCount = selected_properties(propArray, valueArray);
+
+		for( int i=0 ; i<propCount ; i++ )
+		{
+			String labelStr, valueStr;
+
+			if( propArray[i] == PROP_SKILL )
+				labelStr = unit_array[unit_array.selected_recno]->skill.skill_des();
+			else
+				labelStr = _(propStr[(int)propArray[i]]);
+
+			if( propArray[i] == PROP_VERSION )
+				valueStr = misc.roman_number(valueArray[i]);
+			else
+				valueStr = misc.format(valueArray[i]);
+
+			int enabled = !(propArray[i]==PROP_RESERVE && site_array[site_array.selected_recno]->has_mine);
+
+			put_arrow_row( y1+36+i*20, labelStr, valueStr, enabled );
+		}
 	}
 
 	//------- the buttons -------//
 
-	int buttonY = y1+56;
+	int buttonY = y1+81;
 
-	editor_put_button( x1+6, buttonY, x1+100, buttonY+19, _("Set Owner"), can_set_owner(), 0 );
-	editor_put_button( x1+106, buttonY, x2-6, buttonY+19, _("Delete"), 1, 0 );
+	editor_put_button( x1+6, buttonY, x1+100, buttonY+16, _("Set Owner"), can_set_owner(), 0 );
+	editor_put_button( x1+106, buttonY, x2-6, buttonY+16, _("Delete"), 1, 0 );
 }
 //----------- End of static function disp_selected -----------//
 
 
-//-------- Begin of static function selected_property --------//
+//-------- Begin of static function selected_properties --------//
 //
-// return: <int> PROP_??? - the property of the selected object that can be changed
+// The properties of the selected object that can be changed.
 //
-static int selected_property(int& value)
+// <char*> propArray  - for returning the PROP_??? of each property
+// <int*>  valueArray - for returning the values
+//
+// return: <int> the number of properties
+//
+static int selected_properties(char* propArray, int* valueArray)
 {
 	if( firm_array.selected_recno )
-		return PROP_NONE;
+		return 0;
 
 	if( town_array.selected_recno )
 	{
-		value = town_array[town_array.selected_recno]->population;
-		return PROP_POPULATION;
+		propArray[0]  = PROP_POPULATION;
+		valueArray[0] = town_array[town_array.selected_recno]->population;
+		return 1;
 	}
 
 	if( site_array.selected_recno )
@@ -980,48 +1325,76 @@ static int selected_property(int& value)
 		Site* sitePtr = site_array[site_array.selected_recno];
 
 		if( sitePtr->site_type != SITE_RAW )
-			return PROP_NONE;
+			return 0;
 
-		value = sitePtr->reserve_qty;
-		return PROP_RESERVE;
+		propArray[0]  = PROP_RESERVE;
+		valueArray[0] = sitePtr->reserve_qty;
+		return 1;
 	}
 
 	if( unit_array.selected_recno && unit_array.selected_count==1 )
 	{
 		Unit* unitPtr = unit_array[unit_array.selected_recno];
+		int count=0;
 
-		if( unit_res[unitPtr->unit_id]->unit_class != UNIT_CLASS_HUMAN )
-			return PROP_NONE;
+		switch( unit_res[unitPtr->unit_id]->unit_class )
+		{
+			case UNIT_CLASS_HUMAN:
+				propArray[count]    = PROP_COMBAT;
+				valueArray[count++] = unitPtr->skill.combat_level;
 
-		value = unitPtr->skill.combat_level;
-		return PROP_COMBAT;
+				if( unitPtr->skill.skill_id && unitPtr->skill.skill_id != SKILL_SPYING )
+				{
+					propArray[count]    = PROP_SKILL;		// leadership or the skill of a worker
+					valueArray[count++] = unitPtr->skill.skill_level;
+				}
+				break;
+
+			case UNIT_CLASS_WEAPON:
+				propArray[count]    = PROP_VERSION;
+				valueArray[count++] = unitPtr->get_weapon_version();
+				break;
+		}
+
+		return count;
 	}
 
-	return PROP_NONE;
+	return 0;
 }
-//----------- End of static function selected_property -----------//
+//----------- End of static function selected_properties -----------//
 
 
 //-------- Begin of static function change_property --------//
 //
-static void change_property(int dir)
+static void change_property(int propId, int dir)
 {
-	int value;
-
-	switch( selected_property(value) )
+	switch( propId )
 	{
 		case PROP_COMBAT:
 		{
 			Unit* unitPtr = unit_array[unit_array.selected_recno];
+			int value = unitPtr->skill.combat_level;
 
-			value = MAX( 10, MIN(100, value/10*10 + dir*10) );
-			unitPtr->set_combat_level(value);
+			unitPtr->set_combat_level( MAX( 10, MIN(100, value/10*10 + dir*10) ) );
+			break;
+		}
 
-			if( unitPtr->rank_id == RANK_GENERAL || unitPtr->rank_id == RANK_KING )
-			{
-				unitPtr->skill.set_skill(SKILL_LEADING);
-				unitPtr->skill.skill_level = value;
-			}
+		case PROP_SKILL:
+		{
+			Unit* unitPtr = unit_array[unit_array.selected_recno];
+			int value = unitPtr->skill.skill_level;
+
+			unitPtr->skill.skill_level = MAX( 10, MIN(100, value/10*10 + dir*10) );
+			break;
+		}
+
+		case PROP_VERSION:
+		{
+			Unit* unitPtr = unit_array[unit_array.selected_recno];
+			int version = unitPtr->get_weapon_version() + dir;
+
+			if( version >= 1 && version <= weapon_max_version(unitPtr->unit_id) )
+				set_weapon_version( unitPtr, version );
 			break;
 		}
 
@@ -1068,6 +1441,62 @@ static void change_property(int dir)
 //----------- End of static function change_property -----------//
 
 
+//-------- Begin of static function get_options --------//
+//
+// The options of the palette of the current tab (and entry).
+//
+// return: <int> the number of options
+//
+static int get_options(char* optionArray)
+{
+	int count=0;
+
+	switch( mod_editor.panel_tab )
+	{
+		case EDITOR_TAB_UNIT:
+		{
+			optionArray[count++] = OPTION_RACE;
+
+			int isWorker = mod_editor.place_entry >= 0 &&
+								unit_entry_array[(int)mod_editor.place_entry].type == PLACE_WORKER;
+
+			if( isWorker )
+			{
+				optionArray[count++] = OPTION_SKILL;
+				optionArray[count++] = OPTION_SKILL_LEVEL;
+			}
+			else
+			{
+				optionArray[count++] = OPTION_COMBAT;
+				optionArray[count++] = OPTION_LEADERSHIP;
+			}
+			break;
+		}
+
+		case EDITOR_TAB_WEAPON:
+			optionArray[count++] = OPTION_VERSION;
+			break;
+
+		case EDITOR_TAB_TOWN:
+			optionArray[count++] = OPTION_RACE;
+			optionArray[count++] = OPTION_POPULATION;
+			break;
+
+		case EDITOR_TAB_FIRM:
+			optionArray[count++] = OPTION_RACE;
+			break;
+
+		case EDITOR_TAB_NATURE:
+			optionArray[count++] = OPTION_RESERVE;
+			optionArray[count++] = OPTION_MONSTER;
+			break;
+	}
+
+	return count;
+}
+//----------- End of static function get_options -----------//
+
+
 //-------- Begin of static function option_str --------//
 //
 static void option_str(int optionId, String& labelStr, String& valueStr)
@@ -1082,6 +1511,26 @@ static void option_str(int optionId, String& labelStr, String& valueStr)
 		case OPTION_COMBAT:
 			labelStr = _("Combat");
 			valueStr = mod_editor.place_combat_level;
+			break;
+
+		case OPTION_LEADERSHIP:
+			labelStr = _("Leadership");
+			valueStr = mod_editor.place_leadership;
+			break;
+
+		case OPTION_SKILL:
+			labelStr = _("Skill");
+			valueStr = _(Skill::skill_str_array[mod_editor.place_skill_id-1]);
+			break;
+
+		case OPTION_SKILL_LEVEL:
+			labelStr = _("Level");
+			valueStr = mod_editor.place_skill_level;
+			break;
+
+		case OPTION_VERSION:
+			labelStr = _("Version");
+			valueStr = misc.roman_number(mod_editor.place_weapon_version);
 			break;
 
 		case OPTION_POPULATION:
@@ -1131,6 +1580,30 @@ static void change_option(int optionId, int dir)
 			mod_editor.place_combat_level = MAX( 10, MIN(100, mod_editor.place_combat_level + dir*10) );
 			break;
 
+		case OPTION_LEADERSHIP:
+			mod_editor.place_leadership = MAX( 10, MIN(100, mod_editor.place_leadership + dir*10) );
+			break;
+
+		case OPTION_SKILL:
+		{
+			int skillCount = sizeof(worker_skill_array);
+			int i;
+
+			for( i=0 ; i<skillCount && worker_skill_array[i] != mod_editor.place_skill_id ; i++ );
+
+			i = (i + dir + skillCount) % skillCount;
+			mod_editor.place_skill_id = worker_skill_array[i];
+			break;
+		}
+
+		case OPTION_SKILL_LEVEL:
+			mod_editor.place_skill_level = MAX( 10, MIN(100, mod_editor.place_skill_level + dir*10) );
+			break;
+
+		case OPTION_VERSION:
+			mod_editor.place_weapon_version = MAX( 1, MIN(3, mod_editor.place_weapon_version + dir) );
+			break;
+
 		case OPTION_POPULATION:
 			mod_editor.place_population = MAX( 5, MIN(MAX_TOWN_POPULATION, mod_editor.place_population + dir*5) );
 			break;
@@ -1155,6 +1628,7 @@ static const char* entry_name(PlaceEntry* entryPtr)
 	{
 		case PLACE_SOLDIER:	return _("Soldier");
 		case PLACE_GENERAL:	return _("General");
+		case PLACE_WORKER:	return _("Worker");
 		case PLACE_UNIT:		return _(unit_res[entryPtr->id]->name);
 		case PLACE_TOWN:		return _("Town");
 		case PLACE_FIRM:		return _(firm_res[entryPtr->id]->name);
@@ -1165,6 +1639,106 @@ static const char* entry_name(PlaceEntry* entryPtr)
 	return "";
 }
 //----------- End of static function entry_name -----------//
+
+
+//-------- Begin of static function weapon_max_version --------//
+//
+// The highest version of a weapon: the maximum level of its technology.
+//
+static int weapon_max_version(int unitId)
+{
+	for( int i=1 ; i<=tech_res.tech_count ; i++ )
+	{
+		if( tech_res[i]->unit_id == unitId )
+			return MAX(1, tech_res[i]->max_tech_level);
+	}
+
+	return 1;
+}
+//----------- End of static function weapon_max_version -----------//
+
+
+//-------- Begin of static function set_weapon_version --------//
+//
+// Set the version of a weapon (kept in nation_contribution) and its attack.
+// A weapon with version 0 (created for a kingdom without the technology)
+// takes the attacks of all versions, and the game may crash when choosing the
+// sprite of the attack.
+//
+static void set_weapon_version(Unit* unitPtr, int version)
+{
+	version = MAX( 1, MIN(weapon_max_version(unitPtr->unit_id), version) );
+
+	unitPtr->set_weapon_version(version);
+	unitPtr->fix_attack_info();
+}
+//----------- End of static function set_weapon_version -----------//
+
+
+//-------- Begin of static function unit_firm_at --------//
+//
+// return: <int> the recno of the building of the kingdom of the objects
+//               placed at the location, 0 - none
+//
+static int unit_firm_at(int unitId, int xLoc, int yLoc)
+{
+	Location* locPtr = world.get_loc(xLoc, yLoc);
+
+	if( !locPtr->is_firm() )
+		return 0;
+
+	int firmRecno = locPtr->firm_recno();
+	Firm* firmPtr = firm_array[firmRecno];
+
+	if( firmPtr->nation_recno != mod_editor.owner_nation_recno || firmPtr->nation_recno == 0 ||
+		 firmPtr->under_construction || !firm_res[firmPtr->firm_id]->need_unit() )
+	{
+		return 0;
+	}
+
+	return firmRecno;
+}
+//----------- End of static function unit_firm_at -----------//
+
+
+//-------- Begin of static function assign_to_firm --------//
+//
+// Put a unit on the map in a building of its kingdom, with the rules of the
+// game (Unit::firm_can_assign()). It doesn't replace a worker when the
+// building is full.
+//
+// return: <int> 1 - the unit is in the building
+//
+static int assign_to_firm(int unitRecno, int firmRecno)
+{
+	Unit* unitPtr = unit_array[unitRecno];
+	Firm* firmPtr = firm_array[firmRecno];
+
+	if( unitPtr->nation_recno != firmPtr->nation_recno || !unitPtr->is_visible() )
+		return 0;
+
+	switch( unitPtr->firm_can_assign(firmRecno) )
+	{
+		case 1:		// a worker (soldiers in forts)
+			if( !firmPtr->worker_array || firmPtr->is_worker_full() )
+				return 0;
+			break;
+
+		case 2:		// the overseer (the general of a fort)
+			if( unitPtr->rank_id == RANK_SOLDIER )
+				return 0;
+			break;
+
+		default:		// repair (construction workers), spies...
+			return 0;
+	}
+
+	unitPtr->stop2();
+	firmPtr->assign_unit(unitRecno);
+
+	return unit_array.is_deleted(unitRecno) || !unit_array[unitRecno]->is_visible();
+}
+//----------- End of static function assign_to_firm -----------//
 
 
 //-------- Begin of static function owner_name --------//
@@ -1235,11 +1809,11 @@ static int next_monster(int monsterId, int dir)
 //
 static void put_arrow_row(int y, const char* labelStr, const char* valueStr, int enabled)
 {
-	font_san.put( INFO_X1+8, y+3, labelStr, 0, INFO_X1+76 );
+	font_san.put( INFO_X1+8, y+3, labelStr, 0, INFO_X1+84 );
 
-	editor_put_button( INFO_X1+78, y, INFO_X1+96, y+17, "<", enabled, 0 );
-	vga_util.d3_panel_down( INFO_X1+99, y, INFO_X2-25, y+17 );
-	font_san.center_put( INFO_X1+99, y, INFO_X2-25, y+17, valueStr );
+	editor_put_button( INFO_X1+86, y, INFO_X1+104, y+17, "<", enabled, 0 );
+	vga_util.d3_panel_down( INFO_X1+107, y, INFO_X2-25, y+17 );
+	font_san.center_put( INFO_X1+107, y, INFO_X2-25, y+17, valueStr );
 	editor_put_button( INFO_X2-22, y, INFO_X2-4, y+17, ">", enabled, 0 );
 }
 //----------- End of static function put_arrow_row -----------//
@@ -1251,7 +1825,7 @@ static void put_arrow_row(int y, const char* labelStr, const char* valueStr, int
 //
 static int detect_arrow_row(int y)
 {
-	if( mouse.any_click( INFO_X1+78, y, INFO_X1+96, y+17 ) )
+	if( mouse.any_click( INFO_X1+86, y, INFO_X1+104, y+17 ) )
 		return -1;
 
 	if( mouse.any_click( INFO_X2-22, y, INFO_X2-4, y+17 ) )

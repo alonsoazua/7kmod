@@ -176,6 +176,7 @@ void draw_checkbox(int x, int y, CHECKBOX_STATE checked)
 // return : <int> >0 - id. of the scenario selected. 
 //                 0 - cancel
 //                -1 - 7kmod-editor: the New button, a new scenario in the editor
+//                -2 - 7kmod-editor: the Edit button, the scenario mod_editor.edit_scen_recno in the editor
 //
 int Game::select_scenario(int scenCount, ScenInfo* scenInfoArray)
 {
@@ -228,7 +229,6 @@ int Game::select_scenario(int scenCount, ScenInfo* scenInfoArray)
 										  menuY1+EDITOR_BUTTON_Y1+EDITOR_BUTTON_HEIGHT-1, _("New") );
 	editorEditButton.create_text( menuX1+EDITOR_EDIT_X1, menuY1+EDITOR_BUTTON_Y1, menuX1+EDITOR_EDIT_X1+EDITOR_BUTTON_WIDTH-1,
 										  menuY1+EDITOR_BUTTON_Y1+EDITOR_BUTTON_HEIGHT-1, _("Edit") );
-	editorEditButton.enable_flag = 0;		// Phase 0: only new scenarios
 
 	SlideVBar scrollBar;
 	scrollBar.init_scroll(menuX1+SCROLL_X1, menuY1+SCROLL_Y1, menuX1+SCROLL_X2, menuY1+SCROLL_Y2,
@@ -342,8 +342,6 @@ int Game::select_scenario(int scenCount, ScenInfo* scenInfoArray)
 
 				editorNewButton.paint();
 				editorEditButton.paint();
-				vga_front.adjust_brightness( editorEditButton.x1+1, editorEditButton.y1+1,
-					editorEditButton.x2-1, editorEditButton.y2-1, -5 );		// disabled
 
 				textScrollUp.paint();
 				textScrollDown.paint();
@@ -650,6 +648,13 @@ int Game::select_scenario(int scenCount, ScenInfo* scenInfoArray)
 		{
 			refreshFlag = TUOPTION_ALL;
 			retFlag = -1;
+			break;
+		}
+		else if( editorEditButton.detect() )		// 7kmod-editor: edit the selected scenario
+		{
+			refreshFlag = TUOPTION_ALL;
+			mod_editor.edit_scen_recno = browseRecno;
+			retFlag = -2;
 			break;
 		}
 	}

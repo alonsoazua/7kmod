@@ -37,6 +37,7 @@ enum { EDITOR_BAR_SCENARIO,
 //------- the tabs of the side panel --------//
 
 enum { EDITOR_TAB_UNIT,
+		 EDITOR_TAB_WEAPON,			// weapons and ships
 		 EDITOR_TAB_TOWN,
 		 EDITOR_TAB_FIRM,
 		 EDITOR_TAB_NATURE,
@@ -50,7 +51,7 @@ enum { EDITOR_TAB_UNIT,
 #define EDITOR_SCENARIO_DIR_ID		2						// the id of the directory in Sys::dir_scenario_path[]
 
 enum { EDITOR_NAME_LEN=40,				// the name of the scenario
-		 EDITOR_DESC_LINES=6,			// the lines of the description
+		 EDITOR_DESC_LINES=9,			// the lines of the description
 		 EDITOR_DESC_LEN=75,				// the characters of a line of the description
 		 EDITOR_FILE_NAME_LEN=20,		// the file name of the scenario, without the extension
 		 EDITOR_PICT_WIDTH=758,			// the picture of the scenario screen (.SCP)
@@ -83,9 +84,15 @@ public:
 	char	place_entry;				// the entry of the palette of the current tab being placed, -1 - none
 	char	place_race_id;				// the race of soldiers, generals, towns and buildings
 	short	place_combat_level;		// the combat level of soldiers and generals
+	short	place_leadership;			// the leadership of soldiers and generals
+	char	place_skill_id;			// the skill of workers: SKILL_CONSTRUCTION, SKILL_MINING, SKILL_MFT or SKILL_RESEARCH
+	short	place_skill_level;		// the skill level of workers
+	char	place_weapon_version;	// the version of weapons (1 to 3, at most the maximum of each weapon)
 	short	place_population;			// the population of towns
 	short	place_reserve;				// the reserve of natural resources, in 1000s
 	short	place_monster_id;			// the Fryhtan of lairs
+
+	short	edit_scen_recno;			// the scenario selected for "Edit" in the scenario screen (Game::select_scenario())
 
 public:
 	ModEditor();
@@ -122,6 +129,10 @@ public:
 
 	void	delete_selected();
 	void	set_selected_owner();
+	void	order_selected(int xLoc, int yLoc);		// right click: move or put in a building or town
+	void	take_out_all();
+	void	take_out_general();
+	void	load_scenario_info(const char* sctPath, int isEditorScenario, const char* fileName);
 
 	//--- the windows (phase 3) ---//
 

@@ -55,6 +55,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 #include "gettext.h"
 
 //------- the save dialog --------//
@@ -62,7 +63,7 @@
 enum { DLG_X1 = 30,
 		 DLG_Y1 = 86,
 		 DLG_X2 = 545,
-		 DLG_Y2 = 480 };
+		 DLG_Y2 = 548 };
 
 enum { LABEL_X = DLG_X1+16,
 		 FIELD_X = DLG_X1+120,
@@ -602,3 +603,147 @@ static void capture_zoom(int topXLoc, int topYLoc)
 		vga.use_front();
 }
 //----------- End of static function capture_zoom -----------//
+
+
+//-------- Begin of function ModEditor::load_scenario_info --------//
+//
+// Read the data of a scenario opened with "Edit": the name, the difficulty,
+// the score bonus and the description of its .SCT file. The description
+// is wrapped in the lines of the window.
+//
+// <char*> sctPath          - the path of the .SCT file
+// <int>   isEditorScenario - whether it is a scenario of SCENMOD (saving it
+//                            replaces it), otherwise saving it saves a copy
+// <char*> fileName         - the file name of the .SCN
+//
+void ModEditor::load_scenario_info(const char* sctPath, int isEditorScenario, const char* fileName)
+{
+	memset( scen_name, 0, sizeof(scen_name) );
+	memset( scen_desc, 0, sizeof(scen_desc) );
+	scen_file_name[0] = 0;
+
+	//------ the file name of a scenario of SCENMOD ------//
+
+	if( isEditorScenario )
+	{
+		int len = strlen(fileName);
+		const char* dot = strrchr(fileName, '.');
+
+		if( dot )
+			len = dot - fileName;
+
+		if( len <= EDITOR_FILE_NAME_LEN )
+		{
+			memcpy( scen_file_name, fileName, len );
+			scen_file_name[len] = 0;
+		}
+	}
+
+	//------ read the text file ------//
+
+	FILE* filePtr = fopen(sctPath, "rb");
+
+	if( !filePtr )
+		return;
+
+	enum { LINE_LEN = 1000, TEXT_LEN = 4000 };
+
+	char line[LINE_LEN+1];
+	char text[TEXT_LEN+1] = "";
+	int  lineNo = 0, inDesc = 0;
+
+	while( fgets(line, LINE_LEN, filePtr) )
+	{
+		//--- remove the end of the line and the end of file character ---//
+
+		int len = strlen(line);
+
+		while( len > 0 && (line[len-1]=='\r' || line[len-1]=='\n' || line[len-1]==0x1A) )
+			line[--len] = 0;
+
+		lineNo++;
+
+		if( lineNo == 1 )
+		{
+			strncpy( scen_name, line, EDITOR_NAME_LEN );
+			scen_name[EDITOR_NAME_LEN] = 0;
+		}
+		else if( !inDesc )
+		{
+			if( strncmp(line, "Difficulty:", 11)==0 )
+				scen_difficulty = (short) atoi(line+11);
+
+			else if( strncmp(line, "Bonus:", 6)==0 )
+				scen_bonus = (short) atoi(line+6);
+
+			else if( line[0]=='-' )		// the separator line
+				inDesc = 1;
+		}
+		else
+		{
+			//--- the description: the lines are joined with a line break mark ---//
+
+			if( strlen(text) + len + 2 < TEXT_LEN )
+			{
+				strcat( text, line );
+				strcat( text, "\n" );
+			}
+		}
+	}
+
+	fclose(filePtr);
+
+	scen_difficulty = MAX( 1, MIN(10, scen_difficulty) );
+	scen_bonus = MAX( 0, MIN(500, scen_bonus) );
+
+	//------ wrap the description in the lines of the window ------//
+
+	int descLine = 0, pos = 0;
+	char* p = text;
+
+	while( *p && descLine < EDITOR_DESC_LINES )
+	{
+		if( *p == '\n' )		// a line break of the file: next line (skip empty lines at the start)
+		{
+			if( pos > 0 )
+			{
+				descLine++;
+				pos = 0;
+			}
+			p++;
+			continue;
+		}
+
+		//--- the next word ---//
+
+		char* wordEnd = p;
+
+		while( *wordEnd && *wordEnd != ' ' && *wordEnd != '\n' )
+			wordEnd++;
+
+		int wordLen = wordEnd - p;
+
+		if( pos > 0 && pos + 1 + wordLen > EDITOR_DESC_LEN )		// doesn't fit: next line
+		{
+			descLine++;
+			pos = 0;
+
+			if( descLine >= EDITOR_DESC_LINES )
+				break;
+		}
+
+		if( pos > 0 )
+			scen_desc[descLine][pos++] = ' ';
+
+		int copyLen = MIN( wordLen, EDITOR_DESC_LEN - pos );
+		memcpy( scen_desc[descLine]+pos, p, copyLen );
+		pos += copyLen;
+		scen_desc[descLine][pos] = 0;
+
+		p = wordEnd;
+
+		while( *p == ' ' )
+			p++;
+	}
+}
+//--------- End of function ModEditor::load_scenario_info ---------//

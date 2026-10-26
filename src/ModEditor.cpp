@@ -46,6 +46,7 @@
 #include <OIMGRES.h>
 #include <ONATION.h>
 #include <OUNIT.h>
+#include <OSKILL.h>
 #include <OTOWN.h>
 #include <OFIRM.h>
 #include <OSITE.h>
@@ -110,9 +111,14 @@ void ModEditor::reset()
 	place_entry = -1;
 	place_race_id = 1;
 	place_combat_level = 20;
+	place_leadership = 20;
+	place_skill_id = SKILL_MINING;
+	place_skill_level = 20;
+	place_weapon_version = 1;
 	place_population = 20;
 	place_reserve = 10;
 	place_monster_id = 0;
+	edit_scen_recno = 0;
 
 	loc_reveal_all_flag = 0;
 }
