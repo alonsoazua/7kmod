@@ -220,6 +220,19 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
   - También al cambiar de reino con Set Owner un arma que ya tiene versión no se afecta;
     revisar que ninguna otra ruta del editor cree armas con versión 0.
 
+- [ ] **El "Soldier" de la paleta sale como Peasant** (visto en pruebas). En el juego, un
+  soldado es una unidad humana con la habilidad de **liderazgo** (`SKILL_LEADING`); sin
+  habilidad es un civil (`Unit::is_civilian()`, `src/OUNIT.cpp`) y el panel lo muestra
+  como "Peasant" (`src/OUNITIF.cpp`). El editor crea el soldado con su nivel de combate,
+  pero sin habilidad (`place_object()`, `src/ModEditorPanel.cpp`); el General sí recibe
+  liderazgo. Además de verse como Peasant, como civil no se comporta como soldado (por
+  ejemplo, en la selección del ejército y al defenderse).
+  - Corrección: al colocar un Soldier, darle `SKILL_LEADING` con un nivel, como los
+    soldados que el juego crea al empezar una partida (`Battle::create_unit()`,
+    `src/OBATTLE.cpp`).
+  - Por definir: el nivel de liderazgo del soldado. Propuesta: igual que su combate (como
+    ya se hace con el General), o una opción **Leadership** aparte en la paleta.
+
 ---
 
 ## Riesgos y puntos por revisar
