@@ -3,7 +3,7 @@
 Rama `7kmod-editor`, basada en `7kmod`, para que los escenarios funcionen en las tres
 versiones del mod (`7kaa-mod.exe`, `7kaa-gameplay.exe` y `7kaa-pathing.exe`).
 
-**Estado:** Fases 0 a 4 implementadas (MVP, guardar, colocar y editar, mover y meter unidades, ventanas, Edit). Fase 5: hechas 5a (árboles y rocas) y 5b (tipo de suelo); queda 5c (agua, tierra y colinas). El resto del diseño sigue en refinamiento.
+**Estado:** Fases 0 a 4 implementadas (MVP, guardar, colocar y editar, mover y meter unidades, ventanas, Edit). Fase 5: hechas 5a (árboles y rocas), 5b (tipo de suelo) y 5c (agua, tierra y colinas). El resto del diseño sigue en refinamiento.
 Ejecutable: `7kaa-editor.exe`. Cambios en `CHANGELOG-editor.md`.
 
 ---
@@ -269,13 +269,30 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
     tipos no tienen transición, se pinta el anillo intermedio automáticamente. Todo sigue
     siendo tierra: no cambian las regiones. No se puede pintar debajo de edificios ni
     pueblos.
-  - [ ] **5c: Agua, tierra y colinas** (riesgo alto). Entradas **Water** (con su anillo
-    de pasto oscuro a la orilla), **Land** y **Hill**. Cambian qué se puede caminar o
-    navegar, así que al salir del modo de pintar (o al probar o guardar) se recalcula:
-    banderas de cada casilla (`set_loc_flags`), regiones (`set_region_id`), puertos
-    (`set_harbor_bit`), estadísticas de regiones (`region_array.init_region_stat`), el
-    `region_id` de pueblos y edificios y las regiones de la IA (`update_ai_region`). Solo
-    en áreas vacías (sin unidades, edificios, pueblos ni recursos).
+  - [x] **5c: Agua, tierra y colinas** (riesgo alto). Entradas **Water**, **Land** y
+    **Hill** en la pestaña Terrain, con el pincel (`paint_shape` en
+    `src/ModEditorTerrain.cpp`).
+    - **Water:** quita árboles, rocas y manchas del pincel y pinta mar; las orillas
+      (arena, pasto) salen solas con el mismo sistema de niveles de 5b, que ahora puede
+      cambiar el mar y las costas.
+    - **Land:** pinta pasto oscuro, también sobre el mar y las costas.
+    - **Hill:** pinta tierra (dirt) y convierte sus bordes en colinas como
+      `World::gen_hills()`: la casilla del borde lleva el bloque bajo de la colina de su
+      patrón, la de arriba el bloque alto, y su suelo pasa al tipo más bajo. Sin salidas:
+      a la meseta de adentro no se llega por tierra. No se pinta junto al mar.
+    - **Clear** también quita las colinas del pincel y une el suelo con pasto claro (las
+      esquinas que no coinciden toman el tipo más bajo).
+    - No se cambian casillas con unidades, edificios, pueblos, recursos, muros, rocas ni
+      casillas especiales.
+    - Después se recalculan: banderas de las casillas (costa, caminable o navegable,
+      "power off" como `set_loc_flags`), las regiones de todo el mapa (como
+      `set_region_id`, pero con el tipo de suelo y las colinas, sin contar edificios ni
+      árboles, que no existían al generar el mapa), `RegionArray` y sus estadísticas, el
+      `region_id` de pueblos, edificios, puertos (tierra y mar) y sitios, las regiones de
+      la IA (`update_ai_region`) y dónde se pueden construir puertos alrededor de lo
+      cambiado. Si el mapa quedara con más de 254 regiones, se deshace.
+    - Limitaciones: las colinas se ven mejor en terreno abierto; junto a pueblos o costas
+      la meseta sale irregular. Quitar parte de una colina con Clear deja cortes rectos.
 
   En las tres: después de pintar se vuelven a dibujar el mapa y el minimapa
   (`zoom_need_redraw`, `map_need_redraw`). Propuesta: hacer 5a y 5b primero y probarlas;
@@ -342,7 +359,7 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
     Los que trabajan en edificios conservan su raza (son trabajadores del edificio).
   - **Edificio:** al revisar los datos del juego, los edificios no tienen raza: solo la
     Sede de Poder tiene un dibujo por raza (en `FIRMBLD`, los demás tienen uno solo). Por
-    eso la opción Race de la pestaña Buildings no cambia nada. En su lugar, el **fuerte**
+    eso se quitó la opción Race de la pestaña Buildings. En su lugar, el **fuerte**
     muestra la raza de su general (o rey): al cambiarla, el general sale, cambia de raza
     y vuelve a entrar. Los soldados de adentro no cambian (no son unidades del mapa: hay
     que sacarlos, cambiarlos y volver a meterlos).

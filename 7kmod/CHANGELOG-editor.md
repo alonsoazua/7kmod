@@ -106,7 +106,15 @@ de `7kmod` está en `CHANGELOG.md`. El diseño y las fases están en `TODO-edito
 - **Editor de escenarios, barra:** con una ventana abierta, otro botón de la barra cambia
   a su ventana y el mismo botón la cierra.
 
+- **Editor de escenarios, fase 5c (agua, tierra y colinas):** entradas **Water**,
+  **Land** y **Hill** en la pestaña Terrain. Water pinta mar con sus orillas, Land pinta
+  tierra (también sobre el mar) y Hill pinta una meseta rodeada de colinas. **Clear**
+  también quita colinas. Después se recalculan las costas, lo que se camina y navega, las
+  regiones del mapa y las de pueblos, edificios, puertos y la IA. No se pinta donde hay
+  unidades, edificios, pueblos, recursos, muros o rocas.
+
 ### Cambiado
+- **Pestaña Buildings:** se quitó la opción Race; en el juego los edificios no tienen raza.
 - **Bajar la población** de un pueblo en el editor ya no hace sonar el grito de los
   aldeanos.
 

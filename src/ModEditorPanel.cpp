@@ -91,7 +91,8 @@ enum { PLACE_SOLDIER=1,
 		 PLACE_TREE,				// the Terrain tab (ModEditorTerrain.cpp)
 		 PLACE_ROCK,				// id: 0 - small, 1 - large
 		 PLACE_CLEAR,
-		 PLACE_GROUND };			// id: the terrain type
+		 PLACE_GROUND,			// id: the terrain type
+		 PLACE_SHAPE };			// id: EDITOR_TERRAIN_WATER, _LAND or _HILL
 
 struct PlaceEntry
 {
@@ -138,7 +139,8 @@ static PlaceEntry terrain_entry_array[] =
 	{ PLACE_TREE, 0 }, { PLACE_CLEAR, 0 },
 	{ PLACE_ROCK, 0 }, { PLACE_ROCK, 1 },
 	{ PLACE_GROUND, TERRAIN_DARK_GRASS }, { PLACE_GROUND, TERRAIN_LIGHT_GRASS },
-	{ PLACE_GROUND, TERRAIN_DARK_DIRT },
+	{ PLACE_GROUND, TERRAIN_DARK_DIRT }, { PLACE_SHAPE, EDITOR_TERRAIN_WATER },
+	{ PLACE_SHAPE, EDITOR_TERRAIN_LAND }, { PLACE_SHAPE, EDITOR_TERRAIN_HILL },
 };
 
 static PlaceEntry* tab_entry_array[EDITOR_TAB_COUNT] =
@@ -594,6 +596,7 @@ int ModEditor::get_place_area(int xLoc, int yLoc, int& locWidth, int& locHeight)
 		case PLACE_CLEAR:
 		case PLACE_ROCK:
 		case PLACE_GROUND:
+		case PLACE_SHAPE:
 			return editor_terrain_area( terrain_place_type(entryPtr), entryPtr->id, xLoc, yLoc,
 												 place_brush, locWidth, locHeight );
 	}
@@ -1148,6 +1151,7 @@ static int place_object(PlaceEntry* entryPtr, int xLoc, int yLoc)
 		case PLACE_CLEAR:
 		case PLACE_ROCK:
 		case PLACE_GROUND:
+		case PLACE_SHAPE:
 			return editor_terrain_place( terrain_place_type(entryPtr), entryPtr->id, xLoc, yLoc, mod_editor.place_brush );
 	}
 
@@ -1669,8 +1673,7 @@ static int get_options(char* optionArray)
 			optionArray[count++] = OPTION_POPULATION;
 			break;
 
-		case EDITOR_TAB_FIRM:
-			optionArray[count++] = OPTION_RACE;
+		case EDITOR_TAB_FIRM:		// no options: buildings have no race (only the Seat of Power, which isn't in the palette)
 			break;
 
 		case EDITOR_TAB_NATURE:
@@ -1843,6 +1846,14 @@ static const char* entry_name(PlaceEntry* entryPtr)
 				case TERRAIN_DARK_GRASS:	return _("Dark grass");
 				case TERRAIN_LIGHT_GRASS:	return _("Light grass");
 				default:							return _("Dirt");
+			}
+
+		case PLACE_SHAPE:
+			switch( entryPtr->id )
+			{
+				case EDITOR_TERRAIN_WATER:		return _("Water");
+				case EDITOR_TERRAIN_LAND:		return _("Land");
+				default:							return _("Hill");
 			}
 	}
 
@@ -2458,6 +2469,7 @@ static int terrain_place_type(PlaceEntry* entryPtr)
 		case PLACE_TREE:	return EDITOR_TERRAIN_TREE;
 		case PLACE_ROCK:	return EDITOR_TERRAIN_ROCK;
 		case PLACE_CLEAR:	return EDITOR_TERRAIN_CLEAR;
+		case PLACE_SHAPE:	return entryPtr->id;
 		default:				return EDITOR_TERRAIN_GROUND;
 	}
 }

@@ -17,8 +17,9 @@
  */
 
 //Filename    : ModEditorTerrain.cpp
-//Description : 7kmod-editor: the Terrain tab (phase 5a and 5b): trees,
-//              rocks, clearing and painting the type of the ground.
+//Description : 7kmod-editor: the Terrain tab (phase 5): trees, rocks,
+//              clearing, painting the type of the ground (5a, 5b), and water,
+//              land and hills (5c).
 //
 // The ground: each corner of the map has a type (sea, dark grass, light
 // grass, dark dirt) and a subtype (bottom, middle, top): 12 "levels". Each
@@ -31,10 +32,11 @@
 // other within 3 levels: the corners around the brush follow it (the rings
 // of transition between types are made automatically).
 //
-// Only land is painted: the corners of tiles with sea (coasts), hills,
-// buildings, towns, natural resources or special tiles are not changed.
-// So what can be walked or sailed doesn't change, and the regions (which
-// depend on it) don't have to be calculated again.
+// The ground types only paint land: the corners of tiles with sea (coasts),
+// hills, buildings, towns, natural resources or special tiles are not
+// changed, so what can be walked or sailed doesn't change. Water, Land and
+// Hill (5c) do change it: then the flags of the locations and the regions
+// are calculated again (paint_shape()).
 
 #include <ModEditor.h>
 #include <OSYS.h>
@@ -46,6 +48,17 @@
 #include <OROCK.h>
 #include <OROCKRES.h>
 #include <OMISC.h>
+#include <OHILLRES.h>
+#include <OREGION.h>
+#include <OTOWN.h>
+#include <OFIRM.h>
+#include <OFIRMRES.h>
+#include <OFIRMID.h>
+#include <OF_HARB.h>
+#include <OSITE.h>
+#include <ONATION.h>
+#include <OBOX.h>
+#include "gettext.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -63,6 +76,17 @@ static char corner_level[BOX_SIZE][BOX_SIZE];
 static char corner_orig_level[BOX_SIZE][BOX_SIZE];
 static char corner_fixed[BOX_SIZE][BOX_SIZE];		// 2 - protected, 1 - in the brush, 0 - free
 
+//------- what paint_ground() may change --------//
+
+enum { PAINT_GROUND,		// the ground types: only land
+		 PAINT_SHAPE,		// water and land: also the sea and the coasts, not where there are units
+		 PAINT_HILL,		// dirt whose edges become hills: land without units
+		 PAINT_UNHILL };	// light grass where hills were removed (the corners that don't agree take the lowest type)
+
+static char paint_mode = PAINT_GROUND;
+
+static int  changed_x1, changed_y1, changed_x2, changed_y2;		// the tiles changed by the last paint_ground()
+
 //------- Declare static functions --------//
 
 static int  tile_is_protected(int xLoc, int yLoc);
@@ -75,6 +99,8 @@ static int  clear_area(int x1, int y1, int x2, int y2);
 static int  add_rock(int largeFlag, int xLoc, int yLoc, int checkOnly);
 static void remove_rock(int rockArrayRecno, RockArray& rockArray, int isDirt);
 static void reset_power_off(int x1, int y1, int x2, int y2);
+static int  paint_shape(int shapeType, int x1, int y1, int x2, int y2);
+static int  clear_hills(int x1, int y1, int x2, int y2);
 
 
 //-------- Begin of function editor_terrain_place --------//
@@ -109,10 +135,18 @@ int editor_terrain_place(int placeType, int placeId, int xLoc, int yLoc, int bru
 			return add_rock(placeId, xLoc, yLoc, 0);
 
 		case EDITOR_TERRAIN_CLEAR:
-			return clear_area(x1, y1, x2, y2);
+		{
+			int rc = clear_area(x1, y1, x2, y2);
+			return clear_hills(x1, y1, x2, y2) || rc;
+		}
 
 		case EDITOR_TERRAIN_GROUND:
 			return paint_ground(placeId, x1, y1, x2, y2);
+
+		case EDITOR_TERRAIN_WATER:
+		case EDITOR_TERRAIN_LAND:
+		case EDITOR_TERRAIN_HILL:
+			return paint_shape(placeType, x1, y1, x2, y2);
 	}
 
 	return 0;
@@ -377,6 +411,550 @@ static int add_rock(int largeFlag, int xLoc, int yLoc, int checkOnly)
 //----------- End of static function add_rock -----------//
 
 
+//======== 5c: water, land and hills ========//
+//
+// They change what can be walked or sailed, so after them the flags of the
+// locations (coast, walkable, power off) and the regions are calculated
+// again, as World::set_loc_flags(), set_region_id() and set_harbor_bit() do
+// when the map is generated.
+
+enum { MAX_CHANGED = BOX_SIZE*BOX_SIZE };
+
+static short changed_x[MAX_CHANGED], changed_y[MAX_CHANGED], changed_old_id[MAX_CHANGED];
+static int   changed_count;
+
+static short hill_x[MAX_CHANGED*2], hill_y[MAX_CHANGED*2];
+static int   hill_count;
+
+static uint8_t* region_buf;		// the regions being calculated, one per location
+static int*     fill_stack;		// the stack of the flood fill (x, y pairs)
+
+
+//-------- Begin of static function base_region_type --------//
+//
+// The type of a location for the regions, as when the map is generated:
+// before the buildings, trees and rocks (only hills block).
+//
+static RegionType base_region_type(Location* locPtr)
+{
+	if( locPtr->has_hill() )
+		return REGION_INPASSABLE;
+
+	if( terrain_res[locPtr->terrain_id]->average_type == TERRAIN_OCEAN )
+		return REGION_SEA;
+
+	return REGION_LAND;
+}
+//----------- End of static function base_region_type -----------//
+
+
+//-------- Begin of static function count_regions --------//
+//
+// Fill region_buf with the regions of the map (flood fill).
+//
+// return: <int> the number of regions, -1 - more than the game supports
+//
+static int count_regions()
+{
+	int locCount = MAX_WORLD_X_LOC*MAX_WORLD_Y_LOC;
+
+	region_buf = (uint8_t*) mem_resize( region_buf, locCount );
+	fill_stack = (int*) mem_resize( fill_stack, locCount*2*sizeof(int) );
+
+	memset( region_buf, 0, locCount );
+
+	int regionCount=0;
+
+	for( int y=0 ; y<MAX_WORLD_Y_LOC ; y++ )
+	{
+		for( int x=0 ; x<MAX_WORLD_X_LOC ; x++ )
+		{
+			if( region_buf[y*MAX_WORLD_X_LOC+x] )
+				continue;
+
+			RegionType regionType = base_region_type( world.get_loc(x,y) );
+
+			if( regionType == REGION_INPASSABLE )
+				continue;
+
+			if( ++regionCount >= 255 )
+				return -1;
+
+			int top=0;
+			fill_stack[top*2] = x;  fill_stack[top*2+1] = y;  top++;
+			region_buf[y*MAX_WORLD_X_LOC+x] = regionCount;
+
+			while( top > 0 )
+			{
+				top--;
+				int cx = fill_stack[top*2], cy = fill_stack[top*2+1];
+
+				static int dxArray[4] = { -1, 1, 0, 0 }, dyArray[4] = { 0, 0, -1, 1 };
+
+				for( int i=0 ; i<4 ; i++ )
+				{
+					int nx = cx+dxArray[i], ny = cy+dyArray[i];
+
+					if( nx < 0 || ny < 0 || nx >= MAX_WORLD_X_LOC || ny >= MAX_WORLD_Y_LOC )
+						continue;
+
+					if( region_buf[ny*MAX_WORLD_X_LOC+nx] || base_region_type(world.get_loc(nx,ny)) != regionType )
+						continue;
+
+					region_buf[ny*MAX_WORLD_X_LOC+nx] = regionCount;
+					fill_stack[top*2] = nx;  fill_stack[top*2+1] = ny;  top++;
+				}
+			}
+		}
+	}
+
+	return regionCount;
+}
+//----------- End of static function count_regions -----------//
+
+
+//-------- Begin of static function apply_regions --------//
+//
+// Set the regions of region_buf: the locations, RegionArray (as
+// World::set_region_id()), the towns, buildings and sites, and the regions
+// of the AI.
+//
+static void apply_regions(int regionCount)
+{
+	int x, y;
+
+	for( y=0 ; y<MAX_WORLD_Y_LOC ; y++ )
+		for( x=0 ; x<MAX_WORLD_X_LOC ; x++ )
+			world.get_loc(x,y)->region_id = region_buf[y*MAX_WORLD_X_LOC+x];
+
+	//------- RegionArray: sizes, types and adjacency -------//
+
+	region_array.init(regionCount);
+
+	int regionId=0;
+
+	for( y=0 ; y<MAX_WORLD_Y_LOC ; y++ )
+	{
+		for( x=0 ; x<MAX_WORLD_X_LOC ; x++ )
+		{
+			Location* locPtr = world.get_loc(x,y);
+			int thisRegionId = locPtr->region_id;
+
+			if( !thisRegionId )
+				continue;
+
+			region_array.inc_size( thisRegionId );
+
+			if( thisRegionId > regionId )
+			{
+				if( thisRegionId == regionId+1 )
+					regionId++;
+
+				region_array.set_region( thisRegionId, base_region_type(locPtr) );
+			}
+
+			for( int dy=-1 ; dy<=1 ; dy++ )
+			{
+				for( int dx=-1 ; dx<=1 ; dx++ )
+				{
+					int nx=x+dx, ny=y+dy;
+
+					if( (!dx && !dy) || nx < 0 || ny < 0 || nx >= MAX_WORLD_X_LOC || ny >= MAX_WORLD_Y_LOC )
+						continue;
+
+					int adjRegionId = world.get_loc(nx,ny)->region_id;
+
+					if( adjRegionId && adjRegionId < thisRegionId )
+						region_array.set_adjacent( thisRegionId, adjRegionId );
+				}
+			}
+		}
+	}
+
+	region_array.sort_region();
+
+	//------- the regions of the towns, buildings and sites -------//
+
+	for( int i=town_array.size() ; i>0 ; i-- )
+	{
+		if( !town_array.is_deleted(i) )
+		{
+			Town* townPtr = town_array[i];
+			townPtr->region_id = world.get_region_id( townPtr->center_x, townPtr->center_y );
+		}
+	}
+
+	for( int i=firm_array.size() ; i>0 ; i-- )
+	{
+		if( firm_array.is_deleted(i) )
+			continue;
+
+		Firm* firmPtr = firm_array[i];
+		firmPtr->region_id = world.get_region_id( firmPtr->center_x, firmPtr->center_y );
+
+		if( firmPtr->firm_id == FIRM_HARBOR )		// the land and the sea of a harbor, as FirmHarbor::init()
+		{
+			FirmHarbor* harborPtr = (FirmHarbor*) firmPtr;
+			int x1 = firmPtr->loc_x1, y1 = firmPtr->loc_y1;
+
+			switch( firm_res.get_build(firmPtr->firm_build_id)->build_code[0] )
+			{
+				case 'N':
+					harborPtr->land_region_id = world.get_loc(x1+1, y1+2)->region_id;
+					harborPtr->sea_region_id  = world.get_loc(x1+1, y1)->region_id;
+					break;
+				case 'S':
+					harborPtr->land_region_id = world.get_loc(x1+1, y1)->region_id;
+					harborPtr->sea_region_id  = world.get_loc(x1+1, y1+2)->region_id;
+					break;
+				case 'W':
+					harborPtr->land_region_id = world.get_loc(x1+2, y1+1)->region_id;
+					harborPtr->sea_region_id  = world.get_loc(x1, y1+1)->region_id;
+					break;
+				case 'E':
+					harborPtr->land_region_id = world.get_loc(x1, y1+1)->region_id;
+					harborPtr->sea_region_id  = world.get_loc(x1+2, y1+1)->region_id;
+					break;
+			}
+		}
+	}
+
+	for( int i=site_array.size() ; i>0 ; i-- )
+	{
+		if( !site_array.is_deleted(i) )
+		{
+			Site* sitePtr = site_array[i];
+			sitePtr->region_id = world.get_region_id( sitePtr->map_x_loc, sitePtr->map_y_loc );
+		}
+	}
+
+	//------- the statistics of the regions and the regions of the AI -------//
+
+	region_array.init_region_stat();
+
+	for( int i=nation_array.size() ; i>0 ; i-- )
+	{
+		if( !nation_array.is_deleted(i) && nation_array[i]->is_ai() )
+			nation_array[i]->update_ai_region();
+	}
+}
+//----------- End of static function apply_regions -----------//
+
+
+//-------- Begin of static function update_location_flags --------//
+//
+// After the ground changes between land and sea: the coast flag, walkable
+// or sailable, and "power off" (no building on coasts and next to the sea),
+// as World::set_loc_flags().
+//
+static void update_location_flags(int x1, int y1, int x2, int y2)
+{
+	x1 = MAX(x1, 0);
+	y1 = MAX(y1, 0);
+	x2 = MIN(x2, MAX_WORLD_X_LOC-1);
+	y2 = MIN(y2, MAX_WORLD_Y_LOC-1);
+
+	for( int y=y1 ; y<=y2 ; y++ )
+	{
+		for( int x=x1 ; x<=x2 ; x++ )
+		{
+			Location* locPtr = world.get_loc(x, y);
+			TerrainInfo* terrainInfo = terrain_res[locPtr->terrain_id];
+
+			//--- no dirt patches on the sea ---//
+
+			if( locPtr->has_dirt() && terrainInfo->average_type == TERRAIN_OCEAN )
+				remove_rock( locPtr->dirt_recno(), dirt_array, 1 );
+
+			if( !(locPtr->loc_flag & LOCATE_BLOCK_MASK) )
+			{
+				locPtr->walkable_off();
+				locPtr->walkable_reset();
+			}
+
+			locPtr->loc_flag &= ~LOCATE_COAST;
+		}
+	}
+
+	for( int y=y1 ; y<=y2 ; y++ )
+	{
+		for( int x=x1 ; x<=x2 ; x++ )
+		{
+			Location* locPtr = world.get_loc(x, y);
+			TerrainInfo* terrainInfo = terrain_res[locPtr->terrain_id];
+
+			if( terrainInfo->is_coast() )
+			{
+				locPtr->loc_flag |= LOCATE_COAST;
+
+				if( terrainInfo->average_type != TERRAIN_OCEAN )
+					locPtr->set_power_off();
+				else
+					world.set_surr_power_off(x, y);
+			}
+		}
+	}
+
+	reset_power_off(x1, y1, x2, y2);		// the land that is no longer next to the sea
+}
+//----------- End of static function update_location_flags -----------//
+
+
+//-------- Begin of static function undo_shape --------//
+//
+// Restore the tiles changed and remove the hills added, when the map would
+// have too many regions.
+//
+static void undo_shape()
+{
+	for( int i=0 ; i<hill_count ; i++ )
+	{
+		Location* locPtr = world.get_loc(hill_x[i], hill_y[i]);
+
+		if( locPtr->has_hill() )
+		{
+			locPtr->remove_hill();
+			locPtr->walkable_reset();
+		}
+	}
+
+	for( int i=0 ; i<changed_count ; i++ )
+		world.get_loc(changed_x[i], changed_y[i])->terrain_id = changed_old_id[i];
+}
+//----------- End of static function undo_shape -----------//
+
+
+//-------- Begin of static function add_hills --------//
+//
+// Turn the edges of the dirt just painted into hills, as World::gen_hills():
+// a tile between dirt and lower ground gets the low block of the hill of its
+// pattern, the tile above it the high block, and its ground becomes the
+// lower one. Without exits: the plateau inside can't be reached by land.
+//
+static void add_hills()
+{
+	hill_count = 0;
+
+	//--- from north to south, as gen_hills() (the high block goes on the tile above) ---//
+
+	for( int i=0 ; i<changed_count ; i++ )
+	{
+		for( int j=i+1 ; j<changed_count ; j++ )
+		{
+			if( changed_y[j] < changed_y[i] || (changed_y[j] == changed_y[i] && changed_x[j] < changed_x[i]) )
+			{
+				short t;
+				t = changed_x[i];  changed_x[i] = changed_x[j];  changed_x[j] = t;
+				t = changed_y[i];  changed_y[i] = changed_y[j];  changed_y[j] = t;
+				t = changed_old_id[i];  changed_old_id[i] = changed_old_id[j];  changed_old_id[j] = t;
+			}
+		}
+	}
+
+	for( int i=0 ; i<changed_count ; i++ )
+	{
+		int x = changed_x[i], y = changed_y[i];
+		Location* locPtr = world.get_loc(x, y);
+		TerrainInfo* terrainInfo = terrain_res[locPtr->terrain_id];
+
+		int priTerrain = terrainInfo->average_type;
+		int secTerrain = terrainInfo->secondary_type;
+		int highTerrain = MAX(priTerrain, secTerrain);
+		int lowTerrain = MIN(priTerrain, secTerrain);
+
+		if( highTerrain < TERRAIN_DARK_DIRT || lowTerrain >= TERRAIN_DARK_DIRT )
+			continue;		// not an edge of the dirt
+
+		int patternId = terrainInfo->pattern_id;
+		int hillId = hill_res.scan(patternId, LOW_HILL_PRIORITY, 0, 0);
+
+		if( !hillId )
+			continue;
+
+		if( locPtr->is_plant() )
+		{
+			locPtr->remove_plant();
+			world.plant_count--;
+		}
+
+		if( locPtr->has_dirt() )		// a dirt patch would leave a hole in the hill
+			remove_rock( locPtr->dirt_recno(), dirt_array, 1 );
+
+		if( !locPtr->can_add_hill() )
+			continue;
+
+		int newTerrainId = terrain_res.scan(lowTerrain, lowTerrain, 0);
+
+		if( !newTerrainId )
+			continue;
+
+		locPtr->set_hill(hillId);
+		locPtr->set_fire_src(-100);
+		locPtr->set_power_off();
+		world.set_surr_power_off(x, y);
+		locPtr->terrain_id = newTerrainId;
+
+		hill_x[hill_count] = x;  hill_y[hill_count] = y;  hill_count++;
+
+		//--- the high block on the tile above ---//
+
+		if( y > 0 )
+		{
+			Location* aboveLoc = world.get_loc(x, y-1);
+
+			if( aboveLoc->is_plant() )
+			{
+				aboveLoc->remove_plant();
+				world.plant_count--;
+			}
+
+			if( aboveLoc->has_dirt() )
+				remove_rock( aboveLoc->dirt_recno(), dirt_array, 1 );
+
+			int highHillId = hill_res.locate(patternId, hill_res[hillId]->sub_pattern_id, HIGH_HILL_PRIORITY, 0);
+
+			if( highHillId && aboveLoc->can_add_hill() && !tile_is_protected(x, y-1) )
+			{
+				aboveLoc->set_hill(highHillId);
+				aboveLoc->set_fire_src(-100);
+				aboveLoc->set_power_off();
+				world.set_surr_power_off(x, y-1);
+
+				hill_x[hill_count] = x;  hill_y[hill_count] = y-1;  hill_count++;
+			}
+		}
+	}
+}
+//----------- End of static function add_hills -----------//
+
+
+//-------- Begin of static function paint_shape --------//
+//
+// Water, land or a hill on the locations x1..x2, y1..y2.
+//
+// return: <int> 1 - the map has changed
+//
+static int paint_shape(int shapeType, int x1, int y1, int x2, int y2)
+{
+	int rc;
+
+	switch( shapeType )
+	{
+		case EDITOR_TERRAIN_WATER:
+			paint_mode = PAINT_SHAPE;
+			clear_area(x1, y1, x2, y2);			// no trees, rocks or dirt patches in the water
+			rc = paint_ground(TERRAIN_OCEAN, x1, y1, x2, y2);
+			break;
+
+		case EDITOR_TERRAIN_LAND:
+			paint_mode = PAINT_SHAPE;
+			rc = paint_ground(TERRAIN_DARK_GRASS, x1, y1, x2, y2);
+			break;
+
+		default:		// EDITOR_TERRAIN_HILL: dirt on land, its edges become hills
+			paint_mode = PAINT_HILL;
+			rc = paint_ground(TERRAIN_DARK_DIRT, x1, y1, x2, y2);
+			break;
+	}
+
+	paint_mode = PAINT_GROUND;
+
+	if( !rc )
+		return 0;
+
+	hill_count = 0;
+
+	if( shapeType == EDITOR_TERRAIN_HILL )
+		add_hills();
+	else
+		update_location_flags(changed_x1-1, changed_y1-1, changed_x2+1, changed_y2+1);
+
+	//------- the regions; too many: undo -------//
+
+	int regionCount = count_regions();
+
+	if( regionCount < 0 )
+	{
+		undo_shape();
+
+		if( shapeType != EDITOR_TERRAIN_HILL )
+			update_location_flags(changed_x1-1, changed_y1-1, changed_x2+1, changed_y2+1);
+
+		box.msg( _("The map would have too many separate areas of land and water.") );
+		return 0;
+	}
+
+	apply_regions(regionCount);
+
+	//------- where harbors can be built, around the tiles changed (as World::set_harbor_bit()) -------//
+
+	if( shapeType != EDITOR_TERRAIN_HILL )
+	{
+		for( int y=MAX(changed_y1-3, 0) ; y<=MIN(changed_y2+1, MAX_WORLD_Y_LOC-3) ; y++ )
+		{
+			for( int x=MAX(changed_x1-3, 0) ; x<=MIN(changed_x2+1, MAX_WORLD_X_LOC-3) ; x++ )
+			{
+				Location* locPtr = world.get_loc(x,y);
+				locPtr->clear_harbor_bit();
+
+				if( world.can_build_firm(x, y, FIRM_HARBOR) )
+					locPtr->set_harbor_bit();
+			}
+		}
+	}
+
+	return 1;
+}
+//----------- End of static function paint_shape -----------//
+
+
+//-------- Begin of static function clear_hills --------//
+//
+// Remove the hill blocks in the area (the Clear entry).
+//
+// return: <int> 1 - a hill was removed
+//
+static int clear_hills(int x1, int y1, int x2, int y2)
+{
+	int count=0;
+
+	for( int y=y1 ; y<=y2 ; y++ )
+	{
+		for( int x=x1 ; x<=x2 ; x++ )
+		{
+			Location* locPtr = world.get_loc(x, y);
+
+			if( !locPtr->has_hill() )
+				continue;
+
+			locPtr->remove_hill();
+			locPtr->set_fire_src(0);
+			locPtr->walkable_reset();
+			count++;
+		}
+	}
+
+	if( !count )
+		return 0;
+
+	//--- the ground under the hills doesn't match the plateau: light grass joins them ---//
+
+	paint_mode = PAINT_UNHILL;
+	paint_ground(TERRAIN_LIGHT_GRASS, x1, y1, x2, y2);
+	paint_mode = PAINT_GROUND;
+
+	reset_power_off(x1-1, y1-1, x2+1, y2+1);
+
+	int regionCount = count_regions();
+
+	if( regionCount > 0 )
+		apply_regions(regionCount);
+
+	return 1;
+}
+//----------- End of static function clear_hills -----------//
+
+
 //-------- Begin of static function tile_is_protected --------//
 //
 // Whether the tile of a location must not change: tiles with sea (coasts),
@@ -390,15 +968,29 @@ static int tile_is_protected(int xLoc, int yLoc)
 	Location* locPtr = world.get_loc(xLoc, yLoc);
 	TerrainInfo* terrainInfo = terrain_res[locPtr->terrain_id];
 
-	if( terrainInfo->nw_type == TERRAIN_OCEAN || terrainInfo->ne_type == TERRAIN_OCEAN ||
-		 terrainInfo->sw_type == TERRAIN_OCEAN || terrainInfo->se_type == TERRAIN_OCEAN ||
-		 terrainInfo->special_flag )
+	if( terrainInfo->special_flag )
+		return 1;
+
+	if( paint_mode != PAINT_SHAPE &&		// water and land change the sea and the coasts
+		 (terrainInfo->nw_type == TERRAIN_OCEAN || terrainInfo->ne_type == TERRAIN_OCEAN ||
+		  terrainInfo->sw_type == TERRAIN_OCEAN || terrainInfo->se_type == TERRAIN_OCEAN) )
 	{
 		return 1;
 	}
 
 	if( locPtr->has_hill() || locPtr->is_firm() || locPtr->is_town() || locPtr->has_site() )
 		return 1;
+
+	if( paint_mode != PAINT_GROUND )
+	{
+		//--- not where units are (land units would be in the sea, ships on land), walls and rocks ---//
+
+		if( locPtr->is_wall() || locPtr->is_rock() )
+			return 1;
+
+		if( locPtr->cargo_recno && !(locPtr->loc_flag & LOCATE_BLOCK_MASK) )
+			return 1;
+	}
 
 	return 0;
 }
@@ -423,8 +1015,12 @@ static int get_corner_level(int cornerX, int cornerY, int& isProtected)
 	int type=0, mask=7;
 	isProtected = 0;
 
+	int cornerTypeArray[4], cornerMaskArray[4];
+
 	for( int i=0 ; i<4 ; i++ )
 	{
+		cornerTypeArray[i] = 0;
+
 		int x = cornerX + dxArray[i];
 		int y = cornerY + dyArray[i];
 
@@ -432,26 +1028,42 @@ static int get_corner_level(int cornerX, int cornerY, int& isProtected)
 			continue;
 
 		TerrainInfo* terrainInfo = terrain_res[world.get_loc(x, y)->terrain_id];
-		int cornerType, cornerMask;
 
 		switch( i )		// the corner of this tile that is our corner
 		{
-			case 0:  cornerType = terrainInfo->se_type;  cornerMask = terrainInfo->se_subtype;  break;
-			case 1:  cornerType = terrainInfo->sw_type;  cornerMask = terrainInfo->sw_subtype;  break;
-			case 2:  cornerType = terrainInfo->ne_type;  cornerMask = terrainInfo->ne_subtype;  break;
-			default: cornerType = terrainInfo->nw_type;  cornerMask = terrainInfo->nw_subtype;  break;
+			case 0:  cornerTypeArray[i] = terrainInfo->se_type;  cornerMaskArray[i] = terrainInfo->se_subtype;  break;
+			case 1:  cornerTypeArray[i] = terrainInfo->sw_type;  cornerMaskArray[i] = terrainInfo->sw_subtype;  break;
+			case 2:  cornerTypeArray[i] = terrainInfo->ne_type;  cornerMaskArray[i] = terrainInfo->ne_subtype;  break;
+			default: cornerTypeArray[i] = terrainInfo->nw_type;  cornerMaskArray[i] = terrainInfo->nw_subtype;  break;
 		}
-
-		if( !type )
-			type = cornerType;
-		else if( type != cornerType )		// the tiles don't agree (pattern substitutions): don't change it
-			isProtected = 1;
-
-		if( type == cornerType )
-			mask &= cornerMask;
 
 		if( tile_is_protected(x, y) )
 			isProtected = 1;
+	}
+
+	//--- the tiles don't agree (pattern substitutions): don't change it; after removing ---//
+	//--- hills (the ground under them is the lower one), the lowest type is taken ---//
+
+	for( int i=0 ; i<4 ; i++ )
+	{
+		if( !cornerTypeArray[i] )
+			continue;
+
+		if( !type )
+			type = cornerTypeArray[i];
+		else if( type != cornerTypeArray[i] )
+		{
+			if( paint_mode == PAINT_UNHILL )
+				type = MIN(type, cornerTypeArray[i]);
+			else
+				isProtected = 1;
+		}
+	}
+
+	for( int i=0 ; i<4 ; i++ )
+	{
+		if( cornerTypeArray[i] == type )
+			mask &= cornerMaskArray[i];
 	}
 
 	if( !type )
@@ -627,7 +1239,11 @@ static int paint_ground(int terrainType, int x1, int y1, int x2, int y2)
 	if( !changeCount )
 		return 0;
 
-	//------- set the new tiles -------//
+	//------- set the new tiles (and remember them, for 5c) -------//
+
+	changed_count = 0;
+	changed_x1 = MAX_WORLD_X_LOC;  changed_y1 = MAX_WORLD_Y_LOC;
+	changed_x2 = -1;               changed_y2 = -1;
 
 	for( j=0 ; j<boxH-1 ; j++ )
 	{
@@ -637,6 +1253,18 @@ static int paint_ground(int terrainType, int x1, int y1, int x2, int y2)
 				continue;
 
 			Location* locPtr = world.get_loc(boxX1+i, boxY1+j);
+
+			if( changed_count < MAX_CHANGED )
+			{
+				changed_x[changed_count] = boxX1+i;
+				changed_y[changed_count] = boxY1+j;
+				changed_old_id[changed_count] = locPtr->terrain_id;
+				changed_count++;
+			}
+
+			changed_x1 = MIN(changed_x1, boxX1+i);  changed_x2 = MAX(changed_x2, boxX1+i);
+			changed_y1 = MIN(changed_y1, boxY1+j);  changed_y2 = MAX(changed_y2, boxY1+j);
+
 			locPtr->terrain_id = newTerrainId[j][i];
 
 			//--- a tree that doesn't grow on the new ground is removed ---//
