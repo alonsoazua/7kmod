@@ -92,7 +92,7 @@ enum { PLACE_SOLDIER=1,
 		 PLACE_ROCK,				// id: 0 - small, 1 - large
 		 PLACE_CLEAR,
 		 PLACE_GROUND,			// id: the terrain type
-		 PLACE_SHAPE };			// id: EDITOR_TERRAIN_WATER, _LAND or _HILL
+		 PLACE_SHAPE };			// id: EDITOR_TERRAIN_WATER, _LAND, _HILL or _RAMP
 
 struct PlaceEntry
 {
@@ -141,6 +141,7 @@ static PlaceEntry terrain_entry_array[] =
 	{ PLACE_GROUND, TERRAIN_DARK_GRASS }, { PLACE_GROUND, TERRAIN_LIGHT_GRASS },
 	{ PLACE_GROUND, TERRAIN_DARK_DIRT }, { PLACE_SHAPE, EDITOR_TERRAIN_WATER },
 	{ PLACE_SHAPE, EDITOR_TERRAIN_LAND }, { PLACE_SHAPE, EDITOR_TERRAIN_HILL },
+	{ PLACE_SHAPE, EDITOR_TERRAIN_RAMP },
 };
 
 static PlaceEntry* tab_entry_array[EDITOR_TAB_COUNT] =
@@ -1853,6 +1854,7 @@ static const char* entry_name(PlaceEntry* entryPtr)
 			{
 				case EDITOR_TERRAIN_WATER:		return _("Water");
 				case EDITOR_TERRAIN_LAND:		return _("Land");
+				case EDITOR_TERRAIN_RAMP:		return _("Ramp");
 				default:							return _("Hill");
 			}
 	}

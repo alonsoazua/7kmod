@@ -108,8 +108,11 @@ de `7kmod` está en `CHANGELOG.md`. El diseño y las fases están en `TODO-edito
 
 - **Editor de escenarios, fase 5c (agua, tierra y colinas):** entradas **Water**,
   **Land** y **Hill** en la pestaña Terrain. Water pinta mar con sus orillas, Land pinta
-  tierra (también sobre el mar) y Hill pinta una meseta rodeada de colinas. **Clear**
-  también quita colinas. Después se recalculan las costas, lo que se camina y navega, las
+  tierra (también sobre el mar) y Hill levanta una meseta rodeada de colinas; los
+  trazos se unen, así se hacen caminos altos y mesetas de cualquier forma, con rampas
+  automáticas donde caben (bordes rectos, mesetas de unas 5 casillas de ancho o más). La
+  entrada **Ramp** pone o quita una rampa. **Clear** sobre una meseta quita esa parte y
+  cierra los bordes; las franjas de menos de 3 casillas que quedan se aplanan. Después se recalculan las costas, lo que se camina y navega, las
   regiones del mapa y las de pueblos, edificios, puertos y la IA. No se pinta donde hay
   unidades, edificios, pueblos, recursos, muros o rocas.
 

@@ -276,12 +276,25 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
       (arena, pasto) salen solas con el mismo sistema de niveles de 5b, que ahora puede
       cambiar el mar y las costas.
     - **Land:** pinta pasto oscuro, también sobre el mar y las costas.
-    - **Hill:** pinta tierra (dirt) y convierte sus bordes en colinas como
-      `World::gen_hills()`: la casilla del borde lleva el bloque bajo de la colina de su
-      patrón, la de arriba el bloque alto, y su suelo pasa al tipo más bajo. Sin salidas:
-      a la meseta de adentro no se llega por tierra. No se pinta junto al mar.
-    - **Clear** también quita las colinas del pincel y une el suelo con pasto claro (las
-      esquinas que no coinciden toman el tipo más bajo).
+    - **Hill:** levanta una meseta en el pincel y reconstruye las colinas alrededor
+      (`rebuild_plateau`): toma la meseta que ya hay (`mark_top_map`: bloques altos,
+      salidas y la tierra unida a ellos) en el pincel ±6 casillas, le suma el pincel y
+      vuelve a hacer `World::gen_hills()` en esa zona: niveles de las esquinas (tierra
+      arriba, anillo de pasto claro), bloques bajo y alto de cada borde y la cima corrida
+      una fila al norte. Los trazos se unen en una sola meseta, así se hacen caminos
+      altos y mesetas de cualquier forma.
+    - **Rampas automáticas:** se conservan las salidas que ya había y se agregan nuevas
+      cerca del pincel con las mismas reglas que `gen_hills` (tres bloques rectos de
+      borde, separadas por 7 o más). Necesitan un borde recto de 3 casillas, así que una
+      meseta de menos de unas 5 casillas de ancho no lleva rampa.
+    - **Ramp** (entrada nueva, 3x3): pone una rampa en el borde recto más cercano o quita
+      la que hay ahí.
+    - **Ancho mínimo:** las franjas de meseta de menos de 3 casillas de ancho que quedan
+      en la zona (por ejemplo al recortar con Clear) se vuelven suelo bajo, para no dejar
+      bultos de colina sin cima. Con pincel 1x1 o 2x2 Hill no levanta nada.
+    - **Clear** sobre una meseta quita esa parte y cierra los bordes con colinas.
+    - No se hace a menos de 11 casillas de la orilla del mapa, ni si la colina nueva cae
+      sobre unidades, edificios, pueblos, recursos, muros, rocas o agua (avisa).
     - No se cambian casillas con unidades, edificios, pueblos, recursos, muros, rocas ni
       casillas especiales.
     - Después se recalculan: banderas de las casillas (costa, caminable o navegable,
@@ -292,7 +305,7 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
       la IA (`update_ai_region`) y dónde se pueden construir puertos alrededor de lo
       cambiado. Si el mapa quedara con más de 254 regiones, se deshace.
     - Limitaciones: las colinas se ven mejor en terreno abierto; junto a pueblos o costas
-      la meseta sale irregular. Quitar parte de una colina con Clear deja cortes rectos.
+      la meseta sale irregular o no se puede hacer.
 
   En las tres: después de pintar se vuelven a dibujar el mapa y el minimapa
   (`zoom_need_redraw`, `map_need_redraw`). Propuesta: hacer 5a y 5b primero y probarlas;

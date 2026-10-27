@@ -53,7 +53,8 @@ enum { EDITOR_TERRAIN_TREE=1,
 		 EDITOR_TERRAIN_GROUND,		// id: the terrain type
 		 EDITOR_TERRAIN_WATER,		// 5c: they change what can be walked or sailed
 		 EDITOR_TERRAIN_LAND,
-		 EDITOR_TERRAIN_HILL };
+		 EDITOR_TERRAIN_HILL,
+		 EDITOR_TERRAIN_RAMP };		// put or remove an exit of a hill
 
 int editor_terrain_place(int placeType, int placeId, int xLoc, int yLoc, int brushSize);
 int editor_terrain_area(int placeType, int placeId, int xLoc, int yLoc, int brushSize, int& locWidth, int& locHeight);
