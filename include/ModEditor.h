@@ -56,6 +56,7 @@ enum { EDITOR_TERRAIN_TREE=1,
 		 EDITOR_TERRAIN_HILL,
 		 EDITOR_TERRAIN_RAMP };		// put or remove an exit of a hill
 
+extern int editor_terrain_quiet;
 int editor_terrain_place(int placeType, int placeId, int xLoc, int yLoc, int brushSize);
 int editor_terrain_area(int placeType, int placeId, int xLoc, int yLoc, int brushSize, int& locWidth, int& locHeight);
 

@@ -3,7 +3,7 @@
 Rama `7kmod-editor`, basada en `7kmod`, para que los escenarios funcionen en las tres
 versiones del mod (`7kaa-mod.exe`, `7kaa-gameplay.exe` y `7kaa-pathing.exe`).
 
-**Estado:** Fases 0 a 4 implementadas (MVP, guardar, colocar y editar, mover y meter unidades, ventanas, Edit). Fase 5: hechas 5a (árboles y rocas), 5b (tipo de suelo) y 5c (agua, tierra y colinas); 5d (Hill con tierra, pintar arrastrando) por hacer. El resto del diseño sigue en refinamiento.
+**Estado:** Fases 0 a 4 implementadas (MVP, guardar, colocar y editar, mover y meter unidades, ventanas, Edit). Fase 5: hechas 5a (árboles y rocas), 5b (tipo de suelo) y 5c (agua, tierra y colinas) y 5d (Hill con tierra, pintar arrastrando). El resto del diseño sigue en refinamiento.
 Ejecutable: `7kaa-editor.exe`. Cambios en `CHANGELOG-editor.md`.
 
 ---
@@ -289,10 +289,8 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
       meseta de menos de unas 5 casillas de ancho no lleva rampa.
     - **Ramp** (entrada nueva, 3x3): pone una rampa en el borde recto más cercano o quita
       la que hay ahí.
-    - **Ancho mínimo:** las franjas de meseta de menos de 3 casillas de ancho que quedan
-      en la zona (por ejemplo al recortar con Clear) se vuelven suelo bajo, para no dejar
-      bultos de colina sin cima. Con pincel 1x1 o 2x2 Hill no levanta nada.
-    - **Clear** sobre una meseta quita esa parte y cierra los bordes con colinas.
+    - (Cambiado en 5d: la forma sale de las esquinas pintadas, sin ancho mínimo; Land
+      recorta las mesetas y Clear ya no.)
     - No se hace a menos de 11 casillas de la orilla del mapa, ni si la colina nueva cae
       sobre unidades, edificios, pueblos, recursos, muros, rocas o agua (avisa).
     - No se cambian casillas con unidades, edificios, pueblos, recursos, muros, rocas ni
@@ -332,38 +330,41 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
     cambia y las regiones siguen igual. Los árboles que no crecen en el suelo nuevo se
     quitan.
   - Se ve en bloques (las transiciones siguen la cuadrícula de esquinas). Pintar
-    arrastrando el ratón: ver 5d.
-- [ ] **5d: Ajustes del terreno (Hill con tierra, pintar arrastrando).** Por hacer.
-  - **Hill = tierra con colinas; se quita Dirt.** En el juego la tierra solo existe como
+    arrastrando el ratón: hecho en 5d. (La entrada Dirt se quitó en 5d.)
+- [x] **5d: Ajustes del terreno (Hill con tierra, pintar arrastrando).**
+  - **Hill = tierra con colinas; se quitó Dirt.** En el juego la tierra solo existe como
     cima de colina: el generador pone el suelo por alturas (tierra arriba, anillo de
     transición a pasto claro) y `gen_hills` pone las colinas en las casillas de ese
-    anillo (el contorno café/verde que se ve al pintar Dirt). Por eso:
-    - Hill pinta la tierra como hoy Dirt, con cualquier pincel, y las colinas salen solas
-      en el contorno. La meseta sigue la forma pintada (esquinas y escalones), sin la
-      regla actual de bloques de 3x3. Los trazos se unen con la meseta que ya hay y las
-      colinas se reconstruyen alrededor (`rebuild_plateau`).
-    - Las tiras de 1 o 2 casillas de ancho se quedan como muro de roca (sin cima); ya no
-      se aplanan.
-    - Las muescas o salientes de 1 casilla que no tienen pieza de colina en `hill_res`
-      se rellenan o se quitan solas, para que no queden huecos en la pared.
+    anillo (el contorno café/verde que se veía al pintar Dirt). Ahora:
+    - `rebuild_plateau` trabaja con las **esquinas de tierra**: las de la meseta que ya
+      hay (una esquina entre 4 casillas altas), más las 4 esquinas de cada casilla del
+      pincel (una fila abajo, porque la cima se ve una fila arriba). Las casillas con las
+      4 esquinas de tierra son la cima; las que tienen alguna, el borde con colinas.
+    - Hill pinta con cualquier pincel (1x1 hace una cima de 1 casilla) y la meseta sigue
+      la forma pintada, con esquinas y escalones. Los trazos se unen con la meseta que
+      ya hay y las colinas se reconstruyen alrededor.
+    - Las tiras angostas se quedan como muro de roca; ya no se aplanan.
+    - Bordes sin pieza de colina: `init_hill_masks()` revisa las 14 combinaciones de
+      esquinas de tierra y pasto claro (tile de `terrain_res` y bloques bajo y alto de
+      `hill_res`). Si alguna faltara, la casilla se rellena (2 o más esquinas de tierra)
+      o se quita (1). En los datos del juego están las 14, así que no pasa.
     - Las rampas siguen igual: automáticas en los bordes rectos y la entrada Ramp las
-      pone o las quita.
-    - Para bajar o recortar una meseta se usa **Land** (los bordes se cierran con
-      colinas).
-    - Se quita la entrada **Dirt** de la pestaña Terrain (no hay tierra plana sin colinas).
-  - **Clear** solo quita objetos de la naturaleza (árboles, rocas y manchas de tierra);
-    ya no quita mesetas ni colinas.
-  - **Water** no se puede poner sobre colinas ni tierra (mesetas): esas casillas frenan
-    al pincel.
-  - **Pintar arrastrando:** con el botón presionado se pinta en cada casilla nueva por
-    la que pasa el pincel, en todas las entradas de pincel (Trees, Clear, Dark grass,
-    Light grass, Water, Land, Hill). Rocas y Ramp siguen siendo de un clic.
-    - A media pasada, lo que no se puede pintar (edificios, rocas en el camino...) se
-      salta en silencio; el aviso sale solo si un clic sin arrastrar no hizo nada.
-    - Rendimiento: Water, Land y Hill recalculan las regiones de todo el mapa. Durante el
-      arrastre se pinta el suelo y las colinas, y el recálculo de regiones se hace una vez
-      al soltar el botón. Si al soltar el mapa pasa de 254 regiones, se deshace toda la
-      pasada.
+      pone o las quita. Con la cima de 1 casilla también cabe una rampa con Ramp.
+    - **Land** baja o recorta las mesetas (cierra los bordes con colinas) y luego pinta
+      pasto oscuro.
+    - Se quitó la entrada **Dirt** de la pestaña Terrain. Dark grass, Light grass y Water
+      no cambian la tierra de las mesetas (esas casillas frenan al pincel).
+  - **Clear** solo quita objetos de la naturaleza (árboles, rocas y manchas de tierra).
+  - **Water** no se pone sobre colinas ni tierra.
+  - **Pintar arrastrando** (`ModEditor::detect_place`): con el botón presionado se pinta
+    en cada casilla nueva bajo el ratón, en Trees, Clear, Dark grass, Light grass, Water,
+    Land y Hill. Rocas y Ramp siguen siendo de un clic.
+    - A media pasada lo que no se puede pintar se salta en silencio
+      (`editor_terrain_quiet`); el aviso sale solo en el clic.
+    - Las regiones se recalculan en cada paso: el recálculo de todo el mapa es rápido y
+      no se nota al arrastrar. Así cada paso se revisa solo: si uno dejara el mapa con
+      más de 254 regiones, solo ese paso no se hace (en lugar de deshacer toda la pasada,
+      como estaba previsto).
 - [x] **Mapa nuevo (New) sin la pantalla de New Game.**
   - **New** en la pantalla Scenario abre directo el editor con un mapa generado con la
     configuración actual (`CONFIG.DAT`, con las mismas correcciones que la pantalla de New

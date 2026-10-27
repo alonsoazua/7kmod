@@ -103,6 +103,14 @@ static int  rebuild_plateau(int bx1, int by1, int bx2, int by2, int addFlag, int
 static int  brush_has_plateau(int x1, int y1, int x2, int y2);
 static void set_fire_src(Location* locPtr);
 
+int editor_terrain_quiet;		// 1 - painting by dragging: no messages (what can't be painted is skipped)
+
+static void terrain_msg(const char* msg)
+{
+	if( !editor_terrain_quiet )
+		box.msg(msg);
+}
+
 
 //-------- Begin of function editor_terrain_place --------//
 //
@@ -137,12 +145,7 @@ int editor_terrain_place(int placeType, int placeId, int xLoc, int yLoc, int bru
 
 		case EDITOR_TERRAIN_CLEAR:
 		{
-			int rc = clear_area(x1, y1, x2, y2);
-
-			if( brush_has_plateau(x1, y1, x2, y2) )		// Clear also removes the plateau (its hills are rebuilt around)
-				rc = rebuild_plateau(x1, y1, x2, y2, 0, -1, -1) || rc;
-
-			return rc;
+			return clear_area(x1, y1, x2, y2);		// only trees, rocks and dirt patches
 		}
 
 		case EDITOR_TERRAIN_RAMP:
@@ -751,9 +754,22 @@ static int paint_shape(int shapeType, int x1, int y1, int x2, int y2)
 			break;
 
 		case EDITOR_TERRAIN_LAND:
+		{
+			int plateauRc = 0;
+
+			if( brush_has_plateau(x1, y1, x2, y2) )		// Land also lowers the plateau (its hills are rebuilt around)
+				plateauRc = rebuild_plateau(x1, y1, x2, y2, 0, -1, -1);
+
 			paint_mode = PAINT_SHAPE;
 			rc = paint_ground(TERRAIN_DARK_GRASS, x1, y1, x2, y2);
+
+			if( !rc )
+			{
+				paint_mode = PAINT_GROUND;
+				return plateauRc;
+			}
 			break;
+		}
 
 		default:		// EDITOR_TERRAIN_HILL: the plateau and its hills are rebuilt
 			return rebuild_plateau(x1, y1, x2, y2, 1, -1, -1);
@@ -775,7 +791,7 @@ static int paint_shape(int shapeType, int x1, int y1, int x2, int y2)
 		undo_shape();
 		update_location_flags(changed_x1-1, changed_y1-1, changed_x2+1, changed_y2+1);
 
-		box.msg( _("The map would have too many separate areas of land and water.") );
+		terrain_msg( _("The map would have too many separate areas of land and water.") );
 		return 0;
 	}
 
@@ -858,6 +874,52 @@ static int		try_exit(int dir, int x, int y, int checkOnly);
 static int		exit_near(int dir, int x, int y);
 static int		rebuild_plateau(int bx1, int by1, int bx2, int by2, int addFlag, int rampX, int rampY);
 static void		set_fire_src(Location* locPtr);
+
+static char		hill_mask_ok[16];		// the edges (dirt corners: bit 0 NW, 1 NE, 2 SW, 3 SE) that have a hill
+static char		hill_mask_init;
+
+
+//-------- Begin of static function init_hill_masks --------//
+//
+// Which edges of a plateau have a hill in hill_res: the tile for the dirt and
+// light grass corners, and the low and high blocks for its pattern.
+//
+static void init_hill_masks()
+{
+	if( hill_mask_init )
+		return;
+
+	hill_mask_init = 1;
+
+	hill_mask_ok[0] = hill_mask_ok[15] = 1;
+
+	for( int mask=1 ; mask<15 ; mask++ )
+	{
+		int t[4], s[4];
+
+		for( int k=0 ; k<4 ; k++ )
+		{
+			t[k] = (mask & (1<<k)) ? TERRAIN_DARK_DIRT : TERRAIN_LIGHT_GRASS;
+			s[k] = 2;		// the middle subtype
+		}
+
+		hill_mask_ok[mask] = 0;
+
+		int terrainId = terrain_res.scan( t[0], s[0], t[1], s[1], t[2], s[2], t[3], s[3], 1, 1, 0 );
+
+		if( !terrainId )
+			continue;
+
+		int patternId = terrain_res[terrainId]->pattern_id;
+		int hillId = hill_res.scan(patternId, LOW_HILL_PRIORITY, 0, 1);
+
+		if( !hillId || !hill_res.locate(patternId, hill_res[hillId]->sub_pattern_id, HIGH_HILL_PRIORITY, 0) )
+			continue;
+
+		hill_mask_ok[mask] = 1;
+	}
+}
+//----------- End of static function init_hill_masks -----------//
 
 
 //-------- Begin of static function cell_set_hill --------//
@@ -1370,7 +1432,7 @@ static int rebuild_plateau(int bx1, int by1, int bx2, int by2, int addFlag, int 
 
 	if( rebuild_x1 < 5 || rebuild_y1 < 5 || rebuild_x2 > MAX_WORLD_X_LOC-6 || rebuild_y2 > MAX_WORLD_Y_LOC-6 )
 	{
-		box.msg( _("Hills can't be made so close to the edge of the map.") );
+		terrain_msg( _("Hills can't be made so close to the edge of the map.") );
 		return 0;
 	}
 
@@ -1399,73 +1461,104 @@ static int rebuild_plateau(int bx1, int by1, int bx2, int by2, int addFlag, int 
 		}
 	}
 
-	//------- the brush: the top of the plateau is one row above the high ground -------//
+	//------- the corners: which ones are dirt (the top) -------//
+	//
+	// A corner between 4 high tiles is dirt. The tiles with all their corners
+	// dirt are the top of the plateau, the tiles with some are its edge (they
+	// get the hills). The brush makes dirt (or removes it from) all the corners
+	// of its tiles, one row below (the top is seen one row above).
+
+	int cwx = gridX2 - grid_x0;		// corners 1..cwx-1 between the grid tiles
+	int cwy = gridY2 - grid_y0;
+
+	static char cornerDirt[HILL_GRID+1][HILL_GRID+1];
+
+	int i, j;
+
+	memset( cornerDirt, 0, sizeof(cornerDirt) );
+
+	for( j=1 ; j<=cwy ; j++ )		// corner (i,j) is the north-west corner of the grid tile (i,j)
+		for( i=1 ; i<=cwx ; i++ )
+			cornerDirt[j][i] = pre_plateau[j-1][i-1] && pre_plateau[j-1][i] && pre_plateau[j][i-1] && pre_plateau[j][i];
 
 	if( addFlag >= 0 )
 	{
-		for( y=by1 ; y<=by2 ; y++ )
+		for( y=by1+1 ; y<=by2+1 ; y++ )
+		{
 			for( x=bx1 ; x<=bx2 ; x++ )
-				pre_plateau GRID(x,y+1) = addFlag;
+			{
+				int gi = x-grid_x0, gj = y-grid_y0;
 
-		//--- strips of high ground less than 3 wide in the area become low ground ---//
-		//
-		// They would be lumps of hill with no top (what Clear leaves at the side
-		// of a plateau). A tile stays high if it is part of a 3x3 square of high tiles.
+				cornerDirt[gj][gi] = cornerDirt[gj][gi+1] = cornerDirt[gj+1][gi] = cornerDirt[gj+1][gi+1] = addFlag;
+			}
+		}
+	}
 
-		static char keepHigh[HILL_GRID][HILL_GRID];
+	//--- the edges with no hill for them (a notch or a point of one location): filled or removed ---//
+
+	init_hill_masks();
+
+	for( int pass=0 ; pass<20 ; pass++ )
+	{
+		int changed=0;
 
 		for( y=rebuild_y1 ; y<=rebuild_y2+1 ; y++ )
 		{
 			for( x=rebuild_x1 ; x<=rebuild_x2 ; x++ )
 			{
-				keepHigh GRID(x,y) = 0;
+				int gi = x-grid_x0, gj = y-grid_y0;
+				char* c[4] = { &cornerDirt[gj][gi], &cornerDirt[gj][gi+1], &cornerDirt[gj+1][gi], &cornerDirt[gj+1][gi+1] };
 
-				if( !pre_plateau GRID(x,y) )
+				int mask = (*c[0] ? 1 : 0) | (*c[1] ? 2 : 0) | (*c[2] ? 4 : 0) | (*c[3] ? 8 : 0);
+
+				if( hill_mask_ok[mask] )
 					continue;
 
-				for( int sy=y-2 ; sy<=y && !keepHigh GRID(x,y) ; sy++ )
-				{
-					for( int sx=x-2 ; sx<=x && !keepHigh GRID(x,y) ; sx++ )
-					{
-						int all = 1;
-						for( int yy=sy ; yy<sy+3 && all ; yy++ )
-							for( int xx=sx ; xx<sx+3 ; xx++ )
-								if( !pre_plateau GRID(xx,yy) ) { all = 0; break; }
-						keepHigh GRID(x,y) = all;
-					}
-				}
+				int dirtCount = (mask&1) + ((mask>>1)&1) + ((mask>>2)&1) + ((mask>>3)&1);
+				int newValue = dirtCount >= 2 && addFlag != 0;		// adding: filled; removing: removed
+
+				for( int k=0 ; k<4 ; k++ )
+					*c[k] = newValue;
+
+				changed=1;
 			}
 		}
 
-		for( y=rebuild_y1 ; y<=rebuild_y2+1 ; y++ )
-			for( x=rebuild_x1 ; x<=rebuild_x2 ; x++ )
-				pre_plateau GRID(x,y) = keepHigh GRID(x,y);
+		if( !changed )
+			break;
 	}
+
+	//--- the high tiles: the ones with a dirt corner ---//
+
+	for( j=0 ; j<cwy ; j++ )
+		for( i=0 ; i<cwx ; i++ )
+			if( i>0 && j>0 )
+				pre_plateau[j][i] = cornerDirt[j][i] || cornerDirt[j][i+1] || cornerDirt[j+1][i] || cornerDirt[j+1][i+1];
 
 	//------- the levels of the corners of the pre tiles -------//
 	//
-	// Corners between 4 high tiles: dirt; corners touching high tiles: light
-	// grass (the ring of the hill); other corners of tiles that were part of a
-	// plateau: light grass; the rest keep the level they have. All of them
-	// except the protected ones (buildings, towns, the sea...) may follow
-	// their neighbours, so that no two corners next to each other are more
-	// than MAX_LEVEL_STEP apart.
-
-	int cwx = gridX2 - grid_x0;		// corners 1..cwx-1 between the grid tiles
-	int cwy = gridY2 - grid_y0;
+	// Dirt corners: dirt; corners next to them: light grass (the ring of the
+	// hill); other corners of tiles that were part of a plateau: light grass;
+	// the rest keep the level they have. All of them except the protected ones
+	// (buildings, towns, the sea...) may follow their neighbours, so that no
+	// two corners next to each other are more than MAX_LEVEL_STEP apart.
 
 	static char cornerLevel[HILL_GRID][HILL_GRID], cornerOrigLevel[HILL_GRID][HILL_GRID], cornerFixed[HILL_GRID][HILL_GRID];
 
 	const int dirtLevel  = (TERRAIN_DARK_DIRT-1) * LEVEL_PER_TYPE + 1;
 	const int lightLevel = (TERRAIN_LIGHT_GRASS-1) * LEVEL_PER_TYPE + 1;
 
-	int i, j;
-
-	for( j=1 ; j<=cwy ; j++ )		// corner (i,j) is the north-west corner of the grid tile (i,j)
+	for( j=1 ; j<=cwy ; j++ )
 	{
 		for( i=1 ; i<=cwx ; i++ )
 		{
-			int highCount = pre_plateau[j-1][i-1] + pre_plateau[j-1][i] + pre_plateau[j][i-1] + pre_plateau[j][i];
+			int nearDirt=0;
+
+			for( int dj=-1 ; dj<=1 ; dj++ )
+				for( int di=-1 ; di<=1 ; di++ )
+					if( j+dj>=1 && i+di>=1 && j+dj<=cwy && i+di<=cwx && cornerDirt[j+dj][i+di] )
+						nearDirt=1;
+
 			int nearPlateau = was_plateau[j-1][i-1] || was_plateau[j-1][i] || was_plateau[j][i-1] || was_plateau[j][i];
 
 			int isProtected;
@@ -1476,12 +1569,12 @@ static int rebuild_plateau(int bx1, int by1, int bx2, int by2, int addFlag, int 
 
 			cornerOrigLevel[j][i] = curLevel;
 
-			if( highCount == 4 )
+			if( cornerDirt[j][i] )
 			{
 				cornerLevel[j][i] = dirtLevel;
 				cornerFixed[j][i] = 1;
 			}
-			else if( highCount > 0 )
+			else if( nearDirt )
 			{
 				cornerLevel[j][i] = lightLevel;
 				cornerFixed[j][i] = 1;
@@ -1501,7 +1594,7 @@ static int rebuild_plateau(int bx1, int by1, int bx2, int by2, int addFlag, int 
 
 			if( i==1 || j==1 || i==cwx || j==cwy )
 			{
-				if( highCount == 0 )
+				if( !cornerDirt[j][i] && !nearDirt )
 					cornerLevel[j][i] = curLevel;
 
 				cornerFixed[j][i] = 2;
@@ -1586,7 +1679,7 @@ static int rebuild_plateau(int bx1, int by1, int bx2, int by2, int addFlag, int 
 														 level_type(sw), level_subtype(sw), level_type(se), level_subtype(se), 0, 1, 0 );
 			if( !terrainId )
 			{
-				box.msg( _("The hill can't be made here (too close to water or to something that doesn't change).") );
+				terrain_msg( _("The hill can't be made here (too close to water or to something that doesn't change).") );
 				return 0;
 			}
 
@@ -1709,7 +1802,7 @@ static int rebuild_plateau(int bx1, int by1, int bx2, int by2, int addFlag, int 
 
 			if( !rampMade )
 			{
-				box.msg( _("A ramp needs a straight part of the edge of a hill, 3 blocks long.") );
+				terrain_msg( _("A ramp needs a straight part of the edge of a hill, 3 blocks long.") );
 				return 0;
 			}
 		}
@@ -1759,6 +1852,7 @@ static int rebuild_plateau(int bx1, int by1, int bx2, int by2, int addFlag, int 
 		}
 	}
 
+
 	//------- check: hills only where there is nothing (units, buildings, towns, resources, walls, rocks) -------//
 
 	for( y=rebuild_y1 ; y<=rebuild_y2 ; y++ )
@@ -1775,7 +1869,7 @@ static int rebuild_plateau(int bx1, int by1, int bx2, int by2, int addFlag, int 
 				 (locPtr->cargo_recno && !(locPtr->loc_flag & LOCATE_BLOCK_MASK)) ||
 				 terrain_res[locPtr->terrain_id]->average_type == TERRAIN_OCEAN )
 			{
-				box.msg( _("The hill can't be made here: there are units, buildings, natural resources or water in its way.") );
+				terrain_msg( _("The hill can't be made here: there are units, buildings, natural resources or water in its way.") );
 				return 0;
 			}
 		}
@@ -1789,7 +1883,7 @@ static int rebuild_plateau(int bx1, int by1, int bx2, int by2, int addFlag, int 
 
 	if( regionCount < 0 )
 	{
-		box.msg( _("The map would have too many separate areas of land and water.") );
+		terrain_msg( _("The map would have too many separate areas of land and water.") );
 		return 0;
 	}
 
@@ -1960,6 +2054,15 @@ static int tile_is_protected(int xLoc, int yLoc)
 
 	if( (locPtr->has_hill() && paint_mode != PAINT_PLATEAU) || locPtr->is_firm() || locPtr->is_town() || locPtr->has_site() )
 		return 1;
+
+	//--- the top of a plateau (dirt) only changes with the hills ---//
+
+	if( paint_mode != PAINT_PLATEAU &&
+		 (terrainInfo->nw_type == TERRAIN_DARK_DIRT || terrainInfo->ne_type == TERRAIN_DARK_DIRT ||
+		  terrainInfo->sw_type == TERRAIN_DARK_DIRT || terrainInfo->se_type == TERRAIN_DARK_DIRT) )
+	{
+		return 1;
+	}
 
 	if( paint_mode == PAINT_SHAPE )
 	{

@@ -139,7 +139,7 @@ static PlaceEntry terrain_entry_array[] =
 	{ PLACE_TREE, 0 }, { PLACE_CLEAR, 0 },
 	{ PLACE_ROCK, 0 }, { PLACE_ROCK, 1 },
 	{ PLACE_GROUND, TERRAIN_DARK_GRASS }, { PLACE_GROUND, TERRAIN_LIGHT_GRASS },
-	{ PLACE_GROUND, TERRAIN_DARK_DIRT }, { PLACE_SHAPE, EDITOR_TERRAIN_WATER },
+	{ PLACE_SHAPE, EDITOR_TERRAIN_WATER },
 	{ PLACE_SHAPE, EDITOR_TERRAIN_LAND }, { PLACE_SHAPE, EDITOR_TERRAIN_HILL },
 	{ PLACE_SHAPE, EDITOR_TERRAIN_RAMP },
 };
@@ -507,19 +507,62 @@ int ModEditor::detect_place()
 		return 1;
 	}
 
+	PlaceEntry* entryPtr = tab_entry_array[(int)panel_tab] + place_entry;
+
+	//---- painting the terrain by dragging: each new location under the mouse ----//
+
+	static char dragPainting;
+	static int  dragXLoc, dragYLoc;
+
+	if( dragPainting )
+	{
+		if( !mouse.left_press )
+			dragPainting = 0;
+
+		else if( mouse.cur_x >= ZOOM_X1 && mouse.cur_x <= ZOOM_X2 && mouse.cur_y >= ZOOM_Y1 && mouse.cur_y <= ZOOM_Y2 )
+		{
+			int xLoc = world.zoom_matrix->top_x_loc + (mouse.cur_x-ZOOM_X1)/ZOOM_LOC_WIDTH;
+			int yLoc = world.zoom_matrix->top_y_loc + (mouse.cur_y-ZOOM_Y1)/ZOOM_LOC_HEIGHT;
+
+			if( xLoc != dragXLoc || yLoc != dragYLoc )
+			{
+				dragXLoc = xLoc;
+				dragYLoc = yLoc;
+
+				editor_terrain_quiet = 1;		// what can't be painted is skipped
+				int rc = place_object(entryPtr, xLoc, yLoc);
+				editor_terrain_quiet = 0;
+
+				if( rc )
+				{
+					sys.zoom_need_redraw = 1;
+					sys.map_need_redraw = 1;
+				}
+			}
+		}
+	}
+
 	if( !mouse.any_click(ZOOM_X1, ZOOM_Y1, ZOOM_X2, ZOOM_Y2) )
 		return 1;
 
 	int xLoc = world.zoom_matrix->top_x_loc + (mouse.click_x()-ZOOM_X1)/ZOOM_LOC_WIDTH;
 	int yLoc = world.zoom_matrix->top_y_loc + (mouse.click_y()-ZOOM_Y1)/ZOOM_LOC_HEIGHT;
 
-	PlaceEntry* entryPtr = tab_entry_array[(int)panel_tab] + place_entry;
-
 	if( place_object(entryPtr, xLoc, yLoc) )
 	{
 		sys.zoom_need_redraw = 1;
 		sys.map_need_redraw = 1;
 		info.disp();
+	}
+
+	//--- the brushes of the Terrain tab paint while the button is held (not the rocks and Ramp) ---//
+
+	if( entryPtr->type == PLACE_TREE || entryPtr->type == PLACE_CLEAR || entryPtr->type == PLACE_GROUND ||
+		 (entryPtr->type == PLACE_SHAPE && entryPtr->id != EDITOR_TERRAIN_RAMP) )
+	{
+		dragPainting = mouse.left_press != 0;		// the box of a message ends the dragging
+		dragXLoc = xLoc;
+		dragYLoc = yLoc;
 	}
 
 	return 1;

@@ -110,13 +110,21 @@ de `7kmod` está en `CHANGELOG.md`. El diseño y las fases están en `TODO-edito
   **Land** y **Hill** en la pestaña Terrain. Water pinta mar con sus orillas, Land pinta
   tierra (también sobre el mar) y Hill levanta una meseta rodeada de colinas; los
   trazos se unen, así se hacen caminos altos y mesetas de cualquier forma, con rampas
-  automáticas donde caben (bordes rectos, mesetas de unas 5 casillas de ancho o más). La
-  entrada **Ramp** pone o quita una rampa. **Clear** sobre una meseta quita esa parte y
-  cierra los bordes; las franjas de menos de 3 casillas que quedan se aplanan. Después se recalculan las costas, lo que se camina y navega, las
-  regiones del mapa y las de pueblos, edificios, puertos y la IA. No se pinta donde hay
+  automáticas donde caben (bordes rectos). La entrada **Ramp** pone o quita una rampa.
+  Después se recalculan las costas, lo que se camina y navega, las regiones del mapa y
+  las de pueblos, edificios, puertos y la IA. No se pinta donde hay
   unidades, edificios, pueblos, recursos, muros o rocas.
 
 ### Cambiado
+- **Editor, Hill con tierra (5d):** Hill pinta la tierra de la meseta con cualquier
+  pincel (como la antigua Dirt) y las colinas salen solas en su contorno; la meseta sigue
+  la forma pintada, con esquinas y escalones, y las partes angostas quedan como muro. Se
+  quitó la entrada **Dirt**. **Land** baja o recorta las mesetas; **Clear** solo quita
+  árboles, rocas y manchas de tierra; **Water**, Dark grass y Light grass no cambian las
+  mesetas.
+- **Editor, pintar arrastrando:** en la pestaña Terrain, con el botón presionado se pinta
+  por donde pasa el ratón (todas las entradas de pincel; rocas y Ramp siguen siendo de
+  un clic). Lo que no se puede pintar a media pasada se salta sin aviso.
 - **Pestaña Buildings:** se quitó la opción Race; en el juego los edificios no tienen raza.
 - **Bajar la población** de un pueblo en el editor ya no hace sonar el grito de los
   aldeanos.
