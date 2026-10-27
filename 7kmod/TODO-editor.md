@@ -361,11 +361,21 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
   `se_res.sound(... "DIE")`); lo demás igual (primero los que no tienen trabajo, los
   espías se cuentan bien).
 - [ ] **Mina: mineral y reserva (pendiente).** Al seleccionar una mina, el cuadro de lo
-  seleccionado muestra **Mineral** (Clay, Copper, Iron) y **Reserve** con `<` `>`.
-  - La mina guarda su mineral (`FirmMine::raw_id`) y lo que le queda (`reserve_qty`); el
-    sitio de debajo (`Site`) tiene su propio tipo y reserva. Hay que cambiar los dos
-    juntos para que no se contradigan, y lo que ya se extrajo (`stock_qty`) pasa al
-    mineral nuevo o se vacía.
+  seleccionado muestra **Mineral** (None, Clay, Copper, Iron) y **Reserve** con `<` `>`.
+  - En el juego una mina toma su mineral y su reserva del sitio de mineral (`Site`) que
+    tiene debajo; si no hay sitio, la mina no produce nada (`raw_id` 0). El editor los
+    cambia juntos: la mina (`FirmMine::raw_id`, `reserve_qty`) y su sitio.
+  - **Mina sin mineral:** se puede poner una mina en cualquier lugar. Al elegir un
+    mineral, el editor crea el sitio debajo con la reserva base: la opción **Reserve** de
+    la pestaña Nature (hoy 10,000 por omisión).
+  - **Reserve:** de 1,000 en 1,000, hasta 20,000 (`MAX_RAW_RESERVE_QTY`, el máximo del
+    juego).
+  - **Cambiar de mineral** conserva la reserva (por ejemplo: Copper, se sube a 19,000,
+    se cambia a Iron: queda Iron con 19,000). Lo que la mina ya extrajo y tiene guardado
+    (`stock_qty`) se vacía.
+  - **None** quita el sitio de debajo y la mina queda sin mineral.
+  - Se actualizan las cuentas del reino y del mapa (`raw_count_array` del reino,
+    `untapped_raw_count`, `has_mine` del sitio).
   - Hoy **Reserve** está desactivada en un sitio con mina; con esto se cambia desde la
     mina.
 - [ ] **Menús de la barra del editor (pendiente).** Con una ventana abierta (Scenario,
