@@ -333,34 +333,41 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
   - El mapa nuevo borra los datos del escenario (nombre, descripción, dificultad, bonus y
     archivo), como un escenario nuevo. También funciona desde un escenario abierto con
     **Edit**.
-- [ ] **Cambiar la raza (pendiente).** Objetivo: si haces un mapa y al final decides
-  jugarlo con otra raza, debe ser fácil cambiarla. Fila **Race** (`<` `>`) en el cuadro
-  de lo seleccionado; el cuadro crece unos 20 píxeles hacia arriba y la paleta se hace un
-  poco más corta (las unidades ya tienen Combat y Leadership).
+- [x] **Cambiar la raza.** Objetivo: si haces un mapa y al final decides jugarlo con otra
+  raza, debe ser fácil cambiarla. Fila **Race** (`<` `>`) en el cuadro de lo
+  seleccionado. El cuadro crece hacia arriba con las filas que necesita (`select_layout`
+  en `src/ModEditorPanel.cpp`) y la paleta termina arriba de él; las opciones de la
+  paleta que no caben no se muestran mientras hay algo seleccionado.
   - **Pueblo:** los aldeanos sin trabajo pasan a la raza nueva, con la misma población.
     Los que trabajan en edificios conservan su raza (son trabajadores del edificio).
-  - **Edificio:** cambia su `race_id` y su dibujo (`firm_build_id` de esa raza). Si el
-    dibujo de la otra raza ocupa otro tamaño, ese edificio no permite cambiar la raza.
-    Soldados y trabajadores de adentro no cambian. Las guaridas no tienen raza.
+  - **Edificio:** al revisar los datos del juego, los edificios no tienen raza: solo la
+    Sede de Poder tiene un dibujo por raza (en `FIRMBLD`, los demás tienen uno solo). Por
+    eso la opción Race de la pestaña Buildings no cambia nada. En su lugar, el **fuerte**
+    muestra la raza de su general (o rey): al cambiarla, el general sale, cambia de raza
+    y vuelve a entrar. Los soldados de adentro no cambian (no son unidades del mapa: hay
+    que sacarlos, cambiarlos y volver a meterlos).
   - **Unidades** (soldados, generales, trabajadores, aldeanos; también varias
     seleccionadas): la figura depende de la raza (`unit_id`), así que se crea una unidad
-    nueva de esa raza en el mismo lugar y se quita la anterior. Conserva reino, rango,
-    combate, liderazgo o habilidad y nivel; recibe un nombre de la raza nueva y queda
-    seleccionada. No aplica a armas, barcos, Fryhtans ni unidades dentro de edificios.
+    nueva de esa raza en el mismo lugar y se quita la anterior (`change_unit_race`).
+    Conserva reino, rango, combate, liderazgo o habilidad y nivel, lealtad y su equipo
+    (su general, o los soldados de un general); recibe un nombre de la raza nueva y queda
+    seleccionada. Con varias seleccionadas, todas pasan a la raza siguiente de la primera.
+    No aplica a armas, barcos, Fryhtans, espías ni unidades dentro de edificios.
   - **Rey:** la raza del rey es la del reino (`nation->race_id`): lealtad por raza,
     resistencia y rendición de pueblos independientes, reclutar, ícono en los reportes,
     IA, y el nombre del reino sale del nombre del rey. Cambiar la raza del rey cambia la
     del reino: se crea un rey nuevo de esa raza (mismo combate y liderazgo) y se pone
     como rey del reino. La lealtad se ajusta sola con el tiempo.
     - El rey **conserva su nombre** (y el reino, el suyo); solo cambian la figura y la
-      raza.
-    - Con **Seats of Power Unlocked**, el reino debe conocer el Seat of Power de la raza
-      nueva en vez de la vieja.
-- [ ] **Bajar la población sin el grito (pendiente).** El `<` de Population en el editor
+      raza. El nombre de un rey de la computadora sale de la lista de nombres de su raza,
+      así que se guarda como nombre propio (`NationArray::set_human_name`).
+    - Con **Seats of Power Unlocked**, el reino conoce el Seat of Power de la raza nueva
+      en vez de la vieja.
+- [x] **Bajar la población sin el grito.** El `<` de Population en el editor
   quita aldeanos sin el sonido de muerte (`Town::kill_town_people` llama a
   `se_res.sound(... "DIE")`); lo demás igual (primero los que no tienen trabajo, los
-  espías se cuentan bien).
-- [ ] **Mina: mineral y reserva (pendiente).** Al seleccionar una mina, el cuadro de lo
+  espías se cuentan bien). Se apaga el sonido mientras se quitan.
+- [x] **Mina: mineral y reserva.** Al seleccionar una mina, el cuadro de lo
   seleccionado muestra **Mineral** (None, Clay, Copper, Iron) y **Reserve** con `<` `>`.
   - En el juego una mina toma su mineral y su reserva del sitio de mineral (`Site`) que
     tiene debajo; si no hay sitio, la mina no produce nada (`raw_id` 0). El editor los
@@ -376,14 +383,14 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
   - **None** quita el sitio de debajo y la mina queda sin mineral.
   - Se actualizan las cuentas del reino y del mapa (`raw_count_array` del reino,
     `untapped_raw_count`, `has_mine` del sitio).
-  - Hoy **Reserve** está desactivada en un sitio con mina; con esto se cambia desde la
-    mina.
-- [ ] **Menús de la barra del editor (pendiente).** Con una ventana abierta (Scenario,
-  Kingdoms, Goals, Save o New), presionar otro botón de la barra cierra la ventana y abre
-  la del botón presionado; presionar el mismo botón la cierra. Hoy hay que cerrarla
-  primero. Las ventanas son ciclos propios (`edit_kingdoms`, `edit_goals`,
-  `edit_scenario_info`, `edit_new_map`), así que cada una revisa los clics en la barra y
-  devuelve qué botón se presionó; `detect_top_bar` abre la siguiente. Test y Exit
+  - **Reserve** sigue desactivada en un sitio con mina: se cambia desde la mina.
+  - Al borrar la mina queda su sitio de mineral, como en el juego.
+- [x] **Menús de la barra del editor.** Con una ventana abierta (Scenario, Kingdoms,
+  Goals, Save o New), presionar otro botón de la barra cierra la ventana y abre la del
+  botón presionado; presionar el mismo botón la cierra. Las ventanas son ciclos propios
+  (`edit_kingdoms`, `edit_goals`, `edit_scenario_info`, `edit_new_map`): cada una revisa
+  los clics en la barra (`detect_bar_switch`, que guarda el botón en `pending_bar`) y
+  `detect_top_bar` abre la siguiente (`run_bar_button`). Test y Exit
   también funcionan así (cierran la ventana y hacen lo suyo). Los cambios de una ventana
   con Cancel (Scenario, Save, New) se descartan al cambiar, como con Cancel.
 - **Fuera de alcance por ahora:** disparadores y eventos ("si pasa X, aparece Y"). El

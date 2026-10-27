@@ -122,6 +122,9 @@ void ModEditor::edit_kingdoms()
 		if( sys.signal_exit_flag == 1 )
 			break;
 
+		if( mod_editor.detect_bar_switch() )		// another button of the editor bar (or the same one: close)
+			break;
+
 		if( refresh )
 		{
 			rest_view(viewBitmap);
@@ -458,6 +461,9 @@ void ModEditor::edit_goals()
 		if( sys.signal_exit_flag == 1 )
 			break;
 
+		if( mod_editor.detect_bar_switch() )		// another button of the editor bar (or the same one: close)
+			break;
+
 		//------- display -------//
 
 		if( refresh )
@@ -766,6 +772,9 @@ void ModEditor::edit_new_map()
 		mouse.get_event();
 
 		if( sys.signal_exit_flag == 1 )
+			break;
+
+		if( mod_editor.detect_bar_switch() )		// another button of the editor bar (or the same one: close)
 			break;
 
 		//------- display -------//

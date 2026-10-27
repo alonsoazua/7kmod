@@ -43,6 +43,8 @@
 #include <OTOWN.h>
 #include <OFIRM.h>
 #include <OFIRMRES.h>
+#include <OF_MINE.h>
+#include <OGODRES.h>
 #include <OFIRMID.h>
 #include <OSITE.h>
 #include <OFIRMDIE.h>
@@ -63,11 +65,10 @@ enum { OWNER_Y1 = INFO_Y1+4,
 		 TAB_WIDTH = 64,
 		 TAB_HEIGHT = 20,
 		 PALETTE_Y1 = INFO_Y1+74,
-		 PALETTE_Y2 = INFO_Y2-104,
 		 ENTRY_WIDTH = 97,
 		 ENTRY_HEIGHT = 16,
 		 OPTION_HEIGHT = 20,
-		 SELECT_Y1 = INFO_Y2-100 };
+		 SELECT_MIN_HEIGHT = 100 };		// the box of the selected object grows upwards with its rows; the palette ends above it
 
 static const char* tab_str[EDITOR_TAB_COUNT] =
 {
@@ -165,9 +166,27 @@ enum { MAX_UNIT_PER_ORDER = 200 };
 
 //------- the properties of the selected object --------//
 
-enum { PROP_NONE, PROP_COMBAT, PROP_SKILL, PROP_VERSION, PROP_POPULATION, PROP_RESERVE };
+enum { PROP_NONE, PROP_COMBAT, PROP_SKILL, PROP_VERSION, PROP_POPULATION, PROP_RESERVE,
+		 PROP_RACE,				// towns and human units (the king changes the race of his kingdom)
+		 PROP_MINERAL,			// mines: none, clay, copper, iron
+		 PROP_MINE_RESERVE };
 
-enum { MAX_PROP = 2 };
+enum { MAX_PROP = 3 };
+
+//------- the layout of the box of the selected object --------//
+
+struct SelectLayout
+{
+	int	y1;							// the top of the box
+	int	info_y;						// the lines of a building (its general/overseer and workers)
+	int	info_count;
+	int	rows_y;						// the rows of the properties
+	int	prop_count;
+	char	prop_array[MAX_PROP];
+	int	value_array[MAX_PROP];
+	int	out_y;						// "All out" and "General out", -1 - none
+	int	owner_y;						// "Set Owner" and "Delete"
+};
 
 //------- Declare static functions --------//
 
@@ -188,7 +207,15 @@ static int	terrain_place_type(PlaceEntry* entryPtr);
 static int	can_set_owner();
 static int	can_place_unit(int unitId, int xLoc, int yLoc);
 static int	place_object(PlaceEntry* entryPtr, int xLoc, int yLoc);
-static void	disp_selected(int y1);
+static void	disp_selected(SelectLayout& layout);
+static void	select_layout(SelectLayout& layout);
+static int	can_change_race(Unit* unitPtr);
+static int	next_race(int raceId, int dir);
+static void	change_town_race(Town* townPtr, int newRaceId);
+static int	change_unit_race(int unitRecno, int newRaceId);
+static void	change_selected_units_race(int dir);
+static void	set_mine_mineral(FirmMine* minePtr, int rawId);
+static void	set_mine_reserve(FirmMine* minePtr, int reserveQty);
 static void	put_arrow_row(int y, const char* labelStr, const char* valueStr, int enabled=1);
 static int	detect_arrow_row(int y);
 
@@ -232,9 +259,14 @@ void ModEditor::disp_panel(int refreshFlag)
 	for( int i=0 ; i<EDITOR_TAB_COUNT ; i++ )
 		editor_put_button( TAB_X(i), TAB_Y(i), TAB_X(i)+TAB_WIDTH-1, TAB_Y(i)+TAB_HEIGHT-1, _(tab_str[i]), 1, panel_tab==i );
 
-	//------- the palette -------//
+	//------- the palette: above the box of the selected object -------//
 
-	vga_util.d3_panel_down( INFO_X1, PALETTE_Y1, INFO_X2, PALETTE_Y2 );
+	SelectLayout layout;
+	select_layout(layout);
+
+	int paletteY2 = layout.y1-4;
+
+	vga_util.d3_panel_down( INFO_X1, PALETTE_Y1, INFO_X2, paletteY2 );
 
 	PlaceEntry* entryArray = tab_entry_array[(int)panel_tab];
 	int entryCount = tab_entry_count[(int)panel_tab];
@@ -256,7 +288,7 @@ void ModEditor::disp_panel(int refreshFlag)
 	char optionArray[MAX_OPTION];
 	int  optionCount = get_options(optionArray);
 
-	for( int i=0 ; i<optionCount ; i++ )
+	for( int i=0 ; i<optionCount && y+17 <= paletteY2-2 ; i++ )		// the rows that fit above the selected object
 	{
 		String labelStr, valueStr;
 		option_str( optionArray[i], labelStr, valueStr );
@@ -267,12 +299,12 @@ void ModEditor::disp_panel(int refreshFlag)
 
 	//------- the help of placing -------//
 
-	if( place_entry >= 0 )
-		font_san.put( INFO_X1+6, PALETTE_Y2-16, _("Click on the map to place it."), 0, INFO_X2-4 );
+	if( place_entry >= 0 && paletteY2-16 >= y )
+		font_san.put( INFO_X1+6, paletteY2-16, _("Click on the map to place it."), 0, INFO_X2-4 );
 
 	//------- the selected object -------//
 
-	disp_selected( SELECT_Y1 );
+	disp_selected( layout );
 
 	if( !useBackBuf )
 		vga.use_front();
@@ -353,7 +385,10 @@ void ModEditor::detect_panel()
 	char optionArray[MAX_OPTION];
 	int  optionCount = get_options(optionArray);
 
-	for( int i=0 ; i<optionCount ; i++ )
+	SelectLayout layout;
+	select_layout(layout);
+
+	for( int i=0 ; i<optionCount && y+17 <= layout.y1-6 ; i++ )
 	{
 		int dir = detect_arrow_row(y);
 
@@ -369,17 +404,14 @@ void ModEditor::detect_panel()
 
 	//------- the selected object: properties -------//
 
-	char propArray[MAX_PROP];
-	int  valueArray[MAX_PROP];
-	int  propCount = selected_properties(propArray, valueArray);
-
-	for( int i=0 ; i<propCount ; i++ )
+	for( int i=0 ; i<layout.prop_count ; i++ )
 	{
-		int dir = detect_arrow_row(SELECT_Y1+36+i*20);
+		int dir = detect_arrow_row(layout.rows_y+i*20);
 
 		if( dir )
 		{
-			change_property(propArray[i], dir);
+			change_property(layout.prop_array[i], dir);
+			sys.zoom_need_redraw = 1;
 			info.disp();
 			return;
 		}
@@ -387,9 +419,9 @@ void ModEditor::detect_panel()
 
 	//------- the selected building: take out its units -------//
 
-	if( firm_array.selected_recno )
+	if( layout.out_y >= 0 )
 	{
-		int buttonY = SELECT_Y1+64;
+		int buttonY = layout.out_y;
 
 		if( mouse.any_click( INFO_X1+6, buttonY, INFO_X1+100, buttonY+15 ) )
 		{
@@ -406,7 +438,7 @@ void ModEditor::detect_panel()
 
 	//------- Set Owner and Delete -------//
 
-	int buttonY = SELECT_Y1+81;
+	int buttonY = layout.owner_y;
 
 	if( mouse.any_click( INFO_X1+6, buttonY, INFO_X1+100, buttonY+16 ) )
 	{
@@ -1163,9 +1195,9 @@ static int can_place_unit(int unitId, int xLoc, int yLoc)
 // Display the selected object: its name, its kingdom, its properties (or
 // the units in a building) and the buttons.
 //
-static void disp_selected(int y1)
+static void disp_selected(SelectLayout& layout)
 {
-	int x1=INFO_X1, x2=INFO_X2, y2=INFO_Y2;
+	int x1=INFO_X1, x2=INFO_X2, y1=layout.y1, y2=INFO_Y2;
 
 	vga_util.d3_panel_up( x1, y1, x2, y2 );
 
@@ -1245,7 +1277,7 @@ static void disp_selected(int y1)
 	if( firm_array.selected_recno )
 	{
 		Firm* firmPtr = firm_array[firm_array.selected_recno];
-		int y = y1+36;
+		int y = layout.info_y;
 
 		if( firm_res[firmPtr->firm_id]->need_overseer )
 		{
@@ -1273,9 +1305,9 @@ static void disp_selected(int y1)
 			font_san.put( x1+8, y, str, 0, x2-8 );
 		}
 
-		if( firmPtr->firm_id != FIRM_MONSTER )
+		if( layout.out_y >= 0 )
 		{
-			int buttonY = y1+64;
+			int buttonY = layout.out_y;
 
 			editor_put_button( x1+6, buttonY, x1+100, buttonY+15, _("All out"),
 				firmPtr->overseer_recno || firmPtr->worker_count, 0 );
@@ -1286,17 +1318,16 @@ static void disp_selected(int y1)
 		}
 	}
 
-	//------- the properties -------//
+	//------- the properties (also of buildings: the mineral of a mine) -------//
 
-	else
 	{
-		static const char* propStr[] = { "", N_("Combat"), "", N_("Version"), N_("Population"), N_("Reserve") };
+		static const char* propStr[] = { "", N_("Combat"), "", N_("Version"), N_("Population"), N_("Reserve"),
+			N_("Race"), N_("Mineral"), N_("Reserve") };
 
-		char propArray[MAX_PROP];
-		int  valueArray[MAX_PROP];
-		int  propCount = selected_properties(propArray, valueArray);
+		char* propArray = layout.prop_array;
+		int*  valueArray = layout.value_array;
 
-		for( int i=0 ; i<propCount ; i++ )
+		for( int i=0 ; i<layout.prop_count ; i++ )
 		{
 			String labelStr, valueStr;
 
@@ -1305,20 +1336,34 @@ static void disp_selected(int y1)
 			else
 				labelStr = _(propStr[(int)propArray[i]]);
 
-			if( propArray[i] == PROP_VERSION )
-				valueStr = misc.roman_number(valueArray[i]);
-			else
-				valueStr = misc.format(valueArray[i]);
+			switch( propArray[i] )
+			{
+				case PROP_VERSION:
+					valueStr = misc.roman_number(valueArray[i]);
+					break;
 
-			int enabled = !(propArray[i]==PROP_RESERVE && site_array[site_array.selected_recno]->has_mine);
+				case PROP_RACE:
+					valueStr = valueArray[i] ? _(race_res[valueArray[i]]->name) : "";
+					break;
 
-			put_arrow_row( y1+36+i*20, labelStr, valueStr, enabled );
+				case PROP_MINERAL:
+					valueStr = valueArray[i] ? _(raw_res[valueArray[i]]->name) : _("None");
+					break;
+
+				default:
+					valueStr = misc.format(valueArray[i]);
+			}
+
+			int enabled = !(propArray[i]==PROP_RESERVE && site_array[site_array.selected_recno]->has_mine) &&
+							  !(propArray[i]==PROP_MINE_RESERVE && valueArray[i]==0);
+
+			put_arrow_row( layout.rows_y+i*20, labelStr, valueStr, enabled );
 		}
 	}
 
 	//------- the buttons -------//
 
-	int buttonY = y1+81;
+	int buttonY = layout.owner_y;
 
 	editor_put_button( x1+6, buttonY, x1+100, buttonY+16, _("Set Owner"), can_set_owner(), 0 );
 	editor_put_button( x1+106, buttonY, x2-6, buttonY+16, _("Delete"), 1, 0 );
@@ -1338,13 +1383,45 @@ static void disp_selected(int y1)
 static int selected_properties(char* propArray, int* valueArray)
 {
 	if( firm_array.selected_recno )
-		return 0;
+	{
+		Firm* firmPtr = firm_array[firm_array.selected_recno];
+
+		//--- a fort: the race of its general (or king) ---//
+
+		if( firmPtr->firm_id == FIRM_CAMP )
+		{
+			if( !firmPtr->overseer_recno || !unit_array[firmPtr->overseer_recno]->race_id ||
+				 unit_array[firmPtr->overseer_recno]->spy_recno )
+			{
+				return 0;
+			}
+
+			propArray[0]  = PROP_RACE;
+			valueArray[0] = unit_array[firmPtr->overseer_recno]->race_id;
+			return 1;
+		}
+
+		if( firmPtr->firm_id != FIRM_MINE )
+			return 0;
+
+		FirmMine* minePtr = (FirmMine*) firmPtr;
+
+		propArray[0]  = PROP_MINERAL;
+		valueArray[0] = minePtr->raw_id;
+		propArray[1]  = PROP_MINE_RESERVE;
+		valueArray[1] = minePtr->raw_id ? (int) minePtr->reserve_qty : 0;
+		return 2;
+	}
 
 	if( town_array.selected_recno )
 	{
-		propArray[0]  = PROP_POPULATION;
-		valueArray[0] = town_array[town_array.selected_recno]->population;
-		return 1;
+		Town* townPtr = town_array[town_array.selected_recno];
+
+		propArray[0]  = PROP_RACE;
+		valueArray[0] = townPtr->majority_race();
+		propArray[1]  = PROP_POPULATION;
+		valueArray[1] = townPtr->population;
+		return 2;
 	}
 
 	if( site_array.selected_recno )
@@ -1367,6 +1444,12 @@ static int selected_properties(char* propArray, int* valueArray)
 		switch( unit_res[unitPtr->unit_id]->unit_class )
 		{
 			case UNIT_CLASS_HUMAN:
+				if( can_change_race(unitPtr) )
+				{
+					propArray[count]    = PROP_RACE;
+					valueArray[count++] = unitPtr->race_id;
+				}
+
 				propArray[count]    = PROP_COMBAT;
 				valueArray[count++] = unitPtr->skill.combat_level;
 
@@ -1384,6 +1467,26 @@ static int selected_properties(char* propArray, int* valueArray)
 		}
 
 		return count;
+	}
+
+	//------ several units: the race of the people among them ------//
+
+	if( unit_array.selected_recno )
+	{
+		for( int i=unit_array.size() ; i>0 ; i-- )
+		{
+			if( unit_array.is_deleted(i) )
+				continue;
+
+			Unit* unitPtr = unit_array[i];
+
+			if( unitPtr->selected_flag && can_change_race(unitPtr) )
+			{
+				propArray[0]  = PROP_RACE;
+				valueArray[0] = unitPtr->race_id;
+				return 1;
+			}
+		}
 	}
 
 	return 0;
@@ -1444,8 +1547,15 @@ static void change_property(int propId, int dir)
 			}
 			else
 			{
+				//--- without the death cry of the villagers (Town::kill_town_people() plays it) ---//
+
+				char oldSoundFlag = config.sound_effect_flag;
+				config.sound_effect_flag = 0;
+
 				for( int i=0 ; i<5 && townPtr->population > 1 && townPtr->race_pop_array[raceId-1] > 0 ; i++ )
 					townPtr->kill_town_people(raceId);
+
+				config.sound_effect_flag = oldSoundFlag;
 			}
 
 			townPtr->auto_set_layout();
@@ -1461,6 +1571,56 @@ static void change_property(int propId, int dir)
 				return;
 
 			sitePtr->reserve_qty = MAX( 1000, MIN(MAX_RAW_RESERVE_QTY, (sitePtr->reserve_qty/1000 + dir)*1000) );
+			break;
+		}
+
+		case PROP_RACE:
+			if( firm_array.selected_recno )		// a fort: its general comes out, changes and goes back in
+			{
+				int firmRecno = firm_array.selected_recno;
+				Firm* firmPtr = firm_array[firmRecno];
+
+				if( !firmPtr->overseer_recno )
+					return;
+
+				int newRaceId = next_race( unit_array[firmPtr->overseer_recno]->race_id, dir );
+				int unitRecno = firmPtr->mobilize_overseer();
+
+				if( !unitRecno )
+					return;
+
+				int newRecno = change_unit_race(unitRecno, newRaceId);
+
+				if( !newRecno )
+					newRecno = unitRecno;
+
+				if( !assign_to_firm(newRecno, firmRecno) )
+					box.msg( _("The general couldn't go back into the fort; he is next to it.") );
+
+				firm_array.selected_recno = firmRecno;
+			}
+			else if( town_array.selected_recno )
+			{
+				Town* townPtr = town_array[town_array.selected_recno];
+				change_town_race( townPtr, next_race(townPtr->majority_race(), dir) );
+			}
+			else
+				change_selected_units_race(dir);
+			break;
+
+		case PROP_MINERAL:
+		{
+			FirmMine* minePtr = (FirmMine*) firm_array[firm_array.selected_recno];
+			set_mine_mineral( minePtr, (minePtr->raw_id + dir + MAX_RAW+1) % (MAX_RAW+1) );		// none, clay, copper, iron
+			break;
+		}
+
+		case PROP_MINE_RESERVE:
+		{
+			FirmMine* minePtr = (FirmMine*) firm_array[firm_array.selected_recno];
+
+			if( minePtr->raw_id )
+				set_mine_reserve( minePtr, ((int)minePtr->reserve_qty/1000 + dir) * 1000 );
 			break;
 		}
 	}
@@ -1884,6 +2044,407 @@ static int detect_arrow_row(int y)
 	return 0;
 }
 //----------- End of static function detect_arrow_row -----------//
+
+
+//-------- Begin of static function select_layout --------//
+//
+// The layout of the box of the selected object: it grows upwards with the
+// lines and rows it needs, the buttons stay at the bottom.
+//
+static void select_layout(SelectLayout& layout)
+{
+	layout.prop_count = selected_properties(layout.prop_array, layout.value_array);
+	layout.info_count = 0;
+
+	int hasOutButtons = 0;
+
+	if( firm_array.selected_recno )
+	{
+		Firm* firmPtr = firm_array[firm_array.selected_recno];
+
+		if( firm_res[firmPtr->firm_id]->need_overseer )
+			layout.info_count++;
+
+		if( firmPtr->worker_array )
+			layout.info_count++;
+
+		hasOutButtons = firmPtr->firm_id != FIRM_MONSTER;
+	}
+
+	int infoHeight = layout.info_count ? layout.info_count*14+2 : 0;
+
+	int height = 36 + infoHeight + layout.prop_count*20 + (hasOutButtons ? 20 : 0) + 20 + 3;
+
+	layout.y1      = INFO_Y2 - MAX(height, (int)SELECT_MIN_HEIGHT);
+	layout.info_y  = layout.y1 + 36;
+	layout.rows_y  = layout.info_y + infoHeight;
+	layout.owner_y = INFO_Y2 - 19;
+	layout.out_y   = hasOutButtons ? layout.owner_y - 17 : -1;
+}
+//----------- End of static function select_layout -----------//
+
+
+//-------- Begin of static function can_change_race --------//
+//
+// Units whose race can be changed: people on the map (not spies).
+//
+static int can_change_race(Unit* unitPtr)
+{
+	return unit_res[unitPtr->unit_id]->unit_class == UNIT_CLASS_HUMAN &&
+			 unitPtr->race_id && !unitPtr->spy_recno && !unitPtr->unit_mode &&
+			 unitPtr->is_visible() && !unitPtr->is_unit_dead();
+}
+//----------- End of static function can_change_race -----------//
+
+
+//-------- Begin of static function next_race --------//
+//
+static int next_race(int raceId, int dir)
+{
+	raceId += dir;
+
+	if( raceId < 1 )
+		raceId = race_res.race_count;
+
+	if( raceId > race_res.race_count )
+		raceId = 1;
+
+	return raceId;
+}
+//----------- End of static function next_race -----------//
+
+
+//-------- Begin of static function change_town_race --------//
+//
+// The villagers without a job change to the new race; the workers of the
+// buildings keep their race (they are counted in the buildings), and so do
+// the spies.
+//
+static void change_town_race(Town* townPtr, int newRaceId)
+{
+	for( int raceId=1 ; raceId<=MAX_RACE ; raceId++ )
+	{
+		if( raceId == newRaceId )
+			continue;
+
+		int count = townPtr->recruitable_race_pop(raceId, 0);		// 0-without the spies
+
+		if( count <= 0 )
+			continue;
+
+		//--- a new race in the town: it starts with the loyalty and the resistance of the old one ---//
+
+		if( townPtr->race_pop_array[newRaceId-1] == 0 )
+		{
+			townPtr->race_loyalty_array[newRaceId-1] = townPtr->race_loyalty_array[raceId-1];
+			townPtr->race_target_loyalty_array[newRaceId-1] = townPtr->race_target_loyalty_array[raceId-1];
+
+			for( int j=0 ; j<MAX_NATION ; j++ )
+			{
+				townPtr->race_resistance_array[newRaceId-1][j] = townPtr->race_resistance_array[raceId-1][j];
+				townPtr->race_target_resistance_array[newRaceId-1][j] = townPtr->race_target_resistance_array[raceId-1][j];
+			}
+		}
+
+		int loyalty = (int) townPtr->race_loyalty_array[raceId-1];
+
+		//--- one by one; the population never reaches 0 (the town would be deleted) nor goes over the maximum ---//
+
+		for( int i=0 ; i<count ; i++ )
+		{
+			if( townPtr->population > 1 )
+			{
+				townPtr->dec_pop(raceId, 0);
+				townPtr->inc_pop(newRaceId, 0, loyalty);
+			}
+			else
+			{
+				townPtr->inc_pop(newRaceId, 0, loyalty);
+				townPtr->dec_pop(raceId, 0);
+			}
+		}
+	}
+
+	townPtr->auto_set_layout();
+	town_array.distribute_demand();
+}
+//----------- End of static function change_town_race -----------//
+
+
+//-------- Begin of static function change_unit_race --------//
+//
+// The look of a person depends on its race (each race has its own unit),
+// so a new unit of the new race replaces it at the same place, with the
+// same kingdom, rank, skills, loyalty and team. A king changes the race of
+// his kingdom and keeps his name.
+//
+// return: <int> the recno of the new unit, 0 - not changed
+//
+static int change_unit_race(int unitRecno, int newRaceId)
+{
+	Unit* oldUnit = unit_array[unitRecno];
+
+	if( !can_change_race(oldUnit) || oldUnit->race_id == newRaceId )
+		return 0;
+
+	int newUnitId = race_res[newRaceId]->basic_unit_id;
+	int oldRaceId = oldUnit->race_id;
+	int nationRecno = oldUnit->nation_recno;
+	int rankId = oldUnit->rank_id;
+	int xLoc = oldUnit->next_x_loc();
+	int yLoc = oldUnit->next_y_loc();
+
+	//------- the new unit, next to the old one -------//
+
+	int newXLoc = xLoc, newYLoc = yLoc;
+
+	if( !world.locate_space(&newXLoc, &newYLoc, xLoc, yLoc, 1, 1) )
+		return 0;
+
+	int newRecno = unit_array.add_unit( newUnitId, nationRecno, rankId==RANK_KING ? RANK_GENERAL : rankId,
+													oldUnit->loyalty, newXLoc, newYLoc );
+	if( !newRecno )
+		return 0;
+
+	oldUnit = unit_array[unitRecno];		// the array may have been reallocated
+	Unit* newUnit = unit_array[newRecno];
+
+	Skill oldSkill = oldUnit->skill;
+	newUnit->skill = oldSkill;
+	newUnit->set_combat_level( oldSkill.combat_level );
+	newUnit->hit_points = (float) newUnit->max_hit_points;
+
+	//------- the team: its general, or its soldiers -------//
+
+	if( oldUnit->leader_unit_recno && !unit_array.is_deleted(oldUnit->leader_unit_recno) )
+	{
+		Unit* leaderUnit = unit_array[oldUnit->leader_unit_recno];
+		newUnit->leader_unit_recno = oldUnit->leader_unit_recno;
+
+		if( leaderUnit->team_info )
+		{
+			for( int i=0 ; i<leaderUnit->team_info->member_count ; i++ )
+			{
+				if( leaderUnit->team_info->member_unit_array[i] == unitRecno )
+					leaderUnit->team_info->member_unit_array[i] = newRecno;
+			}
+		}
+	}
+
+	if( oldUnit->team_info && newUnit->team_info )
+		memcpy( newUnit->team_info, oldUnit->team_info, sizeof(TeamInfo) );
+
+	if( rankId == RANK_GENERAL || rankId == RANK_KING )
+	{
+		for( int i=unit_array.size() ; i>0 ; i-- )
+		{
+			if( !unit_array.is_deleted(i) && unit_array[i]->leader_unit_recno == unitRecno )
+				unit_array[i]->leader_unit_recno = newRecno;
+		}
+	}
+
+	//------- the king: the race of the kingdom changes, the name stays -------//
+
+	if( rankId == RANK_KING )
+	{
+		Nation* nationPtr = nation_array[nationRecno];
+
+		char kingName[HUMAN_NAME_LEN+1];
+		strncpy( kingName, nationPtr->king_name(), HUMAN_NAME_LEN );
+		kingName[HUMAN_NAME_LEN] = '\0';
+
+		int oldNameId = nationPtr->nation_name_id;
+
+		nationPtr->set_king(newRecno, 1);		// the race of the kingdom is the race of its king
+
+		if( oldNameId < 0 )
+			nationPtr->nation_name_id = oldNameId;		// a player's name
+		else
+		{
+			nation_array.set_human_name(nationRecno, kingName);		// keep the name, which is looked up by race otherwise
+			nationPtr->nation_name_id = -nationRecno;
+		}
+
+		//--- the Seat of Power known at the start (config.seat_of_power_unlocked) follows the race ---//
+
+		if( config.seat_of_power_unlocked && !nationPtr->is_ai() )
+		{
+			for( int godId=1 ; godId<=god_res.god_count ; godId++ )
+			{
+				GodInfo* godInfo = god_res[godId];
+
+				if( godInfo->race_id == oldRaceId && godInfo->is_nation_know(nationRecno) )
+					godInfo->disable_know(nationRecno);
+
+				if( godInfo->race_id == newRaceId )
+					godInfo->enable_know(nationRecno);
+			}
+		}
+	}
+
+	//------- delete the old unit (without the death of a king or a general), move the new one in its place -------//
+
+	char oldExitFlag = sys.signal_exit_flag;
+	sys.signal_exit_flag = 2;
+	unit_array.del(unitRecno);
+	sys.signal_exit_flag = oldExitFlag;
+
+	newUnit = unit_array[newRecno];
+	newUnit->stop2();
+	newUnit->deinit_sprite(1);
+
+	int destX = xLoc, destY = yLoc;
+
+	if( world.locate_space( &destX, &destY, xLoc, yLoc, newUnit->sprite_info->loc_width, newUnit->sprite_info->loc_height ) )
+		newUnit->init_sprite(destX, destY);
+	else
+		newUnit->init_sprite(newXLoc, newYLoc);
+
+	newUnit->stop2();
+
+	return newRecno;
+}
+//----------- End of static function change_unit_race -----------//
+
+
+//-------- Begin of static function change_selected_units_race --------//
+//
+// All the selected people change to the next race of the first of them.
+//
+static void change_selected_units_race(int dir)
+{
+	short unitArray[MAX_UNIT_PER_ORDER];
+	int	unitCount=0, raceId=0;
+
+	for( int i=unit_array.size() ; i>0 && unitCount<MAX_UNIT_PER_ORDER ; i-- )
+	{
+		if( unit_array.is_deleted(i) )
+			continue;
+
+		Unit* unitPtr = unit_array[i];
+
+		if( unitPtr->selected_flag && can_change_race(unitPtr) )
+		{
+			if( !raceId )
+				raceId = unitPtr->race_id;
+
+			unitArray[unitCount++] = i;
+		}
+	}
+
+	if( !raceId )
+		return;
+
+	int newRaceId = next_race(raceId, dir);
+
+	for( int i=0 ; i<unitCount ; i++ )
+	{
+		int newRecno = change_unit_race(unitArray[i], newRaceId);
+
+		if( newRecno )
+			unit_array[newRecno]->selected_flag = 1;
+	}
+
+	//------ recount the selection ------//
+
+	unit_array.selected_count = 0;
+	int selectedRecno = 0;
+
+	for( int i=unit_array.size() ; i>0 ; i-- )
+	{
+		if( !unit_array.is_deleted(i) && unit_array[i]->selected_flag && unit_array[i]->is_visible() )
+		{
+			unit_array.selected_count++;
+
+			if( !selectedRecno || unit_array[i]->rank_id > unit_array[selectedRecno]->rank_id )
+				selectedRecno = i;
+		}
+	}
+
+	unit_array.selected_recno = selectedRecno;
+	sys.map_need_redraw = 1;
+}
+//----------- End of static function change_selected_units_race -----------//
+
+
+//-------- Begin of static function set_mine_mineral --------//
+//
+// A mine takes its mineral and reserve from the raw site under it; the
+// editor changes both. Without a site, choosing a mineral creates one with
+// the reserve of the Nature tab; changing the mineral keeps the reserve;
+// none deletes the site. What the mine has already mined is emptied.
+//
+static void set_mine_mineral(FirmMine* minePtr, int rawId)
+{
+	int oldRawId = minePtr->raw_id;
+
+	if( rawId == oldRawId )
+		return;
+
+	Nation* nationPtr = minePtr->nation_recno ? nation_array[minePtr->nation_recno] : NULL;
+
+	if( oldRawId && nationPtr )
+		nationPtr->raw_count_array[oldRawId-1]--;
+
+	if( !rawId )
+	{
+		if( minePtr->site_recno )
+		{
+			site_array.untapped_raw_count++;		// SiteArray::del_site() counts it as an untapped site
+			site_array.del_site(minePtr->site_recno);
+			minePtr->site_recno = 0;
+		}
+
+		minePtr->reserve_qty = (float) 0;
+	}
+	else
+	{
+		int reserveQty = (int) minePtr->reserve_qty;
+
+		if( reserveQty <= 0 )
+			reserveQty = mod_editor.place_reserve * 1000;
+
+		if( minePtr->site_recno )
+		{
+			site_array[minePtr->site_recno]->object_id = rawId;
+		}
+		else
+		{
+			int xLoc = minePtr->center_x, yLoc = minePtr->center_y;
+
+			site_array.add_site( xLoc, yLoc, SITE_RAW, rawId, reserveQty );
+
+			minePtr->site_recno = world.get_loc(xLoc, yLoc)->site_recno();
+
+			site_array[minePtr->site_recno]->has_mine = 1;
+			site_array.untapped_raw_count--;
+		}
+
+		site_array[minePtr->site_recno]->reserve_qty = reserveQty;
+		minePtr->reserve_qty = (float) reserveQty;
+	}
+
+	minePtr->raw_id    = rawId;
+	minePtr->stock_qty = (float) 0;
+
+	if( rawId && nationPtr )
+		nationPtr->raw_count_array[rawId-1]++;
+}
+//----------- End of static function set_mine_mineral -----------//
+
+
+//-------- Begin of static function set_mine_reserve --------//
+//
+static void set_mine_reserve(FirmMine* minePtr, int reserveQty)
+{
+	reserveQty = MAX( 1000, MIN(MAX_RAW_RESERVE_QTY, reserveQty) );
+
+	minePtr->reserve_qty = (float) reserveQty;
+
+	if( minePtr->site_recno )
+		site_array[minePtr->site_recno]->reserve_qty = reserveQty;
+}
+//----------- End of static function set_mine_reserve -----------//
 
 
 //-------- Begin of static function terrain_place_type --------//

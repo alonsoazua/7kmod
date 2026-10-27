@@ -227,6 +227,9 @@ int ModEditor::edit_scenario_info(int saveFlag)
 		if( sys.signal_exit_flag == 1 )
 			break;
 
+		if( mod_editor.detect_bar_switch() )		// another button of the editor bar (or the same one: close)
+			break;
+
 		//---- the values ----//
 
 		if( refreshValues )

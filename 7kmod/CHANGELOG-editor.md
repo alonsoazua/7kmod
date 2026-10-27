@@ -87,6 +87,29 @@ de `7kmod` está en `CHANGELOG.md`. El diseño y las fases están en `TODO-edito
     se siguen editando en **Goals**.
   - El mapa nuevo empieza sin nombre ni descripción de escenario, como uno nuevo.
 
+- **Editor de escenarios, cambiar la raza:** fila **Race** al seleccionar:
+  - **Pueblo:** los aldeanos sin trabajo pasan a la raza nueva (los que trabajan en
+    edificios y los espías conservan la suya).
+  - **Unidades** (una o varias): soldados, generales, trabajadores y aldeanos cambian de
+    raza conservando reino, rango, combate, liderazgo o habilidad, lealtad y equipo.
+    Reciben un nombre de la raza nueva.
+  - **Rey:** cambia también la raza del reino y conserva su nombre. Con Seats of Power
+    Unlocked, el reino conoce la Sede de su raza nueva.
+  - **Fuerte:** la raza de su general (o rey), que sale, cambia y vuelve a entrar. Los
+    edificios del juego no tienen raza (salvo la Sede de Poder), por eso no hay fila para
+    los demás.
+  - El cuadro de lo seleccionado crece hacia arriba según las filas que necesita.
+- **Editor de escenarios, mina:** al seleccionar una mina, **Mineral** (None, Clay,
+  Copper, Iron) y **Reserve** (de 1,000 a 20,000). Una mina sin mineral puede tenerlo:
+  se crea el sitio de mineral debajo con la reserva de la pestaña Nature. Cambiar de
+  mineral conserva la reserva y vacía lo ya extraído; None quita el sitio.
+- **Editor de escenarios, barra:** con una ventana abierta, otro botón de la barra cambia
+  a su ventana y el mismo botón la cierra.
+
+### Cambiado
+- **Bajar la población** de un pueblo en el editor ya no hace sonar el grito de los
+  aldeanos.
+
 ### Corregido
 - **Armas colocadas con el editor:** a veces no tenían gráfico, no atacaban o hacían
   tronar el juego, porque quedaban sin versión cuando el reino no tenía su tecnología.

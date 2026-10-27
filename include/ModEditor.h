@@ -105,7 +105,8 @@ public:
 	short	place_monster_id;			// the Fryhtan of lairs
 	char	place_brush;				// the size of the brush of the Terrain tab: 1, 3 or 5
 
-	short	edit_scen_recno;			// the scenario selected for "Edit" in the scenario screen (Game::select_scenario())
+	short	edit_scen_recno;
+	char	pending_bar;				// EDITOR_BAR_??? pressed while a window was open, -1 - none			// the scenario selected for "Edit" in the scenario screen (Game::select_scenario())
 
 	//--- a new map (the New button: Game::editor_new_map() generates it after the main loop ends) ---//
 
@@ -134,6 +135,8 @@ public:
 
 	void	disp_top_bar();
 	void	detect_top_bar();
+	void	run_bar_button(int buttonId);
+	int	detect_bar_switch();
 
 	void	disp_panel(int refreshFlag);
 	void	detect_panel();

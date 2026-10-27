@@ -122,6 +122,7 @@ void ModEditor::reset()
 	edit_scen_recno = 0;
 	new_map_flag = 0;
 	new_map_seed = 0;
+	pending_bar = -1;
 
 	loc_reveal_all_flag = 0;
 }
@@ -350,41 +351,91 @@ void ModEditor::detect_top_bar()
 			continue;
 		}
 
-		switch( i )
+		//--- a button pressed in an open window switches to its window (the same button closes it) ---//
+
+		int buttonId = i;
+
+		while( 1 )
 		{
-			case EDITOR_BAR_SCENARIO:
-				edit_scenario_info(0);
+			pending_bar = -1;
+
+			run_bar_button(buttonId);
+
+			if( pending_bar < 0 || pending_bar == buttonId || sys.signal_exit_flag )
 				break;
 
-			case EDITOR_BAR_KINGDOMS:
-				edit_kingdoms();
-				break;
-
-			case EDITOR_BAR_GOALS:
-				edit_goals();
-				break;
-
-			case EDITOR_BAR_SAVE:
-				save_scenario();
-				break;
-
-			case EDITOR_BAR_NEW:
-				edit_new_map();
-				break;
-
-			case EDITOR_BAR_TEST:
-				start_test();
-				break;
-
-			case EDITOR_BAR_EXIT:
-				exit_editor();
-				break;
+			buttonId = pending_bar;
 		}
 
+		pending_bar = -1;
 		return;
 	}
 }
 //--------- End of function ModEditor::detect_top_bar ---------//
+
+
+//-------- Begin of function ModEditor::run_bar_button --------//
+//
+void ModEditor::run_bar_button(int buttonId)
+{
+	switch( buttonId )
+	{
+		case EDITOR_BAR_SCENARIO:
+			edit_scenario_info(0);
+			break;
+
+		case EDITOR_BAR_KINGDOMS:
+			edit_kingdoms();
+			break;
+
+		case EDITOR_BAR_GOALS:
+			edit_goals();
+			break;
+
+		case EDITOR_BAR_SAVE:
+			save_scenario();
+			break;
+
+		case EDITOR_BAR_NEW:
+			edit_new_map();
+			break;
+
+		case EDITOR_BAR_TEST:
+			start_test();
+			break;
+
+		case EDITOR_BAR_EXIT:
+			exit_editor();
+			break;
+	}
+}
+//--------- End of function ModEditor::run_bar_button ---------//
+
+
+//-------- Begin of function ModEditor::detect_bar_switch --------//
+//
+// Called by the loops of the windows: a click on a button of the editor
+// bar closes the window (as Cancel) and ModEditor::detect_top_bar() runs the
+// button, unless it is the button of the window.
+//
+// return: <int> 1 - the window must close
+//
+int ModEditor::detect_bar_switch()
+{
+	for( int i=0 ; i<EDITOR_BAR_COUNT ; i++ )
+	{
+		if( bar_button_enabled[i] &&
+			 mouse.any_click( bar_button_x[i], bar_button_y[i], bar_button_x[i]+bar_button_w[i]-1,
+								  bar_button_y[i]+BAR_BUTTON_HEIGHT-1 ) )
+		{
+			pending_bar = i;
+			return 1;
+		}
+	}
+
+	return 0;
+}
+//--------- End of function ModEditor::detect_bar_switch ---------//
 
 
 //-------- Begin of function ModEditor::process_key --------//
