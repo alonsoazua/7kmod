@@ -352,14 +352,30 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
     IA, y el nombre del reino sale del nombre del rey. Cambiar la raza del rey cambia la
     del reino: se crea un rey nuevo de esa raza (mismo combate y liderazgo) y se pone
     como rey del reino. La lealtad se ajusta sola con el tiempo.
-    - Por definir: si el rey recibe un nombre de la raza nueva (cambia el nombre del
-      reino) o conserva el suyo.
+    - El rey **conserva su nombre** (y el reino, el suyo); solo cambian la figura y la
+      raza.
     - Con **Seats of Power Unlocked**, el reino debe conocer el Seat of Power de la raza
       nueva en vez de la vieja.
 - [ ] **Bajar la población sin el grito (pendiente).** El `<` de Population en el editor
   quita aldeanos sin el sonido de muerte (`Town::kill_town_people` llama a
   `se_res.sound(... "DIE")`); lo demás igual (primero los que no tienen trabajo, los
   espías se cuentan bien).
+- [ ] **Mina: mineral y reserva (pendiente).** Al seleccionar una mina, el cuadro de lo
+  seleccionado muestra **Mineral** (Clay, Copper, Iron) y **Reserve** con `<` `>`.
+  - La mina guarda su mineral (`FirmMine::raw_id`) y lo que le queda (`reserve_qty`); el
+    sitio de debajo (`Site`) tiene su propio tipo y reserva. Hay que cambiar los dos
+    juntos para que no se contradigan, y lo que ya se extrajo (`stock_qty`) pasa al
+    mineral nuevo o se vacía.
+  - Hoy **Reserve** está desactivada en un sitio con mina; con esto se cambia desde la
+    mina.
+- [ ] **Menús de la barra del editor (pendiente).** Con una ventana abierta (Scenario,
+  Kingdoms, Goals, Save o New), presionar otro botón de la barra cierra la ventana y abre
+  la del botón presionado; presionar el mismo botón la cierra. Hoy hay que cerrarla
+  primero. Las ventanas son ciclos propios (`edit_kingdoms`, `edit_goals`,
+  `edit_scenario_info`, `edit_new_map`), así que cada una revisa los clics en la barra y
+  devuelve qué botón se presionó; `detect_top_bar` abre la siguiente. Test y Exit
+  también funcionan así (cierran la ventana y hacen lo suyo). Los cambios de una ventana
+  con Cancel (Scenario, Save, New) se descartan al cambiar, como con Cancel.
 - **Fuera de alcance por ahora:** disparadores y eventos ("si pasa X, aparece Y"). El
   juego no tiene sistema de eventos; sería un proyecto aparte (ver `IDEAS.md` si se
   retoma).
