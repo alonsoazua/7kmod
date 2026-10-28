@@ -158,8 +158,8 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
     liderazgo igual a su combate), las 6 armas y los 4 barcos. Necesitan un reino.
   - **Towns:** Town (opciones Race y Population, de 5 en 5). Con "Independent" es un
     pueblo independiente con la resistencia normal; con un reino, lealtad 80.
-  - **Buildings:** Fort, Mine, Factory, Inn, Market, Tower of Science, War Factory y
-    Harbor (opción Race, para la apariencia). Se colocan terminados y vacíos, sin cobrar
+  - **Buildings:** Fort, Mine, Factory, Inn, Market, Tower of Science, War Factory,
+    Harbor y Seat of Power (ver abajo; la opción Race solo es del Seat). Se colocan terminados y vacíos, sin cobrar
     su costo. Necesitan un reino.
   - **Nature:** Clay, Copper, Iron (opción Reserve, de 1,000 en 1,000, hasta 20,000) y
     Fryhtan Lair (opción Fryhtan: el tipo, solo los que tienen guarida).
@@ -190,7 +190,8 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
     translúcido no se aclare.
 - **Pendiente (no entró en las fases 2 y 3):** reyes, espías y Seat of Power (necesitan
   más lógica), agregar o quitar reinos y cambiar cuál es el del jugador (por ahora se
-  eligen en la pantalla de New Game), y propiedades de los edificios.
+  eligen en la pantalla de New Game), y propiedades de los edificios. (El Seat of Power
+  se hizo después, ver abajo.)
 - [x] **Fase 2b: Mover unidades y meterlas o sacarlas de edificios.** Todo al instante
   (el editor está en pausa, una orden normal de mover no se cumpliría hasta probar).
   - **Clic derecho cambia:** con unidades seleccionadas, clic derecho mueve o mete. Quitar
@@ -365,6 +366,25 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
       no se nota al arrastrar. Así cada paso se revisa solo: si uno dejara el mapa con
       más de 254 regiones, solo ese paso no se hace (en lugar de deshacer toda la pasada,
       como estaba previsto).
+- [x] **Seat of Power en el editor.**
+  - Entra en la paleta de Buildings (al final), con la opción **Race**, la única de esa
+    pestaña: la raza del Seat define a qué Greater Being invoca.
+  - **Pergamino:** al poner un Seat, el reino recibe el pergamino de su raza, como cuando
+    lo encuentra en el juego (`GodInfo::enable_know`: `know_base_array` y los Greater
+    Beings que conoce). Se da antes de construirlo; si no se pudo construir, se quita si
+    no lo tenía.
+  - Al **quitar** un Seat, o al **cambiarlo de reino**, cada reino queda con el
+    pergamino de la raza solo si todavía tiene un Seat de esa raza
+    (`base_count_array`). Así un pergamino sin Seat no se puede dar desde el editor (si
+    hace falta, sería una opción en la ventana Kingdoms).
+  - La raza de un Seat ya puesto no se cambia: se quita y se pone otro.
+- [x] **Nombres que no caben en la paleta.** Si el nombre no cabe en el botón (ancho de
+  la fuente), se abrevia: Tower of Science → **Twr. Science** ("Twr of Science" mide 99
+  pixeles y el botón 97). Seat of Power sí cabe (93) y queda completo; si no cupiera
+  (otra fuente o traducción) sería **Seat of Pwr**.
+- [x] **Costo de los edificios en las estadísticas.** Colocar un edificio no cobra su
+  costo, pero quedaba en los gastos del año (el "(-860)" junto al dinero). Ahora también
+  se restauran los gastos del año.
 - [x] **Mapa nuevo (New) sin la pantalla de New Game.**
   - **New** en la pantalla Scenario abre directo el editor con un mapa generado con la
     configuración actual (`CONFIG.DAT`, con las mismas correcciones que la pantalla de New

@@ -126,6 +126,7 @@ static PlaceEntry firm_entry_array[] =
 	{ PLACE_FIRM, FIRM_FACTORY }, { PLACE_FIRM, FIRM_INN },
 	{ PLACE_FIRM, FIRM_MARKET }, { PLACE_FIRM, FIRM_RESEARCH },
 	{ PLACE_FIRM, FIRM_WAR_FACTORY }, { PLACE_FIRM, FIRM_HARBOR },
+	{ PLACE_FIRM, FIRM_BASE },
 };
 
 static PlaceEntry nature_entry_array[] =
@@ -213,6 +214,8 @@ static int	place_object(PlaceEntry* entryPtr, int xLoc, int yLoc);
 static void	disp_selected(SelectLayout& layout);
 static void	select_layout(SelectLayout& layout);
 static int	can_change_race(Unit* unitPtr);
+static void	set_scroll(int nationRecno, int raceId, int knowFlag);
+static void	update_scroll(int nationRecno, int raceId);
 static int	next_race(int raceId, int dir);
 static void	change_town_race(Town* townPtr, int newRaceId);
 static int	change_unit_race(int unitRecno, int newRaceId);
@@ -662,6 +665,12 @@ void ModEditor::delete_selected()
 		int firmRecno = firm_array.selected_recno;
 		power.reset_selection();
 
+		//--- a Seat of Power: the kingdom loses the scroll if it has no other Seat of its race ---//
+
+		Firm* firmPtr = firm_array[firmRecno];
+		int baseNationRecno = firmPtr->firm_id == FIRM_BASE ? firmPtr->nation_recno : 0;
+		int baseRaceId = firmPtr->race_id;
+
 		if( firm_array[firmRecno]->firm_id == FIRM_MONSTER )
 		{
 			//--- a lair is deleted with its Fryhtans (as when the game ends: they are not mobilized) ---//
@@ -682,6 +691,9 @@ void ModEditor::delete_selected()
 			if( firm_die_array.size() > dieCount && !firm_die_array.is_deleted(firm_die_array.size()) )
 				firm_die_array.del(firm_die_array.size());
 		}
+
+		if( baseNationRecno )
+			update_scroll(baseNationRecno, baseRaceId);
 	}
 	else if( town_array.selected_recno )
 	{
@@ -757,7 +769,21 @@ void ModEditor::set_selected_owner()
 
 	if( firm_array.selected_recno )
 	{
-		firm_array[firm_array.selected_recno]->change_nation(nationRecno);
+		Firm* firmPtr = firm_array[firm_array.selected_recno];
+		int oldNationRecno = firmPtr->nation_recno;
+
+		firmPtr->change_nation(nationRecno);
+
+		//--- a Seat of Power: the scroll goes with it ---//
+
+		if( firmPtr->firm_id == FIRM_BASE )
+		{
+			if( oldNationRecno )
+				update_scroll(oldNationRecno, firmPtr->race_id);
+
+			if( nationRecno )
+				update_scroll(nationRecno, firmPtr->race_id);
+		}
 	}
 	else if( town_array.selected_recno )
 	{
@@ -1162,14 +1188,38 @@ static int place_object(PlaceEntry* entryPtr, int xLoc, int yLoc)
 			Nation* nationPtr = nation_array[nationRecno];
 			float oldCash = nationPtr->cash;
 
+			//--- nor its expense in the statistics of the year ---//
+
+			float oldExpenseArray[EXPENSE_TYPE_COUNT];
+			memcpy( oldExpenseArray, nationPtr->cur_year_expense_array, sizeof(oldExpenseArray) );
+			float oldExpense = nationPtr->cur_year_expense, oldProfit = nationPtr->cur_year_profit;
+			float oldFixedExpense = nationPtr->cur_year_fixed_expense;
+
 			nationPtr->cash += firm_res[entryPtr->id]->setup_cost;
+
+			//--- a Seat of Power: the kingdom gets the scroll of its race ---//
+
+			int isBase = entryPtr->id == FIRM_BASE;
+			int oldKnow = isBase ? nationPtr->know_base_array[raceId-1] : 0;
+
+			if( isBase )
+				set_scroll(nationRecno, raceId, 1);
 
 			int firmRecno = firm_array.build_firm( xLoc, yLoc, nationRecno, entryPtr->id, race_res[raceId]->code );
 
 			nationPtr->cash = oldCash;
+			memcpy( nationPtr->cur_year_expense_array, oldExpenseArray, sizeof(oldExpenseArray) );
+			nationPtr->cur_year_expense = oldExpense;
+			nationPtr->cur_year_profit = oldProfit;
+			nationPtr->cur_year_fixed_expense = oldFixedExpense;
 
 			if( !firmRecno )
+			{
+				if( isBase && !oldKnow )
+					set_scroll(nationRecno, raceId, 0);
+
 				return 0;
+			}
 
 			firm_array[firmRecno]->complete_construction();
 			return 1;
@@ -1717,7 +1767,9 @@ static int get_options(char* optionArray)
 			optionArray[count++] = OPTION_POPULATION;
 			break;
 
-		case EDITOR_TAB_FIRM:		// no options: buildings have no race (only the Seat of Power, which isn't in the palette)
+		case EDITOR_TAB_FIRM:		// buildings have no race, except the Seat of Power
+			if( mod_editor.place_entry >= 0 && firm_entry_array[(int)mod_editor.place_entry].id == FIRM_BASE )
+				optionArray[count++] = OPTION_RACE;
 			break;
 
 		case EDITOR_TAB_NATURE:
@@ -1867,6 +1919,51 @@ static void change_option(int optionId, int dir)
 //----------- End of static function change_option -----------//
 
 
+//-------- Begin of static function set_scroll --------//
+//
+// Give or take the scroll of power of a race to a kingdom (it can build a
+// Seat of Power of the race), as when it is found in the game.
+//
+static void set_scroll(int nationRecno, int raceId, int knowFlag)
+{
+	if( !nationRecno || nation_array.is_deleted(nationRecno) || raceId < 1 )
+		return;
+
+	for( int godId=1 ; godId<=god_res.god_count ; godId++ )
+	{
+		GodInfo* godInfo = god_res[godId];
+
+		if( godInfo->race_id != raceId )
+			continue;
+
+		if( knowFlag )
+			godInfo->enable_know(nationRecno);
+		else
+			godInfo->disable_know(nationRecno);
+
+		return;
+	}
+
+	nation_array[nationRecno]->know_base_array[raceId-1] = knowFlag;
+}
+//----------- End of static function set_scroll -----------//
+
+
+//-------- Begin of static function update_scroll --------//
+//
+// After a Seat of Power is removed or changes its kingdom: the kingdom has
+// the scroll of the race if it has a Seat of the race.
+//
+static void update_scroll(int nationRecno, int raceId)
+{
+	if( !nationRecno || nation_array.is_deleted(nationRecno) || raceId < 1 )
+		return;
+
+	set_scroll( nationRecno, raceId, nation_array[nationRecno]->base_count_array[raceId-1] > 0 );
+}
+//----------- End of static function update_scroll -----------//
+
+
 //-------- Begin of static function entry_name --------//
 //
 static const char* entry_name(PlaceEntry* entryPtr)
@@ -1878,7 +1975,21 @@ static const char* entry_name(PlaceEntry* entryPtr)
 		case PLACE_WORKER:	return _("Worker");
 		case PLACE_UNIT:		return _(unit_res[entryPtr->id]->name);
 		case PLACE_TOWN:		return _("Town");
-		case PLACE_FIRM:		return _(firm_res[entryPtr->id]->name);
+		case PLACE_FIRM:
+		{
+			const char* name = _(firm_res[entryPtr->id]->name);
+
+			if( font_san.text_width(name) > ENTRY_WIDTH-4 )		// the names that don't fit
+			{
+				if( entryPtr->id == FIRM_RESEARCH )
+					return _("Twr. Science");		// "Twr of Science" doesn't fit either
+
+				if( entryPtr->id == FIRM_BASE )
+					return _("Seat of Pwr");
+			}
+
+			return name;
+		}
 		case PLACE_RAW:		return _(raw_res[entryPtr->id]->name);
 		case PLACE_LAIR:		return _("Fryhtan Lair");
 		case PLACE_TREE:		return _("Trees");

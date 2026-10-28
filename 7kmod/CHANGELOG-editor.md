@@ -115,7 +115,12 @@ de `7kmod` está en `CHANGELOG.md`. El diseño y las fases están en `TODO-edito
   las de pueblos, edificios, puertos y la IA. No se pinta donde hay
   unidades, edificios, pueblos, recursos, muros o rocas.
 
+- **Editor, Seat of Power:** en la paleta de Buildings, con la opción Race. Al ponerlo,
+  el reino recibe el pergamino de su raza; al quitarlo o cambiarlo de reino, el reino se
+  queda sin pergamino si ya no tiene un Seat de esa raza.
+
 ### Cambiado
+- **Editor, paleta:** Tower of Science se muestra como "Twr. Science" porque no cabía.
 - **Editor, Hill con tierra (5d):** Hill pinta la tierra de la meseta con cualquier
   pincel (como la antigua Dirt) y las colinas salen solas en su contorno; la meseta sigue
   la forma pintada, con esquinas y escalones, y las partes angostas quedan como muro. Se
@@ -130,6 +135,8 @@ de `7kmod` está en `CHANGELOG.md`. El diseño y las fases están en `TODO-edito
   aldeanos.
 
 ### Corregido
+- **Editor, gastos del año:** colocar un edificio ya no suma su costo a los gastos del
+  año del reino (el dinero ya se restauraba).
 - **Armas colocadas con el editor:** a veces no tenían gráfico, no atacaban o hacían
   tronar el juego, porque quedaban sin versión cuando el reino no tenía su tecnología.
   Ahora toda arma colocada tiene versión (opción **Version** en la nueva pestaña
