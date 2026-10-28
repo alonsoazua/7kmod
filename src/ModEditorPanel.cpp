@@ -50,6 +50,7 @@
 #include <OFIRMDIE.h>
 #include <ORAWRES.h>
 #include <ORACERES.h>
+#include <OTOWNRES.h>
 #include <OMONSRES.h>
 #include <OSKILL.h>
 #include <OTERRAIN.h>
@@ -162,7 +163,7 @@ enum { OPTION_RACE=1, OPTION_COMBAT, OPTION_LEADERSHIP, OPTION_SKILL, OPTION_SKI
 
 enum { MAX_OPTION = 3 };
 
-static char worker_skill_array[] = { SKILL_MINING, SKILL_MFT, SKILL_RESEARCH, SKILL_CONSTRUCTION };
+static char worker_skill_array[] = { SKILL_MINING, SKILL_MFT, SKILL_RESEARCH, SKILL_CONSTRUCTION, SKILL_PRAYING, 0 };	// 0 - none: a peasant
 
 //------- right click: moving the selected units --------//
 
@@ -189,6 +190,7 @@ struct SelectLayout
 	char	prop_array[MAX_PROP];
 	int	value_array[MAX_PROP];
 	int	out_y;						// "All out" and "General out", -1 - none
+	int	name_y;						// "Re-roll" and "Rename", -1 - none
 	int	owner_y;						// "Set Owner" and "Delete"
 };
 
@@ -215,6 +217,10 @@ static void	disp_selected(SelectLayout& layout);
 static void	select_layout(SelectLayout& layout);
 static int	can_change_race(Unit* unitPtr);
 static void	set_scroll(int nationRecno, int raceId, int knowFlag);
+static int	can_reroll_unit(Unit* unitPtr);
+static int	reroll_unit_name(Unit* unitPtr);
+static void	reroll_town_name(Town* townPtr);
+static int	selected_name_unit();
 static void	update_scroll(int nationRecno, int raceId);
 static int	next_race(int raceId, int dir);
 static void	change_town_race(Town* townPtr, int newRaceId);
@@ -438,6 +444,34 @@ void ModEditor::detect_panel()
 		if( mouse.any_click( INFO_X1+106, buttonY, INFO_X2-6, buttonY+15 ) )
 		{
 			take_out_general();
+			return;
+		}
+	}
+
+	//------- the name: Re-roll and Rename -------//
+
+	if( layout.name_y >= 0 )
+	{
+		int buttonY = layout.name_y;
+		int unitRecno = selected_name_unit();
+		Unit* unitPtr = unitRecno ? unit_array[unitRecno] : NULL;
+		int isKing = unitPtr && unitPtr->rank_id == RANK_KING && unitPtr->nation_recno;
+
+		if( mouse.any_click( INFO_X1+6, buttonY, INFO_X1+100, buttonY+15 ) )
+		{
+			if( town_array.selected_recno )
+				reroll_town_name( town_array[town_array.selected_recno] );
+			else if( unitPtr )
+				reroll_unit_name(unitPtr);
+
+			info.disp();
+			return;
+		}
+
+		if( isKing && mouse.any_click( INFO_X1+106, buttonY, INFO_X2-6, buttonY+15 ) )
+		{
+			edit_king_name(unitPtr->nation_recno);
+			info.disp();
 			return;
 		}
 	}
@@ -1145,8 +1179,17 @@ static int place_object(PlaceEntry* entryPtr, int xLoc, int yLoc)
 
 				case PLACE_WORKER:
 					unitPtr->set_combat_level( CITIZEN_COMBAT_LEVEL );
-					unitPtr->skill.set_skill( mod_editor.place_skill_id );
-					unitPtr->skill.skill_level = mod_editor.place_skill_level;
+
+					if( mod_editor.place_skill_id )
+					{
+						unitPtr->skill.set_skill( mod_editor.place_skill_id );
+						unitPtr->skill.skill_level = mod_editor.place_skill_level;
+					}
+					else		// no skill: a peasant, as the ones that leave a town without a job
+					{
+						unitPtr->skill.skill_id = 0;
+						unitPtr->skill.skill_level = 0;
+					}
 					break;
 
 				case PLACE_UNIT:
@@ -1459,6 +1502,22 @@ static void disp_selected(SelectLayout& layout)
 		}
 	}
 
+	//------- the name: Re-roll (people and towns), Rename (kings) -------//
+
+	if( layout.name_y >= 0 )
+	{
+		int buttonY = layout.name_y;
+		int unitRecno = selected_name_unit();
+		Unit* unitPtr = unitRecno ? unit_array[unitRecno] : NULL;
+		int isKing = unitPtr && unitPtr->rank_id == RANK_KING && unitPtr->nation_recno;
+
+		editor_put_button( x1+6, buttonY, x1+100, buttonY+15, _("Re-roll"),
+			!isKing || !mod_editor.lock_kingdom_name[unitPtr->nation_recno-1], 0 );
+
+		if( isKing )
+			editor_put_button( x1+106, buttonY, x2-6, buttonY+15, _("Rename"), 1, 0 );
+	}
+
 	//------- the buttons -------//
 
 	int buttonY = layout.owner_y;
@@ -1484,20 +1543,7 @@ static int selected_properties(char* propArray, int* valueArray)
 	{
 		Firm* firmPtr = firm_array[firm_array.selected_recno];
 
-		//--- a fort: the race of its general (or king) ---//
-
-		if( firmPtr->firm_id == FIRM_CAMP )
-		{
-			if( !firmPtr->overseer_recno || !unit_array[firmPtr->overseer_recno]->race_id ||
-				 unit_array[firmPtr->overseer_recno]->spy_recno )
-			{
-				return 0;
-			}
-
-			propArray[0]  = PROP_RACE;
-			valueArray[0] = unit_array[firmPtr->overseer_recno]->race_id;
-			return 1;
-		}
+		//--- buildings have no race (the one of a Seat of Power is chosen when it is placed) ---//
 
 		if( firmPtr->firm_id != FIRM_MINE )
 			return 0;
@@ -1673,34 +1719,15 @@ static void change_property(int propId, int dir)
 		}
 
 		case PROP_RACE:
-			if( firm_array.selected_recno )		// a fort: its general comes out, changes and goes back in
-			{
-				int firmRecno = firm_array.selected_recno;
-				Firm* firmPtr = firm_array[firmRecno];
-
-				if( !firmPtr->overseer_recno )
-					return;
-
-				int newRaceId = next_race( unit_array[firmPtr->overseer_recno]->race_id, dir );
-				int unitRecno = firmPtr->mobilize_overseer();
-
-				if( !unitRecno )
-					return;
-
-				int newRecno = change_unit_race(unitRecno, newRaceId);
-
-				if( !newRecno )
-					newRecno = unitRecno;
-
-				if( !assign_to_firm(newRecno, firmRecno) )
-					box.msg( _("The general couldn't go back into the fort; he is next to it.") );
-
-				firm_array.selected_recno = firmRecno;
-			}
-			else if( town_array.selected_recno )
+			if( town_array.selected_recno )
 			{
 				Town* townPtr = town_array[town_array.selected_recno];
-				change_town_race( townPtr, next_race(townPtr->majority_race(), dir) );
+				int oldRaceId = townPtr->majority_race();
+
+				change_town_race( townPtr, next_race(oldRaceId, dir) );
+
+				if( townPtr->majority_race() != oldRaceId )
+					reroll_town_name(townPtr);		// a name of the new race
 			}
 			else
 				change_selected_units_race(dir);
@@ -1748,7 +1775,9 @@ static int get_options(char* optionArray)
 			if( isWorker )
 			{
 				optionArray[count++] = OPTION_SKILL;
-				optionArray[count++] = OPTION_SKILL_LEVEL;
+
+				if( mod_editor.place_skill_id )
+					optionArray[count++] = OPTION_SKILL_LEVEL;
 			}
 			else
 			{
@@ -1810,7 +1839,7 @@ static void option_str(int optionId, String& labelStr, String& valueStr)
 
 		case OPTION_SKILL:
 			labelStr = _("Skill");
-			valueStr = _(Skill::skill_str_array[mod_editor.place_skill_id-1]);
+			valueStr = mod_editor.place_skill_id ? _(Skill::skill_str_array[mod_editor.place_skill_id-1]) : _("None");
 			break;
 
 		case OPTION_SKILL_LEVEL:
@@ -1917,6 +1946,94 @@ static void change_option(int optionId, int dir)
 	}
 }
 //----------- End of static function change_option -----------//
+
+
+//-------- Begin of static function can_reroll_unit --------//
+//
+// People have a name of the list of their race (weapons and ships are numbered).
+//
+static int can_reroll_unit(Unit* unitPtr)
+{
+	return unit_res[unitPtr->unit_id]->unit_class == UNIT_CLASS_HUMAN && unitPtr->race_id && unitPtr->name_id;
+}
+//----------- End of static function can_reroll_unit -----------//
+
+
+//-------- Begin of static function reroll_unit_name --------//
+//
+// Another name of the list of the race. A king: also the name of the kingdom,
+// unless it is locked (Kingdoms window).
+//
+// return: <int> 1 - the name has changed
+//
+static int reroll_unit_name(Unit* unitPtr)
+{
+	if( !can_reroll_unit(unitPtr) )
+		return 0;
+
+	int isKing = unitPtr->rank_id == RANK_KING && unitPtr->nation_recno;
+
+	if( isKing && mod_editor.lock_kingdom_name[unitPtr->nation_recno-1] )
+		return 0;
+
+	RaceInfo* raceInfo = race_res[unitPtr->race_id];
+
+	uint16_t newNameId = raceInfo->get_new_name_id();		// before freeing the old one: not the same name again
+	raceInfo->free_name_id(unitPtr->name_id);
+	unitPtr->name_id = newNameId;
+
+	if( isKing )
+		nation_array[unitPtr->nation_recno]->nation_name_id = newNameId;
+
+	return 1;
+}
+//----------- End of static function reroll_unit_name -----------//
+
+
+//-------- Begin of static function reroll_town_name --------//
+//
+// Another name of the list of the race of the town; the buildings named after
+// it (Firm::closest_town_name_id) take the new name.
+//
+static void reroll_town_name(Town* townPtr)
+{
+	int raceId = townPtr->majority_race();
+
+	if( !raceId )
+		return;
+
+	int oldNameId = townPtr->town_name_id;
+	int newNameId = town_res.get_new_name_id(raceId);		// before freeing the old one: not the same name again
+
+	if( oldNameId )
+		town_res.free_name_id(oldNameId);
+
+	townPtr->town_name_id = newNameId;
+
+	for( int i=firm_array.size() ; i>0 ; i-- )
+	{
+		if( !firm_array.is_deleted(i) && firm_array[i]->closest_town_name_id == oldNameId )
+			firm_array[i]->closest_town_name_id = newNameId;
+	}
+}
+//----------- End of static function reroll_town_name -----------//
+
+
+//-------- Begin of static function selected_name_unit --------//
+//
+// return: <int> the unit selected alone whose name can change, 0 - none
+//
+static int selected_name_unit()
+{
+	if( firm_array.selected_recno || town_array.selected_recno || site_array.selected_recno ||
+		 !unit_array.selected_recno || unit_array.selected_count != 1 )
+	{
+		return 0;
+	}
+
+	return can_reroll_unit(unit_array[unit_array.selected_recno]) ? unit_array.selected_recno : 0;
+}
+//----------- End of static function selected_name_unit -----------//
 
 
 //-------- Begin of static function set_scroll --------//
@@ -2240,13 +2357,16 @@ static void select_layout(SelectLayout& layout)
 
 	int infoHeight = layout.info_count ? layout.info_count*14+2 : 0;
 
-	int height = 36 + infoHeight + layout.prop_count*20 + (hasOutButtons ? 20 : 0) + 20 + 3;
+	int hasNameButtons = town_array.selected_recno || selected_name_unit();
+
+	int height = 36 + infoHeight + layout.prop_count*20 + (hasOutButtons ? 20 : 0) + (hasNameButtons ? 20 : 0) + 20 + 3;
 
 	layout.y1      = INFO_Y2 - MAX(height, (int)SELECT_MIN_HEIGHT);
 	layout.info_y  = layout.y1 + 36;
 	layout.rows_y  = layout.info_y + infoHeight;
 	layout.owner_y = INFO_Y2 - 19;
 	layout.out_y   = hasOutButtons ? layout.owner_y - 17 : -1;
+	layout.name_y  = hasNameButtons ? layout.owner_y - 17 : -1;
 }
 //----------- End of static function select_layout -----------//
 
@@ -2342,8 +2462,9 @@ static void change_town_race(Town* townPtr, int newRaceId)
 //
 // The look of a person depends on its race (each race has its own unit),
 // so a new unit of the new race replaces it at the same place, with the
-// same kingdom, rank, skills, loyalty and team. A king changes the race of
-// his kingdom and keeps his name.
+// same kingdom, rank, skills, loyalty and team, and a name of the new race.
+// A king changes the race of his kingdom; he takes a name of the new race
+// too (so does the kingdom), unless the name of the kingdom is locked.
 //
 // return: <int> the recno of the new unit, 0 - not changed
 //
@@ -2410,7 +2531,7 @@ static int change_unit_race(int unitRecno, int newRaceId)
 		}
 	}
 
-	//------- the king: the race of the kingdom changes, the name stays -------//
+	//------- the king: the race of the kingdom changes; the name too, unless it is locked -------//
 
 	if( rankId == RANK_KING )
 	{
@@ -2424,8 +2545,12 @@ static int change_unit_race(int unitRecno, int newRaceId)
 
 		nationPtr->set_king(newRecno, 1);		// the race of the kingdom is the race of its king
 
-		if( oldNameId < 0 )
-			nationPtr->nation_name_id = oldNameId;		// a player's name
+		if( !mod_editor.lock_kingdom_name[nationRecno-1] )
+		{
+			nationPtr->nation_name_id = newUnit->name_id;		// the new unit has a name of the new race (re-roll)
+		}
+		else if( oldNameId < 0 )
+			nationPtr->nation_name_id = oldNameId;		// a custom name
 		else
 		{
 			nation_array.set_human_name(nationRecno, kingName);		// keep the name, which is looked up by race otherwise
@@ -2451,6 +2576,8 @@ static int change_unit_race(int unitRecno, int newRaceId)
 
 	//------- delete the old unit (without the death of a king or a general), move the new one in its place -------//
 
+	unit_array[unitRecno]->deinit_unit_id();		// the counts of units of the kingdom (skipped by signal_exit_flag)
+
 	char oldExitFlag = sys.signal_exit_flag;
 	sys.signal_exit_flag = 2;
 	unit_array.del(unitRecno);
@@ -2462,7 +2589,10 @@ static int change_unit_race(int unitRecno, int newRaceId)
 
 	int destX = xLoc, destY = yLoc;
 
-	if( world.locate_space( &destX, &destY, xLoc, yLoc, newUnit->sprite_info->loc_width, newUnit->sprite_info->loc_height ) )
+	if( world.get_loc(xLoc, yLoc)->can_move(newUnit->mobile_type) )		// the place of the old unit (locate_space() only looks around it)
+		newUnit->init_sprite(xLoc, yLoc);
+
+	else if( world.locate_space( &destX, &destY, xLoc, yLoc, newUnit->sprite_info->loc_width, newUnit->sprite_info->loc_height ) )
 		newUnit->init_sprite(destX, destY);
 	else
 		newUnit->init_sprite(newXLoc, newYLoc);

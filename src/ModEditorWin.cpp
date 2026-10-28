@@ -210,6 +210,13 @@ static void disp_kingdoms(int selNation)
 
 	vga_back.bar( TECH_X, y+1, TECH_X+11, y+12, nationPtr->nation_color );
 	font_san.put( TECH_X+16, y, nationPtr->nation_name(), 0, RELATION_X-10 );
+
+	//--- Lock Kingdom Name: re-rolling (also when the race of the king changes) doesn't change the name ---//
+
+	font_san.put( RELATION_X, y+2, _("Lock Kingdom Name") );
+	editor_put_button( RELATION_X+156, y, RELATION_X+266, y+18,
+		mod_editor.lock_kingdom_name[selNation-1] ? _("Yes") : _("No"), 1, 0 );
+
 	y += 22;
 
 	font_san.put( TECH_X, y, _("Technology") );
@@ -301,6 +308,14 @@ static int detect_kingdoms(int& selNation)
 			nationPtr->reputation = (float) MAX( -100, MIN(100, repu*REPU_STEP) );
 			return 1;
 		}
+	}
+
+	//------- Lock Kingdom Name -------//
+
+	if( mouse.any_click( RELATION_X+156, DETAIL_Y1, RELATION_X+266, DETAIL_Y1+18 ) )
+	{
+		mod_editor.lock_kingdom_name[selNation-1] = !mod_editor.lock_kingdom_name[selNation-1];
+		return 1;
 	}
 
 	//------- technologies -------//

@@ -123,6 +123,7 @@ void ModEditor::reset()
 	new_map_flag = 0;
 	new_map_seed = 0;
 	pending_bar = -1;
+	memset( lock_kingdom_name, 0, sizeof(lock_kingdom_name) );
 
 	loc_reveal_all_flag = 0;
 }

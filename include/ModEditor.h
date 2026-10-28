@@ -23,6 +23,7 @@
 #define __MODEDITOR_H
 
 #include <OBUTTON.h>
+#include <GAMEDEF.h>
 
 //------- the buttons of the top bar --------//
 
@@ -112,6 +113,7 @@ public:
 
 	short	edit_scen_recno;
 	char	pending_bar;				// EDITOR_BAR_??? pressed while a window was open, -1 - none			// the scenario selected for "Edit" in the scenario screen (Game::select_scenario())
+	char	lock_kingdom_name[MAX_NATION];	// 1 - the name of the king (and of the kingdom) doesn't change by re-rolling (only while editing, not saved)
 
 	//--- a new map (the New button: Game::editor_new_map() generates it after the main loop ends) ---//
 
@@ -165,6 +167,7 @@ public:
 	int	edit_scenario_info(int saveFlag);
 	void	redraw_screen();
 	void	edit_kingdoms();
+	int	edit_king_name(int nationRecno);
 	void	edit_goals();
 	void	edit_new_map();
 

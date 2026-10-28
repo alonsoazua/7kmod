@@ -385,6 +385,29 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
 - [x] **Costo de los edificios en las estadísticas.** Colocar un edificio no cobra su
   costo, pero quedaba en los gastos del año (el "(-860)" junto al dinero). Ahora también
   se restauran los gastos del año.
+- [x] **Nombres: Re-roll, Rename y Lock Kingdom Name.**
+  - **Re-roll** (en lo seleccionado): una unidad sola de personas (soldado, general,
+    trabajador, aldeano, rey) toma otro nombre de la lista de su raza
+    (`RaceInfo::get_new_name_id`, se libera el viejo); un pueblo, otro nombre de la lista
+    de su raza (`TownRes::get_new_name_id`), y los edificios que llevan su nombre
+    (`Firm::closest_town_name_id`) cambian con él. Los edificios no tienen nombre propio
+    (pueblo más cercano + tipo + número). Armas y barcos van numerados: sin re-roll.
+  - **Re-roll automático** al cambiar la raza de una unidad (la nueva ya tiene un nombre
+    de su raza) o de un pueblo (si cambia su raza principal).
+  - **Rename** (solo reyes): ventana para escribir el nombre (hasta 20 letras). Se
+    guarda como nombre propio del reino (`NationArray::set_human_name`, `nation_name_id`
+    negativo), que el juego ya guarda en la partida: no cambia el formato. El reino se
+    llama "<primera palabra>'s Kingdom".
+  - **Lock Kingdom Name** (ventana Kingdoms, por reino, No por omisión): en Yes, ni el
+    re-roll automático ni el botón cambian el nombre del rey (el botón Re-roll del rey
+    queda oscurecido). Rename sí, y lo pone en Yes. No se guarda en el archivo: al abrir
+    un escenario vuelve a No.
+- [x] **Cambiar de raza en la misma casilla.** La unidad nueva quedaba una casilla abajo:
+  `World::locate_space()` busca alrededor de la casilla, no en ella. Ahora se usa la
+  casilla de la unidad vieja si está libre. También se descuentan bien las unidades del
+  reino (`deinit_unit_id`, que `signal_exit_flag` se saltaba).
+- [x] **Workers: Praying y None.** La opción Skill suma **Praying** (los que oran en el
+  Seat of Power) y **None**: una unidad sin oficio (aldeano), sin opción Level.
 - [x] **Mapa nuevo (New) sin la pantalla de New Game.**
   - **New** en la pantalla Scenario abre directo el editor con un mapa generado con la
     configuración actual (`CONFIG.DAT`, con las mismas correcciones que la pantalla de New
@@ -424,10 +447,9 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
     Los que trabajan en edificios conservan su raza (son trabajadores del edificio).
   - **Edificio:** al revisar los datos del juego, los edificios no tienen raza: solo la
     Sede de Poder tiene un dibujo por raza (en `FIRMBLD`, los demás tienen uno solo). Por
-    eso se quitó la opción Race de la pestaña Buildings. En su lugar, el **fuerte**
-    muestra la raza de su general (o rey): al cambiarla, el general sale, cambia de raza
-    y vuelve a entrar. Los soldados de adentro no cambian (no son unidades del mapa: hay
-    que sacarlos, cambiarlos y volver a meterlos).
+    eso se quitó la opción Race de la pestaña Buildings. (El fuerte mostraba la raza de
+    su general; se quitó después: ninguna construcción tiene raza en lo seleccionado.
+    Para cambiar la raza de un general, se saca y se cambia como cualquier unidad.)
   - **Unidades** (soldados, generales, trabajadores, aldeanos; también varias
     seleccionadas): la figura depende de la raza (`unit_id`), así que se crea una unidad
     nueva de esa raza en el mismo lugar y se quita la anterior (`change_unit_race`).
@@ -440,9 +462,10 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
     IA, y el nombre del reino sale del nombre del rey. Cambiar la raza del rey cambia la
     del reino: se crea un rey nuevo de esa raza (mismo combate y liderazgo) y se pone
     como rey del reino. La lealtad se ajusta sola con el tiempo.
-    - El rey **conserva su nombre** (y el reino, el suyo); solo cambian la figura y la
-      raza. El nombre de un rey de la computadora sale de la lista de nombres de su raza,
-      así que se guarda como nombre propio (`NationArray::set_human_name`).
+    - El rey **toma un nombre de la raza nueva** y el reino también (re-roll automático),
+      salvo que el reino tenga **Lock Kingdom Name** en Yes: entonces conserva su nombre,
+      guardado como nombre propio (`NationArray::set_human_name`), porque el de un rey de
+      la computadora sale de la lista de su raza. (Antes siempre lo conservaba.)
     - Con **Seats of Power Unlocked**, el reino conoce el Seat of Power de la raza nueva
       en vez de la vieja.
 - [x] **Bajar la población sin el grito.** El `<` de Population en el editor

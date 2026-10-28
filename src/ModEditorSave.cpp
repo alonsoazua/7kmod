@@ -45,6 +45,7 @@
 #include <OBOX.h>
 #include <OBUTTON.h>
 #include <OGETA.h>
+#include <ONATION.h>
 #include <OPOWER.h>
 #include <OINFO.h>
 #include <OMISC.h>
@@ -750,3 +751,100 @@ void ModEditor::load_scenario_info(const char* sctPath, int isEditorScenario, co
 	}
 }
 //--------- End of function ModEditor::load_scenario_info ---------//
+
+
+//-------- Begin of function ModEditor::edit_king_name --------//
+//
+// A small window to write the name of a king (the name of the kingdom is
+// "<first word>'s Kingdom"). The name is kept as a custom name
+// (NationArray::human_name_array), and the name of the kingdom is locked.
+//
+// return: <int> 1 - the name has changed, 0 - Cancel
+//
+int ModEditor::edit_king_name(int nationRecno)
+{
+	enum { NX1 = 120, NY1 = 230, NX2 = 460, NY2 = 350 };
+
+	if( !nationRecno || nation_array.is_deleted(nationRecno) )
+		return 0;
+
+	Nation* nationPtr = nation_array[nationRecno];
+
+	char nameStr[HUMAN_NAME_LEN+1];
+	strncpy( nameStr, nationPtr->king_name(), HUMAN_NAME_LEN );
+	nameStr[HUMAN_NAME_LEN] = '\0';
+
+	power.win_opened = 1;
+
+	int useBackBuf = vga.use_back_buf;
+
+	//--- the background: on the back buffer (the background of the text field), then on the front ---//
+
+	vga.use_back();
+
+	vga_util.d3_panel_up( NX1, NY1, NX2, NY2 );
+	vga_util.d3_panel_up( NX1, NY1, NX2, NY2 );		// twice: less translucent
+
+	font_san.center_put( NX1, NY1+8, NX2, NY1+24, _("Name of the King") );
+
+	int fieldY = NY1+44;
+	vga_util.d3_panel_down( NX1+16, fieldY-3, NX2-16, fieldY+font_san.max_font_height+2 );
+
+	vga.use_front();
+	vga_util.blt_buf( NX1, NY1, NX2, NY2, 0 );
+
+	GetAGroup getGroup(1);
+	getGroup[0].init( NX1+20, fieldY, NX2-20, nameStr, HUMAN_NAME_LEN, &font_san, 0, 0 );
+	getGroup.set_focus(0, 0);
+
+	Button buttonOK, buttonCancel;
+	buttonOK.create_text( (NX1+NX2)/2-110, NY2-34, (NX1+NX2)/2-10, NY2-10, _("OK") );
+	buttonCancel.create_text( (NX1+NX2)/2+10, NY2-34, (NX1+NX2)/2+110, NY2-10, _("Cancel") );
+	buttonOK.paint();
+	buttonCancel.paint();
+
+	int rc = 0;
+
+	while( 1 )
+	{
+		sys.yield();
+		vga.flip();
+		mouse.get_event();
+
+		if( sys.signal_exit_flag == 1 )
+			break;
+
+		getGroup.paint();
+		getGroup.detect();
+
+		if( buttonOK.detect(KEY_RETURN) )
+		{
+			if( !nameStr[0] )
+				continue;
+
+			rc = 1;
+			break;
+		}
+		else if( buttonCancel.detect(KEY_ESC) )
+		{
+			break;
+		}
+	}
+
+	power.win_opened = 0;
+
+	if( rc )
+	{
+		nation_array.set_human_name(nationRecno, nameStr);
+		nationPtr->nation_name_id = -nationRecno;		// NationBase::king_name() takes the custom name
+		lock_kingdom_name[nationRecno-1] = 1;			// a name chosen by hand isn't re-rolled
+	}
+
+	if( useBackBuf )
+		vga.use_back();
+
+	redraw_screen();
+
+	return rc;
+}
+//--------- End of function ModEditor::edit_king_name ---------//

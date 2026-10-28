@@ -93,11 +93,12 @@ de `7kmod` está en `CHANGELOG.md`. El diseño y las fases están en `TODO-edito
   - **Unidades** (una o varias): soldados, generales, trabajadores y aldeanos cambian de
     raza conservando reino, rango, combate, liderazgo o habilidad, lealtad y equipo.
     Reciben un nombre de la raza nueva.
-  - **Rey:** cambia también la raza del reino y conserva su nombre. Con Seats of Power
-    Unlocked, el reino conoce la Sede de su raza nueva.
-  - **Fuerte:** la raza de su general (o rey), que sale, cambia y vuelve a entrar. Los
-    edificios del juego no tienen raza (salvo la Sede de Poder), por eso no hay fila para
-    los demás.
+  - **Rey:** cambia también la raza del reino, y toma un nombre de la raza nueva (el
+    reino también), salvo con Lock Kingdom Name. Con Seats of Power Unlocked, el reino
+    conoce la Sede de su raza nueva.
+  - Las construcciones no tienen fila de raza (la del Seat of Power se elige al
+    ponerlo).
+  - La unidad queda en la misma casilla.
   - El cuadro de lo seleccionado crece hacia arriba según las filas que necesita.
 - **Editor de escenarios, mina:** al seleccionar una mina, **Mineral** (None, Clay,
   Copper, Iron) y **Reserve** (de 1,000 a 20,000). Una mina sin mineral puede tenerlo:
@@ -119,6 +120,13 @@ de `7kmod` está en `CHANGELOG.md`. El diseño y las fases están en `TODO-edito
   el reino recibe el pergamino de su raza; al quitarlo o cambiarlo de reino, el reino se
   queda sin pergamino si ya no tiene un Seat de esa raza.
 
+- **Editor, nombres:** botón **Re-roll** para unidades y pueblos (otro nombre de su
+  raza; los edificios con el nombre del pueblo cambian con él) y **Rename** para reyes.
+  En la ventana Kingdoms, **Lock Kingdom Name** evita que el nombre del rey cambie al
+  hacer re-roll o al cambiarle la raza.
+- **Editor, Workers:** opción Skill con **Praying** (Seat of Power) y **None** (aldeano
+  sin oficio).
+
 ### Cambiado
 - **Editor, paleta:** Tower of Science se muestra como "Twr. Science" porque no cabía.
 - **Editor, Hill con tierra (5d):** Hill pinta la tierra de la meseta con cualquier
@@ -131,10 +139,13 @@ de `7kmod` está en `CHANGELOG.md`. El diseño y las fases están en `TODO-edito
   por donde pasa el ratón (todas las entradas de pincel; rocas y Ramp siguen siendo de
   un clic). Lo que no se puede pintar a media pasada se salta sin aviso.
 - **Pestaña Buildings:** se quitó la opción Race; en el juego los edificios no tienen raza.
+  Tampoco el fuerte tiene ya la fila Race (la raza de su general) en lo seleccionado.
 - **Bajar la población** de un pueblo en el editor ya no hace sonar el grito de los
   aldeanos.
 
 ### Corregido
+- **Editor, cambiar la raza de una unidad:** ya no la mueve una casilla abajo, y las
+  unidades del reino se cuentan bien.
 - **Editor, gastos del año:** colocar un edificio ya no suma su costo a los gastos del
   año del reino (el dinero ya se restauraba).
 - **Armas colocadas con el editor:** a veces no tenían gráfico, no atacaban o hacían
