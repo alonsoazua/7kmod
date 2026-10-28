@@ -33,6 +33,7 @@
 #include <OBOX.h>
 #include <OBATTLE.h>
 #include <OGAME.h>
+#include <ModEditor.h>
 #include <ONATIONA.h>
 #include <PlayerStats.h>
 #include <ConfigAdv.h>
@@ -56,6 +57,8 @@ int Game::select_run_scenario()
 	ScenInfo* scenInfoArray = NULL;
 	int scenInfoSize = 0;
 	int dirId;
+
+	ModEditor::init_scenario_dir();		// 7kmod-editor: the scenarios of the editor
 
 	for( dirId = 0; dirId < MAX_SCENARIO_PATH; ++dirId )
 	{
@@ -130,8 +133,32 @@ int Game::select_run_scenario()
 
 	int rc = select_scenario( scenInfoSize, scenInfoArray );
 
-	if( rc )
+	if( rc > 0 )
 		run_scenario( scenInfoArray+rc-1 );
+
+	//------ 7kmod-editor: New button ------//
+
+	else if( rc == -1 )
+	{
+		mem_del(scenInfoArray);
+		scenInfoArray = NULL;
+
+		editor_new_scenario();
+		return 1;
+	}
+
+	//------ 7kmod-editor: Edit button ------//
+
+	else if( rc == -2 )
+	{
+		int recNo = mod_editor.edit_scen_recno;
+
+		if( recNo >= 1 && recNo <= scenInfoSize )
+			editor_edit_scenario( scenInfoArray+recNo-1 );
+
+		mem_del(scenInfoArray);
+		return 1;
+	}
 
 	//-------------------------------------------//
 
@@ -209,6 +236,64 @@ int Game::run_scenario(ScenInfo* scenInfo)
 	return 0;
 }
 //------------ End of function Game::run_scenario -----------//
+
+
+//---------- Begin of function Game::editor_edit_scenario ----------//
+//
+// 7kmod-editor: open a scenario in the editor (the Edit button of the
+// scenario screen). Saving an original scenario saves a copy in SCENMOD.
+//
+// <ScenInfo*> scenInfo - the pointer to ScenInfo of the selected scenario
+//
+void Game::editor_edit_scenario(ScenInfo* scenInfo)
+{
+	String str;
+
+	str  = DIR_SCENARIO_PATH(scenInfo->dir_id);
+	str += scenInfo->file_name;
+
+	if( !misc.is_file_exist(str) )
+		return;
+
+	sys.is_mp_game = 0;
+
+	if( game_file.load_game("", str) > 0 )
+	{
+		//------ the data of the scenario (.SCT) ------//
+
+		char sctName[FilePath::MAX_FILE_PATH+1];
+		misc.change_file_ext( sctName, scenInfo->file_name, "SCT" );
+
+		String sctPath;
+		sctPath  = DIR_SCENARIO_PATH(scenInfo->dir_id);
+		sctPath += sctName;
+
+		mod_editor.reset();
+		mod_editor.load_scenario_info( sctPath, scenInfo->dir_id == EDITOR_SCENARIO_DIR_ID, scenInfo->file_name );
+		mod_editor.editing_flag = 1;			// Sys::run() enters the editor mode
+
+		battle.run_loaded();
+	}
+	else
+	{
+		box.msg(game_file.status_str());
+	}
+
+	game.deinit();
+
+	//--- the New button of the editor: generate the new map ---//
+
+	if( mod_editor.new_map_flag )
+	{
+		if( sys.signal_exit_flag == 2 )
+			sys.signal_exit_flag = 0;
+
+		editor_new_map(mod_editor.new_map_seed);
+	}
+
+	mod_editor.reset();
+}
+//------------ End of function Game::editor_edit_scenario -----------//
 
 
 //-------- Start of function init_scenario_var ----------//
