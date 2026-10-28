@@ -1,10 +1,12 @@
-# 7kmod-editor: editor de escenarios
+# Editor de escenarios de 7kmod
 
-Rama `7kmod-editor`, basada en `7kmod`, para que los escenarios funcionen en las tres
+Hecho en la rama `7kmod-editor` (queda como respaldo) y desde la 0.2.0 parte de `7kmod`,
+para que los escenarios funcionen en las tres
 versiones del mod (`7kaa-mod.exe`, `7kaa-gameplay.exe` y `7kaa-pathing.exe`).
 
 **Estado:** Fases 0 a 4 implementadas (MVP, guardar, colocar y editar, mover y meter unidades, ventanas, Edit). Fase 5: hechas 5a (árboles y rocas), 5b (tipo de suelo) y 5c (agua, tierra y colinas) y 5d (Hill con tierra, pintar arrastrando). El resto del diseño sigue en refinamiento.
-Ejecutable: `7kaa-editor.exe`. Cambios en `CHANGELOG-editor.md`.
+Viene en `7kaa-mod.exe`, `7kaa-gameplay.exe` y `7kaa-pathing.exe`. Cambios en
+`CHANGELOG.md` (0.2.0).
 
 ---
 
@@ -238,7 +240,7 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
   - La descripción se acomoda en las líneas de la ventana, que ahora son **9** de 75
     caracteres (con 6 no cabían las de los escenarios originales). Al guardar, cada línea
     de la ventana queda como una línea del `.SCT`.
-- [ ] **Fase 5 (opcional): Pintar terreno.** Dividido en tres
+- [x] **Fase 5 (opcional): Pintar terreno.** Dividido en tres
   partes de menor a mayor riesgo. Pestaña nueva **Terrain** en el panel, con pinceles de
   tamaño 1, 3 o 5 casillas (opción **Brush**); clic coloca, arrastrar no (por ahora).
 

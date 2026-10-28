@@ -27,7 +27,7 @@
 
 //------- version of the 7kmod branch --------//
 
-#define MOD_7KMOD_VERSION		"0.1.0"
+#define MOD_7KMOD_VERSION		"0.2.0"
 
 
 //------- version of the 7kmod-gameplay branch --------//
@@ -36,7 +36,6 @@
 // It is kept apart from the 7kmod version above so that changing either
 // of them doesn't conflict when 7kmod-gameplay is rebased on 7kmod.
 
-#define MOD_EDITOR_VERSION		"0.1.0"		// 7kmod-editor
 
 
 
@@ -44,8 +43,6 @@
 
 #ifdef MOD_GAMEPLAY_VERSION
 	#define MOD_VERSION_TEXT		"7kmod-gameplay " MOD_GAMEPLAY_VERSION " (7kmod " MOD_7KMOD_VERSION ")"
-#elif defined(MOD_EDITOR_VERSION)
-	#define MOD_VERSION_TEXT		"7kmod-editor " MOD_EDITOR_VERSION " (7kmod " MOD_7KMOD_VERSION ")"
 #else
 	#define MOD_VERSION_TEXT		"7kmod " MOD_7KMOD_VERSION
 #endif
