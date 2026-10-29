@@ -410,6 +410,18 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
   reino (`deinit_unit_id`, que `signal_exit_flag` se saltaba).
 - [x] **Workers: Praying y None.** La opción Skill suma **Praying** (los que oran en el
   Seat of Power) y **None**: una unidad sin oficio (aldeano), sin opción Level.
+- [ ] **Espías en el editor.** Hoy no se pueden poner (estaba en lo pendiente de las
+  fases 2 y 3). En el juego un espía es una unidad con un registro `Spy`
+  (`SpyArray::add_spy`): reino verdadero, reino con el que se disfraza, habilidad de
+  espionaje y lealtad; dentro de un pueblo o edificio queda en ese lugar
+  (`Spy::set_place`), contado en el pueblo o edificio.
+  - Propuesta: entrada **Spy** en la pestaña Units, del reino elegido arriba (su reino
+    verdadero), con opciones **Race**, **Skill** (espionaje) y **Cloak** (el reino con el
+    que se disfraza: el suyo u otro). Sobre un pueblo o edificio entra como espía en él
+    (por ejemplo, un espía de otro reino en tu pueblo); en el mapa queda como unidad.
+  - Por definir: si se puede elegir su oficio de disfraz (soldado, trabajador), cómo se
+    muestra al seleccionarlo (reino verdadero y disfraz), y si en lo seleccionado de un
+    pueblo o edificio se ven sus espías para quitarlos.
 - [x] **Mapa nuevo (New) sin la pantalla de New Game.**
   - **New** en la pantalla Scenario abre directo el editor con un mapa generado con la
     configuración actual (`CONFIG.DAT`, con las mismas correcciones que la pantalla de New
