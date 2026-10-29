@@ -22,6 +22,12 @@ escenarios (desde la 0.2.0) está descrito en `TODO-editor.md`.
 ## [Sin publicar]
 
 ### Corregido
+- **Recuadro sobre unidades de otros reinos:** a veces algunas unidades del recuadro no
+  quedaban en la lista ni mostraban su barra de vida, y si la unidad elegida era una de
+  ellas, no había lista. La lista comprueba que cada unidad siga siendo la misma
+  comparando su nombre, y guardaba el número del nombre en una variable que volvía
+  negativos los números mayores a 32,767 (`inspect_name_id_array`): esas unidades nunca
+  coincidían y se quitaban. Depende del nombre de cada unidad, por eso no era constante.
 - **Ayuda de los poderes de los Greater Beings mughul, egipcio y zulú:** sus botones no
   tenían texto de ayuda al pasar el ratón, porque el archivo de ayuda del juego
   (`RESOURCE/HELP.RES`) no trae sus claves (`GODMUGL`, `GODEGYPT`, `GODZULU`). Es un
