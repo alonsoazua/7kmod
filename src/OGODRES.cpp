@@ -109,8 +109,45 @@ void GodRes::load_god_info()
 		godInfo->can_cast_power   = godRec->can_cast_power == '1';
 		godInfo->cast_power_range = misc.atoi(godRec->cast_power_range, godRec->CAST_POWER_RANGE_LEN);
 	}
+
+	apply_mod_changes();
 }
 //--------- End of function GodRes::load_god_info ---------//
+
+
+//------- Begin of function GodRes::apply_mod_changes -------//
+//
+// 7kmod-gameplay: the costs and powers changed from the GOD table. Also
+// called after loading a saved game, which keeps a copy of the table.
+//
+void GodRes::apply_mod_changes()
+{
+	for( int i=0 ; i<god_count ; i++ )
+	{
+		GodInfo* godInfo = god_info_array+i;
+
+		switch( godInfo->god_id )
+		{
+			case GOD_NORMAN:		// the Dragon: a fireball with a button (UnitGod::dragon_fireball())
+				godInfo->can_cast_power    = 1;
+				godInfo->power_pray_points = DRAGON_FIREBALL_PRAY_POINTS;
+				godInfo->cast_power_range  = DRAGON_FIREBALL_CAST_RANGE;
+				break;
+
+			case GOD_CHINESE:		// the Jing Nung: cheaper attacks
+				godInfo->power_pray_points = CHINESE_DRAGON_ATTACK_PRAY_POINTS;
+				break;
+
+			case GOD_GREEK:		// the Phoenix: cheaper, and a power to expose spies (UnitGod::phoenix_expose_spy())
+				godInfo->exist_pray_points = PHOENIX_EXIST_PRAY_POINTS;
+				godInfo->can_cast_power    = 1;
+				godInfo->power_pray_points = PHOENIX_POWER_PRAY_POINTS;
+				godInfo->cast_power_range  = 1;
+				break;
+		}
+	}
+}
+//--------- End of function GodRes::apply_mod_changes ---------//
 
 
 //------- Begin of function GodRes::enable_know_all -------//

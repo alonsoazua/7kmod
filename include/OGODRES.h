@@ -100,6 +100,17 @@ public:
 };
 #pragma pack()
 
+//------ 7kmod-gameplay: changes to the Greater Beings (GodRes::apply_mod_changes()) ------//
+
+#define DRAGON_FIREBALL_PRAY_POINTS		100		// the Norman Dragon: a fireball with a button instead of attacking
+#define DRAGON_FIREBALL_DAMAGE			150		// base damage (the attack of the Dragon has 15)
+#define DRAGON_FIREBALL_RADIUS			109		// damage radius in pixels (45 + 2 locations)
+#define DRAGON_FIREBALL_FIRE_RADIUS		5			// (3 + 2)
+#define DRAGON_FIREBALL_CAST_RANGE		4			// the area shown by the cursor (cast_power_range)
+#define CHINESE_DRAGON_ATTACK_PRAY_POINTS	5		// each attack of the Jing Nung (10 in the data)
+#define PHOENIX_EXIST_PRAY_POINTS		30			// 1.5 per day (50 in the data: 2.5 per day)
+#define PHOENIX_POWER_PRAY_POINTS		100		// exposing a spy in one of your villages
+
 //----------- Define class GodRes ---------------//
 
 class GodRes
@@ -125,6 +136,8 @@ public:
 	int         read_file(File*);
 
 	GodInfo*    operator[](int godId);      // pass godId  as recno
+
+	void			apply_mod_changes();		// 7kmod-gameplay
 
 private:
 	void        load_god_info();

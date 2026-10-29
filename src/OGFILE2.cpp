@@ -1305,6 +1305,8 @@ int GodRes::read_file(File* filePtr)
 
 	mem_del(godInfoArray);
 
+	apply_mod_changes();		// 7kmod-gameplay: saved games keep a copy of the GOD table
+
 	return 1;
 }
 //--------- End of function GodRes::read_file ---------------//

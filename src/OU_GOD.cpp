@@ -30,12 +30,46 @@
 #include <OPOWER.h>
 #include <OU_MARI.h>
 #include <OU_GOD.h>
+#include <OHELP.h>
+#include "gettext.h"
 #include <OWEATHER.h>
 #include <OTORNADO.h>
+#include <OBULLET.h>
+#include <OEFFECT.h>
+#include <OSFRMRES.h>
+#include <OSPRTRES.h>
+#include <OSPY.h>
+#include <OTOWN.h>
+#include <OWORLD.h>
+#include <OWORLDMT.h>
+#include <OUNITRES.h>
+#include <COLCODE.h>
+#include <OVGA.h>
+#include <OMISC.h>
+#include <string.h>
 
 //--------- Define static vars ----------//
 
 static Button3D button_cast, button_cast2;
+
+//------- 7kmod-gameplay: the changes to the Greater Beings --------//
+
+static short djini_convert_recno;		// the soldier converted by the power of the Djini (UnitGod::cast_power())
+
+static char* fireball_icon();
+
+//------- Define class PhoenixEffect --------//
+//
+// 7kmod-gameplay: the effect of the Phoenix exposing a spy: the ring of the
+// Mind Turner (GJ_STAR) drawn in the colors of fire. Effects are not saved.
+
+class PhoenixEffect : public Effect
+{
+public:
+	void draw();
+};
+
+static char phoenix_color_table[256];		// purple -> fire colors (indices of PAL_STD)
 
 //--------- Begin of function UnitGod::init_derived --------//
 void UnitGod::init_derived()
@@ -50,6 +84,9 @@ void UnitGod::init_derived()
 	if(unit_id==UNIT_EGYPTIAN_GOD || unit_id==UNIT_INDIAN_GOD ||
 		unit_id==UNIT_ZULU_GOD)
 		can_attack_flag = 0; // unable to attack
+
+	if( unit_id==UNIT_DRAGON )		// 7kmod-gameplay: the Dragon throws its fireball with a button instead
+		can_attack_flag = 0;
 }
 //-------- End of function UnitGod::init_derived -------//
 
@@ -65,8 +102,11 @@ void UnitGod::pre_process()
 
 	//---- set force_move_flag to 1 if the god does not have the ability to attack ----//
 
-	if( god_id != GOD_CHINESE && god_id != GOD_NORMAN )		// only Chinese and Norman dragon can attack
+	if( god_id != GOD_CHINESE )		// only the Chinese dragon can attack (7kmod-gameplay: the Norman one uses a button)
 		force_move_flag = 1;
+
+	if( god_id == GOD_NORMAN )			// 7kmod-gameplay: also the Dragons of games saved before
+		can_attack_flag = 0;
 
 	//-*********** simulate aat ************-//
 	#ifdef DEBUG
@@ -127,7 +167,7 @@ int UnitGod::process_attack()
 	 * in UnitGod::cast_power(). See comments there for an
 	 * explanation of the exploit this avoids.
 	 */
-	if (god_id == GOD_CHINESE || god_id == GOD_NORMAN)
+	if (god_id == GOD_CHINESE)		// 7kmod-gameplay: the fireball of the Norman Dragon is consumed in cast_power()
 		consume_power_pray_points();
 
 	return 1;
@@ -184,18 +224,42 @@ void UnitGod::disp_info(int refreshFlag)
 				buttonName = "GODZULU";
 				break;
 
+			case GOD_NORMAN:		// 7kmod-gameplay: the fireball (its icon is a frame of the fireball, see below)
+				buttonName = "GODHEAL";
+				break;
+
+			case GOD_GREEK:		// 7kmod-gameplay: exposing a spy
+				buttonName = "SPYMENU";
+				break;
+
 			default:
 				err_here();
 		}
 
 		//----------- create the cast button -----------//
 
-		button_cast.paint(INFO_X1, INFO_Y1+101, 'A', buttonName );
+		button_cast.create(INFO_X1, INFO_Y1+101, 'A', buttonName );
+
+		if( god_id == GOD_NORMAN && fireball_icon() )
+			button_cast.icon_ptr = fireball_icon();
+
+		button_cast.paint();
 
 		if( hit_points >= god_res[god_id]->power_pray_points )
 			button_cast.enable();
 		else
 			button_cast.disable();
+
+		//--- 7kmod: the powers that have no help text in HELP.RES get their own ---//
+
+		const char* helpTitle;
+		const char* helpDetail;
+
+		if( power_help(helpTitle, helpDetail) )
+		{
+			button_cast.set_help_code("");
+			help.set_custom_help( button_cast.x1, button_cast.y1, button_cast.x2, button_cast.y2, helpTitle, helpDetail );
+		}
 
 		//------ The viking gods have two types of power ------//
 
@@ -211,6 +275,273 @@ void UnitGod::disp_info(int refreshFlag)
 	}
 }
 //---------- End of function UnitGod::disp_info ----------//
+
+
+//--------- Begin of function UnitGod::power_help ---------//
+//
+// 7kmod: the help of the power button of the Greater Beings whose button
+// has no entry in HELP.RES (GODMUGL, GODEGYPT and GODZULU), in the style of
+// the others.
+//
+// return: <int> 1 - the god has its own help text
+//
+int UnitGod::power_help(const char*& helpTitle, const char*& helpDetail)
+{
+	switch( god_id )
+	{
+		case GOD_INDIAN:		// 7kmod-gameplay: it also converts a soldier
+			helpTitle  = _("Lower Enemy Loyalty");
+			helpDetail = _("When you Click on this tile, your cursor will change into a large white circle. Place this circle over the units of kingdoms you are at war with, or of no kingdom, and Click again to lower their loyalty. The soldier with the lowest combat level in the circle joins your kingdom. Repeat until the Djini's power has been depleted.");
+			return 1;
+
+		case GOD_NORMAN:		// 7kmod-gameplay
+			helpTitle  = _("Fireball");
+			helpDetail = _("When you Click on this tile, your cursor will change into a large white circle. Place this circle over your target and Click again: the Dragon throws a fireball that burns everything in the circle. Each fireball costs 100 points.");
+			return 1;
+
+		case GOD_GREEK:		// 7kmod-gameplay
+			helpTitle  = _("Expose Spy");
+			helpDetail = _("When you Click on this tile, your cursor will change into a small square. Place this square over one of your villages and Click again: the Phoenix exposes and executes the enemy spy with the lowest spying skill in it. Costs 100 points, even if there is no spy.");
+			return 1;
+
+		case GOD_EGYPTIAN:
+			helpTitle  = _("Increase Population");
+			helpDetail = _("When you Click on this tile, your cursor will change into a small square. Place this square over one of your villages and Click again to add villagers to it. Repeat until Isis's power has been depleted.");
+			return 1;
+
+		case GOD_ZULU:
+			helpTitle  = _("Increase Leadership");
+			helpDetail = _("When you Click on this tile, your cursor will change into a small square. Place this square over one of your Zulu generals or your Zulu king and Click again to increase his leadership. Repeat until uNkulunkulu's power has been depleted.");
+			return 1;
+	}
+
+	return 0;
+}
+//---------- End of function UnitGod::power_help ----------//
+
+
+//--------- Begin of function UnitGod::dragon_fireball ---------//
+//
+// 7kmod-gameplay: the power of the Norman Dragon: a fireball thrown at the
+// location, with much more damage and area than its old attack.
+//
+void UnitGod::dragon_fireball(int xLoc, int yLoc)
+{
+	if( attack_count <= 0 )
+		return;
+
+	AttackInfo* attackInfo = attack_info_array + cur_attack;
+	Bullet* bulletPtr = NULL;
+
+	if( !bullet_array.create_bullet(attackInfo->bullet_sprite_id, &bulletPtr) || !bulletPtr )
+		return;
+
+	bulletPtr->init(BULLET_BY_UNIT, sprite_recno, xLoc, yLoc, UNIT_LAND);
+
+	bulletPtr->attack_damage = (float) (DRAGON_FIREBALL_DAMAGE + misc.random(3)) / ATTACK_SLOW_DOWN;
+	bulletPtr->damage_radius = DRAGON_FIREBALL_RADIUS;
+	bulletPtr->fire_radius	 = DRAGON_FIREBALL_FIRE_RADIUS;
+}
+//---------- End of function UnitGod::dragon_fireball ----------//
+
+
+//--------- Begin of function UnitGod::phoenix_target_town ---------//
+//
+// 7kmod-gameplay: the Phoenix casts its power on a village of its kingdom.
+//
+// return: <int> the recno of the village, 0 - not a village of the kingdom
+//
+int UnitGod::phoenix_target_town(int xLoc, int yLoc)
+{
+	if( xLoc < 0 || yLoc < 0 || xLoc >= MAX_WORLD_X_LOC || yLoc >= MAX_WORLD_Y_LOC )
+		return 0;
+
+	Location* locPtr = world.get_loc(xLoc, yLoc);
+
+	if( !locPtr->is_town() )
+		return 0;
+
+	int townRecno = locPtr->town_recno();
+
+	if( town_array.is_deleted(townRecno) || town_array[townRecno]->nation_recno != nation_recno )
+		return 0;
+
+	return townRecno;
+}
+//---------- End of function UnitGod::phoenix_target_town ----------//
+
+
+//--------- Begin of function UnitGod::phoenix_expose_spy ---------//
+//
+// 7kmod-gameplay: the power of the Phoenix: the spy of another kingdom with
+// the lowest spying skill in the village is exposed and executed, as when
+// caught by counter-espionage. Without spies, the points are spent anyway.
+//
+void UnitGod::phoenix_expose_spy(int townRecno)
+{
+	if( !townRecno || town_array.is_deleted(townRecno) )
+		return;
+
+	Town* townPtr = town_array[townRecno];
+
+	//------- the effect: a ring of fire over the village -------//
+
+	AttackInfo* attackInfo = unit_res.get_attack_info( unit_res[ god_res[GOD_JAPANESE]->unit_id ]->first_attack );
+	int effectSpriteId = attackInfo->effect_id ? attackInfo->effect_id : attackInfo->bullet_sprite_id;
+
+	if( effectSpriteId )
+	{
+		if( !phoenix_color_table[1] )		// not initialized yet
+		{
+			for( int i=0 ; i<256 ; i++ )
+				phoenix_color_table[i] = (char) i;
+
+			static unsigned char purpleArray[] = { 138, 137, 172, 205, 173, 174, 170 };
+			static unsigned char fireArray[]   = { 176, 177, 177, 177, 160, 161, 160 };
+
+			for( int i=0 ; i<(int)sizeof(purpleArray) ; i++ )
+				phoenix_color_table[purpleArray[i]] = (char) fireArray[i];
+		}
+
+		PhoenixEffect* effectPtr = new PhoenixEffect;
+		effectPtr->init( effectSpriteId, townPtr->center_x*ZOOM_LOC_WIDTH, townPtr->center_y*ZOOM_LOC_HEIGHT,
+							  SPRITE_IDLE, 0, 8, 0 );
+		effect_array.add(effectPtr);
+	}
+
+	//------- the spy with the lowest skill -------//
+
+	int bestSpyRecno=0, bestSkill=1000;
+
+	for( int i=spy_array.size() ; i>0 ; i-- )
+	{
+		if( spy_array.is_deleted(i) )
+			continue;
+
+		Spy* spyPtr = spy_array[i];
+
+		if( spyPtr->spy_place == SPY_TOWN && spyPtr->spy_place_para == townRecno &&
+			 spyPtr->true_nation_recno != nation_recno && spyPtr->spy_skill < bestSkill )
+		{
+			bestSkill = spyPtr->spy_skill;
+			bestSpyRecno = i;
+		}
+	}
+
+	if( bestSpyRecno )
+		spy_array[bestSpyRecno]->get_killed();		// with the news of a spy caught
+}
+//---------- End of function UnitGod::phoenix_expose_spy ----------//
+
+
+//--------- Begin of function PhoenixEffect::draw ---------//
+//
+// As Sprite::draw(), with the colors of the bitmap changed.
+//
+void PhoenixEffect::draw()
+{
+	int needMirror;
+	SpriteFrame* spriteFrame = cur_sprite_frame(&needMirror);
+	update_abs_pos(spriteFrame);
+
+	char* bitmapPtr = sprite_info->res_bitmap.read_imported(spriteFrame->bitmap_offset);
+
+	int x1 = abs_x1-World::view_top_x;
+	int y1 = abs_y1-World::view_top_y;
+
+	if( x1 <= -spriteFrame->width || x1 >= ZOOM_WIDTH || y1 <= -spriteFrame->height || y1 >= ZOOM_HEIGHT )
+		return;
+
+	int x2 = abs_x2-World::view_top_x;
+	int y2 = abs_y2-World::view_top_y;
+
+	int srcX1 = MAX(0,x1)-x1, srcY1 = MAX(0,y1)-y1;
+	int srcX2 = MIN(ZOOM_WIDTH-1,x2)-x1, srcY2 = MIN(ZOOM_HEIGHT-1,y2)-y1;
+
+	if( needMirror )
+		vga_back.put_bitmap_area_trans_remap_decompress_hmirror( x1+ZOOM_X1, y1+ZOOM_Y1, bitmapPtr, srcX1, srcY1, srcX2, srcY2, phoenix_color_table );
+	else
+		vga_back.put_bitmap_area_trans_remap_decompress( x1+ZOOM_X1, y1+ZOOM_Y1, bitmapPtr, srcX1, srcY1, srcX2, srcY2, phoenix_color_table );
+}
+//---------- End of function PhoenixEffect::draw ----------//
+
+
+//--------- Begin of static function fireball_icon ---------//
+//
+// 7kmod-gameplay: the icon of the fireball button of the Dragon: a frame
+// of its fireball (DR_ARROW, flying north-east), a compressed transparent
+// bitmap like the icons of the buttons.
+//
+// return: <char*> the bitmap, NULL if not available
+//
+static char* fireball_icon()
+{
+	static char* iconPtr = NULL;
+	static char  triedFlag = 0;
+
+	if( triedFlag )
+		return iconPtr;
+
+	triedFlag = 1;
+
+	int unitId = god_res[GOD_NORMAN]->unit_id;
+	UnitInfo* unitInfo = unit_res[unitId];
+
+	if( !unitInfo->first_attack )
+		return NULL;
+
+	int spriteId = unit_res.get_attack_info(unitInfo->first_attack)->bullet_sprite_id;
+
+	if( !spriteId )
+		return NULL;
+
+	SpriteInfo* spriteInfo = sprite_res[spriteId];
+	SpriteMove* spriteMove = spriteInfo->move_array + 1;		// north-east
+
+	if( spriteMove->frame_count < 3 )
+		return NULL;
+
+	spriteInfo->load_bitmap_res();
+
+	SpriteFrame* spriteFrame = sprite_frame_res[spriteMove->first_frame_recno + 2];
+	unsigned char* bitmapPtr = (unsigned char*) spriteInfo->res_bitmap.read_imported(spriteFrame->bitmap_offset);
+
+	//--- the size of the compressed bitmap (see IMGbltTransDecompress()) ---//
+
+	int width  = bitmapPtr[0] + (bitmapPtr[1]<<8);
+	int height = bitmapPtr[2] + (bitmapPtr[3]<<8);
+	int esi = 4, pixelsToSkip = 0;
+
+	for( int j=0 ; j<height ; ++j )
+	{
+		for( int i=0 ; i<width ; ++i )
+		{
+			if( pixelsToSkip != 0 )
+			{
+				if( pixelsToSkip >= width-i )
+				{
+					pixelsToSkip -= width-i;
+					break;
+				}
+				i += pixelsToSkip;
+				pixelsToSkip = 0;
+			}
+
+			int al = bitmapPtr[esi++];
+
+			if( al == MANY_TRANSPARENT_CODE )
+				pixelsToSkip = bitmapPtr[esi++] - 1;
+			else if( al > MANY_TRANSPARENT_CODE )
+				pixelsToSkip = 256 - al - 1;
+		}
+	}
+
+	iconPtr = mem_add(esi);
+	memcpy( iconPtr, bitmapPtr, esi );
+
+	return iconPtr;
+}
+//---------- End of static function fireball_icon ----------//
 
 
 //--------- Begin of function UnitGod::detect_info ---------//
@@ -293,6 +624,11 @@ void UnitGod::cast_power(int xLoc, int yLoc)
 	if( firm_array.is_deleted(base_firm_recno) )
 		return;
 
+	//--- 7kmod-gameplay: the Phoenix only casts on a village of its kingdom (no points spent elsewhere) ---//
+
+	if( god_id == GOD_GREEK && !phoenix_target_town(xLoc, yLoc) )
+		return;
+
 	//------- consumer pray points --------//
 	/* This must be done here to avoid an exploit where a human player 
 	 * can cast an ability and then order the god to move within a 
@@ -302,6 +638,20 @@ void UnitGod::cast_power(int xLoc, int yLoc)
 	 */
 	if( !consume_power_pray_points() )
 		return;
+
+	//--- 7kmod-gameplay: the fireball of the Dragon and the Phoenix exposing a spy ---//
+
+	if( god_id == GOD_NORMAN )
+	{
+		dragon_fireball(xLoc, yLoc);
+		return;
+	}
+
+	if( god_id == GOD_GREEK )
+	{
+		phoenix_expose_spy( phoenix_target_town(xLoc, yLoc) );
+		return;
+	}
 
 	//---- viking god does not need a range for casting power ----//
 
@@ -327,6 +677,8 @@ void UnitGod::cast_power(int xLoc, int yLoc)
 	int centerY = (yLoc1+yLoc2) / 2;
 	Location* locPtr;
 
+	djini_convert_recno = 0;		// 7kmod-gameplay: set by indian_cast_power()
+
 	for( yLoc=yLoc1 ; yLoc<=yLoc2 ; yLoc++ )
 	{
 		t=abs(yLoc-centerY)/2;
@@ -341,6 +693,11 @@ void UnitGod::cast_power(int xLoc, int yLoc)
 			}
 		}
 	}
+
+	//--- 7kmod-gameplay: the Djini converts the soldier with the lowest combat level in the area ---//
+
+	if( god_id == GOD_INDIAN && djini_convert_recno && !unit_array.is_deleted(djini_convert_recno) )
+		unit_array[djini_convert_recno]->betray(nation_recno);		// with the loyalty of a unit that changes sides
 }
 //---------- End of function UnitGod::cast_power ----------//
 
@@ -738,6 +1095,27 @@ void UnitGod::indian_cast_power(int unitRecno, int divider)
 	if( unitPtr->is_visible() && nation_array.should_attack(nation_recno, unitPtr->nation_recno) )
 	{
 		unitPtr->change_loyalty(-30 + misc.random(11));
+
+		//--- 7kmod-gameplay: the soldier with the lowest combat level (then the lowest loyalty) is converted ---//
+		//
+		// Only people of the rank of soldier, not spies, on the map.
+
+		if( unit_res[unitPtr->unit_id]->unit_class == UNIT_CLASS_HUMAN && unitPtr->race_id &&
+			 unitPtr->rank_id == RANK_SOLDIER && !unitPtr->spy_recno && !unitPtr->unit_mode )
+		{
+			int better = 1;
+
+			if( djini_convert_recno && !unit_array.is_deleted(djini_convert_recno) )
+			{
+				Unit* bestUnit = unit_array[djini_convert_recno];
+
+				better = unitPtr->skill.combat_level < bestUnit->skill.combat_level ||
+							(unitPtr->skill.combat_level == bestUnit->skill.combat_level && unitPtr->loyalty < bestUnit->loyalty);
+			}
+
+			if( better )
+				djini_convert_recno = unitRecno;
+		}
 	}
 }
 //---------- End of function UnitGod::indian_cast_power ----------//
