@@ -53,6 +53,29 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     - El tooltip del poder lo menciona.
   - Va en `7kmod-gameplay` (cambia el balance).
 
+- [ ] **Phoenix (Greater Being griego): poder para exponer espías y menor costo.** Hoy el
+  Fénix solo explora y revela información; no tiene poder (`can_cast_power` en 0) y es
+  el que más cuesta mantener. Nuevo:
+  - **Botón de poder** en su panel, como los de los demás seres (`UnitGod::disp_info`,
+    `src/OU_GOD.cpp`): al dar clic, se elige un **pueblo de tu reino** (alcance de una
+    casilla, como Isis). Si en el pueblo hay espías de otros reinos, **expone a uno**: si
+    hay varios, al de **menor habilidad de espionaje**.
+  - **Costo de mantener: de 2.5 a 1.5 por día** (en la tabla `GOD` son 50 puntos de
+    existencia ÷ 20; quedaría en 30), igual que la mayoría. Se cambia en el código al
+    cargar la tabla (`GodRes`), sin tocar los datos.
+  - Por definir:
+    - "Exponer": propuesta, como cuando lo atrapa el contraespionaje
+      (`SpyArray::catch_spy`): el espía es descubierto y ejecutado, con la noticia normal.
+      La otra opción es solo mostrarlo (sin matarlo).
+    - Costo del poder: propuesta, 100 puntos como los demás poderes.
+    - Si el pueblo no tiene espías ajenos: el poder no se gasta y sale un aviso.
+    - ¿También en edificios de tu reino? Propuesta: solo pueblos, como pediste.
+    - Ícono y tooltip del botón (no hay ícono del juego para esto; habría que hacer uno
+      o usar uno existente, por ejemplo el de los espías).
+    - Que la IA lo use.
+  - Actualizar `GREATER_BEINGS.md` (hoy dice que el Fénix no detecta espías).
+  - Va en `7kmod-gameplay` (cambia el balance).
+
 ---
 
 ## Tecnologías del mod (`ModTech`)
