@@ -132,6 +132,32 @@ Greater Beings: los poderes del Dragon, el Djini y el Phoenix se probaron en el 
   puntos (los puntos también son su vida). Actualizar `GREATER_BEINGS.md`. Va en
   `7kmod-gameplay`.
 
+- [ ] **La IA invoca Fryhtans y los usa como armas de asedio.** Hoy la IA nunca usa el
+  botón de invocar Fryhtan del Seat of Power (`FirmBase::invoke_fryhtan`); solo invoca a
+  su Greater Being cuando los puntos de oración llegan al máximo, 400
+  (`FirmBase::think_invoke_god`, `src/OF_BASE2.cpp`). Y si tuviera un Fryhtan, no haría
+  nada con él: en `Unit::think_action` (`src/OUNITAI.cpp`) solo piensan los reyes, los
+  generales, las armas (`think_weapon_action`, cada 15 días) y las personas.
+  - **Propuesta de regla para invocar** (en el `think` del Seat of Power de la IA):
+    - **El Greater Being va primero:** solo invoca si su ser ya está en el mapa
+      (`god_unit_recno`). Antes de eso guarda los puntos para el ser, como hoy.
+    - **Reserva:** solo si le quedan al menos 100 puntos después de pagar el Fryhtan
+      (para que el ser siga vivo y pueda usar su poder).
+    - **Frecuencia:** lo revisa cada 30 días, y cada Seat espera al menos 90 días entre
+      una invocación y la siguiente. Con eso son pocos, como las armas de asedio.
+    - **Tope:** como máximo un Fryhtan por fuerte de la IA y 4 en total por reino.
+    - **Comida:** solo si su comida no va en déficit, porque cada Fryhtan come de 20 a
+      50 al año.
+    - **Guerra:** solo si está en guerra o tiene enemigos (si no, los puntos se gastan
+      sin uso).
+  - **Manejo, como un arma de asedio** (`think_weapon_action`): el Fryhtan busca un
+    fuerte de su reino con lugar (`think_assign_weapon_to_camp`; en gameplay los fuertes
+    ya aceptan Fryhtans), prefiriendo los cercanos al enemigo, y sale con los ataques
+    del fuerte. Si no hay lugar, se queda cerca del Seat como defensa.
+  - **Por definir:** los números (reserva, días, tope) y si cambian con la dificultad
+    de la IA.
+  - Va en `7kmod-gameplay`.
+
 ---
 
 ## Tecnologías del mod (`ModTech`)
