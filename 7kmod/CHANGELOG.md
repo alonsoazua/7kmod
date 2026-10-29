@@ -34,6 +34,11 @@ escenarios (desde la 0.2.0) está descrito en `TODO-editor.md`.
   error del juego original. Ahora muestran "Lower Enemy Loyalty", "Increase Population"
   e "Increase Leadership" con su explicación, como los demás poderes
   (`UnitGod::power_help`).
+- **Retratos de los Fryhtans en la lista de unidades seleccionadas:** salían con un
+  retrato persa, porque los datos del juego no traen retratos chicos de Fryhtans (el
+  juego original nunca los muestra). Ahora se hacen al cargar el juego reduciendo el
+  retrato grande de cada Fryhtan, para todos sus rangos (soldado, Ordo y All High)
+  (`make_small_icon`, `src/OUNITRES.cpp`).
 
 ---
 

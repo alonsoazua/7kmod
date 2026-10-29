@@ -30,6 +30,17 @@
 #include <OUNITRES.h>
 #include "gettext.h"
 
+//--- 7kmod: small icons of Fryhtans made from their large icons ---//
+//
+// The game data has no small icons for the Fryhtans (they use a Persian one),
+// as the original game never shows them (the 7kmod list of selected units and
+// the Fryhtans in Forts of 7kmod-gameplay do). They are made by scaling down
+// the large icons of each rank (soldier, Ordo and All High).
+
+static char* monster_small_icon_buf_array[MAX_UNIT_TYPE][3];		// [unitId-1][soldier, general, king]
+
+static char* make_small_icon(char* largeIconPtr);
+
 #ifdef NO_DEBUG_UNIT
 #undef err_when
 #undef err_here
@@ -113,6 +124,15 @@ void UnitRes::deinit()
 	{
 		mem_del(unit_info_array);
 		mem_del(attack_info_array);
+
+		for( int i=0 ; i<MAX_UNIT_TYPE ; i++ )		// 7kmod
+		{
+			for( int j=0 ; j<3 ; j++ )
+			{
+				mem_del( monster_small_icon_buf_array[i][j] );
+				monster_small_icon_buf_array[i][j] = NULL;
+			}
+		}
 
 		res_large_icon.deinit();
 		res_general_icon.deinit();
@@ -239,6 +259,39 @@ void UnitRes::load_info()
 
 		if( unitRec->all_know=='1' )
 			memset( unitInfo->nation_tech_level_array, 1, sizeof(unitInfo->nation_tech_level_array) );
+	}
+
+	//--- 7kmod: small icons of Fryhtans, for every rank ---//
+
+	for( i=0 ; i<unit_info_count && i<MAX_UNIT_TYPE ; i++ )
+	{
+		unitInfo = unit_info_array+i;
+
+		if( unitInfo->unit_class != UNIT_CLASS_MONSTER || !unitInfo->soldier_icon_ptr )
+			continue;
+
+		char** bufArray = monster_small_icon_buf_array[i];
+
+		for( int j=0 ; j<3 ; j++ )
+		{
+			mem_del( bufArray[j] );		// mem_del() accepts NULL
+			bufArray[j] = NULL;
+		}
+
+		bufArray[0] = make_small_icon(unitInfo->soldier_icon_ptr);
+		unitInfo->soldier_small_icon_ptr = bufArray[0];
+
+		//--- the general and king icons fall back to the soldier icon when the data has none ---//
+
+		if( unitInfo->general_icon_ptr && unitInfo->general_icon_ptr != unitInfo->soldier_icon_ptr )
+			bufArray[1] = make_small_icon(unitInfo->general_icon_ptr);
+
+		unitInfo->general_small_icon_ptr = bufArray[1] ? bufArray[1] : bufArray[0];
+
+		if( unitInfo->king_icon_ptr && unitInfo->king_icon_ptr != unitInfo->soldier_icon_ptr )
+			bufArray[2] = make_small_icon(unitInfo->king_icon_ptr);
+
+		unitInfo->king_small_icon_ptr = bufArray[2] ? bufArray[2] : bufArray[0];
 	}
 
 	//--------- set vehicle info  ---------//
@@ -533,3 +586,44 @@ char *UnitInfo::get_small_icon_ptr(char rankId)
 }
 // -------- End of function UnitInfo::get_small_icon_ptr --------//
 // ##### end Gilbert 17/10 ########//
+
+
+//-------- Begin of static function make_small_icon --------//
+//
+// 7kmod: make a small unit icon (UNIT_SMALL_ICON_WIDTH x
+// UNIT_SMALL_ICON_HEIGHT) from a large unit icon by scaling it down
+// (nearest neighbor, which keeps more details than averaging the colors).
+//
+// Icons are bitmaps with a <short> width and a <short> height followed by
+// the pixels.
+//
+// return: <char*> the new bitmap, to be freed with mem_del()
+//
+static char* make_small_icon(char* largeIconPtr)
+{
+	int srcWidth  = *(short*) largeIconPtr;
+	int srcHeight = *((short*) largeIconPtr + 1);
+	unsigned char* srcPtr = (unsigned char*) largeIconPtr + 2*sizeof(short);
+
+	char* iconPtr = mem_add( 2*sizeof(short) + UNIT_SMALL_ICON_WIDTH*UNIT_SMALL_ICON_HEIGHT );
+
+	*(short*) iconPtr = UNIT_SMALL_ICON_WIDTH;
+	*((short*) iconPtr + 1) = UNIT_SMALL_ICON_HEIGHT;
+
+	unsigned char* destPtr = (unsigned char*) iconPtr + 2*sizeof(short);
+
+	for( int y=0 ; y<UNIT_SMALL_ICON_HEIGHT ; y++ )
+	{
+		int srcY = (2*y+1) * srcHeight / (2*UNIT_SMALL_ICON_HEIGHT);
+
+		for( int x=0 ; x<UNIT_SMALL_ICON_WIDTH ; x++ )
+		{
+			int srcX = (2*x+1) * srcWidth / (2*UNIT_SMALL_ICON_WIDTH);
+
+			*destPtr++ = srcPtr[srcY*srcWidth+srcX];
+		}
+	}
+
+	return iconPtr;
+}
+//--------- End of static function make_small_icon ---------//
