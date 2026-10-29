@@ -118,12 +118,13 @@ Greater Beings: los poderes del Dragon, el Djini y el Phoenix se probaron en el 
   - Actualizar `GREATER_BEINGS.md`.
   - Va en `7kmod-gameplay` (cambia el balance).
 
-- [ ] **Sonido del poder del Phoenix: el de Isis.** El Phoenix no tiene animación de
+- [x] **Sonido del poder del Phoenix: el de Isis.** El Phoenix no tiene animación de
   ataque, así que su poder no suena (los demás seres suenan con el sonido "A1" de su
   sprite en los cuadros de su animación de lanzar, `Sprite::process_attack`,
   `src/OSPRITE2.cpp`). Al exponer espías (`UnitGod::phoenix_expose_spy`) se reproduce el
   sonido de lanzar de Isis (`se_res.sound(..., 'S', <sprite de EG_GOD>, "A1")`, en el
-  pueblo), en los cuadros en que suena. Va en `7kmod-gameplay`.
+  pueblo). Hecho: suena una vez al lanzar el poder (`GE_CAST`, que Isis toca en el
+  cuadro 5 de su animación). Va en `7kmod-gameplay`.
 
 - [x] **Jing Nung (Greater Being chino): cada ataque cuesta 5 puntos en vez de 10.**
   Sigue atacando solo, con su secuencia de 3 ataques (daño base 18). El costo sale de

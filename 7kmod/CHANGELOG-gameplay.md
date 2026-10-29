@@ -34,7 +34,8 @@ Basada en **7kmod 0.2.0**, que agrega el editor de escenarios (ver `CHANGELOG.md
     pasa a tu reino, como una unidad que cambia de bando.
   - **Phoenix griego: exponer espías.** Botón de poder (el ojo de los espías): sobre un
     pueblo de tu reino, expone y ejecuta al espía ajeno de menor habilidad, con un anillo
-    de fuego sobre el pueblo (el del Mind Turner en naranja). Cuesta 100 puntos, aunque no
+    de fuego sobre el pueblo (el del Mind Turner en naranja) y el sonido del poder de
+    Isis. Cuesta 100 puntos, aunque no
     haya espías; fuera de un pueblo tuyo no gasta. La IA lo usa en sus pueblos con espías.
 - **Fryhtans invocados en el editor de escenarios:** entrada **Fryhtan** en la pestaña
   Units, con las opciones **Type** (los 10 Fryhtans que se pueden invocar, sin importar

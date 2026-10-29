@@ -46,6 +46,7 @@
 #include <COLCODE.h>
 #include <OVGA.h>
 #include <OMISC.h>
+#include <OSERES.h>
 #include <string.h>
 
 //--------- Define static vars ----------//
@@ -408,6 +409,14 @@ void UnitGod::phoenix_expose_spy(int townRecno)
 							  SPRITE_IDLE, 0, 8, 0 );
 		effect_array.add(effectPtr);
 	}
+
+	//--- the sound: the one of the power of Isis (the Phoenix has no casting animation to play its own) ---//
+
+	int isisSpriteId = unit_res[ god_res[GOD_EGYPTIAN]->unit_id ]->sprite_id;
+	SEInfo* seInfo = se_res.scan('S', isisSpriteId, "A1", 0, 0);
+
+	if( seInfo )
+		se_res.sound( townPtr->center_x, townPtr->center_y, seInfo->out_frame, 'S', isisSpriteId, "A1" );
 
 	//------- the spy with the lowest skill -------//
 
