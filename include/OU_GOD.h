@@ -57,6 +57,7 @@ public:
 	bool is_in_build_menu();
 
 	void cast_power(int castXLoc, int castYLoc);
+	int  power_help(const char*& helpTitle, const char*& helpDetail);		// 7kmod
 
 	//-------------- multiplayer checking codes ---------------//
 	virtual	uint8_t crc8();

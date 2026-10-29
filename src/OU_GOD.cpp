@@ -30,6 +30,8 @@
 #include <OPOWER.h>
 #include <OU_MARI.h>
 #include <OU_GOD.h>
+#include <OHELP.h>
+#include "gettext.h"
 #include <OWEATHER.h>
 #include <OTORNADO.h>
 
@@ -197,6 +199,17 @@ void UnitGod::disp_info(int refreshFlag)
 		else
 			button_cast.disable();
 
+		//--- 7kmod: the powers that have no help text in HELP.RES get their own ---//
+
+		const char* helpTitle;
+		const char* helpDetail;
+
+		if( power_help(helpTitle, helpDetail) )
+		{
+			button_cast.set_help_code("");
+			help.set_custom_help( button_cast.x1, button_cast.y1, button_cast.x2, button_cast.y2, helpTitle, helpDetail );
+		}
+
 		//------ The viking gods have two types of power ------//
 
 		if( god_id == GOD_VIKING )
@@ -211,6 +224,39 @@ void UnitGod::disp_info(int refreshFlag)
 	}
 }
 //---------- End of function UnitGod::disp_info ----------//
+
+
+//--------- Begin of function UnitGod::power_help ---------//
+//
+// 7kmod: the help of the power button of the Greater Beings whose button
+// has no entry in HELP.RES (GODMUGL, GODEGYPT and GODZULU), in the style of
+// the others.
+//
+// return: <int> 1 - the god has its own help text
+//
+int UnitGod::power_help(const char*& helpTitle, const char*& helpDetail)
+{
+	switch( god_id )
+	{
+		case GOD_INDIAN:
+			helpTitle  = _("Lower Enemy Loyalty");
+			helpDetail = _("When you Click on this tile, your cursor will change into a large white circle. Place this circle over the units of kingdoms you are at war with, or of no kingdom, and Click again to lower their loyalty. Repeat until the Djini's power has been depleted.");
+			return 1;
+
+		case GOD_EGYPTIAN:
+			helpTitle  = _("Increase Population");
+			helpDetail = _("When you Click on this tile, your cursor will change into a small square. Place this square over one of your villages and Click again to add villagers to it. Repeat until Isis's power has been depleted.");
+			return 1;
+
+		case GOD_ZULU:
+			helpTitle  = _("Increase Leadership");
+			helpDetail = _("When you Click on this tile, your cursor will change into a small square. Place this square over one of your Zulu generals or your Zulu king and Click again to increase his leadership. Repeat until uNkulunkulu's power has been depleted.");
+			return 1;
+	}
+
+	return 0;
+}
+//---------- End of function UnitGod::power_help ----------//
 
 
 //--------- Begin of function UnitGod::detect_info ---------//
