@@ -44,13 +44,11 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   **el soldado con menos combate del área** (rango soldado, no general ni rey) pasa a tu
   reino (`Unit::change_nation`).
   - Solo uno por lanzamiento, entre las mismas unidades a las que baja la lealtad.
-  - Por definir:
-    - Empates de combate: el de menor lealtad (después de bajarla).
-    - ¿Solo personas, o también armas de asedio y Fryhtans invocados? Propuesta: solo
-      personas.
-    - Espías disfrazados: no se convierten (seguirían siendo espías de su reino).
-    - Lealtad con la que llega a tu reino (por ejemplo, la de una unidad que se rinde).
-    - El tooltip del poder lo menciona.
+  - Empates de combate: el de menor lealtad (después de bajarla).
+  - Solo personas (no armas de asedio ni Fryhtans invocados).
+  - Espías disfrazados: no se convierten.
+  - Llega a tu reino con la lealtad de una unidad que se rinde.
+  - El tooltip del poder lo menciona.
   - Va en `7kmod-gameplay` (cambia el balance).
 
 - [ ] **Phoenix (Greater Being griego): poder para exponer espías y menor costo.** Hoy el
@@ -78,10 +76,9 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   - **Ícono:** el existente que mejor se adapte (por ejemplo el de los espías); tooltip
     propio.
   - **La IA lo usa.**
-  - Por definir:
-    - Cuándo lo usa la IA. Propuesta: sobre su pueblo con espías ajenos (el juego sabe
-      dónde están), cuando tiene los puntos.
-    - Solo pueblos (no edificios), como se pidió.
+  - La IA lo usa sobre su pueblo con espías ajenos (el juego sabe dónde están), cuando
+    tiene los puntos.
+  - Solo pueblos (no edificios).
   - Actualizar `GREATER_BEINGS.md` (hoy dice que el Fénix no detecta espías).
   - Va en `7kmod-gameplay` (cambia el balance).
 
@@ -110,17 +107,12 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     ÷3, una vez por edificio en el área): unos 12 de vida a un edificio al centro.
   - **Ícono:** el existente que mejor se adapte; tooltip propio.
   - **La IA lo usa**, sobre grupos de enemigos.
-  - Por definir:
-    - Referencia del daño: hoy cada bola (base 15) quita unos 3 de vida al centro
-      (÷4 de `ATTACK_SLOW_DOWN`, −1 de la armadura 4); 100 puntos son 10 bolas, unos
-      30 de vida sobre un objetivo. Con base 150 una bola quitaría unos 37 al centro, 31
-      a una casilla, 26 a dos y 20 a tres (con el radio de 109 pixeles); con base 200,
-      49 / 42 / 35 / 27. Un soldado con combate 20 tiene 40 de vida, con 50 tiene 100.
-      Se puede afinar con `7kmod/tools/combat_sim.py`.
-    - Si el daño baja hacia la orilla (hoy al 50%) o es parejo. Propuesta: que baje,
-      como hoy (los números de arriba ya lo consideran).
-    - Cuándo lo usa la IA. Propuesta: cuando hay 5 o más unidades enemigas en el área.
-    - El Jing Nung chino sigue atacando solo (ver abajo).
+  - El daño baja hacia la orilla, como hoy (al 50%).
+  - La IA la lanza cuando hay 5 o más unidades enemigas en el área.
+  - Referencia del daño: hoy cada bola (base 15) quita unos 3 de vida al centro (÷4 de
+    `ATTACK_SLOW_DOWN`, −1 de la armadura 4); 100 puntos son 10 bolas, unos 30 de vida
+    sobre un objetivo. Un soldado con combate 20 tiene 40 de vida, con 50 tiene 100.
+  - El Jing Nung chino sigue atacando solo (ver abajo).
   - Actualizar `GREATER_BEINGS.md`.
   - Va en `7kmod-gameplay` (cambia el balance).
 
