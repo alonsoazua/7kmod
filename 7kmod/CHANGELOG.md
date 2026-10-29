@@ -21,6 +21,14 @@ escenarios (desde la 0.2.0) está descrito en `TODO-editor.md`.
 
 ## [Sin publicar]
 
+### Corregido
+- **Ayuda de los poderes de los Greater Beings mughul, egipcio y zulú:** sus botones no
+  tenían texto de ayuda al pasar el ratón, porque el archivo de ayuda del juego
+  (`RESOURCE/HELP.RES`) no trae sus claves (`GODMUGL`, `GODEGYPT`, `GODZULU`). Es un
+  error del juego original. Ahora muestran "Lower Enemy Loyalty", "Increase Population"
+  e "Increase Leadership" con su explicación, como los demás poderes
+  (`UnitGod::power_help`).
+
 ---
 
 ## [0.2.0] - 2026-10-28
