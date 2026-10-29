@@ -72,14 +72,48 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     sobre el pueblo. Candidatos: el anillo morado del Mind Turner (`GJ_STAR`) o los
     destellos de Isis (`GE_STAR`), o uno de ellos con los colores cambiados (naranja,
     como el fuego del Fénix), cambiando los colores al cargarlo.
+  - **Elegido: el anillo del Mind Turner (`GJ_STAR`) en naranja**, con los colores
+    cambiados al cargarlo (sin tocar los datos).
   - Por definir:
     - Costo del poder: propuesta, 100 puntos como los demás poderes.
-    - Cuál efecto gráfico.
     - ¿También en edificios de tu reino? Propuesta: solo pueblos.
     - Ícono y tooltip del botón (no hay ícono del juego para esto; habría que hacer uno
       o usar uno existente, por ejemplo el de los espías).
     - Que la IA lo use.
   - Actualizar `GREATER_BEINGS.md` (hoy dice que el Fénix no detecta espías).
+  - Va en `7kmod-gameplay` (cambia el balance).
+
+- [ ] **Dragon (Greater Being normando): bola de fuego con botón en vez de atacar.**
+  - **Hoy:** es, con el Jing Nung chino, el único ser que ataca solo
+    (`UnitGod::pre_process`, `src/OU_GOD.cpp`). Su ataque en la tabla de ataques de
+    `STD.SET`: daño base 15, alcance 6, retraso 6, proyectil `DR_ARROW` (la bola de
+    fuego). Cada ataque gasta 10 puntos de oración (`power_pray_points`), que también
+    son su vida, al terminar el ataque (`UnitGod::process_attack`).
+  - **Área del proyectil hoy** (`Bullet`, `src/OBULLET.cpp`): revisa las casillas a 2 o
+    menos del objetivo (5×5) y daña a las unidades y edificios a 45 pixeles o menos del
+    centro (`bullet_radius`; una casilla mide 32), con el daño bajando del 100% al
+    centro al 50% en la orilla. En la práctica, el objetivo y las casillas pegadas. No
+    daña a tu reino ni a quien no estás atacando. Además prende fuego en las casillas a
+    3 o menos (`fire_radius`, distancia en cuadrícula), más fuerte al centro.
+  - **Nuevo:**
+    - Ya no ataca solo (como los demás seres, `force_move_flag`).
+    - **Botón de poder** en su panel: al dar clic, se elige un punto en el mapa (dentro
+      de su alcance, o vuela hasta él como los demás) y lanza la bola de fuego.
+    - **Área: +2 casillas.** Propuesta: radio de daño de 45 a 109 pixeles (unas 3.4
+      casillas), revisión de casillas de 2 a 4 (9×9) y fuego de 3 a 5.
+    - **Costo: 100 puntos** por bola (hoy 10 por ataque).
+    - **Daño considerablemente superior** a una bola normal.
+  - Por definir:
+    - Cuánto daño. Referencia: hoy 100 puntos son 10 ataques de daño base 15 (150 en
+      total sobre un objetivo, menos el daño a los de alrededor). Habría que simularlo
+      con `7kmod/tools/combat_sim.py` contra grupos de soldados.
+    - Si daña edificios (hoy sí) y a cuánto.
+    - Si el daño baja hacia la orilla (hoy al 50%) o es parejo.
+    - Ícono del botón (hay `GODHEAL`, `GODMIND`, etc.; para este, uno nuevo o uno de
+      ataque existente) y tooltip.
+    - Que la IA lo use (hoy su Dragon ataca solo).
+    - El Jing Nung chino sigue igual.
+  - Actualizar `GREATER_BEINGS.md`.
   - Va en `7kmod-gameplay` (cambia el balance).
 
 ---
