@@ -64,7 +64,7 @@ static short  inspect_unit_count;
 // identify the units of the list, to remove the recnos that are reused.
 
 static short  inspect_unit_id_array[MAX_UNIT_LIST];
-static short  inspect_name_id_array[MAX_UNIT_LIST];
+static uint16_t inspect_name_id_array[MAX_UNIT_LIST];		// as Unit::name_id (a short would make the names over 32767 negative and never equal)
 static char   inspect_nation_array[MAX_UNIT_LIST];
 
 static short  last_list_recno_array[MAX_UNIT_LIST];	// to know when the list changes
