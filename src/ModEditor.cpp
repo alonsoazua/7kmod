@@ -119,6 +119,8 @@ void ModEditor::reset()
 	place_reserve = 10;
 	place_monster_id = 0;
 	place_brush = 3;
+	place_spy_skill = 50;
+	place_cloak_nation = -1;
 	edit_scen_recno = 0;
 	new_map_flag = 0;
 	new_map_seed = 0;

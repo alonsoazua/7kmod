@@ -56,6 +56,7 @@
 #include <OTERRAIN.h>
 #include <OTECHRES.h>
 #include <OMISC.h>
+#include <OSPY.h>
 #include "gettext.h"
 
 //------- the layout of the panel --------//
@@ -93,7 +94,8 @@ enum { PLACE_SOLDIER=1,
 		 PLACE_ROCK,				// id: 0 - small, 1 - large
 		 PLACE_CLEAR,
 		 PLACE_GROUND,			// id: the terrain type
-		 PLACE_SHAPE };			// id: EDITOR_TERRAIN_WATER, _LAND, _HILL or _RAMP
+		 PLACE_SHAPE,				// id: EDITOR_TERRAIN_WATER, _LAND, _HILL or _RAMP
+		 PLACE_SPY };
 
 struct PlaceEntry
 {
@@ -104,7 +106,7 @@ struct PlaceEntry
 static PlaceEntry unit_entry_array[] =
 {
 	{ PLACE_SOLDIER, 0 }, { PLACE_GENERAL, 0 },
-	{ PLACE_WORKER, 0 },
+	{ PLACE_WORKER, 0 }, { PLACE_SPY, 0 },
 };
 
 static PlaceEntry weapon_entry_array[] =
@@ -159,7 +161,8 @@ static int tab_entry_count[EDITOR_TAB_COUNT] =
 //------- the options of the palettes --------//
 
 enum { OPTION_RACE=1, OPTION_COMBAT, OPTION_LEADERSHIP, OPTION_SKILL, OPTION_SKILL_LEVEL,
-		 OPTION_VERSION, OPTION_POPULATION, OPTION_RESERVE, OPTION_MONSTER, OPTION_BRUSH };
+		 OPTION_VERSION, OPTION_POPULATION, OPTION_RESERVE, OPTION_MONSTER, OPTION_BRUSH,
+		 OPTION_SPYING, OPTION_CLOAK };
 
 enum { MAX_OPTION = 3 };
 
@@ -174,9 +177,11 @@ enum { MAX_UNIT_PER_ORDER = 200 };
 enum { PROP_NONE, PROP_COMBAT, PROP_SKILL, PROP_VERSION, PROP_POPULATION, PROP_RESERVE,
 		 PROP_RACE,				// towns and human units (the king changes the race of his kingdom)
 		 PROP_MINERAL,			// mines: none, clay, copper, iron
-		 PROP_MINE_RESERVE };
+		 PROP_MINE_RESERVE,
+		 PROP_SPYING,			// spies: the spying skill
+		 PROP_CLOAK };			// spies on the map: the kingdom they disguise as
 
-enum { MAX_PROP = 3 };
+enum { MAX_PROP = 4 };
 
 //------- the layout of the box of the selected object --------//
 
@@ -190,6 +195,7 @@ struct SelectLayout
 	char	prop_array[MAX_PROP];
 	int	value_array[MAX_PROP];
 	int	out_y;						// "All out" and "General out", -1 - none
+	int	spy_y;						// "Spies out" of a town, -1 - none
 	int	name_y;						// "Re-roll" and "Rename", -1 - none
 	int	owner_y;						// "Set Owner" and "Delete"
 };
@@ -228,6 +234,10 @@ static int	change_unit_race(int unitRecno, int newRaceId);
 static void	change_selected_units_race(int dir);
 static void	set_mine_mineral(FirmMine* minePtr, int rawId);
 static void	set_mine_reserve(FirmMine* minePtr, int reserveQty);
+static int	place_spy(int xLoc, int yLoc);
+static int	spy_place_at(int xLoc, int yLoc, int& placePara);
+static int	place_spy_count(int spyPlace, int placePara);
+static void	take_out_town_spies(Town* townPtr);
 static void	put_arrow_row(int y, const char* labelStr, const char* valueStr, int enabled=1);
 static int	detect_arrow_row(int y);
 
@@ -448,6 +458,17 @@ void ModEditor::detect_panel()
 		}
 	}
 
+	//------- the selected town: take out its spies -------//
+
+	if( layout.spy_y >= 0 && mouse.any_click( INFO_X1+6, layout.spy_y, INFO_X1+100, layout.spy_y+15 ) )
+	{
+		take_out_town_spies( town_array[town_array.selected_recno] );
+		sys.zoom_need_redraw = 1;
+		sys.map_need_redraw = 1;
+		info.disp();
+		return;
+	}
+
 	//------- the name: Re-roll and Rename -------//
 
 	if( layout.name_y >= 0 )
@@ -650,6 +671,24 @@ int ModEditor::get_place_area(int xLoc, int yLoc, int& locWidth, int& locHeight)
 				return 1;
 
 			return can_place_unit(unitId, xLoc, yLoc);
+		}
+
+		case PLACE_SPY:
+		{
+			if( owner_nation_recno <= 0 )
+				return 0;
+
+			//--- on a town or a building: the spy goes in it, of any kingdom ---//
+
+			int placePara;
+
+			if( spy_place_at(xLoc, yLoc, placePara) )
+				return 1;
+
+			if( world.get_loc(xLoc, yLoc)->is_firm() || world.get_loc(xLoc, yLoc)->is_town() )
+				return 0;
+
+			return can_place_unit(race_res[place_race_id]->basic_unit_id, xLoc, yLoc);
 		}
 
 		case PLACE_TOWN:
@@ -857,6 +896,23 @@ void ModEditor::set_selected_owner()
 
 			if( unitPtr->rank_id == RANK_KING || unit_res[unitPtr->unit_id]->unit_class == UNIT_CLASS_MONSTER )
 				continue;
+
+			//--- a spy: its true kingdom changes; it keeps its cloak, unless it was its own kingdom ---//
+
+			if( unitPtr->spy_recno )
+			{
+				Spy* spyPtr = spy_array[unitPtr->spy_recno];
+				int  oldNationRecno = spyPtr->true_nation_recno;
+
+				if( oldNationRecno == nationRecno )
+					continue;
+
+				spyPtr->change_true_nation(nationRecno);
+
+				if( unitPtr->nation_recno == oldNationRecno )
+					unitPtr->spy_change_nation(nationRecno, COMMAND_AUTO);
+				continue;
+			}
 
 			unitPtr->change_nation(nationRecno);
 		}
@@ -1088,7 +1144,7 @@ static int can_set_owner()
 	{
 		Unit* unitPtr = unit_array[unit_array.selected_recno];
 
-		return nationRecno > 0 && unitPtr->nation_recno != nationRecno &&
+		return nationRecno > 0 && unitPtr->true_nation_recno() != nationRecno &&		// spies: their true kingdom
 				 (unit_array.selected_count > 1 ||
 				  (unitPtr->rank_id != RANK_KING && unit_res[unitPtr->unit_id]->unit_class != UNIT_CLASS_MONSTER));
 	}
@@ -1110,7 +1166,7 @@ static int place_object(PlaceEntry* entryPtr, int xLoc, int yLoc)
 	{
 		if( mod_editor.owner_nation_recno == 0 &&
 			 (entryPtr->type == PLACE_SOLDIER || entryPtr->type == PLACE_GENERAL ||
-			  entryPtr->type == PLACE_UNIT || entryPtr->type == PLACE_FIRM) )
+			  entryPtr->type == PLACE_UNIT || entryPtr->type == PLACE_FIRM || entryPtr->type == PLACE_SPY) )
 		{
 			box.msg( _("Units and buildings need a kingdom. Choose one at the top of the panel.") );
 		}
@@ -1122,6 +1178,9 @@ static int place_object(PlaceEntry* entryPtr, int xLoc, int yLoc)
 
 	switch( entryPtr->type )
 	{
+		case PLACE_SPY:
+			return place_spy(xLoc, yLoc);
+
 		case PLACE_SOLDIER:
 		case PLACE_GENERAL:
 		case PLACE_WORKER:
@@ -1343,6 +1402,7 @@ static void disp_selected(SelectLayout& layout)
 	vga_util.d3_panel_up( x1, y1, x2, y2 );
 
 	int nationRecno = -1;		// -1: the object has no kingdom
+	int isSpy = 0;
 	String str;
 
 	if( firm_array.selected_recno )
@@ -1386,6 +1446,12 @@ static void disp_selected(SelectLayout& layout)
 			str = unitPtr->unit_name();
 
 		nationRecno = unitPtr->nation_recno;
+
+		if( unit_array.selected_count == 1 && unitPtr->spy_recno )		// a spy: its true kingdom
+		{
+			nationRecno = unitPtr->true_nation_recno();
+			isSpy = 1;
+		}
 	}
 
 	if( !str[0] )
@@ -1410,7 +1476,15 @@ static void disp_selected(SelectLayout& layout)
 			x += 16;
 		}
 
-		font_san.put( x, y1+19, owner_name(nationRecno), 0, x2-8 );
+		str = owner_name(nationRecno);
+
+		if( isSpy )
+		{
+			str += " - ";
+			str += _("Spy");
+		}
+
+		font_san.put( x, y1+19, str, 0, x2-8 );
 	}
 
 	//------- a building: its units and the buttons to take them out -------//
@@ -1444,6 +1518,15 @@ static void disp_selected(SelectLayout& layout)
 				firmPtr->firm_id==FIRM_CAMP ? _("Soldiers") : _("Workers"), firmPtr->worker_count, MAX_WORKER );
 
 			font_san.put( x1+8, y, str, 0, x2-8 );
+			y += 14;
+		}
+
+		int spyCount = place_spy_count(SPY_FIRM, firm_array.selected_recno);
+
+		if( spyCount )
+		{
+			snprintf( str, MAX_STR_LEN+1, "%s: %d", _("Spies"), spyCount );
+			font_san.put( x1+8, y, str, 0, x2-8 );
 		}
 
 		if( layout.out_y >= 0 )
@@ -1459,11 +1542,21 @@ static void disp_selected(SelectLayout& layout)
 		}
 	}
 
+	//------- a town: its spies and the button to take them out -------//
+
+	if( town_array.selected_recno && layout.spy_y >= 0 )
+	{
+		snprintf( str, MAX_STR_LEN+1, "%s: %d", _("Spies"), place_spy_count(SPY_TOWN, town_array.selected_recno) );
+		font_san.put( x1+8, layout.info_y, str, 0, x2-8 );
+
+		editor_put_button( x1+6, layout.spy_y, x1+100, layout.spy_y+15, _("Spies out"), 1, 0 );
+	}
+
 	//------- the properties (also of buildings: the mineral of a mine) -------//
 
 	{
 		static const char* propStr[] = { "", N_("Combat"), "", N_("Version"), N_("Population"), N_("Reserve"),
-			N_("Race"), N_("Mineral"), N_("Reserve") };
+			N_("Race"), N_("Mineral"), N_("Reserve"), N_("Spying"), N_("Cloak") };
 
 		char* propArray = layout.prop_array;
 		int*  valueArray = layout.value_array;
@@ -1489,6 +1582,10 @@ static void disp_selected(SelectLayout& layout)
 
 				case PROP_MINERAL:
 					valueStr = valueArray[i] ? _(raw_res[valueArray[i]]->name) : _("None");
+					break;
+
+				case PROP_CLOAK:
+					valueStr = owner_name(valueArray[i]);
 					break;
 
 				default:
@@ -1602,6 +1699,18 @@ static int selected_properties(char* propArray, int* valueArray)
 					propArray[count]    = PROP_SKILL;		// leadership or the skill of a worker
 					valueArray[count++] = unitPtr->skill.skill_level;
 				}
+
+				if( unitPtr->spy_recno )
+				{
+					propArray[count]    = PROP_SPYING;
+					valueArray[count++] = spy_array[unitPtr->spy_recno]->spy_skill;
+
+					if( unitPtr->is_visible() && unitPtr->rank_id != RANK_KING )
+					{
+						propArray[count]    = PROP_CLOAK;
+						valueArray[count++] = unitPtr->nation_recno;
+					}
+				}
 				break;
 
 			case UNIT_CLASS_WEAPON:
@@ -1659,6 +1768,25 @@ static void change_property(int propId, int dir)
 			int value = unitPtr->skill.skill_level;
 
 			unitPtr->skill.skill_level = MAX( 10, MIN(100, value/10*10 + dir*10) );
+			break;
+		}
+
+		case PROP_SPYING:
+		{
+			Spy* spyPtr = spy_array[unit_array[unit_array.selected_recno]->spy_recno];
+			spyPtr->spy_skill = MAX( 10, MIN(100, spyPtr->spy_skill/10*10 + dir*10) );
+			break;
+		}
+
+		case PROP_CLOAK:		// independent, then the kingdoms
+		{
+			Unit* unitPtr = unit_array[unit_array.selected_recno];
+			int newNationRecno = next_owner(unitPtr->nation_recno, dir);
+
+			if( newNationRecno != unitPtr->nation_recno )
+				unitPtr->spy_change_nation(newNationRecno, COMMAND_AUTO);
+
+			sys.map_need_redraw = 1;
 			break;
 		}
 
@@ -1769,10 +1897,14 @@ static int get_options(char* optionArray)
 		{
 			optionArray[count++] = OPTION_RACE;
 
-			int isWorker = mod_editor.place_entry >= 0 &&
-								unit_entry_array[(int)mod_editor.place_entry].type == PLACE_WORKER;
+			int entryType = mod_editor.place_entry >= 0 ? unit_entry_array[(int)mod_editor.place_entry].type : 0;
 
-			if( isWorker )
+			if( entryType == PLACE_SPY )
+			{
+				optionArray[count++] = OPTION_SPYING;
+				optionArray[count++] = OPTION_CLOAK;
+			}
+			else if( entryType == PLACE_WORKER )
 			{
 				optionArray[count++] = OPTION_SKILL;
 
@@ -1862,6 +1994,23 @@ static void option_str(int optionId, String& labelStr, String& valueStr)
 			valueStr = misc.format(mod_editor.place_reserve*1000);
 			break;
 
+		case OPTION_SPYING:
+			labelStr = _("Spying");
+			valueStr = mod_editor.place_spy_skill;
+			break;
+
+		case OPTION_CLOAK:
+			labelStr = _("Cloak");
+
+			if( mod_editor.place_cloak_nation < 0 || mod_editor.place_cloak_nation == mod_editor.owner_nation_recno ||
+				 (mod_editor.place_cloak_nation > 0 && nation_array.is_deleted(mod_editor.place_cloak_nation)) )
+			{
+				valueStr = _("Own");
+			}
+			else
+				valueStr = owner_name(mod_editor.place_cloak_nation);
+			break;
+
 		case OPTION_BRUSH:
 			labelStr = _("Brush");
 			snprintf( valueStr, MAX_STR_LEN+1, "%d x %d", mod_editor.place_brush, mod_editor.place_brush );
@@ -1943,6 +2092,41 @@ static void change_option(int optionId, int dir)
 		case OPTION_BRUSH:
 			mod_editor.place_brush = MAX( 1, MIN(5, mod_editor.place_brush + dir*2) );
 			break;
+
+		case OPTION_SPYING:
+			mod_editor.place_spy_skill = MAX( 10, MIN(100, mod_editor.place_spy_skill + dir*10) );
+			break;
+
+		case OPTION_CLOAK:
+		{
+			//--- the list: own kingdom (-1), independent (0), the other kingdoms ---//
+
+			int cloakNation = mod_editor.place_cloak_nation;
+
+			if( cloakNation > 0 && (nation_array.is_deleted(cloakNation) || cloakNation == mod_editor.owner_nation_recno) )
+				cloakNation = -1;
+
+			for( int i=0 ; i<=MAX_NATION+1 ; i++ )
+			{
+				cloakNation += dir;
+
+				if( cloakNation > MAX_NATION )
+					cloakNation = -1;
+
+				if( cloakNation < -1 )
+					cloakNation = MAX_NATION;
+
+				if( cloakNation <= 0 ||
+					 (cloakNation <= nation_array.size() && !nation_array.is_deleted(cloakNation) &&
+					  cloakNation != mod_editor.owner_nation_recno) )
+				{
+					break;
+				}
+			}
+
+			mod_editor.place_cloak_nation = cloakNation;
+			break;
+		}
 	}
 }
 //----------- End of static function change_option -----------//
@@ -1954,7 +2138,8 @@ static void change_option(int optionId, int dir)
 //
 static int can_reroll_unit(Unit* unitPtr)
 {
-	return unit_res[unitPtr->unit_id]->unit_class == UNIT_CLASS_HUMAN && unitPtr->race_id && unitPtr->name_id;
+	return unit_res[unitPtr->unit_id]->unit_class == UNIT_CLASS_HUMAN && unitPtr->race_id && unitPtr->name_id &&
+			 !unitPtr->spy_recno;		// spies keep a copy of their name (Spy::name_id)
 }
 //----------- End of static function can_reroll_unit -----------//
 
@@ -2090,6 +2275,7 @@ static const char* entry_name(PlaceEntry* entryPtr)
 		case PLACE_SOLDIER:	return _("Soldier");
 		case PLACE_GENERAL:	return _("General");
 		case PLACE_WORKER:	return _("Worker");
+		case PLACE_SPY:		return _("Spy");
 		case PLACE_UNIT:		return _(unit_res[entryPtr->id]->name);
 		case PLACE_TOWN:		return _("Town");
 		case PLACE_FIRM:
@@ -2330,6 +2516,223 @@ static int detect_arrow_row(int y)
 //----------- End of static function detect_arrow_row -----------//
 
 
+//-------- Begin of static function spy_place_at --------//
+//
+// The town or building at the location where a spy being placed goes in: a
+// town of any kingdom (or independent) with room, or a building of a kingdom
+// that has room for one more worker (or soldier).
+//
+// <int&> placePara - for returning the town or firm recno
+//
+// return: <int> SPY_TOWN, SPY_FIRM or 0 - none
+//
+static int spy_place_at(int xLoc, int yLoc, int& placePara)
+{
+	Location* locPtr = world.get_loc(xLoc, yLoc);
+
+	if( locPtr->is_town() )
+	{
+		placePara = locPtr->town_recno();
+		return town_array[placePara]->population < MAX_TOWN_POPULATION ? SPY_TOWN : 0;
+	}
+
+	if( locPtr->is_firm() )
+	{
+		placePara = locPtr->firm_recno();
+		Firm* firmPtr = firm_array[placePara];
+
+		if( !firmPtr->nation_recno || firmPtr->firm_id == FIRM_MONSTER || firmPtr->under_construction ||
+			 !firm_res[firmPtr->firm_id]->need_unit() || !firmPtr->worker_array || firmPtr->is_worker_full() )
+		{
+			return 0;
+		}
+
+		if( firmPtr->firm_id == FIRM_BASE && firmPtr->race_id != mod_editor.place_race_id )		// only people of its race pray
+			return 0;
+
+		return SPY_FIRM;
+	}
+
+	return 0;
+}
+//----------- End of static function spy_place_at -----------//
+
+
+//-------- Begin of static function place_spy --------//
+//
+// Place a spy of the kingdom of the objects placed, with the race and spying
+// skill of the options:
+//
+// - on a town (of any kingdom or independent): he lives in it as a villager.
+// - on a building of a kingdom: he works in it (a soldier in a Fort).
+// - on the map: a unit disguised as the kingdom of the Cloak option.
+//
+// It uses the functions of the game for spies (SpyArray::add_spy(),
+// Unit::spy_change_nation(), Town::assign_unit(), Firm::assign_unit()).
+//
+// return: <int> 1 - placed
+//
+static int place_spy(int xLoc, int yLoc)
+{
+	int nationRecno = mod_editor.owner_nation_recno;
+	int unitId = race_res[mod_editor.place_race_id]->basic_unit_id;
+	int placePara = 0;
+	int spyPlace = spy_place_at(xLoc, yLoc, placePara);
+
+	//--- in a town or a building: create the unit next to it, then put it in ---//
+
+	if( spyPlace )
+	{
+		int x1, y1, x2, y2;
+
+		if( spyPlace == SPY_TOWN )
+		{
+			Town* townPtr = town_array[placePara];
+			x1 = townPtr->loc_x1; y1 = townPtr->loc_y1; x2 = townPtr->loc_x2; y2 = townPtr->loc_y2;
+		}
+		else
+		{
+			Firm* firmPtr = firm_array[placePara];
+			x1 = firmPtr->loc_x1; y1 = firmPtr->loc_y1; x2 = firmPtr->loc_x2; y2 = firmPtr->loc_y2;
+		}
+
+		xLoc = x1;
+		yLoc = y1;
+
+		if( !world.locate_space( &xLoc, &yLoc, x2, y2, 1, 1 ) )
+			return 0;
+	}
+
+	int unitRecno = unit_array.add_unit( unitId, nationRecno, RANK_SOLDIER, 80, xLoc, yLoc );
+
+	if( !unitRecno )
+		return 0;
+
+	Unit* unitPtr = unit_array[unitRecno];
+
+	unitPtr->set_combat_level( CITIZEN_COMBAT_LEVEL );		// a villager without a job, as the spies trained in towns
+	unitPtr->skill.skill_id = 0;
+	unitPtr->skill.skill_level = 0;
+
+	unitPtr->spy_recno = spy_array.add_spy( unitRecno, mod_editor.place_spy_skill );
+
+	//--- the kingdom he disguises as: the one of the town or building, or the Cloak option ---//
+
+	int cloakNation;
+
+	if( spyPlace == SPY_TOWN )
+		cloakNation = town_array[placePara]->nation_recno;
+	else if( spyPlace == SPY_FIRM )
+		cloakNation = firm_array[placePara]->nation_recno;
+	else
+	{
+		cloakNation = mod_editor.place_cloak_nation;
+
+		if( cloakNation < 0 || (cloakNation > 0 && nation_array.is_deleted(cloakNation)) )
+			cloakNation = nationRecno;
+	}
+
+	if( cloakNation != nationRecno )
+	{
+		unitPtr->spy_change_nation( cloakNation, COMMAND_AUTO );
+
+		if( cloakNation )
+			unitPtr->loyalty = 80;		// as the other people placed (Unit::betray() lowers it)
+	}
+
+	//------- put him in the town or the building -------//
+
+	if( spyPlace == SPY_TOWN )
+	{
+		Town* townPtr = town_array[placePara];
+
+		unitPtr->stop2();
+		townPtr->assign_unit(unitRecno);
+		townPtr->auto_set_layout();
+	}
+	else if( spyPlace == SPY_FIRM )
+	{
+		Firm* firmPtr = firm_array[placePara];
+
+		//--- his job in the building: a soldier in a Fort (combat and leadership of the Soldier
+		//    options), praying in a Seat of Power, the skill of the building in the others (level of
+		//    the Worker option) ---//
+
+		if( firmPtr->firm_id == FIRM_CAMP )
+		{
+			unitPtr->set_combat_level( mod_editor.place_combat_level );
+			unitPtr->skill.set_skill( SKILL_LEADING );
+			unitPtr->skill.skill_level = mod_editor.place_leadership;
+		}
+		else if( firmPtr->firm_id == FIRM_BASE )
+		{
+			unitPtr->skill.set_skill( SKILL_PRAYING );
+			unitPtr->skill.skill_level = mod_editor.place_skill_level;
+		}
+		else if( firm_res[firmPtr->firm_id]->firm_skill_id )
+		{
+			unitPtr->skill.set_skill( firm_res[firmPtr->firm_id]->firm_skill_id );
+			unitPtr->skill.skill_level = mod_editor.place_skill_level;
+		}
+
+		if( !assign_to_firm(unitRecno, placePara) )
+			box.msg( _("The unit can't be put in this building; it has been placed next to it.") );
+	}
+
+	return 1;
+}
+//----------- End of static function place_spy -----------//
+
+
+//-------- Begin of static function place_spy_count --------//
+//
+// The number of spies (of all kingdoms) in a town or a building.
+//
+static int place_spy_count(int spyPlace, int placePara)
+{
+	int count=0;
+
+	for( int i=spy_array.size() ; i>0 ; i-- )
+	{
+		if( spy_array.is_deleted(i) )
+			continue;
+
+		Spy* spyPtr = spy_array[i];
+
+		if( spyPtr->spy_place == spyPlace && spyPtr->spy_place_para == placePara )
+			count++;
+	}
+
+	return count;
+}
+//----------- End of static function place_spy_count -----------//
+
+
+//-------- Begin of static function take_out_town_spies --------//
+//
+// The spies (of all kingdoms) of a town come out as units next to it.
+//
+static void take_out_town_spies(Town* townPtr)
+{
+	for( int i=spy_array.size() ; i>0 ; i-- )
+	{
+		if( spy_array.is_deleted(i) )
+			continue;
+
+		Spy* spyPtr = spy_array[i];
+
+		if( spyPtr->spy_place == SPY_TOWN && spyPtr->spy_place_para == townPtr->town_recno &&
+			 townPtr->population > 1 )		// a town can't be left empty
+		{
+			spyPtr->mobilize_town_spy();
+		}
+	}
+
+	townPtr->auto_set_layout();
+}
+//----------- End of static function take_out_town_spies -----------//
+
+
 //-------- Begin of static function select_layout --------//
 //
 // The layout of the box of the selected object: it grows upwards with the
@@ -2353,13 +2756,25 @@ static void select_layout(SelectLayout& layout)
 			layout.info_count++;
 
 		hasOutButtons = firmPtr->firm_id != FIRM_MONSTER;
+
+		if( place_spy_count(SPY_FIRM, firm_array.selected_recno) )
+			layout.info_count++;
+	}
+
+	int hasSpyButton = 0;
+
+	if( town_array.selected_recno && place_spy_count(SPY_TOWN, town_array.selected_recno) )
+	{
+		layout.info_count++;
+		hasSpyButton = 1;
 	}
 
 	int infoHeight = layout.info_count ? layout.info_count*14+2 : 0;
 
 	int hasNameButtons = town_array.selected_recno || selected_name_unit();
 
-	int height = 36 + infoHeight + layout.prop_count*20 + (hasOutButtons ? 20 : 0) + (hasNameButtons ? 20 : 0) + 20 + 3;
+	int height = 36 + infoHeight + layout.prop_count*20 + (hasOutButtons ? 20 : 0) + (hasNameButtons ? 20 : 0) +
+					 (hasSpyButton ? 20 : 0) + 20 + 3;
 
 	layout.y1      = INFO_Y2 - MAX(height, (int)SELECT_MIN_HEIGHT);
 	layout.info_y  = layout.y1 + 36;
@@ -2367,6 +2782,7 @@ static void select_layout(SelectLayout& layout)
 	layout.owner_y = INFO_Y2 - 19;
 	layout.out_y   = hasOutButtons ? layout.owner_y - 17 : -1;
 	layout.name_y  = hasNameButtons ? layout.owner_y - 17 : -1;
+	layout.spy_y   = hasSpyButton ? layout.owner_y - (hasNameButtons ? 34 : 17) : -1;
 }
 //----------- End of static function select_layout -----------//
 

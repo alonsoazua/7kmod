@@ -410,18 +410,30 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
   reino (`deinit_unit_id`, que `signal_exit_flag` se saltaba).
 - [x] **Workers: Praying y None.** La opción Skill suma **Praying** (los que oran en el
   Seat of Power) y **None**: una unidad sin oficio (aldeano), sin opción Level.
-- [ ] **Espías en el editor.** Hoy no se pueden poner (estaba en lo pendiente de las
-  fases 2 y 3). En el juego un espía es una unidad con un registro `Spy`
+- [x] **Espías en el editor.** En el juego un espía es una unidad con un registro `Spy`
   (`SpyArray::add_spy`): reino verdadero, reino con el que se disfraza, habilidad de
   espionaje y lealtad; dentro de un pueblo o edificio queda en ese lugar
-  (`Spy::set_place`), contado en el pueblo o edificio.
-  - Propuesta: entrada **Spy** en la pestaña Units, del reino elegido arriba (su reino
-    verdadero), con opciones **Race**, **Skill** (espionaje) y **Cloak** (el reino con el
-    que se disfraza: el suyo u otro). Sobre un pueblo o edificio entra como espía en él
-    (por ejemplo, un espía de otro reino en tu pueblo); en el mapa queda como unidad.
-  - Por definir: si se puede elegir su oficio de disfraz (soldado, trabajador), cómo se
-    muestra al seleccionarlo (reino verdadero y disfraz), y si en lo seleccionado de un
-    pueblo o edificio se ven sus espías para quitarlos.
+  (`Spy::set_place`), contado en el pueblo o edificio. Se usan esas funciones del juego.
+  - **Entrada Spy** en la pestaña Units, del reino elegido arriba (su reino verdadero),
+    con opciones **Race**, **Spying** (habilidad de espionaje, 10 a 100) y **Cloak** (el
+    reino con el que se disfraza en el mapa: **Own**, independiente u otro reino).
+  - **Sobre un pueblo** (de cualquier reino o independiente, con lugar): entra como
+    aldeano, disfrazado del reino del pueblo. Por ejemplo, un espía de otro reino en tu
+    pueblo.
+  - **Sobre un edificio** de un reino con lugar: entra a trabajar, disfrazado del reino
+    del edificio. En un fuerte es soldado con el combate y liderazgo de las opciones de
+    Soldier; en un Seat of Power ora (solo si es de su raza); en los demás tiene el
+    oficio del edificio con el nivel de la opción de Worker.
+  - **En el mapa:** una unidad (aldeano sin oficio) disfrazada según Cloak. Con clic
+    derecho entra a un pueblo o edificio del reino del que va disfrazado, como las demás
+    unidades.
+  - **Al seleccionarlo:** la línea del reino muestra su reino verdadero con "- Spy", y
+    las filas **Spying** y, en el mapa, **Cloak** (cambia el disfraz). Set Owner cambia
+    su reino verdadero (y el disfraz, si iba disfrazado de su propio reino). Sin Re-roll
+    (el espía guarda una copia de su nombre) ni cambio de raza.
+  - **Pueblos y edificios:** muestran **Spies: N** (de todos los reinos). Los pueblos
+    con espías tienen el botón **Spies out**, que los saca como unidades (el pueblo no
+    se queda vacío); en los edificios los saca All out.
 - [x] **Mapa nuevo (New) sin la pantalla de New Game.**
   - **New** en la pantalla Scenario abre directo el editor con un mapa generado con la
     configuración actual (`CONFIG.DAT`, con las mismas correcciones que la pantalla de New

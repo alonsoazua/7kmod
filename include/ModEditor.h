@@ -110,6 +110,8 @@ public:
 	short	place_reserve;				// the reserve of natural resources, in 1000s
 	short	place_monster_id;			// the Fryhtan of lairs
 	char	place_brush;				// the size of the brush of the Terrain tab: 1, 3 or 5
+	short	place_spy_skill;			// the spying skill of spies
+	char	place_cloak_nation;		// the kingdom that spies disguise as: -1 - their own, 0 - independent
 
 	short	edit_scen_recno;
 	char	pending_bar;				// EDITOR_BAR_??? pressed while a window was open, -1 - none			// the scenario selected for "Edit" in the scenario screen (Game::select_scenario())

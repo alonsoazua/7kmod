@@ -21,6 +21,13 @@ escenarios (desde la 0.2.0) está descrito en `TODO-editor.md`.
 
 ## [Sin publicar]
 
+### Agregado
+- **Editor: espías.** Entrada **Spy** en la pestaña Units, con opciones Race, Spying y
+  Cloak. Sobre un pueblo o edificio (de cualquier reino) entra como espía; en el mapa
+  queda como unidad disfrazada. Al seleccionarlo se ve su reino verdadero y se cambian
+  su habilidad y su disfraz; los pueblos y edificios muestran cuántos espías tienen, y
+  los pueblos los sacan con **Spies out**. Detalles en `TODO-editor.md`.
+
 ### Corregido
 - **Recuadro sobre unidades de otros reinos:** a veces algunas unidades del recuadro no
   quedaban en la lista ni mostraban su barra de vida, y si la unidad elegida era una de
