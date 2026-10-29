@@ -388,6 +388,8 @@ public:
 	virtual void draw_outlined();
 			  void draw_selected();
 			  void draw_skill_icon();
+			  void draw_fryhtan_nation_icon();		// 7kmod-gameplay
+			  int  has_fryhtan_nation_icon()		{ return unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER && nation_recno; }
 
 			  void set_spy(int spyRecno);
 			  void set_name(uint16_t newNameId);
