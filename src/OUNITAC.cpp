@@ -1656,6 +1656,15 @@ void Unit::process_go_cast_power()
 		//----------------------------------------------------------------------------------------//
 		if(misc.points_distance(cur_x_loc(), cur_y_loc(), action_x_loc2, action_y_loc2)<=DO_CAST_POWER_RANGE)
 		{
+			//--- 7kmod-gameplay: the Phoenix has no attack motion: it casts at once ---//
+
+			if( attack_count <= 0 )
+			{
+				unitGod->cast_power(action_x_loc2, action_y_loc2);
+				stop2();
+				return;
+			}
+
 			if( next_x_loc() != action_x_loc2 ||
 				next_y_loc() != action_y_loc2 )
 			{

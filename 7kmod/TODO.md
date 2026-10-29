@@ -8,6 +8,8 @@ queda solo con mejoras de comodidad (interfaz) sobre la 2.15.7.
 ## Checklist del próximo parche
 
 Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo en partida.
+Greater Beings: los poderes del Dragon, el Djini y el Phoenix se probaron en el editor
+(F12) con los puntos de oración llenos; falta probar la IA en partida.
 
 - [x] **Los disparos a distancia ya no se bloquean por edificios ni obstáculos.** Hoy, un
   proyectil recto (flechas, jabalinas, etc.) no puede pasar por casillas no caminables:
@@ -24,7 +26,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     de una montaña, si están dentro del alcance.
   - Va en `7kmod-gameplay` (y por lo tanto en `7kmod-pathing`).
 
-- [ ] **Tooltip de los poderes de los Greater Beings mughul, egipcio y zulú.** El botón
+- [x] **Tooltip de los poderes de los Greater Beings mughul, egipcio y zulú.** El botón
   del poder (`UnitGod::disp_info`, `src/OU_GOD.cpp`) usa como ayuda el nombre de su ícono,
   y `RESOURCE/HELP.RES` no trae `GODMUGL`, `GODEGYPT` ni `GODZULU` (sí los de Persia,
   Japón, Maya y Thor): esos tres botones no tienen tooltip. Es un error del juego
@@ -38,7 +40,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     liderazgo.
   - Va en `7kmod` (es un error del original) y se pasa a gameplay y pathing.
 
-- [ ] **Djini (Greater Being mughul): además convierte a un soldado.** Hoy su poder baja
+- [x] **Djini (Greater Being mughul): además convierte a un soldado.** Hoy su poder baja
   −20 a −30 de lealtad a las unidades visibles del área que sean de reinos en guerra
   contigo o de nadie (`UnitGod::indian_cast_power`). Nuevo: en cada lanzamiento, además,
   **el soldado con menos combate del área** (rango soldado, no general ni rey) pasa a tu
@@ -51,7 +53,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   - El tooltip del poder lo menciona.
   - Va en `7kmod-gameplay` (cambia el balance).
 
-- [ ] **Phoenix (Greater Being griego): poder para exponer espías y menor costo.** Hoy el
+- [x] **Phoenix (Greater Being griego): poder para exponer espías y menor costo.** Hoy el
   Fénix solo explora y revela información; no tiene poder (`can_cast_power` en 0) y es
   el que más cuesta mantener. Nuevo:
   - **Botón de poder** en su panel, como los de los demás seres (`UnitGod::disp_info`,
@@ -82,7 +84,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   - Actualizar `GREATER_BEINGS.md` (hoy dice que el Fénix no detecta espías).
   - Va en `7kmod-gameplay` (cambia el balance).
 
-- [ ] **Dragon (Greater Being normando): bola de fuego con botón en vez de atacar.**
+- [x] **Dragon (Greater Being normando): bola de fuego con botón en vez de atacar.**
   - **Hoy:** es, con el Jing Nung chino, el único ser que ataca solo
     (`UnitGod::pre_process`, `src/OU_GOD.cpp`). Su ataque en la tabla de ataques de
     `STD.SET`: daño base 15, alcance 6, retraso 6, proyectil `DR_ARROW` (la bola de
@@ -116,7 +118,7 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   - Actualizar `GREATER_BEINGS.md`.
   - Va en `7kmod-gameplay` (cambia el balance).
 
-- [ ] **Jing Nung (Greater Being chino): cada ataque cuesta 5 puntos en vez de 10.**
+- [x] **Jing Nung (Greater Being chino): cada ataque cuesta 5 puntos en vez de 10.**
   Sigue atacando solo, con su secuencia de 3 ataques (daño base 18). El costo sale de
   `power_pray_points` de la tabla `GOD` (10); se cambia en el código al cargar la tabla
   (`GodRes`), sin tocar los datos. Con eso dura el doble de ataques con los mismos
@@ -140,7 +142,7 @@ partes que asumen que una tecnología es un arma.
   `MAX_MOD_TECH_BEFORE_...` para leer las partidas anteriores
   (`GameFile::read_file_3` en `src/OGFILE2.cpp`).
 - **Pendientes:**
-  - [ ] Costo real de Building Repair y Fryhtan Slayers (hoy es muy barato, solo para
+  - [x] Costo real de Building Repair y Fryhtan Slayers (hoy es muy barato, solo para
     pruebas): **el mismo que Elite Warriors** (15, `complex_level` en
     `mod_tech_info_array`).
   - Que la IA investigue las tecnologías del mod: por ahora no.

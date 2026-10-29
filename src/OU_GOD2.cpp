@@ -25,6 +25,8 @@
 #include <ORACERES.h>
 #include <OF_CAMP.h>
 #include <OU_GOD.h>
+#include <OSPY.h>
+#include <OTOWN.h>
 
 //------- Begin of function UnitGod::process_ai --------//
 
@@ -88,10 +90,64 @@ void UnitGod::process_ai()
 
 void UnitGod::think_dragon()
 {
-	int targetXLoc, targetYLoc;
+	//--- 7kmod-gameplay: the Dragon throws its fireball at a group of 5 or more enemy units ---//
 
-	if( think_god_attack_target(targetXLoc, targetYLoc) )
-		attack_firm( targetXLoc, targetYLoc );
+	if( hit_points < god_res[god_id]->power_pray_points )
+		return;
+
+	Nation* ownNation = nation_array[nation_recno];
+	int bestCount=0, bestXLoc=0, bestYLoc=0, checkCount=0;
+
+	for( int i=unit_array.size() ; i>0 && checkCount<300 ; i-- )
+	{
+		if( unit_array.is_deleted(i) )
+			continue;
+
+		Unit* unitPtr = unit_array[i];
+
+		if( !unitPtr->is_visible() || unitPtr->mobile_type != UNIT_LAND || !unitPtr->nation_recno ||
+			 unitPtr->nation_recno == nation_recno ||
+			 ownNation->get_relation(unitPtr->nation_recno)->status != NATION_HOSTILE )
+		{
+			continue;
+		}
+
+		checkCount++;
+
+		//--- the enemy units around it (the area of the fireball) ---//
+
+		int xLoc = unitPtr->next_x_loc(), yLoc = unitPtr->next_y_loc();
+		int count=0;
+
+		for( int y=MAX(0,yLoc-3) ; y<=MIN(MAX_WORLD_Y_LOC-1,yLoc+3) ; y++ )
+		{
+			for( int x=MAX(0,xLoc-3) ; x<=MIN(MAX_WORLD_X_LOC-1,xLoc+3) ; x++ )
+			{
+				Location* locPtr = world.get_loc(x, y);
+
+				if( !locPtr->has_unit(UNIT_LAND) )
+					continue;
+
+				int nationRecno = unit_array[locPtr->unit_recno(UNIT_LAND)]->nation_recno;
+
+				if( nationRecno && nationRecno != nation_recno &&
+					 ownNation->get_relation(nationRecno)->status == NATION_HOSTILE )
+				{
+					count++;
+				}
+			}
+		}
+
+		if( count > bestCount )
+		{
+			bestCount = count;
+			bestXLoc  = xLoc;
+			bestYLoc  = yLoc;
+		}
+	}
+
+	if( bestCount >= 5 )
+		go_cast_power(bestXLoc, bestYLoc, 1, COMMAND_AI);		// 1 - cast power type
 }
 //------- End of function UnitGod::think_dragon --------//
 
@@ -112,6 +168,39 @@ void UnitGod::think_chinese_dragon()
 
 void UnitGod::think_phoenix()
 {
+	//--- 7kmod-gameplay: expose the spies in its villages (the AI knows where they are) ---//
+
+	if( hit_points >= god_res[god_id]->power_pray_points )
+	{
+		Nation* ownNation = nation_array[nation_recno];
+
+		for( int i=0 ; i<ownNation->ai_town_count ; i++ )
+		{
+			int townRecno = ownNation->ai_town_array[i];
+
+			if( town_array.is_deleted(townRecno) )
+				continue;
+
+			for( int j=spy_array.size() ; j>0 ; j-- )
+			{
+				if( spy_array.is_deleted(j) )
+					continue;
+
+				Spy* spyPtr = spy_array[j];
+
+				if( spyPtr->spy_place == SPY_TOWN && spyPtr->spy_place_para == townRecno &&
+					 spyPtr->true_nation_recno != nation_recno )
+				{
+					Town* townPtr = town_array[townRecno];
+					go_cast_power(townPtr->center_x, townPtr->center_y, 1, COMMAND_AI);		// 1 - cast power type
+					return;
+				}
+			}
+		}
+	}
+
+	//------ explore the map ------//
+
 	int xLoc = misc.random(MAX_WORLD_X_LOC);
 	int yLoc = misc.random(MAX_WORLD_Y_LOC);
 

@@ -59,6 +59,12 @@ public:
 	void cast_power(int castXLoc, int castYLoc);
 	int  power_help(const char*& helpTitle, const char*& helpDetail);		// 7kmod
 
+	//------- 7kmod-gameplay ---------//
+
+	void dragon_fireball(int xLoc, int yLoc);
+	int  phoenix_target_town(int xLoc, int yLoc);
+	void phoenix_expose_spy(int townRecno);
+
 	//-------------- multiplayer checking codes ---------------//
 	virtual	uint8_t crc8();
 	virtual	void	clear_ptr();

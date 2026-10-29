@@ -22,6 +22,20 @@ Basada en **7kmod 0.2.0**, que agrega el editor de escenarios (ver `CHANGELOG.md
 `TODO-editor.md`).
 
 ### Agregado
+- **Greater Beings** (detalles en `GREATER_BEINGS.md`):
+  - **Dragon normando: bola de fuego.** Ya no ataca; su botón de poder (con su bola de
+    fuego como ícono) lanza una bola de 100 puntos con daño base 150 (antes 15) y 2
+    casillas más de área: radio de daño de 109 pixeles (antes 45), bajando al 50% en la
+    orilla, y fuego a 5 casillas (antes 3). Contra armadura 4 quita unos 37 de vida al
+    centro y 20 a tres casillas. Los edificios reciben el daño ÷3. La IA la lanza contra
+    grupos de 5 o más enemigos.
+  - **Djini mughul: convierte a un soldado.** Además de bajar la lealtad, el soldado con
+    menos combate del área (no generales, reyes ni espías; empates: el de menor lealtad)
+    pasa a tu reino, como una unidad que cambia de bando.
+  - **Phoenix griego: exponer espías.** Botón de poder (el ojo de los espías): sobre un
+    pueblo de tu reino, expone y ejecuta al espía ajeno de menor habilidad, con un anillo
+    de fuego sobre el pueblo (el del Mind Turner en naranja). Cuesta 100 puntos, aunque no
+    haya espías; fuera de un pueblo tuyo no gasta. La IA lo usa en sus pueblos con espías.
 - **Fryhtans invocados en el editor de escenarios:** entrada **Fryhtan** en la pestaña
   Units, con las opciones **Type** (los 10 Fryhtans que se pueden invocar, sin importar
   la raza del reino) y **Combat** (50 por omisión, como al invocar; de 10 en 10). Sale
@@ -80,6 +94,11 @@ Basada en **7kmod 0.2.0**, que agrega el editor de escenarios (ver `CHANGELOG.md
 - **Ayuda en Technologies:** al pasar el ratón sobre una tecnología aparece su nombre y su descripción. El botón ya no muestra la descripción, que no cabía junto al ícono.
 
 ### Cambiado
+- **Greater Beings:** el Jing Nung chino gasta 5 puntos por ataque (antes 10) y el
+  Phoenix cuesta 1.5 por día (antes 2.5). Los cambios a la tabla `GOD` se aplican en el
+  código (`GodRes::apply_mod_changes`), también al cargar una partida guardada.
+- **Tecnologías del mod:** Building Repair y Fryhtan Slayers cuestan lo mismo que Elite
+  Warriors (antes eran muy baratas, para pruebas).
 - **Balance de razas:**
   - **Armadura por raza:** el juego original usa armadura 4 para todas las unidades e ignora la de los datos. Ahora la armadura sube con el combate en algunas razas: los Normandos tienen 4 y suben a 5 con combate 50; los Griegos tienen 4, suben a 5 con combate 30 y a 6 con combate 70; los Mayas tienen 3 mientras su combate es menor a 50 y 4 desde 50. Las demás razas, los Fryhtans, las armas y los barcos siguen con 4. Cada punto de armadura quita 0.25 de daño a cada golpe recibido. El panel de la unidad muestra su armadura actual.
   - **Chinos:** el ataque a distancia se aprende con combate 40 (antes 30).

@@ -2,9 +2,16 @@
 
 Cómo funcionan los Greater Beings de Seven Kingdoms: Ancient Adversaries 2.15.7, según el
 código fuente (`OU_GOD.cpp`, `OGODRES.cpp`, `OF_BASE.cpp`, `OU_MONS.cpp`, `OSITE.cpp`) y los
-datos del juego (tablas `GOD`, `UNIT` y `UNITATTK` de `RESOURCE/STD.SET`). Ningún cambio
-de 7kmod ni de 7kmod-gameplay modifica su funcionamiento, salvo la opción
-"Seats of Power Unlocked?", que solo cambia cómo se obtiene el pergamino al inicio.
+datos del juego (tablas `GOD`, `UNIT` y `UNITATTK` de `RESOURCE/STD.SET`).
+
+**Cambios del mod:**
+- **7kmod:** la opción "Seats of Power Unlocked?" (cómo se obtiene el pergamino al
+  inicio) y la ayuda de los botones de poder del Djini, Isis y uNkulunkulu, que no la
+  tenían.
+- **7kmod-gameplay:** el Dragon normando lanza una bola de fuego con un botón en vez de
+  atacar; el Jing Nung chino ataca a la mitad de costo; el Djini mughul además convierte
+  a un soldado; el Phoenix griego cuesta menos y tiene un poder para exponer espías. Están
+  marcados con *(gameplay)* abajo. En `7kmod` los cuatro funcionan como el original.
 
 ---
 
@@ -37,7 +44,7 @@ de 7kmod ni de 7kmod-gameplay modifica su funcionamiento, salvo la opción
 - **Si la Sede es destruida, el ser muere al instante.** Si la Sede cambia de dueño, el ser también.
 - **Todos vuelan** y tienen armadura 8.
 - **Poderes:** cada uso cuesta los puntos indicados en la tabla, y el botón solo se activa si el ser tiene al menos esa cantidad de puntos (vida).
-- **Ataque:** solo los dos dragones atacan. Los demás no pueden atacar y solo se mueven o usan su poder.
+- **Ataque:** solo los dos dragones atacan. Los demás no pueden atacar y solo se mueven o usan su poder. *(gameplay)*: solo el Jing Nung chino ataca; el Dragon normando usa su bola de fuego con un botón.
 
 ---
 
@@ -45,13 +52,13 @@ de 7kmod ni de 7kmod-gameplay modifica su funcionamiento, salvo la opción
 
 | Raza | Ser | Tipo | Costo por día | Costo por uso | Alcance del poder | Visión |
 |---|---|---|---|---|---|---|
-| Normanda | Dragon | Ataque (fuego) | 1 | 10 por ataque | — | 9 |
-| China | Jing Nung | Ataque (3 ataques) | 1.5 | 10 por ataque | — | 9 |
-| Griega | Phoenix | Explorador, revela información | 2.5 | — | — | 10 |
+| Normanda | Dragon | Ataque (fuego). *(gameplay)*: bola de fuego con botón | 1 | 10 por ataque. *(gameplay)*: 100 por bola | — *(gameplay: área de radio 4)* | 9 |
+| China | Jing Nung | Ataque (3 ataques) | 1.5 | 10 por ataque. *(gameplay)*: 5 | — | 9 |
+| Griega | Phoenix | Explorador, revela información. *(gameplay)*: poder de exponer espías | 2.5. *(gameplay)*: 1.5 | — *(gameplay: 100)* | — *(gameplay: un pueblo propio)* | 10 |
 | Maya | Kukulcan | Poder: más combate | 1.5 | 100 | Área (radio 5) | 9 |
 | Persa | Lord of Healing | Poder: curar | 1.5 | 100 | Área (radio 5) | 9 |
 | Japonesa | Mind Turner | Poder: bajar lealtad | 1.5 | 100 | Área (radio 5) | 9 |
-| India | Djini | Poder: bajar lealtad | 1.5 | 100 | Área (radio 5) | 10 |
+| India | Djini | Poder: bajar lealtad. *(gameplay)*: y convertir a un soldado | 1.5 | 100 | Área (radio 5) | 10 |
 | Vikinga | Thor | Poderes: lluvia y tornado | 1.5 | 100 | Mapa / frente a Thor | 9 |
 | Egipcia | Isis | Poder: más población | 1.5 | 100 | Una casilla (pueblo) | 9 |
 | Zulú | uNkulunkulu | Poder: más liderazgo | 1.5 | 100 | Una casilla | 9 |
@@ -73,11 +80,23 @@ de 7kmod ni de 7kmod-gameplay modifica su funcionamiento, salvo la opción
 - **Costo:** cada ataque gasta 10 puntos de oración, que también son su vida; atacar mucho lo debilita.
 - **Uso:** la unidad de combate directa más fuerte al inicio, pero gasta rápido sus puntos.
 
+- *(gameplay)* **Bola de fuego con botón:** ya no ataca. Su botón de poder (el ícono es su
+  bola de fuego) deja elegir un punto en el mapa; vuela hasta él y lanza la bola.
+  - **Costo:** 100 puntos por bola.
+  - **Daño base 150** (su ataque tenía 15), en un radio de 109 pixeles (unas 3.4 casillas;
+    antes 45) que baja del 100% al centro al 50% en la orilla: contra armadura 4, unos 37
+    de vida al centro, 31 a una casilla, 26 a dos y 20 a tres. Solo daña a reinos con los
+    que estás en guerra. Los edificios reciben el daño ÷3, una vez cada uno.
+  - **Fuego** en las casillas a 5 o menos del centro (antes 3).
+  - La IA la lanza cuando hay 5 o más unidades enemigas juntas.
+
 ### Chinos — Jing Nung (dragón chino)
 - **Qué hace:** ataca a distancia con una secuencia de 3 ataques.
 - **Ataque:** tres ataques de daño base 18 cada uno, alcance 6.
 - **Costo:** 10 puntos por cada ataque.
 - **Uso:** más daño por secuencia que el Dragon normando, al mismo costo por ataque.
+
+- *(gameplay)* **Costo:** 5 puntos por ataque: con los mismos puntos ataca el doble.
 
 ### Griegos — Phoenix (Fénix)
 - **Qué hace:** no ataca ni tiene poderes. Es un explorador volador con la **mayor visión (10)** de todos los seres.
@@ -85,7 +104,14 @@ de 7kmod ni de 7kmod-gameplay modifica su funcionamiento, salvo la opción
   - **Unidades enemigas:** su panel de información (combate, habilidad, lealtad) y su profesión real.
   - **Edificios enemigos:** el panel interior, con la lista de trabajadores y sus niveles, la producción, la investigación, etc.
 - **No detecta espías.** El código original tenía una función para marcar a los espías enemigos con habilidad menor a 40 dentro de tus edificios cuando el Fénix volaba sobre ellos, pero está desactivada (comentada) en el código.
-- **Costo:** es el que más cuesta mantener (2.5 por día).
+- **Costo:** es el que más cuesta mantener (2.5 por día). *(gameplay)*: 1.5 por día.
+- *(gameplay)* **Poder: exponer espías.** Botón de poder (el ícono del ojo de los espías):
+  se elige un **pueblo de tu reino** y el Fénix vuela hasta él. Si hay espías de otros
+  reinos, **expone y ejecuta** al de menor habilidad de espionaje, con la noticia normal.
+  - **Costo:** 100 puntos, aunque no haya espías. Sobre algo que no es un pueblo tuyo no
+    hace nada y no gasta puntos.
+  - **Efecto:** un anillo de fuego sobre el pueblo (el del Mind Turner, en naranja).
+  - La IA lo usa sobre sus pueblos con espías ajenos (el juego sabe dónde están).
 - **Uso:** explorar el mapa y espiar el interior de los edificios enemigos sin arriesgar espías; la IA lo manda a volar a puntos aleatorios del mapa.
 
 ### Mayas — Kukulcan
@@ -115,6 +141,11 @@ de 7kmod ni de 7kmod-gameplay modifica su funcionamiento, salvo la opción
 - **No afecta** a trabajadores dentro de edificios, a pueblos, ni a reinos con los que no estás en guerra.
 - **Uso:** más fuerte que el japonés contra ejércitos en el campo, pero solo funciona contra enemigos declarados.
 
+- *(gameplay)* **Además convierte a un soldado:** en cada lanzamiento, el soldado con menos
+  combate del área (rango soldado, no general ni rey; solo personas, sin espías) entre las
+  unidades a las que baja la lealtad pasa a tu reino, como una unidad que cambia de bando
+  (con su noticia y su lealtad). Empates: el de menor lealtad.
+
 ### Vikingos — Thor
 Tiene **dos poderes**, cada uno de 100 puntos:
 - **Lluvia (Rain):** se activa al instante, sin elegir objetivo.
@@ -143,8 +174,8 @@ Tiene **dos poderes**, cada uno de 100 puntos:
 ## 4. Cómo usa la IA los Greater Beings
 
 - La IA construye Sedes de Poder e invoca a sus seres cuando tiene el pergamino.
-- **Dragones:** buscan objetivos enemigos para atacar.
+- **Dragones:** buscan objetivos enemigos para atacar. *(gameplay)*: el Jing Nung; el Dragon lanza su bola de fuego a grupos de 5 o más enemigos.
 - **Thor:** lanza el tornado contra objetivos enemigos.
 - **Lord of Healing:** busca el fuerte propio con más heridos y lo cura.
-- **Phoenix:** vuela a puntos aleatorios.
+- **Phoenix:** vuela a puntos aleatorios. *(gameplay)*: antes expone a los espías de sus pueblos si tiene los puntos.
 - **Los demás seres:** buscan objetivos según su poder.

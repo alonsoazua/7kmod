@@ -439,18 +439,64 @@ void Bullet::hit_wall(short x, short y)
 int Bullet::check_hit()
 {
 	err_when(SCAN_RANGE != 5);
-	
+
+	//--- 7kmod-gameplay: a bigger damage radius (the fireball of the Dragon) scans more locations ---//
+
+	enum { MAX_SCAN_RADIUS = 5, MAX_SCAN_RANGE = MAX_SCAN_RADIUS*2+1 };
+
+	int scanRadius = SCAN_RADIUS;
+
+	if( damage_radius > SCAN_RADIUS * ZOOM_LOC_WIDTH )
+		scanRadius = MIN( MAX_SCAN_RADIUS, (damage_radius + ZOOM_LOC_WIDTH - 1) / ZOOM_LOC_WIDTH );
+
+	int scanRange = scanRadius*2+1;
+
 	short x,y;
-	short townHit[SCAN_RANGE*SCAN_RANGE];
-	short firmHit[SCAN_RANGE*SCAN_RANGE];
+	short townHit[MAX_SCAN_RANGE*MAX_SCAN_RANGE];
+	short firmHit[MAX_SCAN_RANGE*MAX_SCAN_RANGE];
 	int hitCount = 0;
 	int townHitCount = 0;
 	int firmHitCount = 0;
 
-	for( int c = 0; c < SCAN_RANGE*SCAN_RANGE; ++c )
+	static char bigOffsetX[MAX_SCAN_RANGE*MAX_SCAN_RANGE], bigOffsetY[MAX_SCAN_RANGE*MAX_SCAN_RANGE];
+	static int  bigOffsetCount = 0;
+
+	if( scanRadius != SCAN_RADIUS && !bigOffsetCount )		// the locations from the closest to the farthest
 	{
-		x = target_x_loc + spiral_x[c];
-		y = target_y_loc + spiral_y[c];
+		for( int d2=0 ; d2<=2*MAX_SCAN_RADIUS*MAX_SCAN_RADIUS ; d2++ )
+		{
+			for( int dy=-MAX_SCAN_RADIUS ; dy<=MAX_SCAN_RADIUS ; dy++ )
+			{
+				for( int dx=-MAX_SCAN_RADIUS ; dx<=MAX_SCAN_RADIUS ; dx++ )
+				{
+					if( dx*dx+dy*dy == d2 )
+					{
+						bigOffsetX[bigOffsetCount] = (char) dx;
+						bigOffsetY[bigOffsetCount] = (char) dy;
+						bigOffsetCount++;
+					}
+				}
+			}
+		}
+	}
+
+	int scanCount = scanRadius == SCAN_RADIUS ? scanRange*scanRange : bigOffsetCount;
+
+	for( int c = 0; c < scanCount; ++c )
+	{
+		if( scanRadius == SCAN_RADIUS )		// from the closest to the farthest, as the original
+		{
+			x = target_x_loc + spiral_x[c];
+			y = target_y_loc + spiral_y[c];
+		}
+		else
+		{
+			if( abs(bigOffsetX[c]) > scanRadius || abs(bigOffsetY[c]) > scanRadius )
+				continue;
+
+			x = target_x_loc + bigOffsetX[c];
+			y = target_y_loc + bigOffsetY[c];
+		}
 		if( x >= 0 && x < world.max_x_loc && y >= 0 && y < world.max_y_loc )
 		{
 			Location *locPtr = world.get_loc(x, y);
