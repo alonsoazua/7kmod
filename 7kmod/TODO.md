@@ -145,7 +145,7 @@ Greater Beings: los poderes del Dragon, el Djini y el Phoenix se probaron en el 
       (para que el ser siga vivo y pueda usar su poder).
     - **Frecuencia:** lo revisa cada 30 días, y cada Seat espera al menos 90 días entre
       una invocación y la siguiente. Con eso son pocos, como las armas de asedio.
-    - **Tope:** como máximo un Fryhtan por fuerte de la IA y 4 en total por reino.
+    - **Tope:** como máximo un Fryhtan por fuerte de la IA y 8 en total por reino.
     - **Comida:** solo si su comida no va en déficit, porque cada Fryhtan come de 20 a
       50 al año.
     - **Guerra:** solo si está en guerra o tiene enemigos (si no, los puntos se gastan
@@ -173,6 +173,19 @@ Greater Beings: los poderes del Dragon, el Djini y el Phoenix se probaron en el 
     o siempre con la opción de mostrar todos los íconos), pero en los Fryhtans de
     **todos** los reinos, no solo los tuyos. Los Fryhtans salvajes no llevan ícono.
   - Va en `7kmod-gameplay`.
+
+- [ ] **Lista de selección: los Ordos y All Highs salen con el retrato persa.** Al
+  seleccionar varias unidades, la lista (`src/OUNITLST.cpp`) dibuja el retrato chico
+  de cada una según su rango (`UnitInfo::get_small_icon_ptr`). Los datos del juego no
+  traen retratos chicos de Fryhtans (usan uno persa, porque nunca estuvieron en
+  fuertes). En gameplay ya se hacen a partir del retrato grande, pero solo el de
+  soldado (`make_small_icon`, `src/OUNITRES.cpp`); el de general (Ordo) y el de rey
+  (All High) siguen apuntando al persa.
+  - Arreglo: usar el retrato hecho a partir del grande también para los rangos de
+    general y rey de los Fryhtans.
+  - En `7kmod` (donde está la lista, sin los retratos de gameplay) seguramente todos
+    los Fryhtans salen con el retrato persa: el arreglo va en `7kmod`, pasando ahí la
+    creación de los retratos chicos, y se pasa a gameplay y pathing.
 
 ---
 
