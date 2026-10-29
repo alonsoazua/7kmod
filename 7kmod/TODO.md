@@ -158,6 +158,22 @@ Greater Beings: los poderes del Dragon, el Djini y el Phoenix se probaron en el 
     de la IA.
   - Va en `7kmod-gameplay`.
 
+- [ ] **Ícono con el color del reino en los Fryhtans invocados.** Hoy un Fryhtan de un
+  reino se ve igual que uno salvaje: el color de reino sale de 8 colores especiales del
+  sprite (`0xE0`-`0xE7`, `Game::init_remap_table`, `src/OGAME.cpp`) y los sprites de
+  los Fryhtans no los tienen. Nuevo: un ícono de 10×10 como los de rango y oficio (`U_GENE`,
+  `U_KING`... en `I_ICON.RES`, `Unit::draw_skill_icon`, `src/OUNITDRW.cpp`), a la
+  derecha de la barra de vida.
+  - **Dibujo (versión A, elegida):** el cuadro del color del reino, con el borde claro
+    arriba y a la izquierda y oscuro abajo y a la derecha (los 4 tonos del color del
+    reino), y una cabeza de Fryhtan con cuernos y colmillos en negro. Se dibuja en el
+    código con los colores especiales del reino (sin tocar `I_ICON.RES`), así toma el
+    color de cada reino.
+  - **Cuándo se ve:** igual que los íconos de rango (al seleccionar o señalar la unidad,
+    o siempre con la opción de mostrar todos los íconos), pero en los Fryhtans de
+    **todos** los reinos, no solo los tuyos. Los Fryhtans salvajes no llevan ícono.
+  - Va en `7kmod-gameplay`.
+
 ---
 
 ## Tecnologías del mod (`ModTech`)
