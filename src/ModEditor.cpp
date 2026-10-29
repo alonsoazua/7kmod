@@ -122,6 +122,8 @@ void ModEditor::reset()
 	place_fryhtan_unit_id = editor_next_fryhtan(0, 0);		// the first one
 	place_fryhtan_combat = INVOKE_FRYHTAN_COMBAT_LEVEL;		// as when it is invoked
 	place_brush = 3;
+	place_spy_skill = 50;
+	place_cloak_nation = -1;
 	edit_scen_recno = 0;
 	new_map_flag = 0;
 	new_map_seed = 0;
