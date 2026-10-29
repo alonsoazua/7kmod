@@ -109,6 +109,8 @@ public:
 	short	place_population;			// the population of towns
 	short	place_reserve;				// the reserve of natural resources, in 1000s
 	short	place_monster_id;			// the Fryhtan of lairs
+	short	place_fryhtan_unit_id;	// 7kmod-gameplay: the invoked Fryhtan of the Units tab (ModEditorFryhtan.cpp)
+	short	place_fryhtan_combat;
 	char	place_brush;				// the size of the brush of the Terrain tab: 1, 3 or 5
 
 	short	edit_scen_recno;
@@ -180,5 +182,14 @@ extern ModEditor mod_editor;
 
 void editor_put_button(int x1, int y1, int x2, int y2, const char* str, int enabled, int pushed);		// on the back buffer
 extern char loc_reveal_all_flag;		// 1 - Location::explored() and visibility() see the whole map (the editor mode)
+
+//------- 7kmod-gameplay: the invoked Fryhtans (ModEditorFryhtan.cpp) --------//
+
+class Unit;
+
+int			editor_next_fryhtan(int unitId, int dir);
+const char*	editor_fryhtan_name(int unitId);
+void			editor_init_fryhtan(Unit* unitPtr, int combatLevel);
+int			editor_is_invoked_fryhtan(Unit* unitPtr);
 
 #endif

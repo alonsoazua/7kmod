@@ -10,6 +10,7 @@ bin_PROGRAMS = 7kaa
 	CmdLine.cpp \
 	LocaleRes.cpp \
 	ModEditor.cpp \
+	ModEditorFryhtan.cpp \
 	ModEditorPanel.cpp \
 	ModEditorSave.cpp \
 	ModEditorTerrain.cpp \

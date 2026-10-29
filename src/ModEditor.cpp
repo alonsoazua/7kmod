@@ -53,6 +53,7 @@
 #include <ORAWRES.h>
 #include <OREMOTE.h>
 #include <OWORLDMT.h>
+#include <OF_BASE.h>
 #include <string.h>
 #include "gettext.h"
 
@@ -118,6 +119,8 @@ void ModEditor::reset()
 	place_population = 20;
 	place_reserve = 10;
 	place_monster_id = 0;
+	place_fryhtan_unit_id = editor_next_fryhtan(0, 0);		// the first one
+	place_fryhtan_combat = INVOKE_FRYHTAN_COMBAT_LEVEL;		// as when it is invoked
 	place_brush = 3;
 	edit_scen_recno = 0;
 	new_map_flag = 0;
