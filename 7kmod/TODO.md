@@ -74,12 +74,14 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     como el fuego del Fénix), cambiando los colores al cargarlo.
   - **Elegido: el anillo del Mind Turner (`GJ_STAR`) en naranja**, con los colores
     cambiados al cargarlo (sin tocar los datos).
+  - **Costo del poder: 100 puntos.**
+  - **Ícono:** el existente que mejor se adapte (por ejemplo el de los espías); tooltip
+    propio.
+  - **La IA lo usa.**
   - Por definir:
-    - Costo del poder: propuesta, 100 puntos como los demás poderes.
-    - ¿También en edificios de tu reino? Propuesta: solo pueblos.
-    - Ícono y tooltip del botón (no hay ícono del juego para esto; habría que hacer uno
-      o usar uno existente, por ejemplo el de los espías).
-    - Que la IA lo use.
+    - Cuándo lo usa la IA. Propuesta: sobre su pueblo con espías ajenos (el juego sabe
+      dónde están), cuando tiene los puntos.
+    - Solo pueblos (no edificios), como se pidió.
   - Actualizar `GREATER_BEINGS.md` (hoy dice que el Fénix no detecta espías).
   - Va en `7kmod-gameplay` (cambia el balance).
 
@@ -104,6 +106,10 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     - **Costo: 100 puntos** por bola (hoy 10 por ataque).
     - **Daño base 150** (hoy 15): unos 37 de vida al centro, 31 a una casilla, 26 a
       dos y 20 a tres, contra armadura 4.
+  - **Edificios:** los daña con la regla normal del juego (`Unit::hit_firm`: el daño
+    ÷3, una vez por edificio en el área): unos 12 de vida a un edificio al centro.
+  - **Ícono:** el existente que mejor se adapte; tooltip propio.
+  - **La IA lo usa**, sobre grupos de enemigos.
   - Por definir:
     - Referencia del daño: hoy cada bola (base 15) quita unos 3 de vida al centro
       (÷4 de `ATTACK_SLOW_DOWN`, −1 de la armadura 4); 100 puntos son 10 bolas, unos
@@ -111,11 +117,9 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
       a una casilla, 26 a dos y 20 a tres (con el radio de 109 pixeles); con base 200,
       49 / 42 / 35 / 27. Un soldado con combate 20 tiene 40 de vida, con 50 tiene 100.
       Se puede afinar con `7kmod/tools/combat_sim.py`.
-    - Si daña edificios (hoy sí) y a cuánto.
-    - Si el daño baja hacia la orilla (hoy al 50%) o es parejo.
-    - Ícono del botón (hay `GODHEAL`, `GODMIND`, etc.; para este, uno nuevo o uno de
-      ataque existente) y tooltip.
-    - Que la IA lo use (hoy su Dragon ataca solo).
+    - Si el daño baja hacia la orilla (hoy al 50%) o es parejo. Propuesta: que baje,
+      como hoy (los números de arriba ya lo consideran).
+    - Cuándo lo usa la IA. Propuesta: cuando hay 5 o más unidades enemigas en el área.
     - El Jing Nung chino sigue atacando solo (ver abajo).
   - Actualizar `GREATER_BEINGS.md`.
   - Va en `7kmod-gameplay` (cambia el balance).
@@ -144,8 +148,10 @@ partes que asumen que una tecnología es un arma.
   `MAX_MOD_TECH_BEFORE_...` para leer las partidas anteriores
   (`GameFile::read_file_3` en `src/OGFILE2.cpp`).
 - **Pendientes:**
-  - Costo real de Building Repair y Fryhtan Slayers (hoy es muy barato, solo para pruebas).
-  - Que la IA investigue las tecnologías del mod.
+  - [ ] Costo real de Building Repair y Fryhtan Slayers (hoy es muy barato, solo para
+    pruebas): **el mismo que Elite Warriors** (15, `complex_level` en
+    `mod_tech_info_array`).
+  - Que la IA investigue las tecnologías del mod: por ahora no.
   - [x] Íconos propios: cada tecnología tiene su ícono de 46×38 con la paleta del juego
     (`src/ModTechIcon.cpp`), en el menú y en el panel de investigación. La descripción
     pasó a la ayuda del botón.
