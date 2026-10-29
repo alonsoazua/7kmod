@@ -63,13 +63,19 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
   - **Costo de mantener: de 2.5 a 1.5 por día** (en la tabla `GOD` son 50 puntos de
     existencia ÷ 20; quedaría en 30), igual que la mayoría. Se cambia en el código al
     cargar la tabla (`GodRes`), sin tocar los datos.
+  - **Exponer = descubrir y ejecutar**, como cuando lo atrapa el contraespionaje
+    (`SpyArray::catch_spy`, `Spy::get_killed`), con la noticia normal.
+  - **Pueblo sin espías ajenos:** el poder se gasta igual.
+  - **Efecto gráfico:** el juego ya tiene uno por poder: el ser lanza una "estrella" que
+    se anima sobre el objetivo (`GE_STAR`, `GI_STAR`, `GJ_STAR`, `GP_STAR`, `GZ_STAR`
+    en la tabla de ataques de `STD.SET`; el Fénix no tiene). Se puede usar uno de esos
+    sobre el pueblo. Candidatos: el anillo morado del Mind Turner (`GJ_STAR`) o los
+    destellos de Isis (`GE_STAR`), o uno de ellos con los colores cambiados (naranja,
+    como el fuego del Fénix), cambiando los colores al cargarlo.
   - Por definir:
-    - "Exponer": propuesta, como cuando lo atrapa el contraespionaje
-      (`SpyArray::catch_spy`): el espía es descubierto y ejecutado, con la noticia normal.
-      La otra opción es solo mostrarlo (sin matarlo).
     - Costo del poder: propuesta, 100 puntos como los demás poderes.
-    - Si el pueblo no tiene espías ajenos: el poder no se gasta y sale un aviso.
-    - ¿También en edificios de tu reino? Propuesta: solo pueblos, como pediste.
+    - Cuál efecto gráfico.
+    - ¿También en edificios de tu reino? Propuesta: solo pueblos.
     - Ícono y tooltip del botón (no hay ícono del juego para esto; habría que hacer uno
       o usar uno existente, por ejemplo el de los espías).
     - Que la IA lo use.
