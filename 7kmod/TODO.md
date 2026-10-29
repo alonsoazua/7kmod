@@ -118,12 +118,13 @@ Greater Beings: los poderes del Dragon, el Djini y el Phoenix se probaron en el 
   - Actualizar `GREATER_BEINGS.md`.
   - Va en `7kmod-gameplay` (cambia el balance).
 
-- [ ] **Sonido del poder del Phoenix: el de Isis.** El Phoenix no tiene animación de
+- [x] **Sonido del poder del Phoenix: el de Isis.** El Phoenix no tiene animación de
   ataque, así que su poder no suena (los demás seres suenan con el sonido "A1" de su
   sprite en los cuadros de su animación de lanzar, `Sprite::process_attack`,
   `src/OSPRITE2.cpp`). Al exponer espías (`UnitGod::phoenix_expose_spy`) se reproduce el
   sonido de lanzar de Isis (`se_res.sound(..., 'S', <sprite de EG_GOD>, "A1")`, en el
-  pueblo), en los cuadros en que suena. Va en `7kmod-gameplay`.
+  pueblo). Hecho: suena una vez al lanzar el poder (`GE_CAST`, que Isis toca en el
+  cuadro 5 de su animación). Va en `7kmod-gameplay`.
 
 - [x] **Jing Nung (Greater Being chino): cada ataque cuesta 5 puntos en vez de 10.**
   Sigue atacando solo, con su secuencia de 3 ataques (daño base 18). El costo sale de
@@ -158,7 +159,7 @@ Greater Beings: los poderes del Dragon, el Djini y el Phoenix se probaron en el 
     de la IA.
   - Va en `7kmod-gameplay`.
 
-- [ ] **Ícono con el color del reino en los Fryhtans invocados.** Hoy un Fryhtan de un
+- [x] **Ícono con el color del reino en los Fryhtans invocados.** Hoy un Fryhtan de un
   reino se ve igual que uno salvaje: el color de reino sale de 8 colores especiales del
   sprite (`0xE0`-`0xE7`, `Game::init_remap_table`, `src/OGAME.cpp`) y los sprites de
   los Fryhtans no los tienen. Nuevo: un ícono de 10×10 como los de rango y oficio (`U_GENE`,
@@ -169,23 +170,24 @@ Greater Beings: los poderes del Dragon, el Djini y el Phoenix se probaron en el 
     reino), y una cabeza de Fryhtan con cuernos y colmillos en negro. Se dibuja en el
     código con los colores especiales del reino (sin tocar `I_ICON.RES`), así toma el
     color de cada reino.
+    (Los colores se cambian en el código antes de dibujarlo: la versión en C de
+    `IMGbltTransRemap()` lee los códigos como `char` con signo y con los mayores a 127
+    toma el color de otro reino.)
   - **Cuándo se ve:** igual que los íconos de rango (al seleccionar o señalar la unidad,
     o siempre con la opción de mostrar todos los íconos), pero en los Fryhtans de
     **todos** los reinos, no solo los tuyos. Los Fryhtans salvajes no llevan ícono.
   - Va en `7kmod-gameplay`.
 
-- [ ] **Lista de selección: los Ordos y All Highs salen con el retrato persa.** Al
+- [x] **Lista de selección: los Ordos y All Highs salen con el retrato persa.** Al
   seleccionar varias unidades, la lista (`src/OUNITLST.cpp`) dibuja el retrato chico
   de cada una según su rango (`UnitInfo::get_small_icon_ptr`). Los datos del juego no
   traen retratos chicos de Fryhtans (usan uno persa, porque nunca estuvieron en
-  fuertes). En gameplay ya se hacen a partir del retrato grande, pero solo el de
-  soldado (`make_small_icon`, `src/OUNITRES.cpp`); el de general (Ordo) y el de rey
-  (All High) siguen apuntando al persa.
-  - Arreglo: usar el retrato hecho a partir del grande también para los rangos de
-    general y rey de los Fryhtans.
-  - En `7kmod` (donde está la lista, sin los retratos de gameplay) seguramente todos
-    los Fryhtans salen con el retrato persa: el arreglo va en `7kmod`, pasando ahí la
-    creación de los retratos chicos, y se pasa a gameplay y pathing.
+  fuertes). Gameplay los hacía a partir del retrato grande, pero solo el de soldado;
+  el de general (Ordo) y el de rey (All High) seguían apuntando al persa.
+  - Arreglo: la creación de los retratos chicos pasó a `7kmod` (`make_small_icon`,
+    `src/OUNITRES.cpp`; en 7kmod todos los Fryhtans salían con el persa) y ahora cubre
+    los tres rangos. Los datos no traen retratos grandes de Ordo ni de All High, así que
+    los tres usan el del Fryhtan.
 
 ---
 

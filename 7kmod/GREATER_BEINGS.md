@@ -110,7 +110,8 @@ datos del juego (tablas `GOD`, `UNIT` y `UNITATTK` de `RESOURCE/STD.SET`).
   reinos, **expone y ejecuta** al de menor habilidad de espionaje, con la noticia normal.
   - **Costo:** 100 puntos, aunque no haya espías. Sobre algo que no es un pueblo tuyo no
     hace nada y no gasta puntos.
-  - **Efecto:** un anillo de fuego sobre el pueblo (el del Mind Turner, en naranja).
+  - **Efecto:** un anillo de fuego sobre el pueblo (el del Mind Turner, en naranja), con
+    el sonido del poder de Isis.
   - La IA lo usa sobre sus pueblos con espías ajenos (el juego sabe dónde están).
 - **Uso:** explorar el mapa y espiar el interior de los edificios enemigos sin arriesgar espías; la IA lo manda a volar a puntos aleatorios del mapa.
 

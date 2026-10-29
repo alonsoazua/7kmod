@@ -166,7 +166,8 @@ void Unit::draw()
 			dispY1-3, image_icon.get_ptr("U_SPY") );
 	}
 
-	if( (is_own() || config.show_ai_info || skill.skill_id == SKILL_LEADING ) )		// || rank_id > RANK_SOLDIER) )
+	if( (is_own() || config.show_ai_info || skill.skill_id == SKILL_LEADING ) ||		// || rank_id > RANK_SOLDIER) )
+		 has_fryhtan_nation_icon() )		// 7kmod-gameplay: the Fryhtans of all kingdoms
 	{
 		if( !selected_flag && config.show_all_unit_icon )
 			draw_skill_icon();
@@ -285,7 +286,8 @@ void Unit::draw_selected()
 
 	//----- display skill/rank icon (only for own units) -----//
 
-	if( is_own() || config.show_ai_info || skill.skill_id == SKILL_LEADING || rank_id > RANK_SOLDIER )
+	if( is_own() || config.show_ai_info || skill.skill_id == SKILL_LEADING || rank_id > RANK_SOLDIER ||
+		 has_fryhtan_nation_icon() )		// 7kmod-gameplay: the Fryhtans of all kingdoms
 	{
 		draw_skill_icon();
 	}
@@ -297,7 +299,12 @@ void Unit::draw_selected()
 void Unit::draw_skill_icon()
 {
 	if( !race_id )		// only for human units
+	{
+		if( has_fryhtan_nation_icon() )		// 7kmod-gameplay
+			draw_fryhtan_nation_icon();
+
 		return;
+	}
 
 	int maxHitBarWidth, dispX1, dispY1;
 
@@ -373,6 +380,100 @@ void Unit::draw_skill_icon()
 	//#### end alex 7/10 ####//
 }
 //----------- End of function Unit::draw_skill_icon ----------//
+
+
+//----------- Begin of function Unit::draw_fryhtan_nation_icon ----------//
+//
+// 7kmod-gameplay: the icon of the Fryhtans of a kingdom (invoked in a Seat of
+// Power), in the place of the rank icons: a 10x10 square in the color of the
+// kingdom, with a light border at the top and left, a dark one at the bottom
+// and right, and the black head of a Fryhtan. The Fryhtans of the game data
+// have no pixels in the color of the kingdom, so they look like the wild
+// ones without it.
+//
+// The bitmap uses the color codes of the kingdoms (0xE0-0xE3, the shades of
+// the primary color, from light to dark), changed to the colors of the
+// kingdom with its color remap table, as the units. (The remap is done here:
+// the C version of IMGbltTransRemap() reads the codes as signed chars, so it
+// takes the colors of codes above 127 from the wrong place.)
+//
+void Unit::draw_fryhtan_nation_icon()
+{
+	enum { ICON_SIZE = 10 };
+
+	static char iconBitmap[2*sizeof(short) + ICON_SIZE*ICON_SIZE];
+	static int  initFlag = 0;
+
+	if( !initFlag )
+	{
+		static const char* headStr[8] =
+		{
+			"#......#",
+			"##....##",
+			".######.",
+			"########",
+			"#..##..#",
+			"########",
+			".#.##.#.",
+			"..####..",
+		};
+
+		*(short*) iconBitmap = ICON_SIZE;
+		*((short*) iconBitmap + 1) = ICON_SIZE;
+
+		unsigned char* pixelPtr = (unsigned char*) iconBitmap + 2*sizeof(short);
+
+		for( int y=0 ; y<ICON_SIZE ; y++ )
+		{
+			for( int x=0 ; x<ICON_SIZE ; x++ )
+			{
+				unsigned char color = 0xE1;		// the body: the second shade
+
+				if( y==0 || x==0 )
+					color = 0xE0;					// light border
+				else if( y==ICON_SIZE-1 || x==ICON_SIZE-1 )
+					color = 0xE3;					// dark border
+				else if( headStr[y-1][x-1] == '#' )
+					color = 0x00;					// the head: black
+
+				*pixelPtr++ = color;
+			}
+		}
+
+		initFlag = 1;
+	}
+
+	//------ the same place as the rank icons: at the right of the hit bar ------//
+
+	int maxHitBarWidth, dispX1, dispY1;
+
+	if( mobile_type == UNIT_LAND )
+	{
+		maxHitBarWidth = ZOOM_LOC_WIDTH;
+		dispX1 = ZOOM_X1 + cur_x - World::view_top_x;
+		dispY1 = ZOOM_Y1 + cur_y - World::view_top_y - 20;
+	}
+	else
+	{
+		maxHitBarWidth = ZOOM_LOC_WIDTH*2 - 22;
+		dispX1 = ZOOM_X1 + cur_x - World::view_top_x - ZOOM_LOC_WIDTH/2 + 11;
+		dispY1 = ZOOM_Y1 + cur_y - World::view_top_y - 20;
+
+		if( mobile_type == UNIT_AIR )
+			dispY1 -= 20;
+	}
+
+	char  nationBitmap[sizeof(iconBitmap)];
+	char* colorRemapTable = game.get_color_remap_table(nation_recno, 0);
+
+	memcpy( nationBitmap, iconBitmap, 2*sizeof(short) );
+
+	for( int i=2*sizeof(short) ; i<(int)sizeof(iconBitmap) ; i++ )
+		nationBitmap[i] = colorRemapTable[ (unsigned char) iconBitmap[i] ];
+
+	world.zoom_matrix->put_bitmap_clip( dispX1+maxHitBarWidth+1, dispY1-3, nationBitmap );
+}
+//----------- End of function Unit::draw_fryhtan_nation_icon ----------//
 
 
 //----------- Begin of function Unit::is_visible ----------//
@@ -496,7 +597,8 @@ void Unit::draw_outlined()
 			dispY1-3, image_icon.get_ptr("U_SPY") );
 	}
 
-	if( (is_own() || config.show_ai_info || skill.skill_id == SKILL_LEADING || rank_id > RANK_SOLDIER) )
+	if( (is_own() || config.show_ai_info || skill.skill_id == SKILL_LEADING || rank_id > RANK_SOLDIER) ||
+		 has_fryhtan_nation_icon() )		// 7kmod-gameplay: the Fryhtans of all kingdoms
 	{
 		if( !selected_flag )
 		{

@@ -34,7 +34,8 @@ Basada en **7kmod 0.2.0**, que agrega el editor de escenarios (ver `CHANGELOG.md
     pasa a tu reino, como una unidad que cambia de bando.
   - **Phoenix griego: exponer espías.** Botón de poder (el ojo de los espías): sobre un
     pueblo de tu reino, expone y ejecuta al espía ajeno de menor habilidad, con un anillo
-    de fuego sobre el pueblo (el del Mind Turner en naranja). Cuesta 100 puntos, aunque no
+    de fuego sobre el pueblo (el del Mind Turner en naranja) y el sonido del poder de
+    Isis. Cuesta 100 puntos, aunque no
     haya espías; fuera de un pueblo tuyo no gasta. La IA lo usa en sus pueblos con espías.
 - **Fryhtans invocados en el editor de escenarios:** entrada **Fryhtan** en la pestaña
   Units, con las opciones **Type** (los 10 Fryhtans que se pueden invocar, sin importar
@@ -43,6 +44,13 @@ Basada en **7kmod 0.2.0**, que agrega el editor de escenarios (ver `CHANGELOG.md
   y todo lo de los invocados, sin gastar puntos de oración. Sobre un fuerte del reino
   entra como soldado. Al seleccionarlo se cambia su Combat. Necesita un reino; los
   Fryhtans salvajes siguen saliendo de las guaridas. Código en `ModEditorFryhtan.cpp`.
+- **Ícono con el color del reino en los Fryhtans invocados.** Los sprites de los
+  Fryhtans no tienen pixeles del color del reino, así que uno de un reino se veía igual
+  que uno salvaje. Ahora llevan, donde van los íconos de rango, un cuadro de 10×10 del
+  color de su reino con la cabeza de un Fryhtan en negro. Se ve como los íconos de rango
+  (al seleccionar o señalar, o siempre con la opción de mostrar todos los íconos), pero
+  en los Fryhtans de todos los reinos. Los salvajes no llevan ícono
+  (`Unit::draw_fryhtan_nation_icon`, `src/OUNITDRW.cpp`).
 - **Los disparos a distancia ya no se bloquean** por edificios, murallas, montañas ni otros obstáculos (`BulletArray::bullet_path_possible`). Antes, si el tiro recto (flechas, jabalinas, etc.) pasaba por una casilla no caminable, el arquero tenía que moverse a otra casilla para disparar, y a veces quedaba pegado al enemigo. Ahora todos los disparos pasan por encima de todo, como ya lo hacían los proyectiles curvos de las armas de asedio. Aplica a todas las unidades a distancia de todos los reinos. Efecto secundario: se puede disparar a unidades detrás de murallas o al otro lado de una montaña si están dentro del alcance.
 - **Espionaje: Propaganda en pueblos independientes.** En un pueblo independiente el modo "Sow Dissent" del espía se llama **"Propaganda"** y es mucho más potente (ver `SPYING.md` y `TODO-espionaje.md`):
   - **Solo cuenta el espía de más habilidad de cada reino** en el pueblo (tener más espías no acelera nada): cada 30 días la resistencia hacia tu reino baja su habilidad ÷ 20, sin dividir entre la población (antes habilidad ÷ 5 ÷ población de su raza). **Debajo de 30 de resistencia el efecto se reduce a la mitad.**
