@@ -102,9 +102,10 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     - **Área: +2 casillas.** Propuesta: radio de daño de 45 a 109 pixeles (unas 3.4
       casillas), revisión de casillas de 2 a 4 (9×9) y fuego de 3 a 5.
     - **Costo: 100 puntos** por bola (hoy 10 por ataque).
-    - **Daño considerablemente superior** a una bola normal.
+    - **Daño base 150** (hoy 15): unos 37 de vida al centro, 31 a una casilla, 26 a
+      dos y 20 a tres, contra armadura 4.
   - Por definir:
-    - Cuánto daño. Referencia: hoy cada bola (base 15) quita unos 3 de vida al centro
+    - Referencia del daño: hoy cada bola (base 15) quita unos 3 de vida al centro
       (÷4 de `ATTACK_SLOW_DOWN`, −1 de la armadura 4); 100 puntos son 10 bolas, unos
       30 de vida sobre un objetivo. Con base 150 una bola quitaría unos 37 al centro, 31
       a una casilla, 26 a dos y 20 a tres (con el radio de 109 pixeles); con base 200,
@@ -115,9 +116,16 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     - Ícono del botón (hay `GODHEAL`, `GODMIND`, etc.; para este, uno nuevo o uno de
       ataque existente) y tooltip.
     - Que la IA lo use (hoy su Dragon ataca solo).
-    - El Jing Nung chino sigue igual.
+    - El Jing Nung chino sigue atacando solo (ver abajo).
   - Actualizar `GREATER_BEINGS.md`.
   - Va en `7kmod-gameplay` (cambia el balance).
+
+- [ ] **Jing Nung (Greater Being chino): cada ataque cuesta 5 puntos en vez de 10.**
+  Sigue atacando solo, con su secuencia de 3 ataques (daño base 18). El costo sale de
+  `power_pray_points` de la tabla `GOD` (10); se cambia en el código al cargar la tabla
+  (`GodRes`), sin tocar los datos. Con eso dura el doble de ataques con los mismos
+  puntos (los puntos también son su vida). Actualizar `GREATER_BEINGS.md`. Va en
+  `7kmod-gameplay`.
 
 ---
 
