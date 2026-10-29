@@ -11,6 +11,8 @@ Si los cambios funcionan bien en partidas, se pasarán a `7kmod-gameplay` (o a
 
 ## [Sin publicar]
 
+Incluye **7kmod 0.2.0** (editor de escenarios), a través de `7kmod-gameplay`.
+
 ### Agregado
 - **Apurarse al reunirse (0.7.0):** mientras el grupo se reúne antes de marchar, las
   unidades que van a su lugar de la reunión se mueven un 50% más rápido (un paso de
