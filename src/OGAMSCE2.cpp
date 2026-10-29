@@ -24,11 +24,13 @@
 
 #include <OSYS.h>
 #include <OGAME.h>
+#include <ModEditor.h>
 #include <OMOUSE.h>
 #include <OMOUSECR.h>
 #include <OVGABUF.h>
 #include <OIMGRES.h>
 #include <OBUTT3D.h>
+#include <OBUTTON.h>
 #include <OSLIDCUS.h>
 #include <OBOX.h>
 #include <OPOWER.h>
@@ -94,6 +96,14 @@ enum {
 //		 NAME_FIELD_Y2 = 566,
 };
 // ####### end Gilbert 1/11 #########//
+
+//------ 7kmod-editor: New and Edit buttons, above the name field ------//
+
+enum { EDITOR_NEW_X1 = 95,
+		 EDITOR_EDIT_X1 = 215,
+		 EDITOR_BUTTON_Y1 = 520,
+		 EDITOR_BUTTON_WIDTH = 110,
+		 EDITOR_BUTTON_HEIGHT = 23 };
 
 
 #define TU_USE_BACKUP_SURFACE
@@ -165,6 +175,8 @@ void draw_checkbox(int x, int y, CHECKBOX_STATE checked)
 //
 // return : <int> >0 - id. of the scenario selected. 
 //                 0 - cancel
+//                -1 - 7kmod-editor: the New button, a new scenario in the editor
+//                -2 - 7kmod-editor: the Edit button, the scenario mod_editor.edit_scen_recno in the editor
 //
 int Game::select_scenario(int scenCount, ScenInfo* scenInfoArray)
 {
@@ -209,6 +221,14 @@ int Game::select_scenario(int scenCount, ScenInfo* scenInfoArray)
 	startButton.create(menuX1+373, menuY1+529, "START-U", "START-D",1, 0);
 	cancelButton.create(menuX1+548, menuY1+529, "CANCEL-U", "CANCEL-D", 1, 0);
 	// ###### end Gilbert 1/11 ########//
+
+	//------ 7kmod-editor: New and Edit buttons ------//
+
+	Button editorNewButton, editorEditButton;
+	editorNewButton.create_text( menuX1+EDITOR_NEW_X1, menuY1+EDITOR_BUTTON_Y1, menuX1+EDITOR_NEW_X1+EDITOR_BUTTON_WIDTH-1,
+										  menuY1+EDITOR_BUTTON_Y1+EDITOR_BUTTON_HEIGHT-1, _("New") );
+	editorEditButton.create_text( menuX1+EDITOR_EDIT_X1, menuY1+EDITOR_BUTTON_Y1, menuX1+EDITOR_EDIT_X1+EDITOR_BUTTON_WIDTH-1,
+										  menuY1+EDITOR_BUTTON_Y1+EDITOR_BUTTON_HEIGHT-1, _("Edit") );
 
 	SlideVBar scrollBar;
 	scrollBar.init_scroll(menuX1+SCROLL_X1, menuY1+SCROLL_Y1, menuX1+SCROLL_X2, menuY1+SCROLL_Y2,
@@ -319,6 +339,9 @@ int Game::select_scenario(int scenCount, ScenInfo* scenInfoArray)
 				scrollDown.paint();
 				startButton.paint();
 				cancelButton.paint();
+
+				editorNewButton.paint();
+				editorEditButton.paint();
 
 				textScrollUp.paint();
 				textScrollDown.paint();
@@ -449,7 +472,15 @@ int Game::select_scenario(int scenCount, ScenInfo* scenInfoArray)
 								". ", 0, browseSlotX2 );
 
 							textX = font_bible.put(textX, browseSlotY1+TEXT_OFFSET_Y,
-								_(scenInfoArray[rec-1].scen_name), 0, browseSlotX2 );
+								_(scenInfoArray[rec-1].scen_name), 0, browseSlotX1+TEXT_OFFSET_X+395 );
+
+							//--- 7kmod-editor: mark the scenarios of the editor ---//
+
+							if( scenInfoArray[rec-1].dir_id == EDITOR_SCENARIO_DIR_ID )
+							{
+								font_bible.put(textX, browseSlotY1+TEXT_OFFSET_Y,
+									" (mod)", 0, browseSlotX1+TEXT_OFFSET_X+395 );
+							}
 
 							//---- display the scenario's play status ----//
 
@@ -611,6 +642,19 @@ int Game::select_scenario(int scenCount, ScenInfo* scenInfoArray)
 			// load button
 			refreshFlag = TUOPTION_ALL;
 			retFlag = browseRecno;
+			break;
+		}
+		else if( editorNewButton.detect() )		// 7kmod-editor: new scenario
+		{
+			refreshFlag = TUOPTION_ALL;
+			retFlag = -1;
+			break;
+		}
+		else if( editorEditButton.detect() )		// 7kmod-editor: edit the selected scenario
+		{
+			refreshFlag = TUOPTION_ALL;
+			mod_editor.edit_scen_recno = browseRecno;
+			retFlag = -2;
 			break;
 		}
 	}

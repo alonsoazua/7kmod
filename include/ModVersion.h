@@ -27,7 +27,7 @@
 
 //------- version of the 7kmod branch --------//
 
-#define MOD_7KMOD_VERSION		"0.1.0"
+#define MOD_7KMOD_VERSION		"0.2.0"
 
 
 //------- version of the 7kmod-gameplay branch --------//

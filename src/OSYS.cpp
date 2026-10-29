@@ -57,6 +57,7 @@
 #include <OSPREUSE.h>
 #include <OSPY.h>
 #include <OSYS.h>
+#include <ModEditor.h>
 #include <OREMOTE.h>
 #include <OTECHRES.h>
 #include <OTALKRES.h>
@@ -584,6 +585,11 @@ void Sys::run(int isLoadedGame)
 
    option_menu.active_flag = 0;
    in_game_menu.active_flag = 0;
+
+   //------ 7kmod-editor: a new scenario starts in the editor mode ------//
+
+   if( mod_editor.is_editing() )
+      mod_editor.enter_edit_mode();
 
    sys.disp_frame();
    disp_view_mode();
@@ -1514,6 +1520,11 @@ int Sys::should_next_frame()
 //
 void Sys::process_key(unsigned scanCode, unsigned skeyState)
 {
+   //--- 7kmod-editor: in the editor mode only the keys of the editor work ---//
+
+   if( mod_editor.process_key(scanCode, skeyState) )
+      return;
+
    detect_function_key(scanCode, skeyState);
 
    //----- don't detect letter keys when in chat mode ----//

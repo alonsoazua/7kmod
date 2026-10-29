@@ -41,6 +41,7 @@ atajos que agrega el mod están marcados como **(mod)**.
 | `F9` | Registro de noticias. | (fija) |
 | `F10` | Menú del juego. | (fija) |
 | `F11` | Captura de pantalla (`7K000000.BMP`, `7K000001.BMP`…, en la carpeta de configuración del juego). | (fija) |
+| `F12` | Solo con el editor de escenarios: en el editor, prueba el escenario; durante la prueba, regresa al editor. | (fija) |
 | `S` | Guardar partida. | `KEYEVENT_SAVE_GAME` |
 | `L` | Cargar partida. | `KEYEVENT_LOAD_GAME` |
 | `O` | Menú de opciones. | `KEYEVENT_OPEN_OPTION_MENU` |

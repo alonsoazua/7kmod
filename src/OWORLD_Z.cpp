@@ -61,6 +61,7 @@
 #include <OANLINE.h>
 #include <OFIRMDIE.h>
 #include <OIMGRES.h>
+#include <ModEditor.h>
 #include "gettext.h"
 
 //--------- Define static vars -----------//
@@ -839,9 +840,15 @@ void ZoomMatrix::draw_build_marker()
 	int locWidth, locHeight, validAction;
 	Location* locPtr = world.get_loc(top_x_loc+xLoc, top_y_loc+yLoc);
 
+	//------- 7kmod-editor: placing an object ----//
+
+	if( (validAction = mod_editor.get_place_area(top_x_loc+xLoc, top_y_loc+yLoc, locWidth, locHeight)) >= 0 )
+	{
+	}
+
 	//------- if it's in firm building mode now ----//
 
-	if( power.command_id == COMMAND_BUILD_FIRM )
+	else if( power.command_id == COMMAND_BUILD_FIRM )
 	{
 		FirmInfo* firmInfo = firm_res[power.command_para];
 

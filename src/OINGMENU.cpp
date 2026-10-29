@@ -37,6 +37,7 @@
 #include <OGAME.h>
 #include <OOPTMENU.h>
 #include <OINGMENU.h>
+#include <ModEditor.h>
 #include <OFONT.h>
 #include <OMUSIC.h>
 #include "gettext.h"
@@ -84,6 +85,19 @@ void InGameMenu::enter(char untilExitFlag)
       game_menu_option_flag[1] = 0;    // disable save game
       game_menu_option_flag[4] = 0;    // disable retire
    }
+
+   //------ 7kmod-editor ------//
+
+   if( mod_editor.is_editing() )
+   {
+      game_menu_option_flag[1] = 0;    // disable save game
+      game_menu_option_flag[2] = 0;    // disable load game
+      game_menu_option_flag[3] = 0;    // disable training
+      game_menu_option_flag[4] = 0;    // disable retire
+   }
+
+   if( mod_editor.is_testing() )
+      game_menu_option_flag[2] = 0;    // disable load game, "Training" is "Return to Editor"
 
    if( remote.is_enable() || remote.is_replay() )
    {
@@ -143,6 +157,11 @@ void InGameMenu::disp(int needRepaint)
       else
          image_interface.put_front( GAME_MENU_X1, GAME_MENU_Y1, "GAMEMENU" );
 
+
+      //--- 7kmod-editor: during a test, "Training" is "Return to Editor" ---//
+
+      if( mod_editor.is_testing() )
+         mod_editor.disp_menu_option( GAME_OPTION_X1, GAME_OPTION_Y1 + 3*GAME_OPTION_HEIGHT );
 
       for( int b = 0; b < GAME_OPTION_COUNT; ++b)
       {
@@ -231,7 +250,10 @@ int InGameMenu::detect()
          break;
 
       case 4:     // training
-         tutor.select_run_tutor(1);
+         if( mod_editor.is_testing() )      // 7kmod-editor: "Return to Editor"
+            mod_editor.return_to_editor();
+         else
+            tutor.select_run_tutor(1);
          break;
 
       case 5:     // retire

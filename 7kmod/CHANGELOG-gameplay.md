@@ -18,6 +18,9 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 
 ## [Sin publicar]
 
+Basada en **7kmod 0.2.0**, que agrega el editor de escenarios (ver `CHANGELOG.md` y
+`TODO-editor.md`).
+
 ### Agregado
 - **Los disparos a distancia ya no se bloquean** por edificios, murallas, montañas ni otros obstáculos (`BulletArray::bullet_path_possible`). Antes, si el tiro recto (flechas, jabalinas, etc.) pasaba por una casilla no caminable, el arquero tenía que moverse a otra casilla para disparar, y a veces quedaba pegado al enemigo. Ahora todos los disparos pasan por encima de todo, como ya lo hacían los proyectiles curvos de las armas de asedio. Aplica a todas las unidades a distancia de todos los reinos. Efecto secundario: se puede disparar a unidades detrás de murallas o al otro lado de una montaña si están dentro del alcance.
 - **Espionaje: Propaganda en pueblos independientes.** En un pueblo independiente el modo "Sow Dissent" del espía se llama **"Propaganda"** y es mucho más potente (ver `SPYING.md` y `TODO-espionaje.md`):
@@ -81,7 +84,7 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
   - Los cambios se aplican al cargar los datos; los archivos del juego no se modifican. El efecto en los combates está en la sección 8 de `COMBAT_ANALYSIS.md`.
 - **Greater Being persa (Lord of Healing) cura más en los fuertes:** dentro de un fuerte o de la Sede de Poder, los soldados (y sacerdotes) recuperan entre 1/5 y 1/3 de su vida máxima (antes entre 1/7 y 1/4), y el general al mando cura igual que sus soldados (antes curaba como en el mapa, entre 1/9 y 1/6). En el mapa cura igual que antes.
 - **Pueblos de otro reino que se rinden:** empiezan con 15 más de lealtad (55 para la raza de tu rey y 45 para las demás, antes 40 y 30) y no pueden rebelarse durante 90 días, la misma espera que ya había entre dos rebeliones. Antes quedaban justo encima del límite de rebelión (29) y a veces se rebelaban casi de inmediato. No aplica a los pueblos independientes capturados ni cuando un reino completo se rinde. Aplica igual a la IA.
-- **Versión en el menú principal:** se muestra la versión de esta rama y la de `7kmod` en la que está basada, por ejemplo "7kmod-gameplay 0.1.0 (7kmod 0.1.0)". La versión está en `include/ModVersion.h`.
+- **Versión en el menú principal:** se muestra la versión de esta rama y la de `7kmod` en la que está basada, por ejemplo "7kmod-gameplay 0.1.0 (7kmod 0.2.0)". La versión está en `include/ModVersion.h`.
 
 ### Compatibilidad
 - **Partidas guardadas:** versión 299 (296 agrega Building Repair, 297 Fryhtan Slayers, 298 el espionaje: fechas de los accidentes, progreso de la recolección y reportes de inteligencia, 299 la lista de accidentes causados por espías y 300 la espera de los espías después de un accidente). Las partidas de la versión 2.00 y posteriores se siguen reconociendo como del mismo formato base aunque la versión llegue a 300. Las partidas anteriores se siguen cargando (las tecnologías nuevas quedan sin investigar y sin reportes de inteligencia). Los Fryhtans de un reino se guardan como unidades normales.

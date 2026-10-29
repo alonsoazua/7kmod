@@ -9,6 +9,11 @@ bin_PROGRAMS = 7kaa
 	ConfigAdv.cpp \
 	CmdLine.cpp \
 	LocaleRes.cpp \
+	ModEditor.cpp \
+	ModEditorPanel.cpp \
+	ModEditorSave.cpp \
+	ModEditorTerrain.cpp \
+	ModEditorWin.cpp \
 	ModSpy.cpp \
 	ModTech.cpp \
 	ModTechIcon.cpp \

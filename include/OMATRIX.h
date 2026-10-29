@@ -63,6 +63,8 @@ const unsigned char FULL_VISIBILITY = 87;
 const unsigned char EXPLORED_VISIBILITY = 30;	// don't see this to multiple of 8
 const unsigned char MAX_VISIT_LEVEL = FULL_VISIBILITY;
 
+extern char loc_reveal_all_flag;		// 7kmod-editor: 1 - the whole map is shown (ModEditor.h)
+
 
 //------- Define structure Location -------//
 
@@ -141,12 +143,12 @@ public:
 //	int	explored()        { return loc_flag & LOCATE_EXPLORED; }
 //	void	explored_on()		{ loc_flag |= LOCATE_EXPLORED; }
 //	void	explored_off()		{ loc_flag &= (~LOCATE_EXPLORED); }
-	int	explored()        { return visit_level > 0; }
+	int	explored()        { return visit_level > 0 || loc_reveal_all_flag; }		// 7kmod-editor: the editor shows the whole map
 	void	explored_on()		{ if( visit_level < EXPLORED_VISIBILITY*2) visit_level = EXPLORED_VISIBILITY*2; }
 	void	explored_off()		{ visit_level = 0; }
 
 	// ---------- visibility --------//
-	unsigned char visibility()				{ return visit_level/2; }
+	unsigned char visibility()				{ return loc_reveal_all_flag ? MAX_VISIT_LEVEL : visit_level/2; }
 	void	dec_visibility()					{ if( visit_level > EXPLORED_VISIBILITY*2) --visit_level; }
 	void	set_visited()						{ visit_level = MAX_VISIT_LEVEL*2; }
 	void	set_visited(unsigned char v)	{ if( visit_level < v*2) visit_level = v*2; }
