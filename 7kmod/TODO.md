@@ -104,9 +104,12 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     - **Costo: 100 puntos** por bola (hoy 10 por ataque).
     - **Daño considerablemente superior** a una bola normal.
   - Por definir:
-    - Cuánto daño. Referencia: hoy 100 puntos son 10 ataques de daño base 15 (150 en
-      total sobre un objetivo, menos el daño a los de alrededor). Habría que simularlo
-      con `7kmod/tools/combat_sim.py` contra grupos de soldados.
+    - Cuánto daño. Referencia: hoy cada bola (base 15) quita unos 3 de vida al centro
+      (÷4 de `ATTACK_SLOW_DOWN`, −1 de la armadura 4); 100 puntos son 10 bolas, unos
+      30 de vida sobre un objetivo. Con base 150 una bola quitaría unos 37 al centro, 31
+      a una casilla, 26 a dos y 20 a tres (con el radio de 109 pixeles); con base 200,
+      49 / 42 / 35 / 27. Un soldado con combate 20 tiene 40 de vida, con 50 tiene 100.
+      Se puede afinar con `7kmod/tools/combat_sim.py`.
     - Si daña edificios (hoy sí) y a cuánto.
     - Si el daño baja hacia la orilla (hoy al 50%) o es parejo.
     - Ícono del botón (hay `GODHEAL`, `GODMIND`, etc.; para este, uno nuevo o uno de
