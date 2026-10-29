@@ -24,6 +24,35 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
     de una montaña, si están dentro del alcance.
   - Va en `7kmod-gameplay` (y por lo tanto en `7kmod-pathing`).
 
+- [ ] **Tooltip de los poderes de los Greater Beings mughul, egipcio y zulú.** El botón
+  del poder (`UnitGod::disp_info`, `src/OU_GOD.cpp`) usa como ayuda el nombre de su ícono,
+  y `RESOURCE/HELP.RES` no trae `GODMUGL`, `GODEGYPT` ni `GODZULU` (sí los de Persia,
+  Japón, Maya y Thor): esos tres botones no tienen tooltip. Es un error del juego
+  original. Arreglo: ayuda propia (`help.set_custom_help`), sin tocar los datos, con el
+  estilo de los demás:
+  - Mughul: "Lower Enemy Loyalty": el cursor cambia a un círculo; sobre unidades de
+    reinos en guerra contigo o independientes, les baja la lealtad (y, con el cambio de
+    abajo, convierte a un soldado).
+  - Egipcio: "Increase Population": sobre un pueblo de tu reino, le agrega habitantes.
+  - Zulú: "Increase Leadership": sobre un general o rey zulú de tu reino, le sube el
+    liderazgo.
+  - Va en `7kmod` (es un error del original) y se pasa a gameplay y pathing.
+
+- [ ] **Djini (Greater Being mughul): además convierte a un soldado.** Hoy su poder baja
+  −20 a −30 de lealtad a las unidades visibles del área que sean de reinos en guerra
+  contigo o de nadie (`UnitGod::indian_cast_power`). Nuevo: en cada lanzamiento, además,
+  **el soldado con menos combate del área** (rango soldado, no general ni rey) pasa a tu
+  reino (`Unit::change_nation`).
+  - Solo uno por lanzamiento, entre las mismas unidades a las que baja la lealtad.
+  - Por definir:
+    - Empates de combate: el de menor lealtad (después de bajarla).
+    - ¿Solo personas, o también armas de asedio y Fryhtans invocados? Propuesta: solo
+      personas.
+    - Espías disfrazados: no se convierten (seguirían siendo espías de su reino).
+    - Lealtad con la que llega a tu reino (por ejemplo, la de una unidad que se rinde).
+    - El tooltip del poder lo menciona.
+  - Va en `7kmod-gameplay` (cambia el balance).
+
 ---
 
 ## Tecnologías del mod (`ModTech`)
