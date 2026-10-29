@@ -93,7 +93,8 @@ enum { PLACE_SOLDIER=1,
 		 PLACE_ROCK,				// id: 0 - small, 1 - large
 		 PLACE_CLEAR,
 		 PLACE_GROUND,			// id: the terrain type
-		 PLACE_SHAPE };			// id: EDITOR_TERRAIN_WATER, _LAND, _HILL or _RAMP
+		 PLACE_SHAPE,				// id: EDITOR_TERRAIN_WATER, _LAND, _HILL or _RAMP
+		 PLACE_FRYHTAN };			// 7kmod-gameplay: an invoked Fryhtan (ModEditorFryhtan.cpp)
 
 struct PlaceEntry
 {
@@ -104,7 +105,7 @@ struct PlaceEntry
 static PlaceEntry unit_entry_array[] =
 {
 	{ PLACE_SOLDIER, 0 }, { PLACE_GENERAL, 0 },
-	{ PLACE_WORKER, 0 },
+	{ PLACE_WORKER, 0 }, { PLACE_FRYHTAN, 0 },
 };
 
 static PlaceEntry weapon_entry_array[] =
@@ -159,7 +160,8 @@ static int tab_entry_count[EDITOR_TAB_COUNT] =
 //------- the options of the palettes --------//
 
 enum { OPTION_RACE=1, OPTION_COMBAT, OPTION_LEADERSHIP, OPTION_SKILL, OPTION_SKILL_LEVEL,
-		 OPTION_VERSION, OPTION_POPULATION, OPTION_RESERVE, OPTION_MONSTER, OPTION_BRUSH };
+		 OPTION_VERSION, OPTION_POPULATION, OPTION_RESERVE, OPTION_MONSTER, OPTION_BRUSH,
+		 OPTION_FRYHTAN, OPTION_FRYHTAN_COMBAT };		// 7kmod-gameplay
 
 enum { MAX_OPTION = 3 };
 
@@ -634,8 +636,10 @@ int ModEditor::get_place_area(int xLoc, int yLoc, int& locWidth, int& locHeight)
 		case PLACE_GENERAL:
 		case PLACE_WORKER:
 		case PLACE_UNIT:
+		case PLACE_FRYHTAN:
 		{
-			int unitId = entryPtr->type==PLACE_UNIT ? entryPtr->id : race_res[place_race_id]->basic_unit_id;
+			int unitId = entryPtr->type==PLACE_UNIT ? entryPtr->id :
+							 entryPtr->type==PLACE_FRYHTAN ? place_fryhtan_unit_id : race_res[place_race_id]->basic_unit_id;
 			SpriteInfo* spriteInfo = sprite_res[unit_res[unitId]->sprite_id];
 
 			locWidth  = spriteInfo->loc_width;
@@ -1110,7 +1114,7 @@ static int place_object(PlaceEntry* entryPtr, int xLoc, int yLoc)
 	{
 		if( mod_editor.owner_nation_recno == 0 &&
 			 (entryPtr->type == PLACE_SOLDIER || entryPtr->type == PLACE_GENERAL ||
-			  entryPtr->type == PLACE_UNIT || entryPtr->type == PLACE_FIRM) )
+			  entryPtr->type == PLACE_UNIT || entryPtr->type == PLACE_FIRM || entryPtr->type == PLACE_FRYHTAN) )
 		{
 			box.msg( _("Units and buildings need a kingdom. Choose one at the top of the panel.") );
 		}
@@ -1126,11 +1130,14 @@ static int place_object(PlaceEntry* entryPtr, int xLoc, int yLoc)
 		case PLACE_GENERAL:
 		case PLACE_WORKER:
 		case PLACE_UNIT:
+		case PLACE_FRYHTAN:
 		{
 			int unitId, rankId = RANK_SOLDIER;
 
 			if( entryPtr->type == PLACE_UNIT )
 				unitId = entryPtr->id;
+			else if( entryPtr->type == PLACE_FRYHTAN )
+				unitId = mod_editor.place_fryhtan_unit_id;
 			else
 				unitId = race_res[raceId]->basic_unit_id;
 
@@ -1197,6 +1204,10 @@ static int place_object(PlaceEntry* entryPtr, int xLoc, int yLoc)
 
 					if( unit_res[unitId]->unit_class == UNIT_CLASS_WEAPON )
 						set_weapon_version( unitPtr, mod_editor.place_weapon_version );
+					break;
+
+				case PLACE_FRYHTAN:
+					editor_init_fryhtan( unitPtr, mod_editor.place_fryhtan_combat );
 					break;
 			}
 
@@ -1608,6 +1619,14 @@ static int selected_properties(char* propArray, int* valueArray)
 				propArray[count]    = PROP_VERSION;
 				valueArray[count++] = unitPtr->get_weapon_version();
 				break;
+
+			case UNIT_CLASS_MONSTER:		// 7kmod-gameplay: an invoked Fryhtan
+				if( editor_is_invoked_fryhtan(unitPtr) )
+				{
+					propArray[count]    = PROP_COMBAT;
+					valueArray[count++] = unitPtr->skill.combat_level;
+				}
+				break;
 		}
 
 		return count;
@@ -1767,6 +1786,13 @@ static int get_options(char* optionArray)
 	{
 		case EDITOR_TAB_UNIT:
 		{
+			if( mod_editor.place_entry >= 0 && unit_entry_array[(int)mod_editor.place_entry].type == PLACE_FRYHTAN )
+			{
+				optionArray[count++] = OPTION_FRYHTAN;		// 7kmod-gameplay: an invoked Fryhtan has no race
+				optionArray[count++] = OPTION_FRYHTAN_COMBAT;
+				break;
+			}
+
 			optionArray[count++] = OPTION_RACE;
 
 			int isWorker = mod_editor.place_entry >= 0 &&
@@ -1867,6 +1893,16 @@ static void option_str(int optionId, String& labelStr, String& valueStr)
 			snprintf( valueStr, MAX_STR_LEN+1, "%d x %d", mod_editor.place_brush, mod_editor.place_brush );
 			break;
 
+		case OPTION_FRYHTAN:
+			labelStr = _("Type");
+			valueStr = editor_fryhtan_name( mod_editor.place_fryhtan_unit_id );
+			break;
+
+		case OPTION_FRYHTAN_COMBAT:
+			labelStr = _("Combat");
+			valueStr = mod_editor.place_fryhtan_combat;
+			break;
+
 		case OPTION_MONSTER:
 		{
 			labelStr = _("Fryhtan");
@@ -1942,6 +1978,14 @@ static void change_option(int optionId, int dir)
 
 		case OPTION_BRUSH:
 			mod_editor.place_brush = MAX( 1, MIN(5, mod_editor.place_brush + dir*2) );
+			break;
+
+		case OPTION_FRYHTAN:
+			mod_editor.place_fryhtan_unit_id = editor_next_fryhtan( mod_editor.place_fryhtan_unit_id, dir );
+			break;
+
+		case OPTION_FRYHTAN_COMBAT:
+			mod_editor.place_fryhtan_combat = MAX( 10, MIN(100, mod_editor.place_fryhtan_combat + dir*10) );
 			break;
 	}
 }
@@ -2091,6 +2135,7 @@ static const char* entry_name(PlaceEntry* entryPtr)
 		case PLACE_GENERAL:	return _("General");
 		case PLACE_WORKER:	return _("Worker");
 		case PLACE_UNIT:		return _(unit_res[entryPtr->id]->name);
+		case PLACE_FRYHTAN:	return _("Fryhtan");
 		case PLACE_TOWN:		return _("Town");
 		case PLACE_FIRM:
 		{
