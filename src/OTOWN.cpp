@@ -4137,9 +4137,6 @@ int Town::can_recruit(int raceId)
 	if( !has_linked_own_camp && has_linked_enemy_camp )
 		return 0;
 
-	if( mod_ai_keep_peasants(1) )		// 7kmod-gameplay: experimental 7kmod AI
-		return 0;
-
 	if( recruitable_race_pop(raceId,1)==0 )
 		return 0;
 
@@ -4159,62 +4156,11 @@ int Town::can_recruit(int raceId)
 //---------- End of function Town::can_recruit --------//
 
 
-//-------- Begin of function Town::mod_ai_keep_peasants ------//
-//
-// 7kmod-gameplay: the experimental 7kmod AI (ConfigAdv::ai_type). A town of a
-// kingdom with this AI doesn't give more people if the kingdom would have
-// less than MOD_AI_MIN_PEASANT_PERCENT of peasants without a job among all
-// its people (in its towns, soldiers and units, as all of them eat), so it
-// keeps producing food.
-//
-// The first MOD_AI_FREE_COUNT are always allowed:
-//
-// - workers of the buildings (they live in the town): the first ones with
-//   a job of each town.
-// - people who leave the town (soldiers, trained units): the first ones of
-//   the kingdom outside its towns.
-//
-// <int> leaveTown - 1: the person leaves the town (Town::can_recruit(),
-//                      Town::can_train()), 0: a worker who lives in the town
-//                      (Firm::recruit_worker())
-//
-// return: <int> 1 - the town must keep its peasants
-//
-int Town::mod_ai_keep_peasants(int leaveTown)
-{
-	enum { MOD_AI_MIN_PEASANT_PERCENT = 30,
-			 MOD_AI_FREE_COUNT = 8 };
-
-	if( !nation_recno || !ai_town || !config_adv.is_mod_ai_nation(nation_recno) )
-		return 0;
-
-	Nation* nationPtr = nation_array[nation_recno];
-
-	if( leaveTown )
-	{
-		if( nationPtr->total_human_count < MOD_AI_FREE_COUNT )
-			return 0;
-	}
-	else
-	{
-		if( worker_population() < MOD_AI_FREE_COUNT )
-			return 0;
-	}
-
-	return (nationPtr->total_jobless_population-1) * 100 <
-			 MOD_AI_MIN_PEASANT_PERCENT * nationPtr->all_population();
-}
-//---------- End of function Town::mod_ai_keep_peasants --------//
-
-
 //-------- Begin of function Town::can_train ------//
 //
 int Town::can_train(int raceId)
 {
 	int recruitableCount = jobless_race_pop_array[raceId-1];
-
-	if( mod_ai_keep_peasants(1) )		// 7kmod-gameplay: experimental 7kmod AI
-		return 0;
 
 	return has_linked_own_camp && recruitableCount > 0 &&
 			 nation_array[nation_recno]->cash > TRAIN_SKILL_COST;

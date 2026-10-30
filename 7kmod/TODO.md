@@ -133,27 +133,9 @@ Greater Beings: los poderes del Dragon, el Djini y el Phoenix se probaron en el 
   puntos (los puntos también son su vida). Actualizar `GREATER_BEINGS.md`. Va en
   `7kmod-gameplay`.
 
-- [x] **IA experimental (`ai_type`).** Opción de `config.txt` (no de la interfaz, porque es
-  experimental): `original`, `7kmod` o `mixed` (los reinos de la IA de número par usan
-  la nueva, para comparar en la misma partida). Se guarda en la partida (versión 301) y
-  en el reporte de reinos los que la usan llevan "(7kmod)". La IA original no cambia.
-  - **Regla de comida:** un pueblo de esos reinos no da gente (contratación automática
-    de los edificios, reclutamiento de fuertes, órdenes de la IA, entrenar unidades) si
-    el reino quedaría con menos de **30%** de aldeanos sin empleo entre **toda su gente**
-    (pueblos, soldados en fuertes y Seats, y unidades; `Nation::all_population`, lo
-    mismo que come). Excepciones: los primeros **8** trabajadores de cada pueblo, y las
-    primeras **8** personas del reino fuera de los pueblos
-    (`Town::mod_ai_keep_peasants`, `src/OTOWN.cpp`).
-  - **Primera versión:** contaba solo el 30% dentro de cada pueblo. En la prueba (`mixed`,
-    unos 3 años) mantenía aldeanos, pero no frenaba a los soldados: un soldado sale del
-    pueblo junto con su lugar en la población, así que el porcentaje no baja. Los reinos
-    tenían 30 a 45 personas fuera contra 20 a 30 en sus pueblos, y 2 de los 3 con la IA
-    nueva seguían perdiendo comida (−280 y −420 al año).
-  - **Con la regla del reino** (misma prueba): los 3 reinos con la IA nueva quedaron
-    cerca del equilibrio (−120, −20 y +140 al año, con unos 5,000 a 5,800 de comida),
-    contra −640, −390 y +50 de los de la IA original (uno se quedó con 0 aldeanos).
-    Con 30% todavía pierde un poco: hace falta 33% para no perder comida.
-  - Va en `7kmod-gameplay`.
+- **IA experimental:** los experimentos con la IA general (la opción `ai_type` y la regla
+  de aldeanos sin empleo) están en la rama `7k-mod-IA` (ejecutable `7kaa-ia.exe`), que
+  incluye gameplay y pathing. Ver su `TODO-ia.md`.
 
 - [x] **La IA invoca Fryhtans y los usa como armas de asedio.** Antes la IA nunca usaba
   el botón de invocar Fryhtan del Seat of Power (`FirmBase::invoke_fryhtan`); solo

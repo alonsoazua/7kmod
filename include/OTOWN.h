@@ -270,7 +270,6 @@ public:
 	int  	form_new_nation();
 
 	int	can_recruit(int raceId);
-	int	mod_ai_keep_peasants(int leaveTown);		// 7kmod-gameplay
 	int	can_train(int raceId);
 	bool   can_migrate(int destTownRecno, bool migrateNow=false, int raceId=0);		 // if not called by Town::migrate, don't set migrateNow to TRUE
 	void	move_pop(Town* destTown, int raceId, int hasJob);

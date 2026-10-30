@@ -331,8 +331,6 @@ void ConfigAdv::reset()
 
 	wall_building_allowed = 0;
 
-	ai_type = AI_TYPE_ORIGINAL;		// 7kmod-gameplay
-
 	// after applying defaults, checksum is not required
 	checksum = 0;
 	flags &= ~FLAG_CKSUM_REQ;
@@ -346,19 +344,7 @@ void ConfigAdv::reset()
 // Non-gameplay settings will not require a checksum.
 int ConfigAdv::set(char *name, char *value)
 {
-	if( !strcmp(name, "ai_type") )		// 7kmod-gameplay, experimental
-	{
-		if( !strcmp(value, "original") )
-			ai_type = AI_TYPE_ORIGINAL;
-		else if( !strcmp(value, "7kmod") )
-			ai_type = AI_TYPE_7KMOD;
-		else if( !strcmp(value, "mixed") )
-			ai_type = AI_TYPE_MIXED;
-		else
-			return 0;
-		update_check_sum(name, value);
-	}
-	else if( !strcmp(name, "bindkey") )
+	if( !strcmp(name, "bindkey") )
 	{
 		KeyEventMap event;
 		char *key;
@@ -716,25 +702,3 @@ static int read_string(const char *in, char **out)
 	strcpy(*out, in);
 	return 1;
 }
-
-
-//--------- Begin of function ConfigAdv::is_mod_ai_nation -------------//
-//
-// 7kmod-gameplay: whether an AI kingdom uses the experimental 7kmod AI
-// (ai_type): all of them, none of them, or with "mixed" the ones of even
-// recno (with the player as kingdom 1, half of the AI kingdoms).
-//
-int ConfigAdv::is_mod_ai_nation(int nationRecno)
-{
-	switch( ai_type )
-	{
-		case AI_TYPE_7KMOD:
-			return 1;
-
-		case AI_TYPE_MIXED:
-			return nationRecno % 2 == 0;
-	}
-
-	return 0;
-}
-//--------- End of function ConfigAdv::is_mod_ai_nation ---------------//
