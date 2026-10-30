@@ -2065,7 +2065,7 @@ void Firm::recruit_worker()
 		if( townPtr->jobless_population == 0 )
 			continue;
 
-		if( townPtr->mod_ai_keep_peasants() )		// 7kmod-gameplay: experimental 7kmod AI
+		if( townPtr->mod_ai_keep_peasants(0) )		// 7kmod-gameplay: experimental 7kmod AI
 			continue;
 
 		//---- if nation of the town is not hositle to this firm's nation ---//

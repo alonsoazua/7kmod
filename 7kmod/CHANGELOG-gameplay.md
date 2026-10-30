@@ -47,9 +47,11 @@ Basada en **7kmod 0.2.0**, que agrega el editor de escenarios (ver `CHANGELOG.md
 - **IA experimental (`ai_type` en `config.txt`):** `original` (por defecto), `7kmod` o
   `mixed` (la mitad de los reinos de la IA con cada una, para comparar). Los reinos con
   la IA experimental llevan "(7kmod)" en el reporte de reinos. Por ahora tiene una regla:
-  sus pueblos no dan gente si les quedaría menos de 30% de aldeanos sin empleo (los
-  primeros 8 habitantes con oficio de cada pueblo siempre se pueden reclutar), para que
-  no se queden sin comida (`Town::mod_ai_keep_peasants`). Se guarda en la partida.
+  sus pueblos no dan gente (trabajadores, soldados, unidades) si el reino quedaría con
+  menos de 30% de aldeanos sin empleo entre toda su gente: pueblos, soldados y unidades,
+  porque todos comen. Siempre se permiten los primeros 8 trabajadores de cada pueblo y
+  las primeras 8 personas del reino fuera de los pueblos (`Town::mod_ai_keep_peasants`).
+  Se guarda en la partida.
 - **La IA invoca Fryhtans** en sus Seats of Power y los usa como armas de asedio: entran
   a sus fuertes y salen con sus ataques. Invoca solo si su Greater Being ya está en el
   mapa, si le quedan 100 puntos después de pagar, si está en guerra y si su comida no va
