@@ -43,7 +43,7 @@ public:
 	enum {
 		LOCALE_LEN = 40,
 	};
-	enum {			// 7kmod-gameplay: ai_type, experimental
+	enum {			// 7k-mod-IA: ai_type, experimental
 		AI_TYPE_ORIGINAL,
 		AI_TYPE_7KMOD,
 		AI_TYPE_MIXED,		// the AI kingdoms of even recno use the 7kmod AI
@@ -53,7 +53,7 @@ public:
 	uint32_t		flags;
 
 	// ai settings
-	char			ai_type;			// 7kmod-gameplay: AI_TYPE_???, experimental, saved in the game (GameFile::write_file_3)
+	char			ai_type;			// 7k-mod-IA: AI_TYPE_???, experimental, saved in the game (GameFile::write_file_3)
 
 	// firm settings
 	char			firm_ai_enable_think_spy_capture;
@@ -148,7 +148,7 @@ public:
 	void			reset();
 	int			set(char *name, char *value);
 
-	int			is_mod_ai_nation(int nationRecno);		// 7kmod-gameplay
+	int			is_mod_ai_nation(int nationRecno);		// 7k-mod-IA
 
 	//--------- file functions -----------//
 

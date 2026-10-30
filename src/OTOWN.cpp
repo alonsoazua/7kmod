@@ -4137,7 +4137,7 @@ int Town::can_recruit(int raceId)
 	if( !has_linked_own_camp && has_linked_enemy_camp )
 		return 0;
 
-	if( mod_ai_keep_peasants(1) )		// 7kmod-gameplay: experimental 7kmod AI
+	if( mod_ai_keep_peasants(1) )		// 7k-mod-IA: experimental 7kmod AI
 		return 0;
 
 	if( recruitable_race_pop(raceId,1)==0 )
@@ -4161,7 +4161,7 @@ int Town::can_recruit(int raceId)
 
 //-------- Begin of function Town::mod_ai_keep_peasants ------//
 //
-// 7kmod-gameplay: the experimental 7kmod AI (ConfigAdv::ai_type). A town of a
+// 7k-mod-IA: the experimental 7kmod AI (ConfigAdv::ai_type). A town of a
 // kingdom with this AI doesn't give more people if the kingdom would have
 // less than MOD_AI_MIN_PEASANT_PERCENT of peasants without a job among all
 // its people (in its towns, soldiers and units, as all of them eat), so it
@@ -4213,7 +4213,7 @@ int Town::can_train(int raceId)
 {
 	int recruitableCount = jobless_race_pop_array[raceId-1];
 
-	if( mod_ai_keep_peasants(1) )		// 7kmod-gameplay: experimental 7kmod AI
+	if( mod_ai_keep_peasants(1) )		// 7k-mod-IA: experimental 7kmod AI
 		return 0;
 
 	return has_linked_own_camp && recruitableCount > 0 &&

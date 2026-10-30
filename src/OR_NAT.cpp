@@ -436,7 +436,7 @@ static void put_nation_rec(int recNo, int x, int y, int refreshFlag)
 		iconArea->race_id = unit_res[kingUnitId]->race_id;
 	}
 
-	//--- 7kmod-gameplay: with the experimental ai_type, the AI kingdoms with the 7kmod AI are marked ---//
+	//--- 7k-mod-IA: with the experimental ai_type, the AI kingdoms with the 7kmod AI are marked ---//
 
 	if( config_adv.ai_type != ConfigAdv::AI_TYPE_ORIGINAL && nationPtr->is_ai() &&
 		 config_adv.is_mod_ai_nation(nationRecno) )

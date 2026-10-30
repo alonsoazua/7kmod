@@ -47,9 +47,18 @@
 
 #define MOD_PATHING_VERSION		"0.7.1"
 
+
+//------- version of the experimental 7k-mod-IA branch --------//
+//
+// Based on 7kmod-pathing, with changes of the AI.
+
+#define MOD_IA_VERSION			"0.1.0"
+
 //------- the text displayed on the main menu --------//
 
-#if defined(MOD_PATHING_VERSION)
+#if defined(MOD_IA_VERSION)
+	#define MOD_VERSION_TEXT		"7k-mod-IA " MOD_IA_VERSION " (pathing " MOD_PATHING_VERSION ", gameplay " MOD_GAMEPLAY_VERSION ", 7kmod " MOD_7KMOD_VERSION ")"
+#elif defined(MOD_PATHING_VERSION)
 	#define MOD_VERSION_TEXT		"7kmod-pathing " MOD_PATHING_VERSION " (gameplay " MOD_GAMEPLAY_VERSION ", 7kmod " MOD_7KMOD_VERSION ")"
 #elif defined(MOD_GAMEPLAY_VERSION)
 	#define MOD_VERSION_TEXT		"7kmod-gameplay " MOD_GAMEPLAY_VERSION " (7kmod " MOD_7KMOD_VERSION ")"
