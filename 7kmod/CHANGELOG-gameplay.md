@@ -44,6 +44,12 @@ Basada en **7kmod 0.2.0**, que agrega el editor de escenarios (ver `CHANGELOG.md
   y todo lo de los invocados, sin gastar puntos de oración. Sobre un fuerte del reino
   entra como soldado. Al seleccionarlo se cambia su Combat. Necesita un reino; los
   Fryhtans salvajes siguen saliendo de las guaridas. Código en `ModEditorFryhtan.cpp`.
+- **IA experimental (`ai_type` en `config.txt`):** `original` (por defecto), `7kmod` o
+  `mixed` (la mitad de los reinos de la IA con cada una, para comparar). Los reinos con
+  la IA experimental llevan "(7kmod)" en el reporte de reinos. Por ahora tiene una regla:
+  sus pueblos no dan gente si les quedaría menos de 30% de aldeanos sin empleo (los
+  primeros 8 habitantes con oficio de cada pueblo siempre se pueden reclutar), para que
+  no se queden sin comida (`Town::mod_ai_keep_peasants`). Se guarda en la partida.
 - **La IA invoca Fryhtans** en sus Seats of Power y los usa como armas de asedio: entran
   a sus fuertes y salen con sus ataques. Invoca solo si su Greater Being ya está en el
   mapa, si le quedan 100 puntos después de pagar, si está en guerra y si su comida no va
@@ -128,9 +134,9 @@ Basada en **7kmod 0.2.0**, que agrega el editor de escenarios (ver `CHANGELOG.md
 - **Versión en el menú principal:** se muestra la versión de esta rama y la de `7kmod` en la que está basada, por ejemplo "7kmod-gameplay 0.1.0 (7kmod 0.2.0)". La versión está en `include/ModVersion.h`.
 
 ### Compatibilidad
-- **Partidas guardadas:** versión 299 (296 agrega Building Repair, 297 Fryhtan Slayers, 298 el espionaje: fechas de los accidentes, progreso de la recolección y reportes de inteligencia, 299 la lista de accidentes causados por espías y 300 la espera de los espías después de un accidente). Las partidas de la versión 2.00 y posteriores se siguen reconociendo como del mismo formato base aunque la versión llegue a 300. Las partidas anteriores se siguen cargando (las tecnologías nuevas quedan sin investigar y sin reportes de inteligencia). Los Fryhtans de un reino se guardan como unidades normales.
+- **Partidas guardadas:** versión 301 (296 agrega Building Repair, 297 Fryhtan Slayers, 298 el espionaje: fechas de los accidentes, progreso de la recolección y reportes de inteligencia, 299 la lista de accidentes causados por espías y 300 la espera de los espías después de un accidente y 301 la opción `ai_type`). Las partidas de la versión 2.00 y posteriores se siguen reconociendo como del mismo formato base aunque la versión llegue a 301. Las partidas anteriores a la 301 se cargan con la IA original. Las partidas anteriores se siguen cargando (las tecnologías nuevas quedan sin investigar y sin reportes de inteligencia). Los Fryhtans de un reino se guardan como unidades normales.
 - **Multijugador:** invocar un Fryhtan usa el mensaje de red nuevo `MSG_F_BASE_INVOKE_FRYHTAN`. Todos los jugadores necesitan el mismo ejecutable.
-- La IA no invoca Fryhtans.
+- `ai_type` se compara entre los jugadores en multijugador (marca Igual), como las demás opciones de juego de `config.txt`.
 - **Balance de razas:** no cambia el formato de las partidas guardadas; al cargar una partida se aplican las reglas nuevas. En multijugador, todos necesitan el mismo ejecutable.
 
 ---

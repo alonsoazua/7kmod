@@ -469,6 +469,12 @@ int GameFile::write_file_3(File* filePtr)
 	if( !mod_spy.write_file(filePtr) )
 		return 0;
 
+	// ##### 7kmod-gameplay: GAME_VERSION >= GAME_VERSION_7KMOD_AI_TYPE ##### //
+
+	write_book_mark( filePtr, BOOK_MARK+292 );
+
+	filePtr->file_put_short( config_adv.ai_type );
+
 	return 1;
 }
 //---------- End of function GameFile::write_file_3 -------//
@@ -780,6 +786,19 @@ int GameFile::read_file_3(File* filePtr)
 	if( !mod_spy.read_file(filePtr, game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_SABOTAGE_LOG,
 								  game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_SPY_COOLDOWN) )
 		return 0;
+
+	//--- 7kmod-gameplay: the type of AI (experimental); older games use the original AI ---//
+
+	if( game_file_array.load_file_game_version < GAME_VERSION_7KMOD_AI_TYPE )
+	{
+		config_adv.ai_type = ConfigAdv::AI_TYPE_ORIGINAL;
+		return 1;
+	}
+
+	if( !read_book_mark( filePtr, BOOK_MARK+292 ) )
+		return 0;
+
+	config_adv.ai_type = (char) filePtr->file_get_short();
 
 	return 1;
 }
