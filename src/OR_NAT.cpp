@@ -46,7 +46,6 @@
 #include <OUNITRES.h>
 #include <ORACERES.h>
 #include <OHELP.h>
-#include <ConfigAdv.h>
 #include "gettext.h"
 
 //------------- Define coordinations -----------//
@@ -436,18 +435,7 @@ static void put_nation_rec(int recNo, int x, int y, int refreshFlag)
 		iconArea->race_id = unit_res[kingUnitId]->race_id;
 	}
 
-	//--- 7kmod-gameplay: with the experimental ai_type, the AI kingdoms with the 7kmod AI are marked ---//
-
-	if( config_adv.ai_type != ConfigAdv::AI_TYPE_ORIGINAL && nationPtr->is_ai() &&
-		 config_adv.is_mod_ai_nation(nationRecno) )
-	{
-		String nameStr( nationPtr->nation_name() );
-		nameStr += " (7kmod)";
-		font_san.put( x+46 , y, nameStr, 0, x+215 );
-	}
-	else
-		font_san.put( x+46 , y, nationPtr->nation_name(), 0, x+215 );
-
+	font_san.put( x+46 , y, nationPtr->nation_name(), 0, x+215 );
 	font_san.put( x+220, y, misc.format((int) nationPtr->reputation) );
 
 	//------- display relation parameters --------//
