@@ -139,15 +139,20 @@ Greater Beings: los poderes del Dragon, el Djini y el Phoenix se probaron en el 
   en el reporte de reinos los que la usan llevan "(7kmod)". La IA original no cambia.
   - **Regla de comida:** un pueblo de esos reinos no da gente (contratación automática
     de los edificios, reclutamiento de fuertes, órdenes de la IA, entrenar unidades) si
-    después le quedaría menos de **30%** de aldeanos sin empleo. Los primeros **8**
-    habitantes con oficio de cada pueblo siempre se pueden reclutar
+    el reino quedaría con menos de **30%** de aldeanos sin empleo entre **toda su gente**
+    (pueblos, soldados en fuertes y Seats, y unidades; `Nation::all_population`, lo
+    mismo que come). Excepciones: los primeros **8** trabajadores de cada pueblo, y las
+    primeras **8** personas del reino fuera de los pueblos
     (`Town::mod_ai_keep_peasants`, `src/OTOWN.cpp`).
-  - **Primera prueba** (`mixed`, unos 3 años con el jugador quieto): la regla mantiene
-    aldeanos en los pueblos, pero el mayor gasto de comida son los soldados de los
-    fuertes y las unidades fuera, que ya no cuentan en el pueblo: varios reinos tenían
-    más gente fuera (30 a 45) que en sus pueblos (20 a 30). Como los soldados salen del
-    pueblo, la regla no los limita. Por definir: si la regla debe contar a toda la gente
-    del reino (pueblos, soldados y unidades), o limitar los soldados por separado.
+  - **Primera versión:** contaba solo el 30% dentro de cada pueblo. En la prueba (`mixed`,
+    unos 3 años) mantenía aldeanos, pero no frenaba a los soldados: un soldado sale del
+    pueblo junto con su lugar en la población, así que el porcentaje no baja. Los reinos
+    tenían 30 a 45 personas fuera contra 20 a 30 en sus pueblos, y 2 de los 3 con la IA
+    nueva seguían perdiendo comida (−280 y −420 al año).
+  - **Con la regla del reino** (misma prueba): los 3 reinos con la IA nueva quedaron
+    cerca del equilibrio (−120, −20 y +140 al año, con unos 5,000 a 5,800 de comida),
+    contra −640, −390 y +50 de los de la IA original (uno se quedó con 0 aldeanos).
+    Con 30% todavía pierde un poco: hace falta 33% para no perder comida.
   - Va en `7kmod-gameplay`.
 
 - [x] **La IA invoca Fryhtans y los usa como armas de asedio.** Antes la IA nunca usaba
