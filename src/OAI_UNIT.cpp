@@ -407,6 +407,9 @@ int Nation::train_unit(int skillId, int raceId, short destX, short destY, int& t
 		if( raceId && townPtr->jobless_race_pop_array[raceId-1] <= 0 )
 			continue;
 
+		if( townPtr->mod_ai_keep_peasants(1) )		// 7k-mod-IA: experimental 7kmod AI, keep the peasants
+			continue;
+
 		//--------------------------------------//
 
 		curDist = misc.points_distance(townPtr->center_x, townPtr->center_y, destX, destY);

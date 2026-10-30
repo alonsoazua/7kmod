@@ -2092,6 +2092,9 @@ int Firm::pull_town_people(int townRecno, char remoteAction, int raceId, int for
 	if( worker_count == MAX_WORKER )		// this can happen in a multiplayer game as Town::draw_detect_link_line() still have the old worker_count and thus allow this function being called.
 		return 0;
 
+	if( firm_id == FIRM_CAMP )		// 7k-mod-IA: villagers don't go into Forts, soldiers must be trained (Town::recruit() with SKILL_LEADING)
+		return 0;
+
 	err_when( worker_count > MAX_WORKER );
 	err_when( !worker_array );    // this function shouldn't be called if this firm does not need worker
 

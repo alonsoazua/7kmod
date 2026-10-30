@@ -759,6 +759,11 @@ int Unit::firm_can_assign(short firmRecno)
 			switch( firmPtr->firm_id )
 			{
 			case FIRM_CAMP:
+				//--- 7k-mod-IA: only soldiers (leadership) and spies go into Forts; villagers and workers must be trained first ---//
+
+				if( rank_id == RANK_SOLDIER && skill.skill_id != SKILL_LEADING && !spy_recno )
+					return 0;
+
 				return rank_id == RANK_SOLDIER ? 1 : 2;
 
 			case FIRM_BASE:

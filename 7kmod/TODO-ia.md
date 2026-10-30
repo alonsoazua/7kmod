@@ -41,6 +41,29 @@ Rama experimental para la IA de los reinos de la computadora (ejecutable
   - Por definir: el porcentaje (30%, 33% o según la comida) después de probar en
     partida.
 
+- [x] **Los soldados se entrenan, ya no se reclutan.** Para todos (jugador y las dos
+  IA): solo entran a un fuerte las personas con liderazgo y los espías; los aldeanos y
+  los trabajadores con otro oficio tienen que entrenarse en Leadership ($30, 5 días).
+  - **Jugador:** mandar una unidad sin liderazgo a un fuerte no hace nada
+    (`Unit::firm_can_assign`); el clic en el enlace pueblo-fuerte ya no jala gente
+    (`Firm::pull_town_people` regresa 0 para los fuertes); Recruit en el modo de fuerte
+    queda desactivado (`Town::fort_recruit_can_pull`), Train sigue. Recruit normal del
+    pueblo sigue.
+  - **Excepciones:** espías (para meterse en fuertes enemigos), generales y reyes,
+    armas, Fryhtans y el editor.
+  - **IA:** `FirmCamp::ai_recruit` ya no jala aldeanos, pide la orden de llevar
+    soldados al fuerte; `Nation::ai_assign_worker` para un fuerte toma soldados que le
+    sobren a otro fuerte o entrena uno (`train_unit`, con `ai_should_spend`), y ya no
+    saca aldeanos (`recruit_jobless_worker`). `train_unit` respeta la regla de aldeanos
+    de la IA experimental.
+  - **Prueba** (`mixed`, mapa de prueba, unos 10 años con el jugador quieto): la IA
+    llena sus fuertes entrenando. Al final: reinos con la IA experimental 7 fuertes y 45
+    soldados, 5 y 22, 8 y 16; con la original 6 y 23, 10 y 43. Comida de los
+    experimentales 9,600, 5,000 y 5,800 contra 2,900 y 1,700 de los originales. El
+    jugador quieto ya no fue derrotado en ese tiempo (antes, a los 3 años).
+  - Por definir: si la IA entrena lo bastante rápido (uno a la vez por pueblo, 5 días
+    cada uno) y si el costo le pesa.
+
 ---
 
 ## Análisis: por qué la IA original se queda sin comida

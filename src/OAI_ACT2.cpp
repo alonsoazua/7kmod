@@ -306,7 +306,7 @@ int Nation::ai_assign_worker(ActionNode* actionNode)
 
 	//-------- recruit a unit ----------//
 
-	if( !unitPtr )
+	if( !unitPtr && firmPtr->firm_id != FIRM_CAMP )		// 7k-mod-IA: villagers don't go into Forts, soldiers are trained above
 	{
 		unitRecno = recruit_jobless_worker(firmPtr, actionNode->action_para2);
 

@@ -37,6 +37,23 @@ Versión **0.1.0**, basada en **7kmod-pathing 0.7.1** (gameplay 0.1.0, 7kmod 0.2
   (`Town::mod_ai_keep_peasants`). Es para que la IA no se quede sin comida: solo los
   aldeanos sin empleo producen (30 al año) y todos comen (10).
 
+### Cambiado
+- **Los soldados se entrenan, ya no se reclutan** (para todos: jugador y todas las IA).
+  - Solo entran a un fuerte las personas con oficio de liderazgo (soldados, generales,
+    reyes) y los espías. Los aldeanos y los trabajadores con otro oficio no entran: hay
+    que entrenarlos en Leadership en un pueblo (Train, $30 y 5 días)
+    (`Unit::firm_can_assign`).
+  - Los fuertes ya no jalan aldeanos de los pueblos: ni con el clic en el enlace
+    pueblo-fuerte ni con la IA (`Firm::pull_town_people`).
+  - En el modo de reclutar desde un fuerte, **Recruit** queda desactivado; **Train**
+    sigue funcionando y el soldado entrenado entra solo al fuerte. Recruit en el modo
+    normal del pueblo sigue sacando aldeanos.
+  - Las armas, los Fryhtans y lo que se coloca con el editor no cambian.
+  - **La IA** llena sus fuertes entrenando soldados en sus pueblos (la orden de llevar
+    trabajadores a un fuerte ya no saca aldeanos: entrena, `Nation::ai_assign_worker`,
+    `FirmCamp::ai_recruit`). Entrena uno a la vez por pueblo, y respeta la regla de
+    aldeanos de la IA experimental.
+
 ### Compatibilidad
 - **Partidas guardadas:** versión 301 (`GAME_VERSION_7KMOD_AI_TYPE`), que guarda
   `ai_type`. Carga las partidas de gameplay y pathing (versión 300 o anterior) con la

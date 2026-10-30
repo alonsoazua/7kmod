@@ -422,58 +422,8 @@ int FirmCamp::ai_recruit(int recruitCombatLevel)
 
 	recruitCount = MIN( recruitCount, MAX_WORKER-worker_count );
 
-	//--- first try to recruit soldiers directly from a linked village ---//
-
-	int 	majorityRace = majority_race();
-	int	raceId;
-	int	loopCount=0;
-	Town* townPtr;
-
-	for( int i=0 ; i<linked_town_count ; i++ )
-	{
-		townPtr = town_array[ linked_town_array[i] ];
-
-		if( townPtr->nation_recno != nation_recno || !townPtr->jobless_population )
-			continue;
-
-		//-- recruit majority race first, but will also consider other races --//
-
-		raceId = MAX( 1, majorityRace );
-
-		for( int j=0 ; j<MAX_RACE ; j++ )
-		{
-			if( ++raceId > MAX_RACE )
-				raceId = 1;
-
-			//--- if the loyalty is too low, reward before recruiting ---//
-
-			if( townPtr->jobless_race_pop_array[raceId-1] > 0 &&
-				 townPtr->race_loyalty_array[raceId-1] < 40 )
-			{
-				if( townPtr->accumulated_reward_penalty > 30 )		// if the reward penalty is too high, don't reward
-					break;
-
-				if( nation_array[nation_recno]->cash <= 0 )		// must have cash to reward
-					break;
-
-				townPtr->reward(COMMAND_AI);
-			}
-
-			//---- recruit the soldiers we needed ----//
-
-			while( townPtr->can_recruit(raceId) )
-			{
-				err_when( ++loopCount > 1000 );
-
-				pull_town_people(townPtr->town_recno, COMMAND_AI, raceId, 1);			// last 1-force pulling people from the town to the firm
-
-				if( --recruitCount == 0 )
-					return 1;
-			}
-		}
-	}
-
-	//------ next, try to recruit from remote villages -----//
+	//--- 7k-mod-IA: soldiers aren't recruited from the villages any more, they are
+	//    trained (Nation::ai_assign_worker() trains them for Forts) ---//
 
 	if( recruitCount > 0 )
 		nation_array[nation_recno]->add_action(loc_x1, loc_y1, -1, -1, ACTION_AI_ASSIGN_WORKER, FIRM_CAMP, recruitCount);

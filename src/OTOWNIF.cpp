@@ -635,6 +635,8 @@ int Town::fort_recruit_valid()
 //
 int Town::fort_recruit_can_pull(int raceId)
 {
+	return 0;		// 7k-mod-IA: villagers don't go into Forts, Recruit is disabled in fort mode (soldiers must be trained)
+
 	if( !fort_recruit_valid() || !can_recruit(raceId) )
 		return 0;
 
