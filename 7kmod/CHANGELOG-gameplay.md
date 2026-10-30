@@ -44,6 +44,13 @@ Basada en **7kmod 0.2.0**, que agrega el editor de escenarios (ver `CHANGELOG.md
   y todo lo de los invocados, sin gastar puntos de oración. Sobre un fuerte del reino
   entra como soldado. Al seleccionarlo se cambia su Combat. Necesita un reino; los
   Fryhtans salvajes siguen saliendo de las guaridas. Código en `ModEditorFryhtan.cpp`.
+- **La IA invoca Fryhtans** en sus Seats of Power y los usa como armas de asedio: entran
+  a sus fuertes y salen con sus ataques. Invoca solo si su Greater Being ya está en el
+  mapa, si le quedan 100 puntos después de pagar, si está en guerra y si su comida no va
+  en déficit; cada Seat lo revisa una vez cada 90 días, y como máximo tiene 20 Fryhtans
+  por reino (números de prueba). Si no hay lugar en sus fuertes, se quedan junto al Seat.
+  Además, los Fryhtans de un reino de la IA ya no atacan lo que tengan cerca como los
+  salvajes (`FirmBase::think_invoke_fryhtan`, `Unit::think_fryhtan_action`).
 - **Ícono con el color del reino en los Fryhtans invocados.** Los sprites de los
   Fryhtans no tienen pixeles del color del reino, así que uno de un reino se veía igual
   que uno salvaje. Ahora llevan, donde van los íconos de rango, un cuadro de 10×10 del

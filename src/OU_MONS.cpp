@@ -114,6 +114,16 @@ char* UnitMonster::unit_name(int withTitle)
 //
 void UnitMonster::process_ai()
 {
+	//--- 7kmod-gameplay: a Fryhtan of an AI kingdom (invoked in a Seat of Power) is handled by
+	//    the AI of the kingdom, like a siege weapon (Unit::think_fryhtan_action()), instead of
+	//    attacking anything around as the wild ones ---//
+
+	if( nation_recno )
+	{
+		Unit::process_ai();
+		return;
+	}
+
 	//----- when it is idle -------//
 
 	if( !is_visible() || !is_ai_all_stop() )

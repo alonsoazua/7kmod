@@ -193,6 +193,11 @@ void Unit::process_ai()
 				think_weapon_action();	//-- ships AI are called in UnitMarine --//
 			}
 		}
+		else if( unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER )		// 7kmod-gameplay: Fryhtans invoked by the kingdom
+		{
+			if( info.game_date%15 == sprite_recno%15 )
+				think_fryhtan_action();
+		}
 		else if( race_id )
 		{
 			//--- if previous attempts for new action failed, don't call think_normal_human_action() so frequently then ---//
@@ -785,6 +790,20 @@ int Unit::think_weapon_action()
 	return 0;
 }
 //---------- End of function Unit::think_weapon_action --------//
+
+
+//--------- Begin of function Unit::think_fryhtan_action --------//
+//
+// 7kmod-gameplay: a Fryhtan of the kingdom (invoked in a Seat of Power) is
+// handled like a siege weapon: it goes into a Fort with room, and goes out
+// with the attacks of the Fort. Unlike weapons, it doesn't make the AI build
+// a new Fort; without room it stays where it is (next to the Seat of Power).
+//
+int Unit::think_fryhtan_action()
+{
+	return think_assign_weapon_to_camp();
+}
+//---------- End of function Unit::think_fryhtan_action --------//
 
 
 //--------- Begin of function Unit::think_assign_weapon_to_camp --------//

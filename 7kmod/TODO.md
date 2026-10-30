@@ -133,30 +133,38 @@ Greater Beings: los poderes del Dragon, el Djini y el Phoenix se probaron en el 
   puntos (los puntos también son su vida). Actualizar `GREATER_BEINGS.md`. Va en
   `7kmod-gameplay`.
 
-- [ ] **La IA invoca Fryhtans y los usa como armas de asedio.** Hoy la IA nunca usa el
-  botón de invocar Fryhtan del Seat of Power (`FirmBase::invoke_fryhtan`); solo invoca a
-  su Greater Being cuando los puntos de oración llegan al máximo, 400
-  (`FirmBase::think_invoke_god`, `src/OF_BASE2.cpp`). Y si tuviera un Fryhtan, no haría
-  nada con él: en `Unit::think_action` (`src/OUNITAI.cpp`) solo piensan los reyes, los
-  generales, las armas (`think_weapon_action`, cada 15 días) y las personas.
-  - **Propuesta de regla para invocar** (en el `think` del Seat of Power de la IA):
+- [x] **La IA invoca Fryhtans y los usa como armas de asedio.** Antes la IA nunca usaba
+  el botón de invocar Fryhtan del Seat of Power (`FirmBase::invoke_fryhtan`); solo
+  invocaba a su Greater Being cuando los puntos de oración llegan al máximo, 400
+  (`FirmBase::think_invoke_god`, `src/OF_BASE2.cpp`). Y un Fryhtan de un reino de la IA
+  (por ejemplo, puesto en el editor) atacaba lo que tuviera cerca, como los salvajes
+  (`UnitMonster::process_ai`, `random_attack`).
+  - **Regla para invocar** (`FirmBase::think_invoke_fryhtan`, `src/OF_BASE2.cpp`; los
+    números son constantes al inicio de la función, para ajustarlos al probar):
     - **El Greater Being va primero:** solo invoca si su ser ya está en el mapa
-      (`god_unit_recno`). Antes de eso guarda los puntos para el ser, como hoy.
-    - **Reserva:** solo si le quedan al menos 100 puntos después de pagar el Fryhtan
+      (`god_unit_recno`). Antes de eso guarda los puntos para el ser, como antes.
+    - **Reserva:** solo si le quedan al menos **100** puntos después de pagar el Fryhtan
       (para que el ser siga vivo y pueda usar su poder).
-    - **Frecuencia:** lo revisa cada 30 días, y cada Seat espera al menos 90 días entre
-      una invocación y la siguiente. Con eso son pocos, como las armas de asedio.
-    - **Tope:** como máximo un Fryhtan por fuerte de la IA y 8 en total por reino.
-    - **Comida:** solo si su comida no va en déficit, porque cada Fryhtan come de 20 a
-      50 al año.
-    - **Guerra:** solo si está en guerra o tiene enemigos (si no, los puntos se gastan
-      sin uso).
-  - **Manejo, como un arma de asedio** (`think_weapon_action`): el Fryhtan busca un
-    fuerte de su reino con lugar (`think_assign_weapon_to_camp`; en gameplay los fuertes
-    ya aceptan Fryhtans), prefiriendo los cercanos al enemigo, y sale con los ataques
-    del fuerte. Si no hay lugar, se queda cerca del Seat como defensa.
-  - **Por definir:** los números (reserva, días, tope) y si cambian con la dificultad
-    de la IA.
+    - **Frecuencia:** cada Seat lo revisa una vez cada **90 días** (así invoca como mucho
+      uno en ese tiempo).
+    - **Tope:** **20 Fryhtans por reino** (en el mapa y en sus fuertes), para probar. Se
+      quitó el tope de uno por fuerte: el límite es el lugar en los fuertes.
+    - **Comida:** solo si tiene comida y no va en déficit en el último año
+      (`food_change_365days`), porque cada Fryhtan come de 20 a 50 al año.
+    - **Guerra:** solo si está en guerra (relación hostil) con algún reino.
+  - **Manejo, como un arma de asedio** (`Unit::think_fryhtan_action`,
+    `src/OUNITAI.cpp`, cada 15 días): busca el fuerte de su reino con lugar más
+    conveniente, igual que las armas (`think_assign_weapon_to_camp`: cercanía y lugares
+    libres). En el fuerte cuenta como soldado, así que sale con los ataques y patrullas
+    del fuerte (`patrol_all_soldier`). A diferencia de las armas, no hace que la IA
+    construya un fuerte nuevo: si no hay lugar, se queda junto al Seat como defensa.
+  - Los Fryhtans de un reino de la IA ya no atacan lo que tengan cerca: los maneja la IA
+    del reino (`UnitMonster::process_ai` llama a `Unit::process_ai`).
+  - Probado en el editor (Seat con general y fuerte de un reino de la IA, con los puntos
+    llenos): invoca, respeta el tope de 20 y los Fryhtans entran al fuerte.
+  - **Por definir:** ajustar los números después de probar en partida, y si cambian con
+    la dificultad de la IA. Que prefiera los fuertes cerca del enemigo (hoy elige como
+    con las armas).
   - Va en `7kmod-gameplay`.
 
 - [x] **Ícono con el color del reino en los Fryhtans invocados.** Hoy un Fryhtan de un

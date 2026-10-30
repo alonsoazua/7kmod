@@ -416,6 +416,7 @@ public:
 			  int  think_leader_action();
 			  int  think_normal_human_action();
 			  int  think_weapon_action();
+			  int  think_fryhtan_action();		// 7kmod-gameplay
 			  int  think_ship_action();
 			  int  think_assign_weapon_to_camp();
 			  int  think_build_camp();
