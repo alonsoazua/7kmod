@@ -113,6 +113,7 @@ private:
 
 	void 		think_assign_unit();
 	void 		think_invoke_god();
+	void 		think_invoke_fryhtan();		// 7kmod-gameplay
 };
 #pragma pack()
 
