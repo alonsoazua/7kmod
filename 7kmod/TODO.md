@@ -133,6 +133,23 @@ Greater Beings: los poderes del Dragon, el Djini y el Phoenix se probaron en el 
   puntos (los puntos también son su vida). Actualizar `GREATER_BEINGS.md`. Va en
   `7kmod-gameplay`.
 
+- [x] **IA experimental (`ai_type`).** Opción de `config.txt` (no de la interfaz, porque es
+  experimental): `original`, `7kmod` o `mixed` (los reinos de la IA de número par usan
+  la nueva, para comparar en la misma partida). Se guarda en la partida (versión 301) y
+  en el reporte de reinos los que la usan llevan "(7kmod)". La IA original no cambia.
+  - **Regla de comida:** un pueblo de esos reinos no da gente (contratación automática
+    de los edificios, reclutamiento de fuertes, órdenes de la IA, entrenar unidades) si
+    después le quedaría menos de **30%** de aldeanos sin empleo. Los primeros **8**
+    habitantes con oficio de cada pueblo siempre se pueden reclutar
+    (`Town::mod_ai_keep_peasants`, `src/OTOWN.cpp`).
+  - **Primera prueba** (`mixed`, unos 3 años con el jugador quieto): la regla mantiene
+    aldeanos en los pueblos, pero el mayor gasto de comida son los soldados de los
+    fuertes y las unidades fuera, que ya no cuentan en el pueblo: varios reinos tenían
+    más gente fuera (30 a 45) que en sus pueblos (20 a 30). Como los soldados salen del
+    pueblo, la regla no los limita. Por definir: si la regla debe contar a toda la gente
+    del reino (pueblos, soldados y unidades), o limitar los soldados por separado.
+  - Va en `7kmod-gameplay`.
+
 - [x] **La IA invoca Fryhtans y los usa como armas de asedio.** Antes la IA nunca usaba
   el botón de invocar Fryhtan del Seat of Power (`FirmBase::invoke_fryhtan`); solo
   invocaba a su Greater Being cuando los puntos de oración llegan al máximo, 400

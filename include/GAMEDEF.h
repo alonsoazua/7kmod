@@ -45,7 +45,8 @@ extern const int GAME_VERSION;
 #define GAME_VERSION_7KMOD_SPYING		298	// 7kmod-gameplay: ModSpy (accidents, intelligence reports)
 #define GAME_VERSION_7KMOD_SABOTAGE_LOG	299	// 7kmod-gameplay: ModSpy, accidents caused by spies
 #define GAME_VERSION_7KMOD_SPY_COOLDOWN	300	// 7kmod-gameplay: ModSpy, cooldown of the spies after an accident
-#define GAME_VERSION_7KMOD	300
+#define GAME_VERSION_7KMOD_AI_TYPE		301	// 7kmod-gameplay: ConfigAdv::ai_type
+#define GAME_VERSION_7KMOD	301
 
 //-------- Define constant ------------//
 
