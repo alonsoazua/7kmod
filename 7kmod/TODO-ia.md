@@ -64,6 +64,27 @@ Rama experimental para la IA de los reinos de la computadora (ejecutable
   - Por definir: si la IA entrena lo bastante rápido (uno a la vez por pueblo, 5 días
     cada uno) y si el costo le pesa.
 
+- [x] **Límites de población por reino** (`src/ModLimits.cpp`, opciones de
+  `config.txt` guardadas en la partida, 0 = sin límite):
+  - `nation_max_town_population=600`: al llegar no hay nacimientos en los pueblos del
+    reino (`Town::population_grow`). Conquistas, pueblos que se unen, migración y gente
+    que vuelve a los pueblos pueden pasarlo.
+  - `nation_max_military_units=300`: cuenta soldados y generales con liderazgo (no el
+    rey ni espías), armas de asedio, Caravel, Galleon y Fryhtans, también en fuertes,
+    en entrenamiento o en construcción (`mod_military_unit_count`). Al llegar se
+    bloquea entrenar Leadership y Promote (`Town::recruit`, `Town::add_queue`,
+    `Town::process_queue`), construir armas (`FirmWar`), barcos de guerra
+    (`FirmHarbor`), invocar Fryhtans (`FirmBase::can_invoke_fryhtan`) y contratar
+    mercenarios con liderazgo (`FirmInn::hire`). Las colas esperan; los botones se
+    desactivan con el motivo en su ayuda; al pedirlo aparece un mensaje.
+  - La IA respeta los límites (`FirmCamp::ai_recruit`, `FirmWar::think_new_production`).
+  - En el reporte de reinos: "Your Population" y "Your Military Units" con su límite.
+  - **Prueba** (`mixed`, con límites de prueba de 80 y 12, unos 9 años): la IA se
+    detiene en el límite militar, con 1 o 2 de más a veces; los saltos grandes (por
+    ejemplo de 16 a 26) y la población por encima de 80 vienen de conquistas, que el
+    límite permite.
+  - Por definir: si las conquistas y las capturas deben contar para los límites.
+
 ---
 
 ## Análisis: por qué la IA original se queda sin comida

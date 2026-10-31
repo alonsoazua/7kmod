@@ -44,6 +44,7 @@
 #include <ONEWS.h>
 #include "gettext.h"
 #include <ConfigAdv.h>
+#include <ModLimits.h>
 
 
 //------------- Define constant ------------//
@@ -742,6 +743,9 @@ void FirmWar::add_queue(int unitId, int amount)
 	err_when(amount < 0);
 	if (amount < 0) return;
 
+	if( mod_check_military_limit(nation_recno) )		// 7k-mod-IA
+		return;
+
 	int queueSpace = MAX_BUILD_QUEUE - build_queue_count  - (build_unit_id>0);
 	int enqueueAmount = MIN(queueSpace, amount);
 
@@ -893,6 +897,10 @@ void FirmWar::process_queue()
 	//--- first check if the nation has enough money to build the weapon ---//
 
 	Nation* nationPtr = nation_array[nation_recno];
+
+	if( mod_military_limit_reached(nation_recno) )		// 7k-mod-IA: the weapons wait in the queue at the military limit
+		return;
+
 	build_unit_id = build_queue_array[0];
 
 	if( nationPtr->cash < unit_res[build_unit_id]->build_cost )

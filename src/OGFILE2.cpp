@@ -475,6 +475,13 @@ int GameFile::write_file_3(File* filePtr)
 
 	filePtr->file_put_short( config_adv.ai_type );
 
+	// ##### 7k-mod-IA: GAME_VERSION >= GAME_VERSION_7KMOD_NATION_LIMITS ##### //
+
+	write_book_mark( filePtr, BOOK_MARK+293 );
+
+	filePtr->file_put_short( config_adv.nation_max_town_population );
+	filePtr->file_put_short( config_adv.nation_max_military_units );
+
 	return 1;
 }
 //---------- End of function GameFile::write_file_3 -------//
@@ -799,6 +806,17 @@ int GameFile::read_file_3(File* filePtr)
 		return 0;
 
 	config_adv.ai_type = (char) filePtr->file_get_short();
+
+	//--- 7k-mod-IA: the limits per kingdom; older games keep the ones of config.txt ---//
+
+	if( game_file_array.load_file_game_version < GAME_VERSION_7KMOD_NATION_LIMITS )
+		return 1;
+
+	if( !read_book_mark( filePtr, BOOK_MARK+293 ) )
+		return 0;
+
+	config_adv.nation_max_town_population = filePtr->file_get_short();
+	config_adv.nation_max_military_units  = filePtr->file_get_short();
 
 	return 1;
 }

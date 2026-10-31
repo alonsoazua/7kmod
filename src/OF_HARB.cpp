@@ -50,6 +50,7 @@
 #include <ORAWRES.h>
 #include <OF_MINE.h>
 #include <vga_util.h>
+#include <ModLimits.h>
 
 
 //------------- Define coordinations -----------//
@@ -1364,6 +1365,9 @@ void FirmHarbor::build_ship(int unitId, char)
 	if(ship_count>=MAX_SHIP_IN_HARBOR)
 		return;
 
+	if( mod_is_military_unit_id(unitId) && mod_military_limit_reached(nation_recno) )		// 7k-mod-IA
+		return;
+
 	Nation* nationPtr = nation_array[nation_recno];
 
 	if( nationPtr->cash < unit_res[unitId]->build_cost )
@@ -1644,6 +1648,11 @@ void FirmHarbor::process_queue()
 {
 	if(build_queue_count>0)
 	{
+		//--- 7k-mod-IA: the warships wait in the queue at the military limit ---//
+
+		if( mod_is_military_unit_id(build_queue_array[0]) && mod_military_limit_reached(nation_recno) )
+			return;
+
 		build_ship(build_queue_array[0], COMMAND_AUTO);
 
 		// remove the queue no matter build_ship success or not
@@ -1667,6 +1676,9 @@ void FirmHarbor::add_queue(int unitId, int amount)
 {
 	err_when(amount < 0);
 	if (amount < 0) return;
+
+	if( mod_is_military_unit_id(unitId) && mod_check_military_limit(nation_recno) )		// 7k-mod-IA
+		return;
 
 	int queueSpace = MAX_BUILD_SHIP_QUEUE - build_queue_count  - (build_unit_id>0);
 	int enqueueAmount = MIN(queueSpace, amount);

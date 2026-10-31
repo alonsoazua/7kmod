@@ -53,6 +53,7 @@
 #include <OFIRMID.h>
 #include <OPOWER.h>
 #include <ModTech.h>
+#include <ModLimits.h>
 
 
 //------------- Define coordinations -----------//
@@ -482,7 +483,7 @@ void Town::disp_main_menu(int refreshFlag)
 
 		if( button_train.init_flag )
 		{
-			if( can_train(raceId) )
+			if( can_train(raceId) && !(fortMode && mod_military_limit_reached(nation_recno)) )		// 7k-mod-IA: fort mode trains soldiers
 				button_train.enable();
 			else
 				button_train.disable();
@@ -713,6 +714,7 @@ int Town::can_train_captain()
 	int kingRaceId = nationPtr->race_id;
 
 	return kingRaceId && majority_race() == kingRaceId &&
+			 !mod_military_limit_reached(nation_recno) &&		// 7k-mod-IA
 			 has_linked_own_camp && jobless_race_pop_array[kingRaceId-1] > 0 &&
 			 nationPtr->cash > TRAIN_CAPTAIN_COST &&
 			 train_queue_count + (train_unit_recno>0) < MAX_TRAIN_QUEUE;
@@ -933,7 +935,7 @@ int Town::detect_main_menu()
 	else
 		button_recruit.disable();
 
-	if( can_train(raceId) )
+	if( can_train(raceId) && !(fortMode && mod_military_limit_reached(nation_recno)) )		// 7k-mod-IA: fort mode trains soldiers
 		button_train.enable();
 	else
 		button_train.disable();
@@ -949,6 +951,8 @@ int Town::detect_main_menu()
 			button_train_captain.enable();
 		else
 			button_train_captain.disable();
+
+		mod_military_limit_help( nation_recno, button_train_captain, "PROMOTE", _("Promote") );		// 7k-mod-IA
 
 		int rc = button_train_captain.detect(0, 0, 1);
 
@@ -1016,6 +1020,11 @@ int Town::detect_main_menu()
 		}
 		return 1;
 	}
+
+	if( fortMode )		// 7k-mod-IA: fort mode trains soldiers
+		mod_military_limit_help( nation_recno, button_train, "TRAIN", _("Train") );
+	else
+		button_train.set_help_code("TRAIN");
 
 	if( button_train.detect(GETKEY(KEYEVENT_TOWN_TRAIN)) )
 	{
@@ -2150,6 +2159,14 @@ int Town::recruit(int trainSkillId, int raceId, char remoteAction)
 	if( trainSkillId >= 1 && train_unit_recno )
 		return 0;
 
+	//--- 7k-mod-IA: no new soldiers or captains at the military limit of the kingdom ---//
+
+	if( (trainSkillId == SKILL_LEADING || trainSkillId == TRAIN_CAPTAIN_ID) &&
+		 mod_military_limit_reached(nation_recno) )
+	{
+		return 0;
+	}
+
 	//--------------------------------------------//
 
 	if( !raceId )
@@ -2592,8 +2609,18 @@ void Town::process_queue()
 	char queueCount = train_queue_count;
 	char skillId, raceId;
 	char i;
+	int  militaryLimit = mod_military_limit_reached(nation_recno);		// 7k-mod-IA
+	int  hasMilitaryWaiting = 0;
 	for(i=0; i<queueCount; ++i)
 	{
+		//--- 7k-mod-IA: at the military limit, the soldiers and captains wait in the queue ---//
+
+		if( militaryLimit && (train_queue_skill_array[i] == SKILL_LEADING || train_queue_skill_array[i] == TRAIN_CAPTAIN_ID) )
+		{
+			hasMilitaryWaiting = 1;
+			continue;
+		}
+
 		if(can_train(train_queue_race_array[i]) &&
 			(train_queue_skill_array[i] != TRAIN_CAPTAIN_ID ||
 			 nation_array[nation_recno]->cash > TRAIN_CAPTAIN_COST))		// 7kmod-gameplay
@@ -2615,7 +2642,7 @@ void Town::process_queue()
 		}
 	}
 	
-	if(i==queueCount)
+	if(i==queueCount && !hasMilitaryWaiting)		// 7k-mod-IA: keep the queue while soldiers wait for the military limit
 		train_queue_count = 0;
 
 	if(town_menu_mode==TOWN_MENU_MAIN)
@@ -2629,6 +2656,9 @@ void Town::add_queue(char skillId, char raceId, int amount, short firmRecno)
 {
 	err_when(amount < 0);
 	if (amount < 0) return;
+
+	if( (skillId == SKILL_LEADING || skillId == TRAIN_CAPTAIN_ID) && mod_check_military_limit(nation_recno) )		// 7k-mod-IA
+		return;
 
 	int queueSpace = MAX_TRAIN_QUEUE - train_queue_count - (train_unit_recno>0);
 	int enqueueAmount = MIN(queueSpace, amount);

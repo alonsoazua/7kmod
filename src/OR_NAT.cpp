@@ -47,6 +47,7 @@
 #include <ORACERES.h>
 #include <OHELP.h>
 #include <ConfigAdv.h>
+#include <ModLimits.h>
 #include "gettext.h"
 
 //------------- Define coordinations -----------//
@@ -648,6 +649,20 @@ static void disp_nation_info()
 		font_san.put_field( x1, y+=16, _("Your Treasure"), x2, str );
 
 		font_san.field( x1, y+=16, _("Your Continuous Peace Time"), x2, nationPtr->peace_duration_str(), x3, INFO_REPAINT, "PEACE" );
+
+		//--- 7k-mod-IA: the limits of the kingdom (config.txt) ---//
+
+		if( config_adv.nation_max_town_population > 0 )
+		{
+			snprintf( xstr, MAX_STR_LEN+1, "%d / %d", nationPtr->total_population, config_adv.nation_max_town_population );
+			font_san.put_field( x1, y+=16, _("Your Population"), x2, xstr );
+		}
+
+		if( config_adv.nation_max_military_units > 0 )
+		{
+			snprintf( xstr, MAX_STR_LEN+1, "%d / %d", mod_military_unit_count(nationRecno), config_adv.nation_max_military_units );
+			font_san.put_field( x1, y+=16, _("Your Military Units"), x2, xstr );
+		}
 	}
 	else
 	{

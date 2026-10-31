@@ -55,6 +55,10 @@ public:
 	// ai settings
 	char			ai_type;			// 7k-mod-IA: AI_TYPE_???, experimental, saved in the game (GameFile::write_file_3)
 
+	// nation settings (7k-mod-IA: limits per kingdom, ModLimits.h, saved in the game; 0 - no limit)
+	int			nation_max_town_population;
+	int			nation_max_military_units;
+
 	// firm settings
 	char			firm_ai_enable_think_spy_capture;
 	char			firm_mobilize_civilian_aggressive;

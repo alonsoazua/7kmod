@@ -11,6 +11,7 @@ bin_PROGRAMS = 7kaa
 	LocaleRes.cpp \
 	ModEditor.cpp \
 	ModEditorFryhtan.cpp \
+	ModLimits.cpp \
 	ModEditorPanel.cpp \
 	ModEditorSave.cpp \
 	ModEditorTerrain.cpp \

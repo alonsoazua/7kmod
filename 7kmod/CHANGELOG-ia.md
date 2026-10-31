@@ -37,6 +37,21 @@ Versión **0.1.0**, basada en **7kmod-pathing 0.7.1** (gameplay 0.1.0, 7kmod 0.2
   (`Town::mod_ai_keep_peasants`). Es para que la IA no se quede sin comida: solo los
   aldeanos sin empleo producen (30 al año) y todos comen (10).
 
+- **Límites por reino** (`config.txt`, se guardan en la partida; 0 = sin límite):
+  - `nation_max_town_population` (**600** por defecto): la gente que vive en los pueblos
+    del reino. Al llegar, no hay nacimientos en sus pueblos. Los pueblos conquistados,
+    los que se unen y la gente que llega o vuelve a los pueblos pueden pasarlo.
+  - `nation_max_military_units` (**300** por defecto): soldados y generales con
+    liderazgo (no el rey ni los espías), armas de asedio, barcos de guerra (Caravel y
+    Galleon) y Fryhtans del reino, también los que se están entrenando o construyendo.
+    Al llegar no se puede entrenar Leadership (ni Promote), construir armas o barcos de
+    guerra, invocar Fryhtans ni contratar mercenarios con liderazgo: las colas esperan,
+    los botones se desactivan con el motivo en su ayuda, y al pedirlo aparece un
+    mensaje. Las unidades ganadas por captura, rendición o conversión pueden pasarlo.
+  - La IA respeta los mismos límites.
+  - En el reporte de reinos (Information) se ven "Your Population" y "Your Military
+    Units" con su límite.
+
 ### Cambiado
 - **Los soldados se entrenan, ya no se reclutan** (para todos: jugador y todas las IA).
   - Solo entran a un fuerte las personas con oficio de liderazgo (soldados, generales,
@@ -55,6 +70,8 @@ Versión **0.1.0**, basada en **7kmod-pathing 0.7.1** (gameplay 0.1.0, 7kmod 0.2
     aldeanos de la IA experimental.
 
 ### Compatibilidad
-- **Partidas guardadas:** versión 301 (`GAME_VERSION_7KMOD_AI_TYPE`), que guarda
-  `ai_type`. Carga las partidas de gameplay y pathing (versión 300 o anterior) con la
+- **Partidas guardadas:** versión 302: 301 guarda `ai_type`
+  (`GAME_VERSION_7KMOD_AI_TYPE`) y 302 los límites por reino
+  (`GAME_VERSION_7KMOD_NATION_LIMITS`; las partidas anteriores usan los de
+  `config.txt`). Carga las partidas de gameplay y pathing (versión 300 o anterior) con la
   IA original. Los demás ejecutables del mod no cargan las partidas de esta rama.

@@ -333,6 +333,9 @@ void ConfigAdv::reset()
 
 	ai_type = AI_TYPE_MIXED;		// 7k-mod-IA: compare the experimental AI with the original by default
 
+	nation_max_town_population = 600;		// 7k-mod-IA, 0 - no limit
+	nation_max_military_units = 300;
+
 	// after applying defaults, checksum is not required
 	checksum = 0;
 	flags &= ~FLAG_CKSUM_REQ;
@@ -451,6 +454,22 @@ int ConfigAdv::set(char *name, char *value)
 	{
 		if( !read_bool(value, &monster_alternate_attack_curve) )
 			return 0;
+	}
+	else if( !strcmp(name, "nation_max_town_population") )		// 7k-mod-IA
+	{
+		if( !read_int(value, &nation_max_town_population) )
+			return 0;
+		if( CHECK_BOUND(nation_max_town_population, 0, 30000) )
+			return 0;
+		update_check_sum(name, value);
+	}
+	else if( !strcmp(name, "nation_max_military_units") )		// 7k-mod-IA
+	{
+		if( !read_int(value, &nation_max_military_units) )
+			return 0;
+		if( CHECK_BOUND(nation_max_military_units, 0, 30000) )
+			return 0;
+		update_check_sum(name, value);
 	}
 	else if( !strcmp(name, "monster_attack_divisor") )
 	{

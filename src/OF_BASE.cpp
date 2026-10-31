@@ -51,6 +51,7 @@
 #include <OSPRTRES.h>
 #include <OMONSRES.h>
 #include "gettext.h"
+#include <ModLimits.h>
 
 //----------- Define static vars -------------//
 
@@ -348,6 +349,8 @@ int FirmBase::detect_info()
 	}
 
 	//-------- 7kmod-gameplay: detect invoke Fryhtan --------//
+
+	mod_military_limit_help( nation_recno, button_invoke_fryhtan, "", _("Invoke Fryhtan") );		// 7k-mod-IA
 
 	if( player_spy_count == 0 && button_invoke_fryhtan.detect() )
 	{
@@ -773,7 +776,8 @@ int FirmBase::can_invoke()
 int FirmBase::can_invoke_fryhtan()
 {
 	return !under_construction && invoke_fryhtan_unit_id() &&
-			 pray_points >= invoke_fryhtan_pray_points();
+			 pray_points >= invoke_fryhtan_pray_points() &&
+			 !mod_military_limit_reached(nation_recno);		// 7k-mod-IA
 }
 //----------- End of function FirmBase::can_invoke_fryhtan -----------//
 

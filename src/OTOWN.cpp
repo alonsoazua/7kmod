@@ -55,6 +55,7 @@
 #include <OSERES.h>
 #include <OLOG.h>
 #include <ConfigAdv.h>
+#include <ModLimits.h>
 
 static char random_race();
 
@@ -1123,6 +1124,9 @@ void Town::population_grow()
 		return;
 
 	if( population >= MAX_TOWN_GROWTH_POPULATION || population >= MAX_TOWN_POPULATION )
+		return;
+
+	if( mod_town_population_limit_reached(nation_recno) )		// 7k-mod-IA: no births at the limit of the kingdom
 		return;
 
 	//-------- population growth by birth ---------//

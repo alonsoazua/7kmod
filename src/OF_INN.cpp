@@ -43,6 +43,7 @@
 #include <OSERES.h>
 #include "gettext.h"
 #include <ConfigAdv.h>
+#include <ModLimits.h>
 
 //------------- Define coordinations -----------//
 
@@ -221,6 +222,11 @@ int FirmInn::detect_info()
 		return 1;
 	}
 
+	if( inn_unit_count > 0 && inn_unit_array[browse_hire.recno()-1].skill.skill_id == SKILL_LEADING )		// 7k-mod-IA
+		mod_military_limit_help( nation_recno, button_hire, "HIREUNIT", _("Hire") );
+	else
+		button_hire.set_help_code("HIREUNIT");
+
 	if( button_hire.detect(GETKEY(KEYEVENT_FIRM_PATROL)) && inn_unit_count > 0 )
 	{
 		// ###### begin Gilbert 31/7 #######//
@@ -268,6 +274,9 @@ int FirmInn::hire(short recNo)
 	innUnit = inn_unit_array+recNo-1;
 
 	if( nationPtr->cash < innUnit->hire_cost )
+		return 0;
+
+	if( innUnit->skill.skill_id == SKILL_LEADING && mod_military_limit_reached(nation_recno) )		// 7k-mod-IA: military limit
 		return 0;
 
 	//---------- add the unit now -----------//
@@ -391,7 +400,9 @@ void FirmInn::put_det(int refreshFlag)
 		else
 		{
 			if( inn_unit_count > 0 &&
-				 (~nation_array)->cash >= inn_unit_array[browse_hire.recno()-1].hire_cost )
+				 (~nation_array)->cash >= inn_unit_array[browse_hire.recno()-1].hire_cost &&
+				 !(inn_unit_array[browse_hire.recno()-1].skill.skill_id == SKILL_LEADING &&		// 7k-mod-IA: military limit
+					mod_military_limit_reached(nation_recno)) )
 			{
 				button_hire.enable();
 			}

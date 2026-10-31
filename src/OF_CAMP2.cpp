@@ -28,6 +28,7 @@
 #include <OSPY.h>
 #include <OUNIT.h>
 #include <OF_CAMP.h>
+#include <ModLimits.h>
 
 //--------- Begin of function FirmCamp::init_derived ---------//
 
@@ -416,6 +417,9 @@ void FirmCamp::think_recruit()
 int FirmCamp::ai_recruit(int recruitCombatLevel)
 {
 	if( worker_count == MAX_WORKER || !overseer_recno )
+		return 0;
+
+	if( mod_military_limit_reached(nation_recno) )		// 7k-mod-IA: no new soldiers at the military limit
 		return 0;
 
 	int recruitCount = MAX( 1, recruitCombatLevel / 20 );

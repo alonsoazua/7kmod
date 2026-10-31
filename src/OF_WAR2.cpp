@@ -27,6 +27,7 @@
 #include <OUNIT.h>
 #include <OTECHRES.h>
 #include <OF_WAR.h>
+#include <ModLimits.h>
 
 //--------- Begin of function FirmWar::process_ai ---------//
 
@@ -91,6 +92,9 @@ void FirmWar::think_new_production()
 	//----- first see if we have enough money to build & support the weapon ----//
 
 	if( !should_build_new_weapon() )
+		return;
+
+	if( mod_military_limit_reached(nation_recno) )		// 7k-mod-IA
 		return;
 
 	//---- calculate the average instance count of all available weapons ---//
