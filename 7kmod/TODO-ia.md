@@ -91,6 +91,42 @@ Rama experimental para la IA de los reinos de la computadora (ejecutable
   impuesto anual que no baja la lealtad (`Town::collect_yearly_tax`). Probado con 10:
   un pueblo de 40 da $400.
 
+- [ ] **Error del original: el perdón de la IA está al revés al rechazar sus pedidos.**
+  Cuando un reino rechaza lo que la IA pide (tributo, ayuda, declarar la guerra,
+  tecnología, embargo, comida...), `Nation::ai_notify_reply` (`src/OAI_DIPL.cpp`) ajusta la
+  baja de relación con `relationChange -= relationChange * (200-pref_forgiveness) / 200`,
+  que deja la baja en `relationChange * pref_forgiveness / 200`: de 0% a 50% de lo
+  indicado, y **el reino más rencoroso (perdón 0) no baja nada** mientras el más
+  indulgente baja la mitad. En `Nation::notify_talk_msg` (`src/OAI_TALK.cpp`, terminar un
+  tratado) la fórmula sí va en la dirección esperada: `relationChange -= relationChange *
+  pref_forgiveness / 100`. Arreglo propuesto: usar la misma idea que `notify_talk_msg`
+  (el indulgente baja menos), revisando el tamaño de las bajas (rechazar un tributo pasaría
+  a −30 a −40 para un reino nada indulgente).
+
+---
+
+## Análisis: cómo cambia la relación de la IA con los demás reinos
+
+`ai_relation_level`, de 0 a 100, la de cada reino de la IA hacia cada otro (no es
+simétrica). Empieza en 40 (neutral).
+
+- **Sube:** comercio (una vez al año, comercio ÷ 10, si no hay guerra); en guerra sin
+  batallas nuevas, +1 por revisión de diplomacia; aceptar sus pedidos (tratado de
+  comercio hasta +10, embargo +10 a +20, declarar la guerra por ella hasta +10, venderle
+  comida hasta +10, tributo o ayuda 100 × cantidad ÷ su dinero (mín. 1,000), tecnología
+  +10 a +30); regalos (tributo/ayuda con la misma fórmula, tecnología +15 a +60);
+  `think_ally_against_big_enemy` la sube con todos menos con el más poderoso.
+- **Baja:** rechazar sus pedidos (tributo o ayuda −30 a −40, declarar la guerra −30, ayuda
+  militar −10 a −20, tecnología −10 a −20, embargo −10 a −15, comercio o comida hasta −10,
+  amistad, alianza o cese al fuego −5, rechazar su regalo −5; ver el error de arriba);
+  terminar un tratado −5; atrapar un espía en un pueblo o edificio de la IA −5; una batalla
+  entre los dos reinos: guerra y relación 0.
+- **Topes al cambiar de estado** (solo baja): guerra 0, cese al fuego 20, neutral 40,
+  amistad 60, alianza 80.
+- **Uso:** menos de 10 = candidato a declararle la guerra (`think_declare_war`, el más
+  débil de los candidatos, sin comparar con su propia fuerza); 0 al rechazar un pedido =
+  declara la guerra (High o más, o poco pacífica); 20 a 40 = termina amistad o alianza.
+
 ---
 
 ## Análisis: por qué la IA original se queda sin comida
