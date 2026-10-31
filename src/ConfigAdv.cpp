@@ -24,6 +24,7 @@
 #include <ConfigAdv.h>
 #include <FilePath.h>
 #include <ONATIONB.h>
+#include <OTOWN.h>
 #include <OFILETXT.h>
 #include <OMISC.h>
 #include <OMOUSE.h>
@@ -335,6 +336,7 @@ void ConfigAdv::reset()
 
 	nation_max_town_population = 600;		// 7k-mod-IA, 0 - no limit
 	nation_max_military_units = 300;
+	town_tax_per_person = TAX_PER_PERSON;		// 7k-mod-IA
 
 	// after applying defaults, checksum is not required
 	checksum = 0;
@@ -468,6 +470,14 @@ int ConfigAdv::set(char *name, char *value)
 		if( !read_int(value, &nation_max_military_units) )
 			return 0;
 		if( CHECK_BOUND(nation_max_military_units, 0, 30000) )
+			return 0;
+		update_check_sum(name, value);
+	}
+	else if( !strcmp(name, "town_tax_per_person") )		// 7k-mod-IA
+	{
+		if( !read_int(value, &town_tax_per_person) )
+			return 0;
+		if( CHECK_BOUND(town_tax_per_person, 0, 1000) )
 			return 0;
 		update_check_sum(name, value);
 	}

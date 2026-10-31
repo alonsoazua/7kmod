@@ -482,6 +482,12 @@ int GameFile::write_file_3(File* filePtr)
 	filePtr->file_put_short( config_adv.nation_max_town_population );
 	filePtr->file_put_short( config_adv.nation_max_military_units );
 
+	// ##### 7k-mod-IA: GAME_VERSION >= GAME_VERSION_7KMOD_TOWN_TAX ##### //
+
+	write_book_mark( filePtr, BOOK_MARK+294 );
+
+	filePtr->file_put_short( config_adv.town_tax_per_person );
+
 	return 1;
 }
 //---------- End of function GameFile::write_file_3 -------//
@@ -817,6 +823,16 @@ int GameFile::read_file_3(File* filePtr)
 
 	config_adv.nation_max_town_population = filePtr->file_get_short();
 	config_adv.nation_max_military_units  = filePtr->file_get_short();
+
+	//--- 7k-mod-IA: the tax per villager; older games keep the one of config.txt ---//
+
+	if( game_file_array.load_file_game_version < GAME_VERSION_7KMOD_TOWN_TAX )
+		return 1;
+
+	if( !read_book_mark( filePtr, BOOK_MARK+294 ) )
+		return 0;
+
+	config_adv.town_tax_per_person = filePtr->file_get_short();
 
 	return 1;
 }

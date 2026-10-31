@@ -59,6 +59,9 @@ public:
 	int			nation_max_town_population;
 	int			nation_max_military_units;
 
+	// town settings (7k-mod-IA, saved in the game)
+	int			town_tax_per_person;		// the tax of each villager: collected (Town::collect_tax) and yearly (Town::collect_yearly_tax)
+
 	// firm settings
 	char			firm_ai_enable_think_spy_capture;
 	char			firm_mobilize_civilian_aggressive;

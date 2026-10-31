@@ -52,6 +52,11 @@ Versión **0.1.0**, basada en **7kmod-pathing 0.7.1** (gameplay 0.1.0, 7kmod 0.2
   - En el reporte de reinos (Information) se ven "Your Population" y "Your Military
     Units" con su límite.
 
+- **Impuesto por habitante** (`town_tax_per_person` en `config.txt`, **5** por defecto,
+  como el original; se guarda en la partida): lo que da cada habitante al cobrar
+  impuestos en un pueblo y en el impuesto anual automático (`Town::collect_tax`,
+  `Town::collect_yearly_tax`).
+
 ### Cambiado
 - **Los soldados se entrenan, ya no se reclutan** (para todos: jugador y todas las IA).
   - Solo entran a un fuerte las personas con oficio de liderazgo (soldados, generales,
@@ -72,6 +77,7 @@ Versión **0.1.0**, basada en **7kmod-pathing 0.7.1** (gameplay 0.1.0, 7kmod 0.2
 ### Compatibilidad
 - **Partidas guardadas:** versión 302: 301 guarda `ai_type`
   (`GAME_VERSION_7KMOD_AI_TYPE`) y 302 los límites por reino
-  (`GAME_VERSION_7KMOD_NATION_LIMITS`; las partidas anteriores usan los de
-  `config.txt`). Carga las partidas de gameplay y pathing (versión 300 o anterior) con la
+  (`GAME_VERSION_7KMOD_NATION_LIMITS`) y 303 el impuesto por habitante
+  (`GAME_VERSION_7KMOD_TOWN_TAX`). Las partidas anteriores usan los valores de
+  `config.txt`. Carga las partidas de gameplay y pathing (versión 300 o anterior) con la
   IA original. Los demás ejecutables del mod no cargan las partidas de esta rama.

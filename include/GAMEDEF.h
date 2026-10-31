@@ -47,7 +47,8 @@ extern const int GAME_VERSION;
 #define GAME_VERSION_7KMOD_SPY_COOLDOWN	300	// 7kmod-gameplay: ModSpy, cooldown of the spies after an accident
 #define GAME_VERSION_7KMOD_AI_TYPE		301	// 7k-mod-IA: ConfigAdv::ai_type
 #define GAME_VERSION_7KMOD_NATION_LIMITS	302	// 7k-mod-IA: ConfigAdv::nation_max_town_population, nation_max_military_units
-#define GAME_VERSION_7KMOD	302
+#define GAME_VERSION_7KMOD_TOWN_TAX		303	// 7k-mod-IA: ConfigAdv::town_tax_per_person
+#define GAME_VERSION_7KMOD	303
 
 //-------- Define constant ------------//
 

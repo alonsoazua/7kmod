@@ -85,6 +85,12 @@ Rama experimental para la IA de los reinos de la computadora (ejecutable
     límite permite.
   - Por definir: si las conquistas y las capturas deben contar para los límites.
 
+- [x] **Impuesto por habitante en `config.txt`** (`town_tax_per_person=5`, como el
+  original `TAX_PER_PERSON`; se guarda en la partida). Cambia lo que da cada habitante
+  al cobrar impuestos (con la baja de 10 de lealtad, `Town::collect_tax`) y en el
+  impuesto anual que no baja la lealtad (`Town::collect_yearly_tax`). Probado con 10:
+  un pueblo de 40 da $400.
+
 ---
 
 ## Análisis: por qué la IA original se queda sin comida

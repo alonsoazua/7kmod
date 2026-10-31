@@ -1640,7 +1640,7 @@ void Town::update_resistance()
 //
 void Town::collect_yearly_tax()
 {
-	nation_array[nation_recno]->add_income(INCOME_TAX, (float)population * TAX_PER_PERSON );
+	nation_array[nation_recno]->add_income(INCOME_TAX, (float)population * config_adv.town_tax_per_person );		// 7k-mod-IA: TAX_PER_PERSON in config.txt
 }
 //----------- End of function Town::collect_yearly_tax ---------//
 
@@ -1691,7 +1691,7 @@ void Town::collect_tax(char remoteAction)
 	{
 		float beforeLoyalty = race_loyalty_array[i];
 		change_loyalty( i+1, (float) -loyaltyDecrease );
-		taxCollected += (beforeLoyalty - race_loyalty_array[i]) * race_pop_array[i] * TAX_PER_PERSON / loyaltyDecrease;
+		taxCollected += (beforeLoyalty - race_loyalty_array[i]) * race_pop_array[i] * config_adv.town_tax_per_person / loyaltyDecrease;		// 7k-mod-IA: TAX_PER_PERSON in config.txt
 	}
 
 	//----------- increase cash ------------//
