@@ -96,7 +96,8 @@ enum { PLACE_SOLDIER=1,
 		 PLACE_GROUND,			// id: the terrain type
 		 PLACE_SHAPE,				// id: EDITOR_TERRAIN_WATER, _LAND, _HILL or _RAMP
 		 PLACE_FRYHTAN,			// 7kmod-gameplay: an invoked Fryhtan (ModEditorFryhtan.cpp)
-		 PLACE_SPY };
+		 PLACE_SPY,
+		 PLACE_KING };			// the king of a kingdom without one
 
 struct PlaceEntry
 {
@@ -109,6 +110,7 @@ static PlaceEntry unit_entry_array[] =
 	{ PLACE_SOLDIER, 0 }, { PLACE_GENERAL, 0 },
 	{ PLACE_WORKER, 0 }, { PLACE_SPY, 0 },
 	{ PLACE_FRYHTAN, 0 },
+	{ PLACE_KING, 0 },
 };
 
 static PlaceEntry weapon_entry_array[] =
@@ -238,6 +240,8 @@ static void	change_selected_units_race(int dir);
 static void	set_mine_mineral(FirmMine* minePtr, int rawId);
 static void	set_mine_reserve(FirmMine* minePtr, int reserveQty);
 static int	place_spy(int xLoc, int yLoc);
+static int	place_king(int xLoc, int yLoc);
+static int	nation_has_king(int nationRecno);
 static int	spy_place_at(int xLoc, int yLoc, int& placePara);
 static int	place_spy_count(int spyPlace, int placePara);
 static void	take_out_town_spies(Town* townPtr);
@@ -678,6 +682,19 @@ int ModEditor::get_place_area(int xLoc, int yLoc, int& locWidth, int& locHeight)
 			return can_place_unit(unitId, xLoc, yLoc);
 		}
 
+		case PLACE_KING:
+		{
+			int unitId = race_res[place_race_id]->basic_unit_id;
+
+			if( owner_nation_recno <= 0 || nation_has_king(owner_nation_recno) )
+				return 0;
+
+			if( unit_firm_at(unitId, xLoc, yLoc) && firm_array[unit_firm_at(unitId, xLoc, yLoc)]->firm_id == FIRM_CAMP )
+				return 1;		// the king goes into a Fort of the kingdom
+
+			return can_place_unit(unitId, xLoc, yLoc);
+		}
+
 		case PLACE_SPY:
 		{
 			if( owner_nation_recno <= 0 )
@@ -733,8 +750,8 @@ int ModEditor::get_place_area(int xLoc, int yLoc, int& locWidth, int& locHeight)
 
 //-------- Begin of function ModEditor::delete_selected --------//
 //
-// Delete the selected units (except kings), town, building or natural
-// resource.
+// Delete the selected units (kings too: the kingdom has no king until another
+// one is placed), town, building or natural resource.
 //
 void ModEditor::delete_selected()
 {
@@ -794,8 +811,6 @@ void ModEditor::delete_selected()
 	}
 	else if( unit_array.selected_recno )
 	{
-		int kingCount=0;
-
 		for( int i=unit_array.size() ; i>0 ; i-- )
 		{
 			if( unit_array.is_deleted(i) )
@@ -806,9 +821,16 @@ void ModEditor::delete_selected()
 			if( !unitPtr->selected_flag || !unitPtr->is_visible() )
 				continue;
 
-			if( unitPtr->rank_id == RANK_KING )
+			//--- a king: the kingdom has no king until another one is placed (King in the Units tab) ---//
+
+			if( unitPtr->rank_id == RANK_KING && unitPtr->nation_recno )
 			{
-				kingCount++;
+				nation_array[unitPtr->nation_recno]->king_unit_recno = 0;
+
+				char oldExitFlag = sys.signal_exit_flag;
+				sys.signal_exit_flag = 2;		// no news of the king's death
+				unit_array.del(i);
+				sys.signal_exit_flag = oldExitFlag;
 				continue;
 			}
 
@@ -816,9 +838,6 @@ void ModEditor::delete_selected()
 		}
 
 		power.reset_selection();
-
-		if( kingCount )
-			box.msg( _("Kings can't be deleted.") );
 	}
 	else
 		return;
@@ -1169,10 +1188,14 @@ static int place_object(PlaceEntry* entryPtr, int xLoc, int yLoc)
 
 	if( mod_editor.get_place_area(xLoc, yLoc, locWidth, locHeight) <= 0 )
 	{
-		if( mod_editor.owner_nation_recno == 0 &&
-			 (entryPtr->type == PLACE_SOLDIER || entryPtr->type == PLACE_GENERAL ||
-			  entryPtr->type == PLACE_UNIT || entryPtr->type == PLACE_FIRM || entryPtr->type == PLACE_FRYHTAN ||
-			  entryPtr->type == PLACE_SPY) )
+		if( entryPtr->type == PLACE_KING && mod_editor.owner_nation_recno > 0 &&
+			 nation_has_king(mod_editor.owner_nation_recno) )
+		{
+			box.msg( _("This kingdom already has a king. Choose a kingdom without a king at the top of the panel.") );
+		}
+		else if( mod_editor.owner_nation_recno == 0 &&
+			 (entryPtr->type == PLACE_KING || entryPtr->type == PLACE_SOLDIER || entryPtr->type == PLACE_GENERAL ||
+			  entryPtr->type == PLACE_UNIT || entryPtr->type == PLACE_FIRM || entryPtr->type == PLACE_FRYHTAN || entryPtr->type == PLACE_SPY) )
 		{
 			box.msg( _("Units and buildings need a kingdom. Choose one at the top of the panel.") );
 		}
@@ -1186,6 +1209,9 @@ static int place_object(PlaceEntry* entryPtr, int xLoc, int yLoc)
 	{
 		case PLACE_SPY:
 			return place_spy(xLoc, yLoc);
+
+		case PLACE_KING:
+			return place_king(xLoc, yLoc);
 
 		case PLACE_SOLDIER:
 		case PLACE_GENERAL:
@@ -2322,6 +2348,7 @@ static const char* entry_name(PlaceEntry* entryPtr)
 		case PLACE_GENERAL:	return _("General");
 		case PLACE_WORKER:	return _("Worker");
 		case PLACE_SPY:		return _("Spy");
+		case PLACE_KING:		return _("King");
 		case PLACE_UNIT:		return _(unit_res[entryPtr->id]->name);
 		case PLACE_FRYHTAN:	return _("Fryhtan");
 		case PLACE_TOWN:		return _("Town");
@@ -2729,6 +2756,97 @@ static int place_spy(int xLoc, int yLoc)
 	return 1;
 }
 //----------- End of static function place_spy -----------//
+
+
+//-------- Begin of static function nation_has_king --------//
+//
+static int nation_has_king(int nationRecno)
+{
+	Nation* nationPtr = nation_array[nationRecno];
+
+	return nationPtr->king_unit_recno && !unit_array.is_deleted(nationPtr->king_unit_recno);
+}
+//----------- End of static function nation_has_king -----------//
+
+
+//-------- Begin of static function place_king --------//
+//
+// The king of the kingdom of the objects placed, which has no king (a blank
+// map, a new kingdom, a deleted king), with the race, combat and leadership
+// of the options. On a Fort of the kingdom he goes into it as its commander.
+// The name of the kingdom becomes the one of the king (Nation::set_king()),
+// unless it is locked (Kingdoms window) and the king is of its race.
+//
+// return: <int> 1 - placed
+//
+static int place_king(int xLoc, int yLoc)
+{
+	int nationRecno = mod_editor.owner_nation_recno;
+
+	if( nationRecno <= 0 || nation_has_king(nationRecno) )
+		return 0;
+
+	Nation* nationPtr = nation_array[nationRecno];
+	int unitId = race_res[mod_editor.place_race_id]->basic_unit_id;
+
+	//--- on a Fort of the kingdom: create him next to it and put him in ---//
+
+	int firmRecno = unit_firm_at(unitId, xLoc, yLoc);
+
+	if( firmRecno && firm_array[firmRecno]->firm_id != FIRM_CAMP )
+		firmRecno = 0;
+
+	if( firmRecno )
+	{
+		Firm* firmPtr = firm_array[firmRecno];
+		SpriteInfo* spriteInfo = sprite_res[unit_res[unitId]->sprite_id];
+
+		xLoc = firmPtr->loc_x1;
+		yLoc = firmPtr->loc_y1;
+
+		if( !world.locate_space( &xLoc, &yLoc, firmPtr->loc_x2, firmPtr->loc_y2,
+										 spriteInfo->loc_width, spriteInfo->loc_height ) )
+		{
+			return 0;
+		}
+	}
+
+	int unitRecno = unit_array.add_unit( unitId, nationRecno, RANK_KING, 100, xLoc, yLoc );
+
+	if( !unitRecno )
+		return 0;
+
+	Unit* unitPtr = unit_array[unitRecno];
+
+	unitPtr->set_combat_level( mod_editor.place_combat_level );
+	unitPtr->skill.skill_id = SKILL_LEADING;
+	unitPtr->skill.skill_level = mod_editor.place_leadership;
+
+	//--- the king of the kingdom; a locked name stays ---//
+
+	int oldNameId = nationPtr->nation_name_id;
+	int oldRaceId = nationPtr->race_id;
+
+	nationPtr->set_king(unitRecno, 1);		// 1 - the first king: the player keeps his name
+
+	if( mod_editor.lock_kingdom_name[nationRecno-1] && nationPtr->nation_type == NATION_AI &&
+		 oldNameId > 0 && oldRaceId == unitPtr->race_id && oldNameId != unitPtr->name_id )
+	{
+		RaceInfo* raceInfo = race_res[unitPtr->race_id];
+
+		raceInfo->free_name_id(unitPtr->name_id);
+		raceInfo->use_name_id(oldNameId);
+
+		unitPtr->name_id = oldNameId;
+		nationPtr->nation_name_id = oldNameId;
+	}
+
+	if( firmRecno && !assign_to_firm(unitRecno, firmRecno) )
+		box.msg( _("The unit can't be put in this building; it has been placed next to it.") );
+
+	return 1;
+}
+//----------- End of static function place_king -----------//
 
 
 //-------- Begin of static function place_spy_count --------//
