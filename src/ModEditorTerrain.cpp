@@ -2367,3 +2367,55 @@ static int paint_ground(int terrainType, int x1, int y1, int x2, int y2)
 	return 1;
 }
 //----------- End of static function paint_ground -----------//
+
+
+//-------- Begin of function editor_terrain_fill --------//
+//
+// The whole map of land (dark grass) or water, without trees, rocks, dirt
+// patches or hills (for a blank map: ModEditor::clear_map(), which deletes
+// the towns, buildings, units and sites first).
+//
+// return: <int> 1 - done
+//
+int editor_terrain_fill(int waterFlag)
+{
+	int teraType = waterFlag ? TERRAIN_OCEAN : TERRAIN_DARK_GRASS;
+
+	clear_area( 0, 0, MAX_WORLD_X_LOC-1, MAX_WORLD_Y_LOC-1 );		// trees, rocks and dirt patches
+
+	for( int y=0 ; y<MAX_WORLD_Y_LOC ; y++ )
+	{
+		for( int x=0 ; x<MAX_WORLD_X_LOC ; x++ )
+		{
+			Location* locPtr = world.get_loc(x, y);
+
+			//--- no hills ---//
+
+			if( (locPtr->loc_flag & LOCATE_BLOCK_MASK) == LOCATE_IS_HILL )
+			{
+				locPtr->loc_flag &= ~LOCATE_BLOCK_MASK;
+				locPtr->cargo_recno = 0;
+				locPtr->extra_para = 0;
+			}
+
+			//--- the same ground everywhere (a random tile of it, for variety) ---//
+
+			int terrainId = terrain_res.scan( teraType, 1, teraType, 1, teraType, 1, teraType, 1, 0, 0, 0 );
+
+			if( terrainId )
+				locPtr->terrain_id = terrainId;
+
+			locPtr->loc_flag &= ~(LOCATE_POWER_OFF | LOCATE_HARBOR_BIT | LOCATE_COAST);
+		}
+	}
+
+	update_location_flags( 0, 0, MAX_WORLD_X_LOC-1, MAX_WORLD_Y_LOC-1 );
+
+	int regionCount = count_regions();
+
+	if( regionCount >= 0 )
+		apply_regions(regionCount);
+
+	return 1;
+}
+//----------- End of function editor_terrain_fill -----------//

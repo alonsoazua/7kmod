@@ -355,6 +355,9 @@ void ModEditor::save_scenario()
 	if( !editing_flag )
 		return;
 
+	if( !check_kings() )		// the kingdoms need their kings
+		return;
+
 	init_scenario_dir();
 
 	const char* dirPath = sys.dir_scenario_path[EDITOR_SCENARIO_DIR_ID];

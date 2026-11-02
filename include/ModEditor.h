@@ -175,6 +175,14 @@ public:
 	void	edit_goals();
 	void	edit_new_map();
 
+	//--- kingdoms and blank maps ---//
+
+	int	check_kings();								// 1 - all the kingdoms have a king (for testing and saving)
+	int	add_kingdom();								// return the nation recno, 0 - none
+	void	remove_kingdom(int nationRecno);
+	void	change_kingdom_color(int nationRecno, int dir);
+	void	clear_map(int waterFlag);
+
 	//--- in-game menu during a test ---//
 
 	void	disp_menu_option(int x, int y);
@@ -193,5 +201,7 @@ int			editor_next_fryhtan(int unitId, int dir);
 const char*	editor_fryhtan_name(int unitId);
 void			editor_init_fryhtan(Unit* unitPtr, int combatLevel);
 int			editor_is_invoked_fryhtan(Unit* unitPtr);
+int  editor_terrain_fill(int waterFlag);		// ModEditorTerrain.cpp: the whole map of land or water
+int  editor_take_new_map_base();					// ModEditorWin.cpp: the base of the new map (0 - generated, 1 - land, 2 - water), once
 
 #endif

@@ -54,6 +54,11 @@
 #include <OREMOTE.h>
 #include <OWORLDMT.h>
 #include <OF_BASE.h>
+#include <OFIRMDIE.h>
+#include <ORACERES.h>
+#include <OGODRES.h>
+#include <OTECHRES.h>
+#include <OCONFIG.h>
 #include <string.h>
 #include "gettext.h"
 
@@ -144,6 +149,13 @@ void ModEditor::enter_edit_mode()
 	editing_flag = 1;
 	testing_flag = 0;
 
+	//------ a blank map of land or water (the Base option of the New Map window) ------//
+
+	int newMapBase = editor_take_new_map_base();
+
+	if( newMapBase )
+		clear_map( newMapBase == 2 );
+
 	//------ pause the game ------//
 
 	if( config.frame_speed > 0 )
@@ -192,6 +204,9 @@ void ModEditor::enter_edit_mode()
 void ModEditor::start_test()
 {
 	if( !editing_flag )
+		return;
+
+	if( !check_kings() )		// the kingdoms need their kings
 		return;
 
 	//----- the saved copy is the scenario as it would be played -----//
@@ -546,3 +561,244 @@ void editor_put_button(int x1, int y1, int x2, int y2, const char* str, int enab
 //----------- End of function editor_put_button -----------//
 
 
+//-------- Begin of function ModEditor::check_kings --------//
+//
+// While editing a kingdom may have no king (a blank map, a new kingdom, a
+// deleted king). The scenario can't be tested or saved like that.
+//
+// return: <int> 1 - all the kingdoms have a king
+//
+int ModEditor::check_kings()
+{
+	String str;
+	int count=0;
+
+	for( int i=1 ; i<=nation_array.size() ; i++ )
+	{
+		if( nation_array.is_deleted(i) )
+			continue;
+
+		Nation* nationPtr = nation_array[i];
+
+		if( nationPtr->king_unit_recno && !unit_array.is_deleted(nationPtr->king_unit_recno) )
+			continue;
+
+		if( count )
+			str += ", ";
+
+		str += nationPtr->nation_name();
+		count++;
+	}
+
+	if( !count )
+		return 1;
+
+	String msgStr;
+	msgStr  = _("These kingdoms need a king:");
+	msgStr += " ";
+	msgStr += str;
+	msgStr += ". ";
+	msgStr += _("Place one with King in the Units tab.");
+
+	box.msg( msgStr );
+	return 0;
+}
+//--------- End of function ModEditor::check_kings ---------//
+
+
+//-------- Begin of function ModEditor::add_kingdom --------//
+//
+// A new kingdom of the AI, without a king: its king is placed with the King
+// entry of the Units tab. Its race is the one of the Race option (the race
+// of its name until the king is placed) and its color one that isn't used.
+//
+// return: <int> the nation recno, 0 - no more kingdoms can be added
+//
+int ModEditor::add_kingdom()
+{
+	if( nation_array.nation_count >= MAX_NATION )
+		return 0;
+
+	int raceId = place_race_id >= 1 && place_race_id <= MAX_RACE ? place_race_id : 1;
+
+	int nationRecno = nation_array.new_nation( NATION_AI, raceId, nation_array.random_unused_color() );
+
+	if( !nationRecno )
+		return 0;
+
+	Nation* nationPtr = nation_array[nationRecno];
+
+	//--- a name of the race until the king is placed (Nation::set_king() gives it the king's name) ---//
+
+	nationPtr->nation_name_id = race_res[raceId]->get_new_name_id();
+
+	lock_kingdom_name[nationRecno-1] = 0;
+
+	sys.map_need_redraw = 1;
+	return nationRecno;
+}
+//--------- End of function ModEditor::add_kingdom ---------//
+
+
+//-------- Begin of function ModEditor::remove_kingdom --------//
+//
+// Remove a kingdom of the AI with everything it has: its towns, buildings
+// and units (in the game, when a kingdom is destroyed its towns become
+// independent and its units go to other kingdoms).
+//
+void ModEditor::remove_kingdom(int nationRecno)
+{
+	if( nation_array.is_deleted(nationRecno) || nationRecno == nation_array.player_recno )
+		return;
+
+	power.reset_selection();
+
+	//--- without the game's reactions (mobilizing the workers, the news of the king's death) ---//
+
+	char oldExitFlag = sys.signal_exit_flag;
+	sys.signal_exit_flag = 2;
+
+	int i;
+	for( i=firm_array.size() ; i>0 ; i-- )
+	{
+		if( !firm_array.is_deleted(i) && firm_array[i]->nation_recno == nationRecno )
+			firm_array.del_firm(i);
+	}
+
+	for( i=firm_die_array.size() ; i>0 ; i-- )		// no ruins in the editor
+	{
+		if( !firm_die_array.is_deleted(i) )
+			firm_die_array.del(i);
+	}
+
+	for( i=town_array.size() ; i>0 ; i-- )
+	{
+		if( !town_array.is_deleted(i) && town_array[i]->nation_recno == nationRecno )
+			town_array.del_town(i);
+	}
+
+	for( i=unit_array.size() ; i>0 ; i-- )
+	{
+		if( !unit_array.is_deleted(i) && unit_array[i]->nation_recno == nationRecno )
+			unit_array.del(i);
+	}
+
+	nation_array[nationRecno]->king_unit_recno = 0;
+
+	sys.signal_exit_flag = oldExitFlag;
+
+	nation_array.del_nation(nationRecno);
+
+	if( owner_nation_recno == nationRecno )
+		owner_nation_recno = nation_array.player_recno;
+
+	sys.map_need_redraw = 1;
+	sys.zoom_need_redraw = 1;
+}
+//--------- End of function ModEditor::remove_kingdom ---------//
+
+
+//-------- Begin of function ModEditor::change_kingdom_color --------//
+//
+// The next color that no other kingdom uses.
+//
+void ModEditor::change_kingdom_color(int nationRecno, int dir)
+{
+	Nation* nationPtr = nation_array[nationRecno];
+	int colorId = nationPtr->color_scheme_id;
+
+	for( int k=0 ; k<MAX_COLOR_SCHEME ; k++ )
+	{
+		colorId += dir;
+
+		if( colorId > MAX_COLOR_SCHEME )
+			colorId = 1;
+
+		if( colorId < 1 )
+			colorId = MAX_COLOR_SCHEME;
+
+		if( colorId == nationPtr->color_scheme_id )
+			return;
+
+		int used = 0;
+
+		for( int i=1 ; i<=nation_array.size() ; i++ )
+		{
+			if( !nation_array.is_deleted(i) && nation_array[i]->color_scheme_id == colorId )
+				used = 1;
+		}
+
+		if( !used )
+			break;
+	}
+
+	nationPtr->color_scheme_id = colorId;
+	nationPtr->nation_color = game.color_remap_array[colorId].main_color;
+
+	nation_array.nation_color_array[nationRecno] = nationPtr->nation_color;
+	nation_array.nation_power_color_array[nationRecno] = nationPtr->nation_color;
+
+	sys.map_need_redraw = 1;
+	sys.zoom_need_redraw = 1;
+}
+//--------- End of function ModEditor::change_kingdom_color ---------//
+
+
+//-------- Begin of function ModEditor::clear_map --------//
+//
+// A blank map (the Base option of the New Map window): no towns, buildings,
+// units (also the kings: the kingdoms are kept, their kings are placed
+// again), natural resources, trees, rocks or hills, all of land or water.
+//
+void ModEditor::clear_map(int waterFlag)
+{
+	power.reset_selection();
+
+	char oldExitFlag = sys.signal_exit_flag;
+	sys.signal_exit_flag = 2;		// no workers mobilized, no news of the kings' death
+
+	int i;
+	for( i=firm_array.size() ; i>0 ; i-- )
+	{
+		if( !firm_array.is_deleted(i) )
+			firm_array.del_firm(i);
+	}
+
+	for( i=firm_die_array.size() ; i>0 ; i-- )
+	{
+		if( !firm_die_array.is_deleted(i) )
+			firm_die_array.del(i);
+	}
+
+	for( i=town_array.size() ; i>0 ; i-- )
+	{
+		if( !town_array.is_deleted(i) )
+			town_array.del_town(i);
+	}
+
+	for( i=unit_array.size() ; i>0 ; i-- )
+	{
+		if( !unit_array.is_deleted(i) )
+			unit_array.del(i);
+	}
+
+	for( i=nation_array.size() ; i>0 ; i-- )
+	{
+		if( !nation_array.is_deleted(i) )
+			nation_array[i]->king_unit_recno = 0;
+	}
+
+	for( i=site_array.size() ; i>0 ; i-- )
+	{
+		if( !site_array.is_deleted(i) )
+			site_array.del_site(i);
+	}
+
+	sys.signal_exit_flag = oldExitFlag;
+
+	editor_terrain_fill(waterFlag);
+
+	sys.map_need_redraw = 1;
+	sys.zoom_need_redraw = 1;
+}
+//--------- End of function ModEditor::clear_map ---------//
