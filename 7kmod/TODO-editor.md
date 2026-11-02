@@ -410,6 +410,36 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
   reino (`deinit_unit_id`, que `signal_exit_flag` se saltaba).
 - [x] **Workers: Praying y None.** La opción Skill suma **Praying** (los que oran en el
   Seat of Power) y **None**: una unidad sin oficio (aldeano), sin opción Level.
+- [x] **Reinos: agregar, quitar y reinos sin rey.**
+  - **Mientras se edita un reino puede no tener rey** (mapa en limpio, reino nuevo, rey
+    borrado). **Test (F12)** y **Save** revisan: si a algún reino le falta rey no
+    prueban ni guardan, y dicen cuáles ("These kingdoms need a king: ...")
+    (`ModEditor::check_kings`).
+  - **Entrada King** en la pestaña Units (opciones Race, Combat y Leadership): coloca el
+    rey del reino elegido arriba, solo si no tiene rey. Sobre un fuerte de su reino entra
+    como comandante. El nombre del reino pasa a ser el del rey (`Nation::set_king`); si
+    el nombre está bloqueado (Lock Kingdom Name) y el rey es de la misma raza, se queda
+    el nombre. El jugador conserva su nombre.
+  - **Delete borra reyes:** el reino queda sin rey hasta que se ponga otro (sin la
+    noticia de su muerte).
+  - **Ventana Kingdoms:**
+    - **Add Kingdom:** un reino de la IA sin rey, con la raza de la opción Race (para su
+      nombre hasta que se ponga el rey) y un color que nadie use. Hasta 7 reinos.
+    - **Remove Kingdom:** con confirmación, quita el reino con sus pueblos, edificios y
+      unidades (`ModEditor::remove_kingdom`; en el juego los pueblos quedarían
+      independientes y las unidades se irían a otros reinos). El del jugador no se puede
+      quitar.
+    - **Color** del reino seleccionado con `<` y `>`: los colores que nadie usa.
+    - Los reinos sin rey dicen "(no king)".
+  - Pendiente: cambiar cuál reino es el del jugador.
+- [x] **Mapa en limpio:** opción **Base** en la ventana New Map: **Generated** (el mapa de
+  siempre), **Land** o **Water**. Con Land o Water se genera el mapa y luego se quita
+  todo: pueblos, edificios, unidades (también los reyes: los reinos quedan sin rey),
+  recursos, árboles, rocas, manchas de tierra y colinas, y todo el mapa queda de pasto o
+  de agua (`ModEditor::clear_map`, `editor_terrain_fill`). Después se pinta con la
+  pestaña Terrain.
+  - Pendiente si se necesita: un botón Fill en la pestaña Terrain para el mapa que se
+    está editando.
 - [x] **Espías en el editor.** En el juego un espía es una unidad con un registro `Spy`
   (`SpyArray::add_spy`): reino verdadero, reino con el que se disfraza, habilidad de
   espionaje y lealtad; dentro de un pueblo o edificio queda en ese lugar

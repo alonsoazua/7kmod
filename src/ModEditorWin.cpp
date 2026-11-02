@@ -191,6 +191,12 @@ static void disp_kingdoms(int selNation)
 			str += _("(you)");
 		}
 
+		if( !nationPtr->king_unit_recno || unit_array.is_deleted(nationPtr->king_unit_recno) )
+		{
+			str += " ";
+			str += _("(no king)");
+		}
+
 		font_san.put( NAME_X1+16, y, str, 0, NAME_X2-2 );
 
 		str = misc.format((int)nationPtr->cash, 2);
@@ -208,8 +214,13 @@ static void disp_kingdoms(int selNation)
 	Nation* nationPtr = nation_array[selNation];
 	int y = DETAIL_Y1;
 
-	vga_back.bar( TECH_X, y+1, TECH_X+11, y+12, nationPtr->nation_color );
-	font_san.put( TECH_X+16, y, nationPtr->nation_name(), 0, RELATION_X-10 );
+	//--- the color of the kingdom, with < and > (the colors no other kingdom uses) ---//
+
+	editor_put_button( TECH_X, y-1, TECH_X+15, y+16, "<", 1, 0 );
+	vga_back.bar( TECH_X+20, y+1, TECH_X+31, y+12, nationPtr->nation_color );
+	editor_put_button( TECH_X+36, y-1, TECH_X+51, y+16, ">", 1, 0 );
+
+	font_san.put( TECH_X+58, y, nationPtr->nation_name(), 0, RELATION_X-10 );
 
 	//--- Lock Kingdom Name: re-rolling (also when the race of the king changes) doesn't change the name ---//
 
@@ -234,6 +245,13 @@ static void disp_kingdoms(int selNation)
 
 	editor_put_button( TECH_X+6, y+4, TECH_X+126, y+23, _("All technologies"), 1, 0 );
 	editor_put_button( TECH_X+134, y+4, TECH_X+254, y+23, _("No technologies"), 1, 0 );
+
+	//------- add and remove kingdoms (the player's can't be removed) -------//
+
+	editor_put_button( RELATION_X+6, y+4, RELATION_X+126, y+23, _("Add Kingdom"),
+		nation_array.nation_count < MAX_NATION, 0 );
+	editor_put_button( RELATION_X+134, y+4, RELATION_X+266, y+23, _("Remove Kingdom"),
+		selNation != nation_array.player_recno, 0 );
 
 	//------- the selected kingdom: relations -------//
 
@@ -349,6 +367,61 @@ static int detect_kingdoms(int& selNation)
 	{
 		for( int i=1 ; i<=tech_res.tech_count ; i++ )
 			tech_res[i]->set_nation_tech_level(selNation, 0);
+		return 1;
+	}
+
+	//------- add a kingdom: without a king, it is placed with King in the Units tab -------//
+
+	if( mouse.any_click( RELATION_X+6, y+4, RELATION_X+126, y+23 ) )
+	{
+		if( nation_array.nation_count >= MAX_NATION )
+			return 0;
+
+		int nationRecno = mod_editor.add_kingdom();
+
+		if( nationRecno )
+			selNation = nationRecno;
+
+		return 1;
+	}
+
+	//------- remove a kingdom with its towns, buildings and units -------//
+
+	if( mouse.any_click( RELATION_X+134, y+4, RELATION_X+266, y+23 ) )
+	{
+		if( selNation == nation_array.player_recno )
+			return 0;
+
+		String str;
+		snprintf( str, MAX_STR_LEN+1, _("Remove %s with its towns, buildings and units?"),
+			nation_array[selNation]->nation_name() );
+
+		if( !box.ask( str, _("Yes"), _("No") ) )
+			return 1;
+
+		mod_editor.remove_kingdom(selNation);
+
+		selNation = nation_array.player_recno;
+
+		if( !selNation || nation_array.is_deleted(selNation) )
+		{
+			for( selNation=1 ; selNation<=nation_array.size() && nation_array.is_deleted(selNation) ; selNation++ );
+		}
+
+		return 1;
+	}
+
+	//------- the color of the selected kingdom -------//
+
+	if( mouse.any_click( TECH_X, DETAIL_Y1-1, TECH_X+15, DETAIL_Y1+16 ) )
+	{
+		mod_editor.change_kingdom_color(selNation, -1);
+		return 1;
+	}
+
+	if( mouse.any_click( TECH_X+36, DETAIL_Y1-1, TECH_X+51, DETAIL_Y1+16 ) )
+	{
+		mod_editor.change_kingdom_color(selNation, 1);
 		return 1;
 	}
 
@@ -675,6 +748,7 @@ static int detect_value(int x, int y, int width)
 //------- the New Map window --------//
 
 enum { NM_OPT_RACE, NM_OPT_COLOR, NM_OPT_AI_COUNT, NM_OPT_DIFFICULTY, NM_OPT_TERRAIN, NM_OPT_LAND,
+		 NM_OPT_BASE,
 		 NM_LEFT_COUNT,
 		 NM_OPT_EXPLORE = NM_LEFT_COUNT, NM_OPT_FOG, NM_OPT_CASH, NM_OPT_AI_CASH, NM_OPT_AGGRESSIVE,
 		 NM_OPT_MONSTER, NM_OPT_RANDOM_START, NM_OPT_RAW, NM_OPT_NEAR_RAW, NM_OPT_TOWNS,
@@ -713,6 +787,7 @@ static NewMapOption new_map_option[NM_OPT_COUNT] =
 	{ N_("Difficulty"), 6, 0, 0, 0, { N_("Level I"), N_("Level II"), N_("Level III"), N_("Level IV"), N_("Level V"), N_("Custom") } },
 	{ N_("Terrain"), 3, 0, 0, 0, { N_("Standard"), N_("Snow"), N_("Badlands") } },
 	{ N_("Land Mass"), 3, 0, 0, 0, { N_("Small"), N_("Medium"), N_("Large") } },
+	{ N_("Base"), 3, 0, 0, 0, { N_("Generated"), N_("Land"), N_("Water") } },
 
 	{ N_("World Map"), 2, 0, 0, 1, { N_("Explored"), N_("Unexplored") } },
 	{ N_("Fog of War"), 2, 0, 0, 1, { N_("On"), N_("Off") } },
@@ -745,6 +820,9 @@ static char new_map_race_table[MAX_RACE] =		// the order of the races in the new
 #endif
 
 static short new_map_town_count[3] = { 7, 15, 30 };		// Few, More, Many: as in the new game screen
+
+static char  new_map_base = 0;				// the Base option: 0 - generated, 1 - land, 2 - water (kept while the game runs)
+static char  new_map_base_pending = 0;		// the base of the map being generated, taken by ModEditor::enter_edit_mode()
 static short new_map_latitude[3] = { 45, 70, 20 };
 
 static int	 new_map_get(Config& cfg, int optionId);
@@ -954,6 +1032,7 @@ void ModEditor::edit_new_map()
 
 	new_map_seed = atol(mapIdStr);		// 0 (not a number) - random
 	new_map_flag = 1;
+	new_map_base_pending = new_map_base;		// a blank map of land or water: ModEditor::enter_edit_mode() clears the generated map
 
 	sys.signal_exit_flag = 2;
 }
@@ -1003,6 +1082,7 @@ static int new_map_get(Config& cfg, int optionId)
 		case NM_OPT_DIFFICULTY:		return cfg.difficulty_level;
 		case NM_OPT_TERRAIN:			return cfg.terrain_set-1;
 		case NM_OPT_LAND:				return cfg.land_mass-1;
+		case NM_OPT_BASE:				return new_map_base;
 		case NM_OPT_EXPLORE:			return cfg.explore_whole_map ? 0 : 1;
 		case NM_OPT_FOG:				return cfg.fog_of_war ? 0 : 1;
 		case NM_OPT_CASH:				return cfg.start_up_cash-1;
@@ -1048,6 +1128,7 @@ static void new_map_set(Config& cfg, int optionId, int index)
 			break;
 
 		case NM_OPT_LAND:				cfg.land_mass = index+1; break;
+		case NM_OPT_BASE:				new_map_base = (char) index; break;		// not in the config: it is applied after generating the map
 		case NM_OPT_EXPLORE:			cfg.explore_whole_map = !index; break;
 		case NM_OPT_FOG:				cfg.fog_of_war = !index; break;
 		case NM_OPT_CASH:				cfg.start_up_cash = index+1; break;
@@ -1087,3 +1168,19 @@ static int new_map_random_seed()
 	return randomSeed ? randomSeed : 1;
 }
 //----------- End of static function new_map_random_seed -----------//
+
+
+//-------- Begin of function editor_take_new_map_base --------//
+//
+// The Base option of the map just generated by the New Map window, taken
+// once (ModEditor::enter_edit_mode() is also called after each test).
+//
+// return: <int> 0 - generated, 1 - land, 2 - water
+//
+int editor_take_new_map_base()
+{
+	int base = new_map_base_pending;
+	new_map_base_pending = 0;
+	return base;
+}
+//----------- End of function editor_take_new_map_base -----------//

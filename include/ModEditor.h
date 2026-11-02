@@ -173,6 +173,14 @@ public:
 	void	edit_goals();
 	void	edit_new_map();
 
+	//--- kingdoms and blank maps ---//
+
+	int	check_kings();								// 1 - all the kingdoms have a king (for testing and saving)
+	int	add_kingdom();								// return the nation recno, 0 - none
+	void	remove_kingdom(int nationRecno);
+	void	change_kingdom_color(int nationRecno, int dir);
+	void	clear_map(int waterFlag);
+
 	//--- in-game menu during a test ---//
 
 	void	disp_menu_option(int x, int y);
@@ -182,5 +190,8 @@ extern ModEditor mod_editor;
 
 void editor_put_button(int x1, int y1, int x2, int y2, const char* str, int enabled, int pushed);		// on the back buffer
 extern char loc_reveal_all_flag;		// 1 - Location::explored() and visibility() see the whole map (the editor mode)
+
+int  editor_terrain_fill(int waterFlag);		// ModEditorTerrain.cpp: the whole map of land or water
+int  editor_take_new_map_base();					// ModEditorWin.cpp: the base of the new map (0 - generated, 1 - land, 2 - water), once
 
 #endif
