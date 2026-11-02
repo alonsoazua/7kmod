@@ -22,6 +22,13 @@ escenarios (desde la 0.2.0) está descrito en `TODO-editor.md`.
 ## [Sin publicar]
 
 ### Agregado
+- **Editor: agregar y quitar reinos.** En la ventana Kingdoms, **Add Kingdom** crea un
+  reino de la IA sin rey y **Remove Kingdom** quita uno con sus pueblos, edificios y
+  unidades; también se cambia el color de un reino. El rey se coloca con la entrada
+  **King** de la pestaña Units, y Delete ya borra reyes. Test y Save avisan si a algún
+  reino le falta rey. Detalles en `TODO-editor.md`.
+- **Editor: mapa en limpio.** Opción **Base** en la ventana New Map: Generated, **Land** o
+  **Water** (todo el mapa de pasto o de agua, sin nada encima ni reyes).
 - **Editor: espías.** Entrada **Spy** en la pestaña Units, con opciones Race, Spying y
   Cloak. Sobre un pueblo o edificio (de cualquier reino) entra como espía; en el mapa
   queda como unidad disfrazada. Al seleccionarlo se ve su reino verdadero y se cambian
