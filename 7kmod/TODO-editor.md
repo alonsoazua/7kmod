@@ -190,10 +190,9 @@ Se usa la misma distribución de la pantalla del juego (800×600): mapa a la izq
     fecha límite como al empezar un escenario.
   - Las ventanas se dibujan sobre una copia del mapa en cada cambio, para que el fondo
     translúcido no se aclare.
-- **Pendiente (no entró en las fases 2 y 3):** reyes, espías y Seat of Power (necesitan
-  más lógica), agregar o quitar reinos y cambiar cuál es el del jugador (por ahora se
-  eligen en la pantalla de New Game), y propiedades de los edificios. (El Seat of Power
-  se hizo después, ver abajo.)
+- **Pendiente (no entró en las fases 2 y 3):** cambiar cuál reino es el del jugador (por
+  ahora se elige en la pantalla de New Game) y propiedades de los edificios. (Los reyes,
+  los espías, el Seat of Power y agregar o quitar reinos se hicieron después, ver abajo.)
 - [x] **Fase 2b: Mover unidades y meterlas o sacarlas de edificios.** Todo al instante
   (el editor está en pausa, una orden normal de mover no se cumpliría hasta probar).
   - **Clic derecho cambia:** con unidades seleccionadas, clic derecho mueve o mete. Quitar
