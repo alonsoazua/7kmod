@@ -11,7 +11,11 @@ Si los cambios funcionan bien en partidas, se pasarán a `7kmod-gameplay`.
 
 ## [Sin publicar]
 
-Versión **0.1.0**, basada en **7kmod-pathing 0.7.1** (gameplay 0.1.0, 7kmod 0.2.0).
+---
+
+## [0.1.0] - 2026-11-06
+
+Primera versión publicada. Basada en **7kmod-pathing 0.7.1** (gameplay 0.2.0, 7kmod 0.3.0).
 
 ### Agregado
 - **Carpeta propia:** `7kaa-ia.exe` guarda sus partidas, `CONFIG.DAT` y `config.txt` en
@@ -75,8 +79,8 @@ Versión **0.1.0**, basada en **7kmod-pathing 0.7.1** (gameplay 0.1.0, 7kmod 0.2
     aldeanos de la IA experimental.
 
 ### Compatibilidad
-- **Partidas guardadas:** versión 302: 301 guarda `ai_type`
-  (`GAME_VERSION_7KMOD_AI_TYPE`) y 302 los límites por reino
+- **Partidas guardadas:** versión 303: 301 guarda `ai_type`
+  (`GAME_VERSION_7KMOD_AI_TYPE`), 302 los límites por reino
   (`GAME_VERSION_7KMOD_NATION_LIMITS`) y 303 el impuesto por habitante
   (`GAME_VERSION_7KMOD_TOWN_TAX`). Las partidas anteriores usan los valores de
   `config.txt`. Carga las partidas de gameplay y pathing (versión 300 o anterior) con la
