@@ -1,5 +1,7 @@
 # Changelog de 7kmod
 
+[English](CHANGELOG.en.md) | **Español**
+
 Cambios de la rama `7kmod` (ejecutable `7kaa-mod.exe`) respecto a la versión original
 **Seven Kingdoms: Ancient Adversaries 2.15.7** (tag `v2.15.7`).
 
@@ -16,6 +18,7 @@ escenarios (desde la 0.2.0) está descrito en `TODO-editor.md`.
 - Versiones: el tercer número sube con correcciones, el segundo con funciones nuevas o
   cambios de balance, y el primero queda en 0 mientras el mod siga en pruebas.
 - Secciones de cada versión: **Agregado**, **Cambiado**, **Corregido**, **Compatibilidad**.
+- La traducción al inglés está en `CHANGELOG.en.md`; los dos se actualizan juntos.
 
 ---
 

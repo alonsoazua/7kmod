@@ -1,5 +1,7 @@
 # Espionaje
 
+[English](SPYING.en.md) | **Español**
+
 Referencia de cómo funciona el espionaje en Seven Kingdoms: Ancient Adversaries
 2.15.7. Los valores salen del código (`src/OSPY.cpp`, `src/OSPY2.cpp`,
 `src/OSPYA.cpp`, `src/OFIRMIF3.cpp`, `src/OUNIT.cpp`, `src/OSYS2.cpp`,
