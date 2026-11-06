@@ -21,6 +21,12 @@ escenarios (desde la 0.2.0) está descrito en `TODO-editor.md`.
 
 ## [Sin publicar]
 
+---
+
+## [0.3.0] - 2026-11-06
+
+Más funciones del editor (reinos, reyes, espías, mapa en limpio) y correcciones.
+
 ### Agregado
 - **Editor: agregar y quitar reinos.** En la ventana Kingdoms, **Add Kingdom** crea un
   reino de la IA sin rey y **Remove Kingdom** quita uno con sus pueblos, edificios y
@@ -53,6 +59,9 @@ escenarios (desde la 0.2.0) está descrito en `TODO-editor.md`.
   juego original nunca los muestra). Ahora se hacen al cargar el juego reduciendo el
   retrato grande de cada Fryhtan, para todos sus rangos (soldado, Ordo y All High)
   (`make_small_icon`, `src/OUNITRES.cpp`).
+
+### Compatibilidad
+- Sin cambios en las partidas guardadas ni en el multijugador.
 
 ---
 

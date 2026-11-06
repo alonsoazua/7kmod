@@ -11,7 +11,13 @@ Si los cambios funcionan bien en partidas, se pasarán a `7kmod-gameplay` (o a
 
 ## [Sin publicar]
 
-Incluye **7kmod 0.2.0** (editor de escenarios), a través de `7kmod-gameplay`.
+---
+
+## [0.7.1] - 2026-11-06
+
+Primera versión publicada. Basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.0). Las
+versiones anteriores de esta rama no se publicaron; cada cambio dice entre paréntesis
+en qué versión entró.
 
 ### Agregado
 - **Apurarse al reunirse (0.7.0):** mientras el grupo se reúne antes de marchar, las
