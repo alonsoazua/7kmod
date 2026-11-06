@@ -1,11 +1,15 @@
 # Changelog de 7kmod-pathing (experimental)
 
+[English](CHANGELOG-pathing.en.md) | **Español**
+
 Rama experimental con cambios en la búsqueda de caminos (pathfinding). Está basada
 en `7kmod-gameplay` e incluye todo lo de esa rama (ver `CHANGELOG-gameplay.md` y
 `CHANGELOG.md`). Su ejecutable es `7kaa-pathing.exe`.
 
 Si los cambios funcionan bien en partidas, se pasarán a `7kmod-gameplay` (o a
 `7kmod`).
+
+La traducción al inglés está en `CHANGELOG-pathing.en.md`; los dos se actualizan juntos.
 
 ---
 
