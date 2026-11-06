@@ -1,5 +1,7 @@
 # Opciones avanzadas (`config.txt`)
 
+[English](ADVANCED_CONFIG.en.md) | **Español**
+
 Seven Kingdoms 2.15.7 tiene unas 45 opciones avanzadas que no aparecen en ningún menú.
 Se configuran en un archivo de texto `config.txt`. Este documento explica cada una según
 el código fuente (`ConfigAdv.cpp` y los lugares del juego que usan cada opción).

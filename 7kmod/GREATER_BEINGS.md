@@ -1,5 +1,7 @@
 # Greater Beings (Seres Mayores)
 
+[English](GREATER_BEINGS.en.md) | **Español**
+
 Cómo funcionan los Greater Beings de Seven Kingdoms: Ancient Adversaries 2.15.7, según el
 código fuente (`OU_GOD.cpp`, `OGODRES.cpp`, `OF_BASE.cpp`, `OU_MONS.cpp`, `OSITE.cpp`) y los
 datos del juego (tablas `GOD`, `UNIT` y `UNITATTK` de `RESOURCE/STD.SET`).

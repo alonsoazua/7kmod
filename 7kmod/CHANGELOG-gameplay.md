@@ -1,5 +1,7 @@
 # Changelog de 7kmod-gameplay
 
+[English](CHANGELOG-gameplay.en.md) | **Español**
+
 Cambios de la rama `7kmod-gameplay` (ejecutable `7kaa-gameplay.exe`), que modifican el
 estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 `CHANGELOG.md`; aquí solo se anota lo propio de esta rama.
@@ -13,6 +15,7 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 - Versiones: el tercer número sube con correcciones, el segundo con funciones nuevas o
   cambios de balance, y el primero queda en 0 mientras el mod siga en pruebas.
 - Secciones de cada versión: **Agregado**, **Cambiado**, **Corregido**, **Compatibilidad**.
+- La traducción al inglés está en `CHANGELOG-gameplay.en.md`; los dos se actualizan juntos.
 
 ---
 
