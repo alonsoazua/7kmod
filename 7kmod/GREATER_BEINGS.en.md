@@ -4,9 +4,16 @@
 
 How the Greater Beings of Seven Kingdoms: Ancient Adversaries 2.15.7 work, based on the
 source code (`OU_GOD.cpp`, `OGODRES.cpp`, `OF_BASE.cpp`, `OU_MONS.cpp`, `OSITE.cpp`) and
-the game data (the `GOD`, `UNIT` and `UNITATTK` tables of `RESOURCE/STD.SET`). No change
-of 7kmod or 7kmod-gameplay modifies how they work, except the "Seats of Power Unlocked?"
-option, which only changes how the scroll is obtained at the start.
+the game data (the `GOD`, `UNIT` and `UNITATTK` tables of `RESOURCE/STD.SET`).
+
+**Changes of the mod:**
+- **7kmod:** the "Seats of Power Unlocked?" option (how the scroll is obtained at the
+  start) and the help of the power buttons of the Djini, Isis and uNkulunkulu, which had
+  none.
+- **7kmod-gameplay:** the Norman Dragon throws a fireball with a button instead of
+  attacking; the Chinese Jing Nung attacks at half the cost; the Mughul Djini also
+  converts a soldier; the Greek Phoenix costs less and has a power to expose spies. They
+  are marked with *(gameplay)* below. In `7kmod` all four work as in the original.
 
 ---
 
@@ -39,7 +46,7 @@ option, which only changes how the scroll is obtained at the start.
 - **If the Seat is destroyed, the being dies instantly.** If the Seat changes owner, so does the being.
 - **They all fly** and have armor 8.
 - **Powers:** each use costs the points shown in the table, and the button is only enabled if the being has at least that many points (health).
-- **Attack:** only the two dragons attack. The others can't attack and only move or use their power.
+- **Attack:** only the two dragons attack. The others can't attack and only move or use their power. *(gameplay)*: only the Chinese Jing Nung attacks; the Norman Dragon uses its fireball with a button.
 
 ---
 
@@ -47,13 +54,13 @@ option, which only changes how the scroll is obtained at the start.
 
 | Race | Being | Type | Cost per day | Cost per use | Power range | Sight |
 |---|---|---|---|---|---|---|
-| Norman | Dragon | Attack (fire) | 1 | 10 per attack | — | 9 |
-| Chinese | Jing Nung | Attack (3 attacks) | 1.5 | 10 per attack | — | 9 |
-| Greek | Phoenix | Scout, reveals information | 2.5 | — | — | 10 |
+| Norman | Dragon | Attack (fire). *(gameplay)*: fireball with a button | 1 | 10 per attack. *(gameplay)*: 100 per fireball | — *(gameplay: area of radius 4)* | 9 |
+| Chinese | Jing Nung | Attack (3 attacks) | 1.5 | 10 per attack. *(gameplay)*: 5 | — | 9 |
+| Greek | Phoenix | Scout, reveals information. *(gameplay)*: power to expose spies | 2.5. *(gameplay)*: 1.5 | — *(gameplay: 100)* | — *(gameplay: one of your towns)* | 10 |
 | Mayan | Kukulcan | Power: more combat | 1.5 | 100 | Area (radius 5) | 9 |
 | Persian | Lord of Healing | Power: heal | 1.5 | 100 | Area (radius 5) | 9 |
 | Japanese | Mind Turner | Power: lower loyalty | 1.5 | 100 | Area (radius 5) | 9 |
-| Indian | Djini | Power: lower loyalty | 1.5 | 100 | Area (radius 5) | 10 |
+| Indian | Djini | Power: lower loyalty. *(gameplay)*: and convert a soldier | 1.5 | 100 | Area (radius 5) | 10 |
 | Viking | Thor | Powers: rain and tornado | 1.5 | 100 | Map / in front of Thor | 9 |
 | Egyptian | Isis | Power: more population | 1.5 | 100 | One tile (town) | 9 |
 | Zulu | uNkulunkulu | Power: more leadership | 1.5 | 100 | One tile | 9 |
@@ -75,11 +82,24 @@ option, which only changes how the scroll is obtained at the start.
 - **Cost:** each attack uses 10 prayer points, which are also its health; attacking a lot weakens it.
 - **Use:** the strongest direct combat unit early on, but it uses up its points quickly.
 
+- *(gameplay)* **Fireball with a button:** it no longer attacks. Its power button (the
+  icon is its fireball) lets you choose a point on the map; it flies there and throws the
+  fireball.
+  - **Cost:** 100 points per fireball.
+  - **Base damage 150** (its attack had 15), in a radius of 109 pixels (about 3.4 tiles;
+    45 before) that goes down from 100% at the center to 50% at the edge: against armor
+    4, about 37 health at the center, 31 at one tile, 26 at two and 20 at three. It only
+    damages kingdoms you are at war with. Buildings take the damage ÷3, once each.
+  - **Fire** on the tiles within 5 of the center (3 before).
+  - The AI throws it when there are 5 or more enemy units together.
+
 ### Chinese — Jing Nung (Chinese dragon)
 - **What it does:** attacks at range with a sequence of 3 attacks.
 - **Attack:** three attacks of base damage 18 each, range 6.
 - **Cost:** 10 points for each attack.
 - **Use:** more damage per sequence than the Norman Dragon, at the same cost per attack.
+
+- *(gameplay)* **Cost:** 5 points per attack: with the same points it attacks twice as much.
 
 ### Greeks — Phoenix
 - **What it does:** it doesn't attack and has no powers. It's a flying scout with the **highest sight (10)** of all the beings.
@@ -87,7 +107,16 @@ option, which only changes how the scroll is obtained at the start.
   - **Enemy units:** their information panel (combat, skill, loyalty) and their real profession.
   - **Enemy buildings:** the inside panel, with the list of workers and their levels, production, research, etc.
 - **It doesn't detect spies.** The original code had a function to mark enemy spies with skill below 40 inside your buildings when the Phoenix flew over them, but it's disabled (commented out) in the code.
-- **Cost:** it's the most expensive to keep (2.5 per day).
+- **Cost:** it's the most expensive to keep (2.5 per day). *(gameplay)*: 1.5 per day.
+- *(gameplay)* **Power: expose spies.** Power button (the spies' eye icon): you choose a
+  **town of your kingdom** and the Phoenix flies to it. If there are spies of other
+  kingdoms, it **exposes and executes** the one with the lowest spying skill, with the
+  normal news message.
+  - **Cost:** 100 points, even if there are no spies. On something that isn't one of
+    your towns it does nothing and uses no points.
+  - **Effect:** a ring of fire over the town (the Mind Turner's, in orange), with the
+    sound of Isis's power.
+  - The AI uses it on its towns with foreign spies (the game knows where they are).
 - **Use:** exploring the map and spying on the inside of enemy buildings without risking spies; the AI sends it to fly to random points of the map.
 
 ### Mayans — Kukulcan
@@ -117,6 +146,11 @@ option, which only changes how the scroll is obtained at the start.
 - **It doesn't affect** workers inside buildings, towns, or kingdoms you aren't at war with.
 - **Use:** stronger than the Japanese one against armies in the field, but it only works against declared enemies.
 
+- *(gameplay)* **It also converts a soldier:** on each cast, the soldier with the lowest
+  combat in the area (soldier rank, not general or king; only people, no spies) among
+  the units whose loyalty it lowers joins your kingdom, like a unit that changes sides
+  (with its news message and its loyalty). Ties: the one with the lowest loyalty.
+
 ### Vikings — Thor
 It has **two powers**, each costing 100 points:
 - **Rain:** triggers instantly, without choosing a target.
@@ -145,8 +179,8 @@ It has **two powers**, each costing 100 points:
 ## 4. How the AI uses Greater Beings
 
 - The AI builds Seats of Power and invokes their beings when it has the scroll.
-- **Dragons:** look for enemy targets to attack.
+- **Dragons:** look for enemy targets to attack. *(gameplay)*: the Jing Nung; the Dragon throws its fireball at groups of 5 or more enemies.
 - **Thor:** casts the tornado against enemy targets.
 - **Lord of Healing:** looks for its own fort with the most wounded and heals it.
-- **Phoenix:** flies to random points.
+- **Phoenix:** flies to random points. *(gameplay)*: first it exposes the spies in its towns if it has the points.
 - **The other beings:** look for targets according to their power.

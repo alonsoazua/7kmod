@@ -51,6 +51,10 @@ and die without a news message. In gameplay they regenerate 1 point every 10 day
 doesn't make up for it (about −0.9 per day). Inside a fort or a Seat of Power they lose
 nothing, because the fort's charge only checks weapons.
 
+In gameplay invoked Fryhtans also eat (20 to 50 food a year, see
+`CHANGELOG-gameplay.en.md`). Without food they lose another health point per day, on the
+map and inside the fort, so without money or food they lose 2 per day.
+
 ## 2. Stats
 
 Weapons always have combat 100, so their health is that of the data and doesn't go up.

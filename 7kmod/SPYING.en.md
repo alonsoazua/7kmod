@@ -6,8 +6,11 @@ Reference on how spying works in Seven Kingdoms: Ancient Adversaries 2.15.7. The
 come from the code (`src/OSPY.cpp`, `src/OSPY2.cpp`, `src/OSPYA.cpp`,
 `src/OFIRMIF3.cpp`, `src/OUNIT.cpp`, `src/OSYS2.cpp`, `src/ONATIONB.cpp`).
 
-None of the changes of 7kmod, 7kmod-gameplay or 7kmod-pathing modify spying: everything
-in this document is from the original game.
+Everything in this document is from the original game, which is how it works in the
+`7kmod` branch. **The `7kmod-gameplay` branch (and `7kmod-pathing`) changes spying:**
+Propaganda in independent towns, villagers who join, accidents, bribe success percentage
+and intelligence reports instead of "Steal secrets". See `CHANGELOG-gameplay.en.md` and
+`TODO-espionaje.md` (Spanish only).
 
 ## 1. How to get a spy
 
