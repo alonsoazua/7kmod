@@ -1,11 +1,15 @@
 # Changelog de 7k-mod-IA (experimental)
 
+[English](CHANGELOG-ia.en.md) | **Español**
+
 Rama experimental para probar cambios en la IA de los reinos de la computadora. Está
 basada en `7kmod-pathing` e incluye todo lo de esa rama, de `7kmod-gameplay` y de
 `7kmod` (ver `CHANGELOG-pathing.md`, `CHANGELOG-gameplay.md` y `CHANGELOG.md`). Su
 ejecutable es `7kaa-ia.exe`.
 
 Si los cambios funcionan bien en partidas, se pasarán a `7kmod-gameplay`.
+
+La traducción al inglés está en `CHANGELOG-ia.en.md`; los dos se actualizan juntos.
 
 ---
 
