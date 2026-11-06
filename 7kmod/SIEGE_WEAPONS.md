@@ -1,5 +1,7 @@
 # Armas de asedio
 
+[English](SIEGE_WEAPONS.en.md) | **Español**
+
 Referencia de cómo funcionan las armas de asedio en Seven Kingdoms: Ancient
 Adversaries 2.15.7 y en 7kmod. Los valores salen de los datos del juego
 (`RESOURCE/STD.SET`: tablas UNIT, UNITATTK, SACTION y SPRITE) y del código
