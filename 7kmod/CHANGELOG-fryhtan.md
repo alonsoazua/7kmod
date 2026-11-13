@@ -22,6 +22,9 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
     flechas ▲ ▼ para cambiar de página); la elegida va subrayada. Debajo
     del nombre se ve cómo quedará el reino, por ejemplo "Fryhtan kingdom: Al Rokken
     Horde (Large: 2 population)". La pestaña y la especie se recuerdan.
+  - Los nombres de las especies, las pestañas y la etiqueta "Seats of Power Unlocked?"
+    usan letra suavizada (TeX Gyre Pagella, tipo Palatino), prerenderizada con
+    `7kmod/tools/make_smooth_text.py`.
   - El reino empieza con su rey, un All High de la especie con combate 60 y
     liderazgo 60.
   - Se llama "<nombre> <especie> Horde", también en las noticias.

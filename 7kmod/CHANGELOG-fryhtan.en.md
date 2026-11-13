@@ -23,6 +23,9 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
     arrows to change the page); the chosen one is underlined. Below the
     name it shows how the kingdom will be called, for example "Fryhtan kingdom: Al
     Rokken Horde (Large: 2 population)". The tab and the species are remembered.
+  - The species names, the tabs and the "Seats of Power Unlocked?" label use smooth
+    anti-aliased text (TeX Gyre Pagella, a Palatino clone), pre-rendered with
+    `7kmod/tools/make_smooth_text.py`.
   - The kingdom starts with its king, an All High of the species with combat
     60 and leadership 60.
   - It's called "<name> <species> Horde", also in the news.

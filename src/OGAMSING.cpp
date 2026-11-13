@@ -42,6 +42,7 @@
 #include <OCOLTBL.h>
 #include <OGETA.h>
 #include <ModFryhtan.h>
+#include <ModSmoothText.h>
 #include <stdlib.h>
 
 //---------- Define option modes --------//
@@ -193,7 +194,7 @@ enum { RACE_GRID_X1 = 222,
 		 SPECIES_PAGE_SIZE = SPECIES_COLUMNS*2,
 		 SPECIES_PAGE_COUNT = (FRYHTAN_SPECIES_COUNT+SPECIES_PAGE_SIZE-1) / SPECIES_PAGE_SIZE,
 		 SPECIES_ARROW_X1 = RACE_GRID_X1 + SPECIES_COLUMNS*SPECIES_CELL_WIDTH,
-		 KINGDOM_TAB_HEIGHT = 18 };		// the text tabs above the grid
+		 KINGDOM_TAB_HEIGHT = 20 };		// the text tabs above the grid
 
 static char race_grid_buf[RACE_GRID_WIDTH*RACE_GRID_HEIGHT];		// the race buttons of the background
 static char species_grid_buf[SPECIES_PAGE_COUNT][RACE_GRID_WIDTH*RACE_GRID_HEIGHT];	// the pages of species buttons made from them
@@ -202,6 +203,8 @@ static void save_grid(char* gridBuf, int y1);
 static void restore_grid(const char* gridBuf, int y1);
 static void make_species_grid(int y1, const int* speciesArray, int page);
 static void disp_kingdom_tabs(int x1, int y1, int fryhtanFlag, int* humanX2, int* fryhtanX1, int* fryhtanX2);
+static const struct SmoothText* find_smooth_text(const char* text, int regularFlag=0);
+static void put_smooth_text(VgaBuf* vgaBuf, int x, int y, const struct SmoothText* smoothText);
 
 #define SGOPTION_PAGE           0x40000000
 #define SGOPTION_RACE           0x00000001
@@ -805,8 +808,15 @@ static int select_option()
 								  vga_back.buf_ptr(332, offsetY+260+copyY), BASIC_OPTION_X_SPACE*2 );
 					}
 
-					font_std.put_slanted( vga_back.buf_ptr(), vga_back.buf_pitch(), 141, offsetY+331,
-						_("Seats of Power Unlocked?") );
+					const SmoothText* seatText = find_smooth_text( _("Seats of Power Unlocked?"), 1 );		// 7kmod-fryhtan: smooth text, regular as the labels
+
+					if( seatText )
+						put_smooth_text( &vga_back, 139, offsetY+328, seatText );
+					else
+					{
+						font_std.put_slanted( vga_back.buf_ptr(), vga_back.buf_pitch(), 141, offsetY+331,
+							_("Seats of Power Unlocked?") );
+					}
 
 					vga_util.blt_buf(0,0,VGA_WIDTH-1,VGA_HEIGHT-1,0);
 				}
@@ -1537,6 +1547,15 @@ static void make_species_grid(int y1, const int* speciesArray, int page)
 
 		const char* text = ModFryhtan::menu_species_name(speciesArray[index]);
 
+		const SmoothText* smoothText = find_smooth_text(text);		// the smooth name (not if it's translated)
+
+		if( smoothText )
+		{
+			put_smooth_text( &vga_back, destX + (SPECIES_CELL_WIDTH-smoothText->width)/2 - 1,
+								  destY + (BASIC_OPTION_HEIGHT-smoothText->height)/2 - 1, smoothText );
+			continue;
+		}
+
 		int textWidth = fontPtr->text_width(text);
 		int textX = destX + (SPECIES_CELL_WIDTH-textWidth)/2 - 1;
 		int textY = destY + (BASIC_OPTION_HEIGHT-fontPtr->height())/2 - 1;
@@ -1586,40 +1605,118 @@ static void disp_species_button(ButtonCustom *button, int)
 static void disp_kingdom_tabs(int x1, int y1, int fryhtanFlag, int* humanX2, int* fryhtanX1, int* fryhtanX2)
 {
 	const int gap = 24;
-	const char* humanStr = _("Humans");
-	const char* fryhtanStr = _("Fryhtans");
+	const char* strArray[2] = { _("Humans"), _("Fryhtans") };
 
-	int humanWidth = font_std.text_width(humanStr);
-	int fryhtanWidth = font_std.text_width(fryhtanStr);
+	//--- the smooth texts: bold for the chosen tab, regular for the other (NULL if translated) ---//
 
-	*humanX2   = x1+humanWidth+3;
+	const SmoothText* boldText[2]    = { find_smooth_text(strArray[0]), find_smooth_text(strArray[1]) };
+	const SmoothText* regularText[2] = { find_smooth_text(strArray[0], 1), find_smooth_text(strArray[1], 1) };
+
+	int widthArray[2];
+
+	for( int tab=0 ; tab<2 ; tab++ )
+	{
+		if( boldText[tab] && regularText[tab] )
+			widthArray[tab] = MAX( boldText[tab]->width, regularText[tab]->width );
+		else
+			widthArray[tab] = font_std.text_width(strArray[tab]) + 3;
+	}
+
+	*humanX2   = x1+widthArray[0];
 	*fryhtanX1 = *humanX2+gap;
-	*fryhtanX2 = *fryhtanX1+fryhtanWidth+3;
+	*fryhtanX2 = *fryhtanX1+widthArray[1];
 
 	int y2 = y1+KINGDOM_TAB_HEIGHT-1;
 
-	mouse.hide_area(x1, y1, *fryhtanX2+4, y2);
+	mouse.hide_area(x1, y1, *fryhtanX2+4, y2+2);
 
-	vga_util.blt_buf( x1, y1, *fryhtanX2+4, y2, 0 );		// the background
-
-	int textY = y1 + (KINGDOM_TAB_HEIGHT-font_std.height())/2 - 2;
+	vga_util.blt_buf( x1, y1, *fryhtanX2+4, y2+2, 0 );		// the background
 
 	for( int tab=0 ; tab<2 ; tab++ )
 	{
 		int tabX1 = tab==0 ? x1 : *fryhtanX1;
 		int tabX2 = tab==0 ? *humanX2 : *fryhtanX2;
-		const char* str = tab==0 ? humanStr : fryhtanStr;
 		int chosen = (tab==1) == (fryhtanFlag!=0);
 
-		font_std.put_slanted( vga_front.buf_ptr(), vga_front.buf_pitch(), tabX1+1, textY, str );		// slanted, as the labels
+		const SmoothText* smoothText = chosen ? boldText[tab] : regularText[tab];
+
+		if( smoothText && boldText[tab] && regularText[tab] )
+			put_smooth_text( &vga_front, tabX1, y1, smoothText );
+		else
+		{
+			int textY = y1 + (KINGDOM_TAB_HEIGHT-font_std.height())/2 - 2;
+
+			font_std.put_slanted( vga_front.buf_ptr(), vga_front.buf_pitch(), tabX1+1, textY, strArray[tab] );		// slanted, as the labels
+
+			if( chosen )
+				font_std.put_slanted( vga_front.buf_ptr(), vga_front.buf_pitch(), tabX1+2, textY, strArray[tab] );		// bold
+		}
 
 		if( chosen )
-		{
-			font_std.put_slanted( vga_front.buf_ptr(), vga_front.buf_pitch(), tabX1+2, textY, str );		// bold, as the race names
-			vga_front.bar( tabX1, y2-2, tabX2, y2-1, V_BLACK );		// the underline
-		}
+			vga_front.bar( tabX1+2, y2, tabX2-2, y2+1, V_BLACK );		// the underline
 	}
 
 	mouse.show_area();
 }
 //------ End of static function disp_kingdom_tabs ------//
+
+
+//------ Begin of static function find_smooth_text ------//
+//
+// 7kmod-fryhtan: the smooth (anti-aliased) version of a text, made by
+// 7kmod/tools/make_smooth_text.py (include/ModSmoothText.h).
+//
+// <const char*> text        - the text to display (translated): a translated
+//                             text isn't found, so the caller uses the game font
+// [int]         regularFlag - 1-the regular version instead of the bold one
+//
+// return: <SmoothText*> the text, NULL if there is no smooth version of it
+//
+static const SmoothText* find_smooth_text(const char* text, int regularFlag)
+{
+	for( unsigned i=0 ; i<sizeof(smooth_text_array)/sizeof(smooth_text_array[0]) ; i++ )
+	{
+		const char* key = smooth_text_array[i].text;
+		int keyLen = strlen(key);
+		int regularKey = keyLen > 0 && key[keyLen-1] == '#';
+
+		if( regularKey != (regularFlag!=0) )
+			continue;
+
+		if( (int) strlen(text) == keyLen-regularKey && !strncmp(text, key, keyLen-regularKey) )
+			return smooth_text_array+i;
+	}
+
+	return NULL;
+}
+//------ End of static function find_smooth_text ------//
+
+
+//------ Begin of static function put_smooth_text ------//
+//
+// 7kmod-fryhtan: draw a smooth text by darkening the pixels of the buffer
+// with the color tables of the game (level 10 = black), so the anti-aliasing
+// keeps to the 256-color palette.
+//
+static void put_smooth_text(VgaBuf* vgaBuf, int x, int y, const SmoothText* smoothText)
+{
+	const unsigned char* dataPtr = smoothText->data;
+
+	for( int j=0 ; j<smoothText->height ; j++ )
+	{
+		if( y+j < 0 || y+j >= VGA_HEIGHT )
+		{
+			dataPtr += smoothText->width;
+			continue;
+		}
+
+		char* bufPtr = vgaBuf->buf_ptr(x, y+j);
+
+		for( int i=0 ; i<smoothText->width ; i++, dataPtr++ )
+		{
+			if( *dataPtr && x+i >= 0 && x+i < VGA_WIDTH )
+				bufPtr[i] = (char) vga.vga_color_table->get_table(-(int)*dataPtr)[ (unsigned char) bufPtr[i] ];
+		}
+	}
+}
+//------ End of static function put_smooth_text ------//

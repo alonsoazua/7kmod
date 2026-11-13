@@ -547,6 +547,18 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
         recuadros con el nombre, como los de las razas; los retratos no caben en ese
         tamaño. La pestaña es la elección misma (`Config::fryhtan_monster_id`, que ya se
         guarda en 7KMOD.DAT), así que no hizo falta otro dato.
+- [x] **Letra suavizada en New Game:** los nombres de las especies, las pestañas
+      Humans/Fryhtans y la etiqueta "Seats of Power Unlocked?" se veían pixelados con
+      las letras del juego. Ahora usan texto prerenderizado con bordes suavizados en
+      **TeX Gyre Pagella** (clon libre de Palatino, licencia GUST): negrita cursiva
+      para las especies y la pestaña elegida, cursiva normal para la otra pestaña y la
+      etiqueta, que así se parecen a las demás etiquetas de la pantalla.
+      - El texto se genera con `7kmod/tools/make_smooth_text.py` (Pillow) en
+        `include/ModSmoothText.h`: cada pixel guarda cuánto oscurecer el fondo (0 a 10)
+        y el juego lo aplica con la tabla de colores, así se mezcla con la textura de
+        piedra. En el repositorio solo va el header generado, no la fuente.
+      - Si el texto está traducido y no existe prerenderizado, se usa la letra del
+        juego como antes.
 
 ### Fase 6: diplomacia y Fryhtans salvajes
 - [x] Sin comercio, amistad ni alianza con un reino Fryhtan (jugador e IA).
