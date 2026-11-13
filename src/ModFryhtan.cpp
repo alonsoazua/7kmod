@@ -28,6 +28,7 @@
 #include <OSPRTRES.h>
 #include <OSKILL.h>
 #include <OTOWN.h>
+#include <OF_MONS.h>
 #include <OWORLD.h>
 #include <ONATION.h>
 #include <OFIRM.h>
@@ -54,6 +55,11 @@ void ModFryhtan::reset()
 
 	if( lair_array )
 		memset( lair_array, 0, sizeof(FryhtanLair) * lair_array_size );
+
+	if( offer_array )
+		memset( offer_array, 0, sizeof(LairOffer) * offer_array_size );
+
+	capturing_lair = 0;
 }
 //----------- End of function ModFryhtan::reset -----------//
 
@@ -419,12 +425,12 @@ void ModFryhtan::next_day_lair(int firmRecno)
 
 //--------- Begin of function ModFryhtan::add_lair_soldier ---------//
 //
-// Add a Fryhtan soldier (combat LAIR_TRAIN_COMBAT) of the given species next
-// to a lair. It goes into the lair if there is room.
+// Add a Fryhtan soldier (combat LAIR_TRAIN_COMBAT by default) of the given
+// species next to a lair. It goes into the lair if there is room.
 //
 // return: <int> the unit recno, 0 if there is no space for it
 //
-int ModFryhtan::add_lair_soldier(Firm* firmPtr, int monsterId)
+int ModFryhtan::add_lair_soldier(Firm* firmPtr, int monsterId, int combatLevel)
 {
 	//------ locate a space next to the lair ------//
 
@@ -449,7 +455,7 @@ int ModFryhtan::add_lair_soldier(Firm* firmPtr, int monsterId)
 	Unit* unitPtr = unit_array[unitRecno];
 
 	unitPtr->set_monster_id( monsterId );
-	unitPtr->set_combat_level( LAIR_TRAIN_COMBAT );
+	unitPtr->set_combat_level( combatLevel );
 	unitPtr->hit_points = (float) unitPtr->max_hit_points;
 
 	//------ it goes into the lair if there is room ------//
@@ -919,6 +925,28 @@ int ModFryhtan::write_file(File* filePtr)
 		return 0;
 	}
 
+	//------- the offers of the wild lairs (phase 5) -------//
+
+	int offerCount = 0;		// write up to the last offer
+
+	for( int i=offer_array_size ; i>0 ; i-- )
+	{
+		if( offer_array[i-1].monster_id )
+		{
+			offerCount = i;
+			break;
+		}
+	}
+
+	if( !filePtr->file_put_short( (int16_t) offerCount ) )
+		return 0;
+
+	if( offerCount > 0 &&
+		 !filePtr->file_put_short_array( (int16_t*) offer_array, offerCount * (sizeof(LairOffer)/sizeof(int16_t)) ) )
+	{
+		return 0;
+	}
+
 	return 1;
 }
 //----------- End of function ModFryhtan::write_file -----------//
@@ -969,6 +997,25 @@ int ModFryhtan::read_file(File* filePtr)
 				lair_array[i].ordo_mask   = 0;
 			}
 		}
+	}
+
+	//------- the offers of the wild lairs (phase 5) -------//
+
+	if( filePtr->file_pos() >= filePtr->file_size() )		// a saved game from before phase 5
+		return 1;
+
+	int offerCount = filePtr->file_get_short();
+
+	if( offerCount < 0 )
+		return 0;
+
+	if( offerCount > 0 )
+	{
+		offer_array = (LairOffer*) mem_resize( offer_array, sizeof(LairOffer) * offerCount );
+		offer_array_size = offerCount;
+
+		if( !filePtr->file_get_short_array( (int16_t*) offer_array, offerCount * (sizeof(LairOffer)/sizeof(int16_t)) ) )
+			return 0;
 	}
 
 	return 1;
@@ -1168,9 +1215,9 @@ int ModFryhtan::next_day_town(Town* townPtr)
 		return 0;
 	}
 
-	//------- the tribute, at the start of each month -------//
+	//------- the tribute, at the start of each month (only with an Ordo or the king in a linked lair) -------//
 
-	if( info.game_day == 1 )
+	if( info.game_day == 1 && has_lair_commander(townPtr) )
 		nation_array[nationRecno]->add_income( INCOME_TAX, (float) town_tribute(townPtr) );
 
 	return 1;
@@ -1229,3 +1276,298 @@ int ModFryhtan::header_species(const char* playerName, int nameSize)
 	return is_valid_species(monsterId) ? monsterId : 0;
 }
 //----------- End of function ModFryhtan::header_species -----------//
+
+
+//--------- Begin of function ModFryhtan::has_lair_commander ---------//
+//
+// Whether an Ordo or the king of the kingdom is in a lair with an active link
+// with the enslaved town. Without one, the town pays no tribute and its
+// loyalty drops.
+//
+int ModFryhtan::has_lair_commander(Town* townPtr)
+{
+	for( int i=0 ; i<townPtr->linked_firm_count ; i++ )
+	{
+		if( townPtr->linked_firm_enable_array[i] != LINK_EE )
+			continue;
+
+		Firm* firmPtr = firm_array[ townPtr->linked_firm_array[i] ];
+
+		if( firmPtr->nation_recno == townPtr->nation_recno && firmPtr->overseer_recno && is_lair(firmPtr) )
+			return 1;
+	}
+
+	return 0;
+}
+//----------- End of function ModFryhtan::has_lair_commander -----------//
+
+
+//--------- Begin of function ModFryhtan::nearest_lair ---------//
+//
+// return: <int> the firm recno of the lair of the town's kingdom nearest to
+//               the town, 0 if there is none
+//
+int ModFryhtan::nearest_lair(Town* townPtr)
+{
+	int bestRecno = 0, bestDistance = 0x7FFF;
+
+	for( int i=firm_array.size() ; i>0 ; i-- )
+	{
+		if( firm_array.is_deleted(i) )
+			continue;
+
+		Firm* firmPtr = firm_array[i];
+
+		if( firmPtr->nation_recno != townPtr->nation_recno || !is_lair(firmPtr) )
+			continue;
+
+		int distance = misc.points_distance( townPtr->center_x, townPtr->center_y, firmPtr->center_x, firmPtr->center_y );
+
+		if( distance < bestDistance )
+		{
+			bestDistance = distance;
+			bestRecno = i;
+		}
+	}
+
+	return bestRecno;
+}
+//----------- End of function ModFryhtan::nearest_lair -----------//
+
+
+//--------- Begin of function ModFryhtan::is_linked_wild_lair ---------//
+//
+// 7kmod-fryhtan, phase 5: a wild lair is linked to the kingdom when one of
+// its finished lairs is within LAIR_CAPTURE_DISTANCE of it.
+//
+int ModFryhtan::is_linked_wild_lair(FirmMonster* monsterFirm, int nationRecno)
+{
+	if( !nationRecno || !is_fryhtan(nationRecno) || monsterFirm->nation_recno )
+		return 0;
+
+	for( int i=firm_array.size() ; i>0 ; i-- )
+	{
+		if( firm_array.is_deleted(i) )
+			continue;
+
+		Firm* firmPtr = firm_array[i];
+
+		if( firmPtr->nation_recno != nationRecno || firmPtr->under_construction || !is_lair(firmPtr) )
+			continue;
+
+		if( misc.rects_distance( monsterFirm->loc_x1, monsterFirm->loc_y1, monsterFirm->loc_x2, monsterFirm->loc_y2,
+										 firmPtr->loc_x1, firmPtr->loc_y1, firmPtr->loc_x2, firmPtr->loc_y2 ) <= LAIR_CAPTURE_DISTANCE )
+		{
+			return 1;
+		}
+	}
+
+	return 0;
+}
+//----------- End of function ModFryhtan::is_linked_wild_lair -----------//
+
+
+//--------- Begin of function ModFryhtan::get_offer ---------//
+//
+LairOffer* ModFryhtan::get_offer(FirmMonster* monsterFirm)
+{
+	int firmRecno = monsterFirm->firm_recno;
+
+	if( firmRecno < 1 || firmRecno > offer_array_size )
+		return NULL;
+
+	LairOffer* offerPtr = offer_array+firmRecno-1;
+
+	if( !offerPtr->monster_id || offerPtr->monster_id != monsterFirm->monster_id )		// the recno may have been reused
+		return NULL;
+
+	return offerPtr;
+}
+//----------- End of function ModFryhtan::get_offer -----------//
+
+
+//--------- Begin of function ModFryhtan::think_offer ---------//
+//
+// Return the offer of a wild lair, creating it the first time the lair is
+// linked to the kingdom:
+//
+// - an Ordo with the combat of the best general of the wild lair (its king
+//   if it has none) and a leadership of 30-60;
+// - 4-6 soldiers of a large species or 6-8 of a small one, with combat 20-40.
+//
+// The numbers use their own random generator, so looking at the lair doesn't
+// change the game's random sequence.
+//
+// return: <LairOffer*> the offer, NULL if the lair isn't linked
+//
+LairOffer* ModFryhtan::think_offer(FirmMonster* monsterFirm, int nationRecno)
+{
+	LairOffer* offerPtr = get_offer(monsterFirm);
+
+	if( offerPtr )
+		return offerPtr;
+
+	if( !is_linked_wild_lair(monsterFirm, nationRecno) )
+		return NULL;
+
+	//------ the best general of the wild lair ------//
+
+	int bestCombat = 0;
+
+	for( int i=0 ; i<monsterFirm->monster_general_count ; i++ )
+		bestCombat = MAX( bestCombat, (int) monsterFirm->monster_general_array[i].combat_level );
+
+	if( !bestCombat && monsterFirm->monster_king.monster_id )
+		bestCombat = monsterFirm->monster_king.combat_level;
+
+	if( !bestCombat )
+		bestCombat = OFFER_SOLDIER_MAX_COMBAT;
+
+	//------ allocate it ------//
+
+	int firmRecno = monsterFirm->firm_recno;
+
+	if( firmRecno > offer_array_size )
+	{
+		int newSize = firmRecno + 50;
+
+		offer_array = (LairOffer*) mem_resize( offer_array, sizeof(LairOffer) * newSize );
+		memset( offer_array+offer_array_size, 0, sizeof(LairOffer) * (newSize-offer_array_size) );
+		offer_array_size = newSize;
+	}
+
+	offerPtr = offer_array+firmRecno-1;
+	memset( offerPtr, 0, sizeof(LairOffer) );
+
+	//------ simulate it ------//
+
+	uint32_t seed = (uint32_t) firmRecno * 2654435761u + (uint32_t) info.game_date * 40503u + 12345u;
+
+	#define OFFER_RANDOM(n)		( seed = seed * 1103515245u + 12345u, (int) ((seed >> 16) % (uint32_t)(n)) )
+
+	int monsterId = monsterFirm->monster_id;
+
+	offerPtr->monster_id		  = monsterId;
+	offerPtr->ordo_combat	  = bestCombat;
+	offerPtr->ordo_leadership = OFFER_ORDO_MIN_LEADERSHIP + OFFER_RANDOM(OFFER_ORDO_MAX_LEADERSHIP-OFFER_ORDO_MIN_LEADERSHIP+1);
+
+	if( is_large_monster(monsterId) )
+		offerPtr->soldier_count = 4 + OFFER_RANDOM(3);		// 4-6
+	else
+		offerPtr->soldier_count = 6 + OFFER_RANDOM(3);		// 6-8
+
+	for( int i=0 ; i<offerPtr->soldier_count ; i++ )
+		offerPtr->soldier_combat[i] = OFFER_SOLDIER_MIN_COMBAT + OFFER_RANDOM(OFFER_SOLDIER_MAX_COMBAT-OFFER_SOLDIER_MIN_COMBAT+1);
+
+	#undef OFFER_RANDOM
+
+	return offerPtr;
+}
+//----------- End of function ModFryhtan::think_offer -----------//
+
+
+//--------- Begin of function ModFryhtan::del_offer ---------//
+//
+void ModFryhtan::del_offer(int firmRecno)
+{
+	if( firmRecno >= 1 && firmRecno <= offer_array_size )
+		memset( offer_array+firmRecno-1, 0, sizeof(LairOffer) );
+}
+//----------- End of function ModFryhtan::del_offer -----------//
+
+
+//--------- Begin of function ModFryhtan::offer_cost ---------//
+//
+int ModFryhtan::offer_cost(LairOffer* offerPtr)
+{
+	int totalCombat = offerPtr->ordo_combat;
+
+	for( int i=0 ; i<offerPtr->soldier_count ; i++ )
+		totalCombat += offerPtr->soldier_combat[i];
+
+	return totalCombat * OFFER_COST_PER_COMBAT;
+}
+//----------- End of function ModFryhtan::offer_cost -----------//
+
+
+//--------- Begin of function ModFryhtan::pay_lair_tribute ---------//
+//
+// Pay the offer of a wild lair: the wild lair is replaced by a lair of the
+// kingdom of the same species, with the Ordo as its general and the soldiers
+// inside. The wild Fryhtans in the lair disappear; the ones outside stay
+// wild. The kingdom can go over its population cap this way.
+//
+// return: <int> the recno of the new lair, 0 if it couldn't be paid
+//
+int ModFryhtan::pay_lair_tribute(int firmRecno, int nationRecno)
+{
+	if( firm_array.is_deleted(firmRecno) || firm_array[firmRecno]->firm_id != FIRM_MONSTER )
+		return 0;
+
+	FirmMonster* monsterFirm = (FirmMonster*) firm_array[firmRecno];
+	LairOffer*	 offerPtr	 = get_offer(monsterFirm);
+
+	if( !offerPtr || !is_linked_wild_lair(monsterFirm, nationRecno) )
+		return 0;
+
+	Nation* nationPtr = nation_array[nationRecno];
+	int cost = offer_cost(offerPtr);
+
+	if( nationPtr->cash < cost )
+		return 0;
+
+	LairOffer offer = *offerPtr;		// it is deleted with the wild lair
+	int xLoc = monsterFirm->loc_x1, yLoc = monsterFirm->loc_y1;
+
+	nationPtr->add_expense( EXPENSE_TRIBUTE, (float) cost, 1 );
+
+	//---- the wild Fryhtans inside disappear (not mobilized), then delete the wild lair ----//
+
+	memset( &monsterFirm->monster_king, 0, sizeof(monsterFirm->monster_king) );
+	monsterFirm->monster_general_count = 0;
+	monsterFirm->waiting_soldier_count = 0;
+
+	capturing_lair = 1;		// no gold coins
+	firm_array.del_firm(firmRecno);
+	capturing_lair = 0;
+
+	//------ build the lair of the kingdom in its place (3x3 in the 4x4 place) ------//
+
+	if( !world.can_build_firm(xLoc, yLoc, FIRM_CAMP) )
+		return 0;
+
+	int lairRecno = firm_array.create_firm(FIRM_CAMP);
+
+	firm_array[lairRecno]->init( xLoc, yLoc, nationRecno, FIRM_CAMP, race_res[nationPtr->race_id]->code );
+
+	Firm* lairPtr = firm_array[lairRecno];
+
+	lairPtr->complete_construction();
+	set_lair( lairRecno, offer.monster_id );		// the species of the captured lair, not the kingdom's
+
+	//------ the Ordo ------//
+
+	int ordoRecno = add_lair_ordo( lairPtr, offer.monster_id );
+
+	if( ordoRecno )
+	{
+		Unit* ordoPtr = unit_array[ordoRecno];
+
+		ordoPtr->skill.skill_level = offer.ordo_leadership;
+		ordoPtr->set_combat_level( offer.ordo_combat );
+		ordoPtr->hit_points = (float) ordoPtr->max_hit_points;
+
+		lairPtr->assign_overseer( ordoRecno );
+	}
+
+	//------ the soldiers ------//
+
+	for( int i=0 ; i<offer.soldier_count ; i++ )
+	{
+		if( !add_lair_soldier( lairPtr, offer.monster_id, offer.soldier_combat[i] ) )
+			break;
+	}
+
+	return lairRecno;
+}
+//----------- End of function ModFryhtan::pay_lair_tribute -----------//

@@ -467,8 +467,7 @@ void Town::next_day()
 
 	//-------- think about rebel -----//
 
-	if( nation_recno && info.game_date%15 == town_recno%15 &&
-		 !mod_fryhtan.is_enslaved_town(this) )		// 7kmod-fryhtan: an enslaved town doesn't rebel
+	if( nation_recno && info.game_date%15 == town_recno%15 )		// 7kmod-fryhtan: the rebels of an enslaved town attack the nearest lair (think_rebel())
 	{
 		LOG_MSG(" think_rebel");
 		think_rebel();
@@ -1226,8 +1225,10 @@ void Town::update_target_loyalty()
 
 	if( mod_fryhtan.is_enslaved_town(this) )
 	{
+		int targetLoyalty = mod_fryhtan.has_lair_commander(this) ? ENSLAVED_TOWN_LOYALTY : ENSLAVED_TOWN_NO_COMMANDER_LOYALTY;
+
 		for( int i=0 ; i<MAX_RACE ; i++ )
-			race_target_loyalty_array[i] = ENSLAVED_TOWN_LOYALTY;
+			race_target_loyalty_array[i] = targetLoyalty;
 
 		return;
 	}
@@ -2015,11 +2016,30 @@ void Town::think_rebel()
 
 	if( oneRebelOnly )		// if there was just one unit in the town and he rebels
 	{
-		rebel_array.create_rebel(leaderUnitRecno, nation_recno);
+		//--- 7kmod-fryhtan: the rebel of an enslaved town attacks the nearest lair ---//
+
+		int lairRecno = mod_fryhtan.is_enslaved_town(this) ? mod_fryhtan.nearest_lair(this) : 0;
+
+		if( lairRecno )
+		{
+			int recno = rebel_array.create_rebel(leaderUnitRecno, nation_recno, REBEL_ATTACK_FIRM, lairRecno);
+			rebel_array[recno]->execute_new_action();
+		}
+		else
+			rebel_array.create_rebel(leaderUnitRecno, nation_recno);
 		return;
 	}
 
-	int rebelRecno = rebel_array.create_rebel(leaderUnitRecno, nation_recno, REBEL_ATTACK_TOWN, town_recno);		// create a rebel group
+	//--- 7kmod-fryhtan: the rebels of an enslaved town attack the nearest lair of the kingdom instead of the town ---//
+
+	int rebelLairRecno = mod_fryhtan.is_enslaved_town(this) ? mod_fryhtan.nearest_lair(this) : 0;
+
+	int rebelRecno;
+
+	if( rebelLairRecno )
+		rebelRecno = rebel_array.create_rebel(leaderUnitRecno, nation_recno, REBEL_ATTACK_FIRM, rebelLairRecno);
+	else
+		rebelRecno = rebel_array.create_rebel(leaderUnitRecno, nation_recno, REBEL_ATTACK_TOWN, town_recno);		// create a rebel group
 
 	//------- create other rebel units in the rebel group -----//
 
@@ -2062,6 +2082,11 @@ void Town::think_rebel()
 	last_rebel_date = info.game_date;
 
 	news_array.town_rebel(town_recno, rebelCount);		// add the news first as after callijng ai_spy_town_rebel, the town may disappear as all peasants are gone
+
+	//--- 7kmod-fryhtan: the rebels of an enslaved town go to attack the lair ---//
+
+	if( rebelLairRecno && !rebel_array.is_deleted(rebelRecno) )
+		rebel_array[rebelRecno]->execute_new_action();
 
 	//--- tell the AI spies in the town that a rebellion is happening ---//
 

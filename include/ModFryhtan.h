@@ -66,7 +66,8 @@ enum { KILL_GOLD_UNIT		= 2,					// gold for killing a human soldier, villager or
 		 KILL_FOOD_KING		= 100 };				// a human king
 
 enum { ENSLAVE_MIN_RESISTANCE = 45,			// the lairs lower the resistance of an independent town down to this
-		 ENSLAVED_TOWN_LOYALTY  = 50,			// fixed loyalty of the people of an enslaved town
+		 ENSLAVED_TOWN_LOYALTY  = 50,			// fixed loyalty of the people of an enslaved town with an Ordo or the king in a linked lair
+		 ENSLAVED_TOWN_NO_COMMANDER_LOYALTY = 0,	// its target loyalty when no Ordo or king commands a linked lair
 		 TRIBUTE_PER_PERSON		= 5 };			// monthly tribute of an enslaved town for each person
 
 class Firm;
@@ -89,6 +90,30 @@ struct FryhtanLair
 	int	train_type(int i)		{ return (ordo_mask >> i) & 1; }
 	int	type_count(int trainType);
 };
+
+//------- Define struct LairOffer -------//
+//
+// Phase 5: the offer of a wild lair (FirmMonster) linked to a lair of the
+// Fryhtan kingdom. Paying it captures the lair with a simulated Ordo and
+// soldiers. Indexed by the firm recno of the wild lair.
+
+enum { OFFER_MAX_SOLDIER = 8 };
+
+enum { OFFER_ORDO_MIN_LEADERSHIP = 30, OFFER_ORDO_MAX_LEADERSHIP = 60,
+		 OFFER_SOLDIER_MIN_COMBAT  = 20, OFFER_SOLDIER_MAX_COMBAT  = 40,
+		 OFFER_COST_PER_COMBAT	  = 2,		// the tribute: the sum of the combat levels x 2
+		 LAIR_CAPTURE_DISTANCE	  = 8 };		// a wild lair is linked to a lair of the kingdom within this distance (as a town to a Fort)
+
+struct LairOffer
+{
+	int16_t	monster_id;			// the species of the wild lair, 0 if there is no offer
+	int16_t	ordo_combat;
+	int16_t	ordo_leadership;
+	int16_t	soldier_count;
+	int16_t	soldier_combat[OFFER_MAX_SOLDIER];
+};
+
+class FirmMonster;
 
 //------- Define class ModFryhtan -------//
 
@@ -126,7 +151,7 @@ public:
 	int	add_lair_train(int firmRecno, int trainType=LAIR_TRAIN_SOLDIER);
 	int	cancel_lair_train(int firmRecno, int trainType=LAIR_TRAIN_SOLDIER);
 	void	next_day_lair(int firmRecno);
-	int	add_lair_soldier(Firm* firmPtr, int monsterId);
+	int	add_lair_soldier(Firm* firmPtr, int monsterId, int combatLevel=LAIR_TRAIN_COMBAT);
 	int	add_lair_ordo(Firm* firmPtr, int monsterId);
 	static int	train_food(int trainType)	{ return trainType==LAIR_TRAIN_ORDO ? LAIR_ORDO_FOOD : LAIR_TRAIN_FOOD; }
 	static int	train_days(int trainType)	{ return trainType==LAIR_TRAIN_ORDO ? LAIR_ORDO_DAYS : LAIR_TRAIN_DAYS; }
@@ -140,10 +165,25 @@ public:
 	static int	firm_setup_cost(int firmId, int nationRecno);
 	static int	firm_year_cost(Firm* firmPtr);
 
+	//------ capturing wild lairs (phase 5) ------//
+
+	LairOffer*	offer_array;
+	int			offer_array_size;
+	char			capturing_lair;		// 1 while a wild lair is being replaced (no gold coins when it's deleted)
+
+	int	is_linked_wild_lair(FirmMonster* firmPtr, int nationRecno);
+	LairOffer*	get_offer(FirmMonster* firmPtr);		// NULL if there is no offer
+	LairOffer*	think_offer(FirmMonster* firmPtr, int nationRecno);		// create the offer if the lair is linked
+	void	del_offer(int firmRecno);
+	static int	offer_cost(LairOffer* offerPtr);
+	int	pay_lair_tribute(int firmRecno, int nationRecno);
+
 	//------ enslaved towns (phase 4) ------//
 
 	int	is_enslaved_town(Town* townPtr);
 	int	lair_leadership(Town* townPtr, int nationRecno);
+	int	has_lair_commander(Town* townPtr);		// whether an Ordo or the king commands a lair linked to an enslaved town
+	int	nearest_lair(Town* townPtr);
 	float	resistance_decrease(Town* townPtr, int nationRecno, float resistance, float targetResistance);
 	int	can_enslave_town(Town* townPtr, int nationRecno);
 	int	next_day_town(Town* townPtr);
@@ -180,7 +220,7 @@ public:
 	static int				menu_next_species(int monsterId, int dir);		// dir: 1 - next, -1 - previous, in alphabetical order
 	static int				is_valid_species(int monsterId)	{ return monsterId >= 1 && monsterId <= FRYHTAN_SPECIES_COUNT; }
 
-	ModFryhtan()		{ lair_array=NULL; lair_array_size=0; reset(); }
+	ModFryhtan()		{ lair_array=NULL; lair_array_size=0; offer_array=NULL; offer_array_size=0; capturing_lair=0; reset(); }
 
 	int	write_file(File* filePtr);
 	int	read_file(File* filePtr);

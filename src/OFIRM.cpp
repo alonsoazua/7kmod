@@ -306,6 +306,7 @@ void Firm::deinit()
 	int isLair = mod_fryhtan.is_lair(this);		// 7kmod-fryhtan
 
 	mod_fryhtan.del_lair(firm_recno);		// 7kmod-fryhtan
+	mod_fryhtan.del_offer(firm_recno);		// 7kmod-fryhtan
 
 	remove_firm = 1; // set static parameter
 

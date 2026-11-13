@@ -408,8 +408,15 @@ void Town::disp_main_menu(int refreshFlag)
 
 			char str[200];
 
-			snprintf( str, sizeof(str), _("Enslaved town. At the end of the month you will receive $%d as tribute."),
-						 mod_fryhtan.town_tribute(this) );
+			if( mod_fryhtan.has_lair_commander(this) )
+			{
+				snprintf( str, sizeof(str), _("Enslaved town. At the end of the month you will receive $%d as tribute."),
+							 mod_fryhtan.town_tribute(this) );
+			}
+			else
+			{
+				snprintf( str, sizeof(str), "%s", _("No Ordo commands a linked lair: no tribute, and its loyalty is dropping.") );
+			}
 
 			vga_util.d3_panel_up( BUTTON_X1, y, BUTTON_X2, y+52 );
 			font_san.put_paragraph( BUTTON_X1+6, y+4, BUTTON_X2-6, y+50, str );

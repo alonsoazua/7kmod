@@ -420,28 +420,58 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
   pueblo independiente sin Grant.
 
 ### Ajustes anotados (pueblos esclavizados sin general)
-- [ ] **Sin general no hay tributo:** si ninguna guarida enlazada al pueblo esclavizado
+- [x] **Sin general no hay tributo:** si ninguna guarida enlazada al pueblo esclavizado
       (con el enlace activo) tiene un Ordo o el rey adentro, el tributo de ese mes no se
-      cobra. El panel del pueblo lo dice en lugar del monto.
-- [ ] **La lealtad baja:** en ese caso la lealtad del pueblo deja de estar fija en 50 y
-      empieza a bajar. Propuesta: lealtad objetivo 0, a la velocidad normal de la
-      lealtad de un pueblo (se acerca al objetivo cada 15 días); cuando vuelve un general,
-      el objetivo regresa a 50.
-- [ ] **Rebelión contra la guarida:** si la lealtad llega al punto de rebelión (29 o
-      menos, `REBEL_LOYALTY`), los rebeldes no forman un pueblo rebelde ni atacan a su
-      pueblo: salen a atacar la guarida del reino más cercana. Por decidir:
-      - cuántos salen (propuesta: como una rebelión normal, una parte de la población
-        de la raza que se rebela, que sale del pueblo);
-      - qué pasa después (propuesta: pelean como unidades rebeldes; si destruyen la
-        guarida y el pueblo se queda sin enlace, se vuelve independiente con la regla
-        actual).
+      cobra. El panel del pueblo lo dice en lugar del monto: "No Ordo commands a linked
+      lair: no tribute, and its loyalty is dropping."
+- [x] **La lealtad baja:** en ese caso la lealtad objetivo del pueblo es 0 (con general,
+      50), y la lealtad se acerca a ella a la velocidad normal de un pueblo.
+- [x] **Rebelión contra la guarida:** al llegar al punto de rebelión (29 o menos, como en
+      el juego original: dos tercios de la gente descontenta, no más de una cada 3
+      meses), sale del pueblo el 30–60 % de cada raza descontenta, como en una rebelión
+      normal, y en lugar de quedarse junto al pueblo van a atacar la guarida del reino
+      más cercana (`REBEL_ATTACK_FIRM`). Si la destruyen y el pueblo se queda sin enlace,
+      se vuelve independiente con la regla de la fase 4.
+- **Probado** (con un gancho temporal que esclavizó el pueblo enlazado a la guarida
+  inicial): con la guarida vacía, el panel avisa, la lealtad baja, se rebelaron 12
+  personas y fueron contra la guarida.
 
 ### Fase 5: capturar guaridas independientes
-- [ ] Enlace guarida propia–guarida independiente, de cualquier especie.
-- [ ] Oferta simulada (Ordo y soldados), guardada en la partida.
-- [ ] Panel de la guarida salvaje con la oferta y Pay Tribute; al pagar, la guarida pasa
+- [x] Enlace guarida propia–guarida independiente, de cualquier especie.
+- [x] Oferta simulada (Ordo y soldados), guardada en la partida.
+- [x] Panel de la guarida salvaje con la oferta y Pay Tribute; al pagar, la guarida pasa
       a tu reino con el Ordo y sus soldados (se puede pasar del tope de población).
-- [ ] Train en cada guarida con su propia especie.
+- [x] Train en cada guarida con su propia especie.
+
+#### Cómo quedó la fase 5
+
+- **Enlace:** una guarida salvaje (`FirmMonster`) queda enlazada si una guarida
+  terminada del reino está a 8 casillas o menos (la distancia de enlace de un fuerte con
+  un pueblo). El juego no enlaza fuertes con otros edificios, así que no se dibuja una
+  línea: el enlace se ve en el panel de la guarida salvaje.
+- **Oferta:** la primera vez que se ve el panel de una guarida salvaje enlazada se crea la
+  oferta y queda fija (se guarda en la partida). Usa su propio generador de números al
+  azar, para no cambiar la secuencia del juego al mirarla.
+  - Ordo de la especie de la guarida, con el combate del mejor Ordo de la guarida
+    salvaje (si no tiene, el de su rey) y liderazgo 30–60.
+  - 4–6 soldados de una especie grande o 6–8 de una pequeña, con combate 20–40.
+  - Tributo: la suma de los combates × $2 (gasto "tribute" del reino).
+- **Panel:** en lugar de los Ordos de la guarida salvaje se ve "Tribute Offer": el retrato
+  y el combate y liderazgo del Ordo, cuántos soldados y su rango de combate, el tributo y
+  el botón **Pay Tribute**. Sin dinero suficiente avisa y no paga.
+- **Al pagar:** los Fryhtans salvajes de adentro desaparecen (no salen al mapa) y los que
+  estaban afuera siguen salvajes; la guarida salvaje no deja monedas de oro. En su lugar
+  queda una guarida del reino de esa especie (3x3 en la esquina de la de 4x4), con el
+  Ordo (con nombre) como general y los soldados adentro. Se puede pasar del tope de
+  población.
+- **Train** en una guarida capturada entrena su especie (y cuenta su tamaño en la
+  población).
+- **Probado** (con un gancho temporal que construyó una guarida junto a una guarida
+  salvaje): oferta de una guarida Rattus (Ordo combate 63 y liderazgo 36, 6 soldados de
+  22–39, $482), Pay Tribute, la guarida Rattus del reino con "Naggol / Rattus Ordo" y
+  sus 6 soldados, población 19/18, y Train de Rattus.
+- **Pendiente para la fase 6:** los Fryhtans salvajes todavía atacan al reino, así que
+  construir junto a una guarida salvaje es peligroso hasta entonces.
 
 ### Fase 6: diplomacia y Fryhtans salvajes
 - [ ] Sin comercio, amistad ni alianza con un reino Fryhtan (jugador e IA).

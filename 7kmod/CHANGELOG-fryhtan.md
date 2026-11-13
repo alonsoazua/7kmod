@@ -68,6 +68,17 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
   - Cada persona esclavizada sube en 1 el **tope de población** Fryhtan.
   - Si pierde el enlace con todas las guaridas, se vuelve independiente.
   - Al destruir o vender una guarida ya no aparece un fuerte humano.
+- **Pueblos esclavizados sin general:** si ninguna guarida enlazada tiene un Ordo o el
+  rey adentro, el pueblo no paga tributo y su lealtad baja. Si llega al punto de
+  rebelión, los rebeldes salen a atacar la guarida más cercana.
+- **Capturar guaridas salvajes** (fase 5):
+  - Una guarida salvaje de cualquier especie a 8 casillas o menos de una guarida del
+    reino muestra una **oferta**: un Ordo con el combate del mejor Ordo de la guarida y
+    liderazgo 30–60, y 4–6 soldados (especie grande) o 6–8 (pequeña) con combate 20–40.
+  - El tributo es la suma de los combates × $2. Con **Pay Tribute** la guarida pasa al
+    reino con ese Ordo y esos soldados; los Fryhtans salvajes de adentro se van y los de
+    afuera siguen salvajes. Se puede pasar del tope de población.
+  - Cada guarida capturada entrena su propia especie.
 - **Economía** (fase 3):
   - **Botín:** matar una unidad humana da **$2 y 5 de comida** (soldado, aldeano o
     defensor de un pueblo), **$10 y 20** (general) o **$100 y 100** (rey). En el reporte
