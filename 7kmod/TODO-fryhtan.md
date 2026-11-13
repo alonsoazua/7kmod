@@ -221,8 +221,8 @@ el código que indexa la raza del reino no falle. La IA no usa esa raza
     reclutamiento (se ocultan), e influencia del fuerte con bono por raza del rey (la
     guarida usa su propia regla).~~ Hecho: lealtad fija de 50, sin botones, y la
     guarida tiene su propia regla de influencia.
-  - Fase 7: la lista de partidas guardadas muestra "King <nombre>" con retrato humano;
-    los mensajes de fin de partida dicen "<nombre>'s Kingdom"; la imagen de fin de
+  - ~~Fase 7: la lista de partidas guardadas muestra "King <nombre>" con retrato
+    humano~~ (pasó a los ajustes después de la fase 4); fase 7: los mensajes de fin de partida dicen "<nombre>'s Kingdom"; la imagen de fin de
     partida y el Hall of Fame usan la raza interna; sucesión del rey.
 - **Nota:** los Fryhtans del reino tienen las reglas de los Fryhtans invocados de
   gameplay (+25% de daño, regeneración, comida).
@@ -381,6 +381,13 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
         soldado de su tamaño.
       Por confirmar: costo en comida (propuesta: el doble, **40**), y si se quita también
       Demote (propuesta: sí, un Ordo no se puede degradar).
+- [ ] **Partidas guardadas:** en la lista de partidas (guardar y cargar), una partida de
+      un reino Fryhtan muestra el retrato del Fryhtan de la especie del reino en lugar del
+      rey humano de la raza interna (hoy sale un rey normando), y el nombre "<nombre> The
+      All High" (por ejemplo "Al The All High") en lugar de "King Al". Hay que guardar la
+      especie en el encabezado de la partida (`GameFileHeader`), porque la lista no
+      carga la partida completa; las partidas de antes del cambio siguen mostrando el
+      retrato humano.
 
 ### Fase 5: capturar guaridas independientes
 - [ ] Enlace guarida propia–guarida independiente, de cualquier especie.
