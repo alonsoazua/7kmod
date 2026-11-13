@@ -11,6 +11,12 @@ Cosas anotadas para agregar en un parche. `[x]` = implementado, falta probarlo e
 Greater Beings: los poderes del Dragon, el Djini y el Phoenix se probaron en el editor
 (F12) con los puntos de oración llenos; falta probar la IA en partida.
 
+- [ ] **Instalador: carpeta por defecto "7k New Adversaries".** Hoy el instalador
+  (`packaging/windows/newadversaries/newadversaries.nsi`) instala por defecto en
+  `C:\Program Files (x86)\New Adversaries\`; se prefiere
+  `C:\Program Files (x86)\7k New Adversaries\`. El instalador 0.3.0 se probó en
+  Windows y funciona bien; esto es solo el nombre de la carpeta.
+
 - [x] **Los disparos a distancia ya no se bloquean por edificios ni obstáculos.** Hoy, un
   proyectil recto (flechas, jabalinas, etc.) no puede pasar por casillas no caminables:
   edificios, murallas, montañas y otros obstáculos del mapa
