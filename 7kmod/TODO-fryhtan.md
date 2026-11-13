@@ -537,10 +537,13 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
       - **Cómo quedó:** las pestañas son dos textos encima de la primera fila, "Humans" y
         "Fryhtans", con la letra inclinada de las etiquetas; la elegida va en negrita y
         subrayada (pedido después de una primera versión con recuadros a la derecha).
-        La columna de la derecha queda libre: con Humans las 10 razas siguen 5 x 2 como
-        en el original; con Fryhtans la cuadrícula usa todo el ancho, 14 recuadros (7 x 2,
-        66 píxeles) hechos con los de las razas: las 13 especies en orden alfabético y uno
-        vacío. Los nombres usan la misma letra (la más grande en la que caben todos). Son
+        Con Humans las 10 razas siguen 5 x 2 como en el original. Con Fryhtans hay 6
+        columnas del tamaño de las razas: 5 x 2 especies por página (en orden
+        alfabético) y en la 6.ª las flechas ▲ (arriba) y ▼ (abajo), que cambian de
+        página (pedido después de una versión de 7 x 2 sin páginas). Página 1: Broosken
+        a Rattus; página 2: Rokken, Sauroid y Wyrm, y 7 recuadros vacíos. La flecha sin
+        página a dónde ir se ve oscurecida. La especie elegida se mantiene al cambiar de
+        página y la pantalla abre en su página. Los nombres usan la misma letra (la más grande en la que caben todos). Son
         recuadros con el nombre, como los de las razas; los retratos no caben en ese
         tamaño. La pestaña es la elección misma (`Config::fryhtan_monster_id`, que ya se
         guarda en 7KMOD.DAT), así que no hizo falta otro dato.

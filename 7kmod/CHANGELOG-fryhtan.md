@@ -18,8 +18,8 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
 ### Agregado
 - **Reino Fryhtan** (fase 1 de `TODO-fryhtan.md`; solo partidas de un jugador):
   - En New Game, página básica, dos pestañas de texto encima de las razas: **Humans**
-    (las 10 razas) y **Fryhtans** (recuadros con las 13 especies en el mismo lugar); la
-    elegida va subrayada. Debajo
+    (las 10 razas) y **Fryhtans** (las 13 especies en el mismo lugar, 10 por página, con
+    flechas ▲ ▼ para cambiar de página); la elegida va subrayada. Debajo
     del nombre se ve cómo quedará el reino, por ejemplo "Fryhtan kingdom: Al Rokken
     Horde (Large: 2 population)". La pestaña y la especie se recuerdan.
   - El reino empieza con su rey, un All High de la especie con combate 60 y
