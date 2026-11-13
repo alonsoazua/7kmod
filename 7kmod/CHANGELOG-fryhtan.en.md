@@ -38,7 +38,10 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   - **Fryhtan population:** each Fryhtan of the kingdom, king included, uses 1 (small)
     or 2 (large). The cap is 18. It shows in the Train help and in the Kingdoms report
     ("Fryhtan Population").
-  - **Promote:** a Fryhtan soldier can be promoted to general (Ordo) with leadership 20.
+  - **Train Ordo:** a second button trains a general (Ordo) of the lair's species: **40
+    food**, **40 days**, leadership and combat **30**. It comes out next to the lair
+    with a **name of its own** (for example "Kzorr"). Soldiers can no longer be promoted
+    (there is no Promote or Demote).
   - Fryhtans train their combat in the lair with the general and gain experience when
     fighting.
   - The lair has no Reward or Recruit; its Fryhtans show loyalty "N/A".
@@ -46,6 +49,10 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   soldiers of its species.
 - **The king** is called "<name> The All High" in his panel and in the lair's (for
   example "Al The All High"), over "All High <species>".
+- The king and the Ordos have the **king or general icon** over the unit.
+- In the **saved game list**, a Fryhtan game shows the portrait of the All High of its
+  species and "<name> The All High".
+- A Fryhtan kingdom **can't grant money** to independent towns.
 - **Progress bar** of the Fryhtan in training on the Train button. With the king out,
   the lair says "Outside of the lair".
 - **Enslaved towns** (phase 4):
@@ -55,14 +62,15 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
     0.
   - In both cases a lair linked to the town is needed.
   - The enslaved town doesn't recruit, train or pay taxes: it pays a **tribute of $5 per
-    person a month** ("Tribute from Enslaved Towns"). It produces food, grows, doesn't
+    person a month** ("Tribute from Enslaved Towns"), which goes up with the leadership
+    of the best general of the linked lairs (double with leadership 100). It produces food, grows, doesn't
     rebel and its people don't leave.
   - Each enslaved person raises the Fryhtan **population cap** by 1.
   - If it loses the link with all the lairs, it becomes independent.
   - Destroying or selling a lair no longer shows a human Fort.
 - **Economy** (phase 3):
-  - **Spoils:** killing a human unit gives **$5 and 5 food** (soldier, villager or town
-    defender), **$20 and 20** (general) or **$100 and 100** (king). In the Economy
+  - **Spoils:** killing a human unit gives **$2 and 5 food** (soldier, villager or town
+    defender), **$10 and 20** (general) or **$100 and 100** (king). In the Economy
     report it shows as "Spoils of War and Treasure".
   - **Human buildings** that pass to the Fryhtan kingdom (for example, if a kingdom
     surrenders to it) are **destroyed**, with whoever is inside.

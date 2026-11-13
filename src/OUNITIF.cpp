@@ -596,7 +596,7 @@ void Unit::disp_button(int dispY1)
 		*/
 	}
 
-	//--- 7kmod-fryhtan: the Fryhtans of the player's Fryhtan kingdom: build a lair, promote and demote ---//
+	//--- 7kmod-fryhtan: the Fryhtans of the player's Fryhtan kingdom: build a lair (the Ordos are trained in the lairs, no promote or demote) ---//
 
 	else if( unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER &&
 				nation_recno && nation_recno == nation_array.player_recno && mod_fryhtan.is_fryhtan(nation_recno) )
@@ -605,20 +605,6 @@ void Unit::disp_button(int dispY1)
 		{
 			button_build.paint( x, dispY1, 'A', "BUILD" );
 			x += BUTTON_ACTION_WIDTH;
-		}
-
-		if( unit_array.selected_count==1 )
-		{
-			if( rank_id==RANK_SOLDIER )
-			{
-				button_promote.paint( x, dispY1, 'A', "PROMOTE" );
-				x += BUTTON_ACTION_WIDTH;
-			}
-			else if( rank_id==RANK_GENERAL )
-			{
-				button_demote.paint( x, dispY1, 'A', "DEMOTE"  );
-				x += BUTTON_ACTION_WIDTH;
-			}
 		}
 
 		if( x+BUTTON_ACTION_WIDTH-5 > INFO_X2 )
@@ -1802,6 +1788,11 @@ void Unit::disp_unit_profile(int dispY1, int refreshFlag)
 
 	if( !race_id && rank_id == RANK_KING && nation_recno && mod_fryhtan.is_fryhtan(nation_recno) )
 		str = mod_fryhtan.king_title(nation_recno);
+
+	//--- 7kmod-fryhtan: an Ordo with a name, "<name>" over "<species> Ordo" ---//
+
+	else if( !race_id && ModFryhtan::ordo_name(this) )
+		str = ModFryhtan::ordo_name(this);
 
 	//---------------- paint the panel --------------//
 

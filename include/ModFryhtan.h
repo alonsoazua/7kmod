@@ -47,11 +47,23 @@ enum { LAIR_TRAIN_FOOD = 20,						// food used for training a Fryhtan in a lair
 		 LAIR_TRAIN_COMBAT = 20,					// combat level of a trained Fryhtan
 		 LAIR_MAX_TRAIN_QUEUE = 8 };
 
-enum { PROMOTE_FRYHTAN_LEADERSHIP = 20 };		// leadership of a Fryhtan promoted to general
+enum { LAIR_ORDO_FOOD = 40,						// food used for training an Ordo (general) in a lair
+		 LAIR_ORDO_DAYS = 40,						// days needed for training it
+		 LAIR_ORDO_COMBAT = 30,						// combat level of a trained Ordo
+		 LAIR_ORDO_LEADERSHIP = 30 };				// leadership of a trained Ordo
 
-enum { KILL_REWARD_UNIT	 = 5,					// gold and food for killing a human soldier or villager
-		 KILL_REWARD_GENERAL = 20,					// a human general
-		 KILL_REWARD_KING		 = 100 };				// a human king
+enum { LAIR_TRAIN_SOLDIER, LAIR_TRAIN_ORDO, LAIR_TRAIN_TYPE_COUNT };		// what a lair trains
+
+enum { ORDO_NAME_ID_BASE = 60000 };
+
+enum { FRYHTAN_HEADER_MARK = 0x7F };				// mark of the species in the header of a saved game				// Unit::name_id of an Ordo with a name: ORDO_NAME_ID_BASE + the name index (1-based)
+
+enum { KILL_GOLD_UNIT		= 2,					// gold for killing a human soldier, villager or town defender
+		 KILL_GOLD_GENERAL	= 10,					// a human general
+		 KILL_GOLD_KING		= 100,				// a human king
+		 KILL_FOOD_UNIT		= 5,					// food for killing a human soldier, villager or town defender
+		 KILL_FOOD_GENERAL	= 20,					// a human general
+		 KILL_FOOD_KING		= 100 };				// a human king
 
 enum { ENSLAVE_MIN_RESISTANCE = 45,			// the lairs lower the resistance of an independent town down to this
 		 ENSLAVED_TOWN_LOYALTY  = 50,			// fixed loyalty of the people of an enslaved town
@@ -72,6 +84,10 @@ struct FryhtanLair
 	int16_t	monster_id;			// 0 if the firm is not a lair of a Fryhtan kingdom
 	int16_t	train_count;		// no. of Fryhtans queued for training
 	int16_t	train_days;			// days spent training the first one in the queue
+	int16_t	ordo_mask;			// bit i set: the Fryhtan i of the queue (0-the first) is an Ordo
+
+	int	train_type(int i)		{ return (ordo_mask >> i) & 1; }
+	int	type_count(int trainType);
 };
 
 //------- Define class ModFryhtan -------//
@@ -106,11 +122,19 @@ public:
 
 	int	lair_unit_id(int firmRecno);
 	int	lair_train_population(int firmRecno);	// population needed for training one more Fryhtan in this lair
-	int	can_train_in_lair(int firmRecno, int showMsg=0);
-	int	add_lair_train(int firmRecno);
-	int	cancel_lair_train(int firmRecno);
+	int	can_train_in_lair(int firmRecno, int trainType=LAIR_TRAIN_SOLDIER);
+	int	add_lair_train(int firmRecno, int trainType=LAIR_TRAIN_SOLDIER);
+	int	cancel_lair_train(int firmRecno, int trainType=LAIR_TRAIN_SOLDIER);
 	void	next_day_lair(int firmRecno);
 	int	add_lair_soldier(Firm* firmPtr, int monsterId);
+	int	add_lair_ordo(Firm* firmPtr, int monsterId);
+	static int	train_food(int trainType)	{ return trainType==LAIR_TRAIN_ORDO ? LAIR_ORDO_FOOD : LAIR_TRAIN_FOOD; }
+	static int	train_days(int trainType)	{ return trainType==LAIR_TRAIN_ORDO ? LAIR_ORDO_DAYS : LAIR_TRAIN_DAYS; }
+
+	//------ names of the Ordos ------//
+
+	static const char*	ordo_name(Unit* unitPtr);		// NULL if the unit has no Ordo name
+	int	new_ordo_name_id(int nationRecno);
 	void	draw_lair(Firm* firmPtr, int displayLayer);
 
 	static int	firm_setup_cost(int firmId, int nationRecno);
@@ -142,6 +166,11 @@ public:
 
 	static const char*	monster_name(int monsterId);
 	static const char*	king_title(int nationRecno);		// "<king name> The All High"
+
+	//------ the saved game list ------//
+
+	static void	set_header_species(char* playerName, int nameSize, int monsterId);
+	static int	header_species(const char* playerName, int nameSize);
 	static const char*	monster_size_text(int monsterId);
 
 	//--- for the new game screen, where MonsterRes is not loaded yet ---//

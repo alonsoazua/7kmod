@@ -4562,6 +4562,9 @@ int Town::can_grant_to_non_own_town(int grantNationRecno)
 	if( nation_recno == grantNationRecno )		// only for independent town
 		return 0;
 
+	if( mod_fryhtan.is_fryhtan(grantNationRecno) )		// 7kmod-fryhtan: a Fryhtan kingdom doesn't grant money to towns
+		return 0;
+
 	if( nation_recno == 0 )		// independent town
 	{
 		return has_linked_camp( grantNationRecno, 1 );		// 1-only count camps with overseers

@@ -58,8 +58,8 @@
 
 static Button3D button_patrol, button_reward, button_defense;
 static Button3D button_withdraw;			// 7kmod
-static Button3D button_lair_train;		// 7kmod-fryhtan: Train in a lair of a Fryhtan kingdom
-static short    last_lair_train_count;	// 7kmod-fryhtan: the last number displayed on button_lair_train
+static Button3D button_lair_train[LAIR_TRAIN_TYPE_COUNT];		// 7kmod-fryhtan: Train and Train Ordo in a lair of a Fryhtan kingdom
+static short    last_lair_train_count[LAIR_TRAIN_TYPE_COUNT];	// 7kmod-fryhtan: the last number displayed on each button
 
 //------ 7kmod: recruit soldiers from linked towns ------//
 
@@ -421,18 +421,25 @@ void FirmCamp::put_info(int refreshFlag)
 				//--- 7kmod-fryhtan: a lair has Train instead of Reward (Fryhtans have no loyalty) and Recruit ---//
 
 				button_patrol.paint( INFO_X1, INFO_Y1+242, 'A', "PATROL" );
-				button_lair_train.paint( INFO_X1+BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', "TRAIN" );
-				button_lair_train.set_help_code("");		// the custom help is set in disp_lair_train_button()
+				button_lair_train[LAIR_TRAIN_SOLDIER].paint( INFO_X1+BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', "TRAIN" );
+				button_lair_train[LAIR_TRAIN_ORDO].paint( INFO_X1+BUTTON_ACTION_WIDTH*2, INFO_Y1+242, 'A', "PROMOTE" );
+
+				for( int t=0 ; t<LAIR_TRAIN_TYPE_COUNT ; t++ )
+				{
+					button_lair_train[t].set_help_code("");		// the custom help is set in disp_lair_train_button()
+					last_lair_train_count[t] = 0;
+				}
+
 				button_reward.reset();
 				button_recruit_town.reset();
-				last_lair_train_count = 0;
 
 				button_withdraw.paint( INFO_X2-BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', "RETCAMP" );
 				button_defense.reset();
 			}
 			else if( buttonPage==0 )
 			{
-				button_lair_train.reset();		// 7kmod-fryhtan
+				button_lair_train[0].reset();		// 7kmod-fryhtan
+				button_lair_train[1].reset();
 				button_patrol.paint( INFO_X1, INFO_Y1+242, 'A', "PATROL" );
 				button_reward.paint( INFO_X1+BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', "REWARDCB" );
 				button_recruit_town.paint( INFO_X1+BUTTON_ACTION_WIDTH*2, INFO_Y1+242, 'A', "TRAIN" );		// 7kmod
@@ -448,7 +455,8 @@ void FirmCamp::put_info(int refreshFlag)
 				button_reward.reset();
 				button_withdraw.reset();
 				button_recruit_town.reset();
-				button_lair_train.reset();		// 7kmod-fryhtan
+				button_lair_train[0].reset();		// 7kmod-fryhtan
+				button_lair_train[1].reset();
 
 				button_defense.paint( INFO_X1, INFO_Y1+242, 'A', defense_flag ? (char*)"DEFENSE1" : (char*)"DEFENSE0" );		// 7kmod: first place of the second page
 			}
@@ -497,10 +505,13 @@ void FirmCamp::put_info(int refreshFlag)
 			}
 		}
 
-		//------- 7kmod-fryhtan: Train in a lair -------//
+		//------- 7kmod-fryhtan: Train and Train Ordo in a lair -------//
 
-		if( button_lair_train.init_flag )
-			disp_lair_train_button();
+		for( int t=0 ; t<LAIR_TRAIN_TYPE_COUNT ; t++ )
+		{
+			if( button_lair_train[t].init_flag )
+				disp_lair_train_button(t);
+		}
 
 	}
 	else
@@ -523,58 +534,76 @@ void FirmCamp::put_info(int refreshFlag)
 
 //--------- Begin of function FirmCamp::disp_lair_train_button ---------//
 //
-// 7kmod-fryhtan: enable the Train button of a lair if one more Fryhtan can
-// be trained, show the queue on it and set its help with the population.
+// 7kmod-fryhtan: enable the Train (soldier) or Train Ordo button of a lair
+// if one more can be trained, show how many of that type are in the queue
+// and the progress of the one being trained, and set the help with the
+// population.
 //
-void FirmCamp::disp_lair_train_button()
+void FirmCamp::disp_lair_train_button(int trainType)
 {
-	if( mod_fryhtan.can_train_in_lair(firm_recno) )
-		button_lair_train.enable();
-	else
-		button_lair_train.disable();
+	Button3D& button = button_lair_train[trainType];
 
-	//------ the number of Fryhtans in the training queue ------//
+	if( mod_fryhtan.can_train_in_lair(firm_recno, trainType) )
+		button.enable();
+	else
+		button.disable();
+
+	//------ the number of this type in the training queue ------//
 
 	FryhtanLair* lairPtr = mod_fryhtan.get_lair(firm_recno);
-	int count = lairPtr ? lairPtr->train_count : 0;
+	int count = lairPtr ? lairPtr->type_count(trainType) : 0;
 
 	if( count > 0 )
 	{
-		if( count != last_lair_train_count )
-			button_lair_train.paint();
+		if( count != last_lair_train_count[trainType] )
+			button.paint();
 
-		vga_front.bar( button_lair_train.x1+8, button_lair_train.y1+10, button_lair_train.x2-12, button_lair_train.y2-15, V_WHITE );
-		vga_front.rect( button_lair_train.x1+8, button_lair_train.y1+10, button_lair_train.x2-12, button_lair_train.y2-15, 1, V_BLACK );
+		vga_front.bar( button.x1+8, button.y1+10, button.x2-12, button.y2-15, V_WHITE );
+		vga_front.rect( button.x1+8, button.y1+10, button.x2-12, button.y2-15, 1, V_BLACK );
 
-		font_mid.center_put( button_lair_train.x1+8, button_lair_train.y1+10, button_lair_train.x2-12, button_lair_train.y2-15,
-									misc.format(count) );
+		font_mid.center_put( button.x1+8, button.y1+10, button.x2-12, button.y2-15, misc.format(count) );
 
-		//--- the progress of the Fryhtan being trained, a bar at the bottom of the button ---//
+		//--- the progress of the one being trained, a bar at the bottom of the button ---//
 
-		vga_front.indicator( button_lair_train.x1+6, button_lair_train.y2-11, button_lair_train.x2-9, button_lair_train.y2-7,
-									(float) lairPtr->train_days, (float) LAIR_TRAIN_DAYS, VGA_LIGHT_GREEN, V_BLACK );
+		if( lairPtr->train_type(0) == trainType )
+		{
+			vga_front.indicator( button.x1+6, button.y2-11, button.x2-9, button.y2-7,
+										(float) lairPtr->train_days, (float) ModFryhtan::train_days(trainType), VGA_LIGHT_GREEN, V_BLACK );
+		}
 	}
-	else if( last_lair_train_count > 0 )
+	else if( last_lair_train_count[trainType] > 0 )
 	{
-		button_lair_train.paint();		// remove the number
+		button.paint();		// remove the number
 	}
 
-	last_lair_train_count = count;
+	last_lair_train_count[trainType] = count;
 
 	//------ help: the species, the cost and the population ------//
 
 	int monsterId = mod_fryhtan.lair_monster_id(firm_recno);
 
-	static char helpStr[200];
+	static char helpStr[LAIR_TRAIN_TYPE_COUNT][250];
 
-	snprintf( helpStr, sizeof(helpStr),
-		_("Train a %s (combat %d) in %d days for %d food. It uses %d population. Fryhtan population: %d/%d. Right click removes one from the queue."),
-		ModFryhtan::monster_name(monsterId), (int) LAIR_TRAIN_COMBAT, (int) LAIR_TRAIN_DAYS, (int) LAIR_TRAIN_FOOD,
-		ModFryhtan::monster_population(monsterId),
-		mod_fryhtan.nation_population(nation_recno), mod_fryhtan.nation_population_cap(nation_recno) );
+	if( trainType == LAIR_TRAIN_ORDO )
+	{
+		snprintf( helpStr[trainType], sizeof(helpStr[trainType]),
+			_("Train a %s Ordo (general, leadership %d, combat %d) in %d days for %d food. It comes out next to the lair. It uses %d population. Fryhtan population: %d/%d. Right click removes one from the queue."),
+			ModFryhtan::monster_name(monsterId), (int) LAIR_ORDO_LEADERSHIP, (int) LAIR_ORDO_COMBAT, (int) LAIR_ORDO_DAYS, (int) LAIR_ORDO_FOOD,
+			ModFryhtan::monster_population(monsterId),
+			mod_fryhtan.nation_population(nation_recno), mod_fryhtan.nation_population_cap(nation_recno) );
 
-	help.set_custom_help( button_lair_train.x1, button_lair_train.y1, button_lair_train.x2, button_lair_train.y2,
-		_("Train"), helpStr );
+		help.set_custom_help( button.x1, button.y1, button.x2, button.y2, _("Train Ordo"), helpStr[trainType] );
+	}
+	else
+	{
+		snprintf( helpStr[trainType], sizeof(helpStr[trainType]),
+			_("Train a %s (combat %d) in %d days for %d food. It uses %d population. Fryhtan population: %d/%d. Right click removes one from the queue."),
+			ModFryhtan::monster_name(monsterId), (int) LAIR_TRAIN_COMBAT, (int) LAIR_TRAIN_DAYS, (int) LAIR_TRAIN_FOOD,
+			ModFryhtan::monster_population(monsterId),
+			mod_fryhtan.nation_population(nation_recno), mod_fryhtan.nation_population_cap(nation_recno) );
+
+		help.set_custom_help( button.x1, button.y1, button.x2, button.y2, _("Train"), helpStr[trainType] );
+	}
 }
 //----------- End of function FirmCamp::disp_lair_train_button -----------//
 
@@ -698,13 +727,18 @@ int FirmCamp::detect_info()
 		return 1;
 	}
 
-	//------- 7kmod-fryhtan: Train in a lair (right click removes one from the queue) -------//
+	//------- 7kmod-fryhtan: Train and Train Ordo in a lair (right click removes one from the queue) -------//
 
-	if( button_lair_train.init_flag )
+	for( int t=0 ; t<LAIR_TRAIN_TYPE_COUNT ; t++ )
 	{
-		if( mouse.any_click(button_lair_train.x1, button_lair_train.y1, button_lair_train.x2, button_lair_train.y2, RIGHT_BUTTON) )
+		Button3D& button = button_lair_train[t];
+
+		if( !button.init_flag )
+			continue;
+
+		if( mouse.any_click(button.x1, button.y1, button.x2, button.y2, RIGHT_BUTTON) )
 		{
-			if( mod_fryhtan.cancel_lair_train(firm_recno) )		// also when the button is disabled
+			if( mod_fryhtan.cancel_lair_train(firm_recno, t) )		// also when the button is disabled
 			{
 				se_ctrl.immediate_sound("TURN_OFF");
 				info.disp();
@@ -712,7 +746,7 @@ int FirmCamp::detect_info()
 			return 1;
 		}
 
-		if( button_lair_train.detect() && mod_fryhtan.add_lair_train(firm_recno) )
+		if( button.detect() && mod_fryhtan.add_lair_train(firm_recno, t) )
 		{
 			se_ctrl.immediate_sound("TURN_ON");
 			info.disp();
@@ -1324,6 +1358,13 @@ void FirmCamp::disp_camp_info(int dispY1, int refreshFlag)
 
 		y+=14;
 	}
+	else if( ModFryhtan::ordo_name(overseerUnit) )		// 7kmod-fryhtan: an Ordo with a name, over "<species> Ordo"
+	{
+		if( refreshFlag == INFO_REPAINT )
+			font_san.put( x1, y, ModFryhtan::ordo_name(overseerUnit), 0, INFO_X2-2 );
+
+		y+=14;
+	}
 
 	if( refreshFlag == INFO_REPAINT )
 		font_san.put( x1, y, overseerUnit->unit_name(0), 0, INFO_X2-2 );		// 0-ask unit_name() not to return the title of the unit
@@ -1343,7 +1384,7 @@ void FirmCamp::disp_camp_info(int dispY1, int refreshFlag)
 
 	//--------- display loyalty ----------//
 
-	if( overseerUnit->rank_id != RANK_KING )
+	if( overseerUnit->rank_id != RANK_KING && overseerUnit->race_id )		// 7kmod-fryhtan: Fryhtans have no loyalty
 	{
 		str  = _("Loyalty");
 		str += ":";
@@ -1392,6 +1433,11 @@ void FirmCamp::disp_absent_overseer(int unitRecno, int dispY1, int refreshFlag)
 				font_san.put( x1, y, mod_fryhtan.king_title(nation_recno), 0, INFO_X2-2 );
 			else
 				font_san.put( x1, y, _("King") );
+			y+=14;
+		}
+		else if( ModFryhtan::ordo_name(unitPtr) )		// 7kmod-fryhtan: an Ordo with a name
+		{
+			font_san.put( x1, y, ModFryhtan::ordo_name(unitPtr), 0, INFO_X2-2 );
 			y+=14;
 		}
 

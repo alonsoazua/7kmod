@@ -280,7 +280,7 @@ int ModFryhtan::lair_train_population(int firmRecno)
 // Whether one more Fryhtan can be queued for training in the lair: enough
 // food, free population and room in the queue.
 //
-int ModFryhtan::can_train_in_lair(int firmRecno, int showMsg)
+int ModFryhtan::can_train_in_lair(int firmRecno, int trainType)
 {
 	FryhtanLair* lairPtr = get_lair(firmRecno);
 
@@ -295,7 +295,7 @@ int ModFryhtan::can_train_in_lair(int firmRecno, int showMsg)
 	if( lairPtr->train_count >= LAIR_MAX_TRAIN_QUEUE )
 		return 0;
 
-	if( nation_array[firmPtr->nation_recno]->food < LAIR_TRAIN_FOOD )
+	if( nation_array[firmPtr->nation_recno]->food < train_food(trainType) )
 		return 0;
 
 	if( nation_population(firmPtr->nation_recno) + lair_train_population(firmRecno) >
@@ -313,15 +313,18 @@ int ModFryhtan::can_train_in_lair(int firmRecno, int showMsg)
 //
 // Queue one Fryhtan for training in the lair. The food is paid now.
 //
-int ModFryhtan::add_lair_train(int firmRecno)
+int ModFryhtan::add_lair_train(int firmRecno, int trainType)
 {
-	if( !can_train_in_lair(firmRecno) )
+	if( !can_train_in_lair(firmRecno, trainType) )
 		return 0;
 
 	FryhtanLair* lairPtr = get_lair(firmRecno);
 	Firm* firmPtr = firm_array[firmRecno];
 
-	nation_array[firmPtr->nation_recno]->consume_food( (float) LAIR_TRAIN_FOOD );
+	nation_array[firmPtr->nation_recno]->consume_food( (float) train_food(trainType) );
+
+	if( trainType == LAIR_TRAIN_ORDO )
+		lairPtr->ordo_mask |= (1 << lairPtr->train_count);
 
 	lairPtr->train_count++;
 	return 1;
@@ -331,20 +334,42 @@ int ModFryhtan::add_lair_train(int firmRecno)
 
 //--------- Begin of function ModFryhtan::cancel_lair_train ---------//
 //
-// Remove the last Fryhtan from the training queue, returning its food.
+// Remove the last Fryhtan of the given type (soldier or Ordo) from the
+// training queue, returning its food.
 //
-int ModFryhtan::cancel_lair_train(int firmRecno)
+int ModFryhtan::cancel_lair_train(int firmRecno, int trainType)
 {
 	FryhtanLair* lairPtr = get_lair(firmRecno);
 
 	if( !lairPtr || lairPtr->train_count <= 0 )
 		return 0;
 
+	//------ the last one of this type in the queue ------//
+
+	int i;
+
+	for( i=lairPtr->train_count-1 ; i>=0 ; i-- )
+	{
+		if( lairPtr->train_type(i) == trainType )
+			break;
+	}
+
+	if( i<0 )
+		return 0;
+
 	Firm* firmPtr = firm_array[firmRecno];
 
-	nation_array[firmPtr->nation_recno]->add_food( (float) LAIR_TRAIN_FOOD );
+	nation_array[firmPtr->nation_recno]->add_food( (float) train_food(trainType) );
 
-	if( --lairPtr->train_count == 0 )
+	//------ remove it, the ones after it move one place forward ------//
+
+	int lowBits = lairPtr->ordo_mask & ((1 << i) - 1);
+
+	lairPtr->ordo_mask = (int16_t) ( lowBits | ((lairPtr->ordo_mask >> (i+1)) << i) );
+
+	lairPtr->train_count--;
+
+	if( i==0 )		// the one being trained
 		lairPtr->train_days = 0;
 
 	return 1;
@@ -369,14 +394,25 @@ void ModFryhtan::next_day_lair(int firmRecno)
 	if( firmPtr->under_construction )
 		return;
 
-	if( ++lairPtr->train_days < LAIR_TRAIN_DAYS )
+	int trainType = lairPtr->train_type(0);
+
+	if( ++lairPtr->train_days < train_days(trainType) )
 		return;
 
-	if( !add_lair_soldier(firmPtr, lairPtr->monster_id) )
-		return;		// no space next to the lair, try again the next day
+	if( trainType == LAIR_TRAIN_ORDO )
+	{
+		if( !add_lair_ordo(firmPtr, lairPtr->monster_id) )
+			return;		// no space next to the lair, try again the next day
+	}
+	else
+	{
+		if( !add_lair_soldier(firmPtr, lairPtr->monster_id) )
+			return;
+	}
 
 	lairPtr->train_days = 0;
 	lairPtr->train_count--;
+	lairPtr->ordo_mask = (int16_t) ( (lairPtr->ordo_mask >> 1) & 0x7FFF );
 }
 //----------- End of function ModFryhtan::next_day_lair -----------//
 
@@ -424,6 +460,158 @@ int ModFryhtan::add_lair_soldier(Firm* firmPtr, int monsterId)
 	return unitRecno;
 }
 //----------- End of function ModFryhtan::add_lair_soldier -----------//
+
+
+//--------- Begin of function ModFryhtan::add_lair_ordo ---------//
+//
+// Add an Ordo (a general, leadership LAIR_ORDO_LEADERSHIP and combat
+// LAIR_ORDO_COMBAT) of the given species next to a lair, with a name of the
+// list. It stays outside the lair.
+//
+// return: <int> the unit recno, 0 if there is no space for it
+//
+int ModFryhtan::add_lair_ordo(Firm* firmPtr, int monsterId)
+{
+	int unitId = monster_res[monsterId]->unit_id;
+	SpriteInfo* spriteInfo = sprite_res[ unit_res[unitId]->sprite_id ];
+
+	int xLoc=firmPtr->loc_x1, yLoc=firmPtr->loc_y1;
+
+	if( !world.locate_space( &xLoc, &yLoc, firmPtr->loc_x2, firmPtr->loc_y2,
+									 spriteInfo->loc_width, spriteInfo->loc_height, unit_res[unitId]->mobile_type ) )
+	{
+		return 0;
+	}
+
+	int unitRecno = unit_array.add_unit( unitId, firmPtr->nation_recno, RANK_SOLDIER, 100, xLoc, yLoc );
+
+	if( !unitRecno )
+		return 0;
+
+	Unit* unitPtr = unit_array[unitRecno];
+
+	unitPtr->set_monster_id( monsterId );
+	unitPtr->set_rank( RANK_GENERAL );
+	unitPtr->skill.set_skill( SKILL_LEADING );
+	unitPtr->skill.skill_level = LAIR_ORDO_LEADERSHIP;
+	unitPtr->set_combat_level( LAIR_ORDO_COMBAT );
+	unitPtr->hit_points = (float) unitPtr->max_hit_points;
+	unitPtr->name_id = (uint16_t) new_ordo_name_id( firmPtr->nation_recno );
+
+	return unitRecno;
+}
+//----------- End of function ModFryhtan::add_lair_ordo -----------//
+
+
+//--------- Begin of function FryhtanLair::type_count ---------//
+//
+// No. of Fryhtans of the given type (soldiers or Ordos) in the queue.
+//
+int FryhtanLair::type_count(int trainType)
+{
+	int count = 0;
+
+	for( int i=0 ; i<train_count ; i++ )
+	{
+		if( train_type(i) == trainType )
+			count++;
+	}
+
+	return count;
+}
+//----------- End of function FryhtanLair::type_count -----------//
+
+
+//------- the names of the Ordos (7kmod/FRYHTAN_NAMES.md) -------//
+
+static const char* ordo_name_array[] =
+{
+	"Akhrul", "Bazgor", "Brakkas", "Drovuk", "Durmog",
+	"Ekzarr", "Feskul", "Ghaddrin", "Gharvok", "Ghulmar",
+	"Gorrath", "Grevvuk", "Hrozzul", "Ikthar", "Izzrak",
+	"Jarvuk", "Kaggoth", "Karzul", "Khavrek", "Kolgrim",
+	"Krathos", "Kruvak", "Kzorr", "Lughaz", "Malvok",
+	"Mordrek", "Murzak", "Naggol", "Nekrath", "Nurvog",
+	"Oggrath", "Orzuk", "Phazzar", "Qorrak", "Rakthul",
+	"Razzug", "Rhovok", "Rukmar", "Sarvog", "Shagrul",
+	"Skorra", "Skulvar", "Sorgath", "Thrakk", "Thulzar",
+	"Tograk", "Trezzul", "Ubrakk", "Ulgrath", "Urzog",
+	"Vakkor", "Varguul", "Vazzrik", "Vorrak", "Vruzzol",
+	"Waggrul", "Xarvok", "Xoggul", "Yazzrak", "Yurgoth",
+	"Zagrath", "Zarkul", "Zhovrek", "Zogmar", "Zurrak",
+};
+
+enum { ORDO_NAME_COUNT = sizeof(ordo_name_array) / sizeof(ordo_name_array[0]) };
+
+
+//--------- Begin of function ModFryhtan::ordo_name ---------//
+//
+const char* ModFryhtan::ordo_name(Unit* unitPtr)
+{
+	if( unitPtr->race_id || unitPtr->rank_id != RANK_GENERAL )
+		return NULL;
+
+	int nameIndex = (int) unitPtr->name_id - ORDO_NAME_ID_BASE;
+
+	if( nameIndex < 1 || nameIndex > ORDO_NAME_COUNT )
+		return NULL;
+
+	return ordo_name_array[nameIndex-1];
+}
+//----------- End of function ModFryhtan::ordo_name -----------//
+
+
+//--------- Begin of function ModFryhtan::new_ordo_name_id ---------//
+//
+// A random name of the list that no Ordo of the kingdom is using (any name if
+// all are in use).
+//
+// return: <int> the Unit::name_id for it
+//
+int ModFryhtan::new_ordo_name_id(int nationRecno)
+{
+	char usedArray[ORDO_NAME_COUNT];
+
+	memset( usedArray, 0, sizeof(usedArray) );
+
+	int usedCount = 0;
+
+	for( int i=unit_array.size() ; i>0 ; i-- )
+	{
+		if( unit_array.is_deleted(i) )
+			continue;
+
+		Unit* unitPtr = unit_array[i];
+
+		if( unitPtr->nation_recno != nationRecno || !ordo_name(unitPtr) )
+			continue;
+
+		int nameIndex = unitPtr->name_id - ORDO_NAME_ID_BASE;
+
+		if( !usedArray[nameIndex-1] )
+		{
+			usedArray[nameIndex-1] = 1;
+			usedCount++;
+		}
+	}
+
+	if( usedCount >= ORDO_NAME_COUNT )		// all in use
+		return ORDO_NAME_ID_BASE + 1 + misc.random(ORDO_NAME_COUNT);
+
+	int pick = misc.random(ORDO_NAME_COUNT - usedCount);
+
+	for( int i=0 ; i<ORDO_NAME_COUNT ; i++ )
+	{
+		if( usedArray[i] )
+			continue;
+
+		if( pick-- == 0 )
+			return ORDO_NAME_ID_BASE + 1 + i;
+	}
+
+	return ORDO_NAME_ID_BASE + 1;
+}
+//----------- End of function ModFryhtan::new_ordo_name_id -----------//
 
 
 //--------- Begin of function ModFryhtan::draw_lair ---------//
@@ -720,7 +908,9 @@ int ModFryhtan::write_file(File* filePtr)
 		}
 	}
 
-	if( !filePtr->file_put_short( (int16_t) lairCount ) )
+	//--- the lair format with the Ordos in the queue: a -1 mark first (the lair count is never negative in the older format) ---//
+
+	if( !filePtr->file_put_short( -1 ) || !filePtr->file_put_short( (int16_t) lairCount ) )
 		return 0;
 
 	if( lairCount > 0 &&
@@ -749,6 +939,13 @@ int ModFryhtan::read_file(File* filePtr)
 		return 1;
 
 	int lairCount = filePtr->file_get_short();
+	int withOrdo  = 0;
+
+	if( lairCount == -1 )		// the format with the Ordos in the queue (since the Train Ordo button)
+	{
+		withOrdo  = 1;
+		lairCount = filePtr->file_get_short();
+	}
 
 	if( lairCount < 0 )
 		return 0;
@@ -757,8 +954,21 @@ int ModFryhtan::read_file(File* filePtr)
 	{
 		set_lair( lairCount, 1 );		// allocate the array
 
-		if( !filePtr->file_get_short_array( (int16_t*) lair_array, lairCount * (sizeof(FryhtanLair)/sizeof(int16_t)) ) )
-			return 0;
+		if( withOrdo )
+		{
+			if( !filePtr->file_get_short_array( (int16_t*) lair_array, lairCount * (sizeof(FryhtanLair)/sizeof(int16_t)) ) )
+				return 0;
+		}
+		else		//--- older saved games: monster_id, train_count and train_days, all soldiers ---//
+		{
+			for( int i=0 ; i<lairCount ; i++ )
+			{
+				lair_array[i].monster_id  = filePtr->file_get_short();
+				lair_array[i].train_count = filePtr->file_get_short();
+				lair_array[i].train_days  = filePtr->file_get_short();
+				lair_array[i].ordo_mask   = 0;
+			}
+		}
 	}
 
 	return 1;
@@ -782,18 +992,23 @@ void ModFryhtan::reward_kill(int nationRecno, Unit* targetUnit)
 	if( !targetUnit->race_id || targetUnit->nation_recno == nationRecno )		// only human units of other nations
 		return;
 
-	int reward = KILL_REWARD_UNIT;
+	int gold = KILL_GOLD_UNIT, food = KILL_FOOD_UNIT;
 
 	if( targetUnit->rank_id == RANK_KING )
-		reward = KILL_REWARD_KING;
-
+	{
+		gold = KILL_GOLD_KING;
+		food = KILL_FOOD_KING;
+	}
 	else if( targetUnit->rank_id == RANK_GENERAL )
-		reward = KILL_REWARD_GENERAL;
+	{
+		gold = KILL_GOLD_GENERAL;
+		food = KILL_FOOD_GENERAL;
+	}
 
 	Nation* nationPtr = nation_array[nationRecno];
 
-	nationPtr->add_income( INCOME_TREASURE, (float) reward );
-	nationPtr->add_food( (float) reward );
+	nationPtr->add_income( INCOME_TREASURE, (float) gold );
+	nationPtr->add_food( (float) food );
 }
 //----------- End of function ModFryhtan::reward_kill -----------//
 
@@ -967,6 +1182,50 @@ int ModFryhtan::next_day_town(Town* townPtr)
 //
 int ModFryhtan::town_tribute(Town* townPtr)
 {
-	return townPtr->population * TRIBUTE_PER_PERSON;
+	//--- the leadership of the best general (or king) of a linked lair raises it: x2 with leadership 100 ---//
+
+	int leadership = lair_leadership(townPtr, townPtr->nation_recno);
+
+	return townPtr->population * TRIBUTE_PER_PERSON * (100 + leadership) / 100;
 }
 //----------- End of function ModFryhtan::town_tribute -----------//
+
+
+//--------- Begin of function ModFryhtan::set_header_species ---------//
+//
+// 7kmod-fryhtan: the species of a Fryhtan kingdom in the header of a saved
+// game, for the list of saved games (which doesn't load the whole game). The
+// header has a fixed size, so it goes in the last two bytes of the king's
+// name, after its end: a mark and the monster id. The game ignores them.
+// It isn't stored if the name is too long for it.
+//
+// <char*> playerName - GameFile::player_name, with its terminating zero
+// <int>   nameSize   - the size of the array
+// <int>   monsterId  - the species
+//
+void ModFryhtan::set_header_species(char* playerName, int nameSize, int monsterId)
+{
+	if( !monsterId || (int) strlen(playerName) > nameSize-3 )
+		return;
+
+	playerName[nameSize-2] = FRYHTAN_HEADER_MARK;
+	playerName[nameSize-1] = (char) monsterId;
+}
+//----------- End of function ModFryhtan::set_header_species -----------//
+
+
+//--------- Begin of function ModFryhtan::header_species ---------//
+//
+// return: <int> the species of the Fryhtan kingdom of a saved game, 0 if it
+//               is a human kingdom
+//
+int ModFryhtan::header_species(const char* playerName, int nameSize)
+{
+	if( playerName[nameSize-2] != FRYHTAN_HEADER_MARK || (int) strlen(playerName) > nameSize-3 )
+		return 0;
+
+	int monsterId = (unsigned char) playerName[nameSize-1];
+
+	return is_valid_species(monsterId) ? monsterId : 0;
+}
+//----------- End of function ModFryhtan::header_species -----------//

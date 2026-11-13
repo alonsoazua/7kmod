@@ -357,37 +357,67 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
   IA un pueblo enlazado a la guarida, porque los reinos de la IA estaban en otras islas).
 
 ### Ajustes anotados (después de la fase 4)
-- [ ] **Íconos de rango:** mostrar sobre el rey y los generales de un reino Fryhtan el
+- [x] **Íconos de rango:** mostrar sobre el rey y los generales de un reino Fryhtan el
       ícono de rey y de general que tienen las unidades humanas.
-- [ ] **Recompensa por matar:** bajar solo el oro: **$2** por soldado, aldeano o defensor
+- [x] **Recompensa por matar:** bajar solo el oro: **$2** por soldado, aldeano o defensor
       y **$10** por general. La comida no cambia (5 y 20) y el rey sigue en $100 y 100.
-- [ ] **Liderazgo y tributo:** el liderazgo del mejor general o rey de una guarida
+- [x] **Liderazgo y tributo:** el liderazgo del mejor general o rey de una guarida
       enlazada al pueblo esclavizado sube el tributo: tributo = $5 × personas × (1 +
       liderazgo / 100). Con liderazgo 100 se cobra el doble ($10 por persona). El texto
       del panel del pueblo muestra el tributo ya con el bono.
-- [ ] **Grant a pueblos independientes:** quitar el botón para los reinos Fryhtan (hoy
+- [x] **Grant a pueblos independientes:** quitar el botón para los reinos Fryhtan (hoy
       aparece y no debería).
-- [ ] **Nombres de Ordos:** los generales Fryhtan (Ordos) del reino reciben un nombre
+- [x] **Nombres de Ordos:** los generales Fryhtan (Ordos) del reino reciben un nombre
       propio al azar de la lista `7kmod/FRYHTAN_NAMES.md` (65 nombres, aprobada), sin
       repetir uno en uso en el reino. Se muestra como el rey: el nombre en la primera
       línea ("Gharvok") y "Wyrm Ordo" en la segunda. El rey sigue con el nombre del
       jugador.
-- [ ] **Train Ordo en lugar de Promote:** ya no se pueden ascender soldados a general.
+- [x] **Train Ordo en lugar de Promote:** ya no se pueden ascender soldados a general.
       La guarida tiene un botón nuevo para entrenar un Ordo de su especie:
       - tarda el doble que un soldado (**40 días**);
       - sale con **liderazgo 30 y combate 30**;
       - aparece **afuera** de la guarida (no entra como soldado);
       - comparte la cola con Train y cuenta en el tope de población igual que un
         soldado de su tamaño.
-      Por confirmar: costo en comida (propuesta: el doble, **40**), y si se quita también
-      Demote (propuesta: sí, un Ordo no se puede degradar).
-- [ ] **Partidas guardadas:** en la lista de partidas (guardar y cargar), una partida de
+      - cuesta **40 de comida** y no hay Demote (aprobado).
+- [x] **Partidas guardadas:** en la lista de partidas (guardar y cargar), una partida de
       un reino Fryhtan muestra el retrato del Fryhtan de la especie del reino en lugar del
       rey humano de la raza interna (hoy sale un rey normando), y el nombre "<nombre> The
       All High" (por ejemplo "Al The All High") en lugar de "King Al". Hay que guardar la
       especie en el encabezado de la partida (`GameFileHeader`), porque la lista no
       carga la partida completa; las partidas de antes del cambio siguen mostrando el
       retrato humano.
+
+#### Cómo quedaron
+
+- **Íconos:** el rey y los Ordos de un reino Fryhtan llevan el ícono de rey o de general
+  en lugar del ícono del reino; los soldados siguen con el ícono del reino.
+- **Recompensa:** $2 / $10 / $100 de oro y 5 / 20 / 100 de comida.
+- **Tributo:** $5 × personas × (100 + liderazgo) / 100, con el mejor general o rey de
+  las guaridas enlazadas al pueblo (con el enlace activo).
+- **Grant:** `Town::can_grant_to_non_own_town()` devuelve 0 para un reino Fryhtan.
+- **Train Ordo:** segundo botón de la guarida (ícono de Promote), junto a Train. Cada
+  botón muestra cuántos de su tipo hay en la cola y la barra del que se está
+  entrenando; clic derecho quita el último de ese tipo. La cola es una sola (hasta 8)
+  y se entrena en orden. El Ordo sale junto a la guarida con un nombre de la lista y
+  no entra. Sin Promote ni Demote en el menú de las unidades Fryhtan.
+- **Nombres:** se guardan en `Unit::name_id` (60000 + el número del nombre; los
+  Fryhtans no usan ese campo para mostrar nada). Los Ordos ascendidos antes de este
+  cambio no tienen nombre. Al azar entre los que no usa ningún Ordo del reino.
+- **Lealtad:** el panel del general de la guarida muestra "Loyalty N/A" para un Ordo
+  (antes salía "100 ↓ 0", aunque la lealtad de los Fryhtans no cambia).
+- **Lista de partidas:** el encabezado tiene tamaño fijo, así que la especie se guarda
+  en los dos últimos bytes del nombre del rey (después de su fin; el juego los ignora):
+  una marca y el número de la especie. Si el nombre es muy largo (más de 18 letras) no
+  cabe y sale el retrato humano. En el menú principal se carga `monster_res` para los
+  retratos (antes no estaba cargado ahí).
+- **Partidas guardadas:** las guaridas se guardan con un formato nuevo (con los Ordos
+  de la cola), marcado con un -1 antes del número de guaridas; las partidas anteriores
+  se cargan con todos los de la cola como soldados.
+- **Probado:** Train Ordo (40 días, sale "Kzorr / Wyrm Ordo" con liderazgo y combate 30,
+  ícono de general), construir una guarida con el Ordo y verlo como general, la lista de
+  partidas con el retrato del Wyrm y "New Player The All High", cargar la partida, y el
+  pueblo independiente sin Grant.
 
 ### Fase 5: capturar guaridas independientes
 - [ ] Enlace guarida propia–guarida independiente, de cualquier especie.
