@@ -487,6 +487,15 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
       guaridas salvajes enlazadas a ella (a 8 casillas o menos), como la línea punteada
       de un fuerte con un pueblo. Se ve al seleccionar la guarida del jugador o la
       guarida salvaje.
+- [ ] **Hace falta un general:** solo se puede capturar (Pay Tribute) si alguna guarida
+      del jugador enlazada a la guarida salvaje tiene un Ordo o el rey adentro. Sin
+      general, la oferta se ve pero el botón está desactivado y el panel lo explica.
+- [ ] **El liderazgo cambia el costo:** se usa el general (Ordo o rey) con más liderazgo
+      de las guaridas enlazadas. Con liderazgo 100 se paga el costo base (suma de los
+      combates × $10); con 30, el triple; en medio, gradual:
+      costo = base × (1 + 2 × (100 − liderazgo) / 70). Por ejemplo, ×2 con liderazgo 65
+      y ×2.14 con el rey al inicio (liderazgo 60). Con liderazgo menor a 30 se queda en ×3. El
+      panel muestra el costo ya con el liderazgo.
 
 ### Fase 6: diplomacia y Fryhtans salvajes
 - [ ] Sin comercio, amistad ni alianza con un reino Fryhtan (jugador e IA).
