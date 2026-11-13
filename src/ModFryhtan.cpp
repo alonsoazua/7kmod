@@ -402,7 +402,7 @@ void ModFryhtan::next_day_lair(int firmRecno)
 
 	int trainType = lairPtr->train_type(0);
 
-	if( ++lairPtr->train_days < train_days(trainType) )
+	if( ++lairPtr->train_days < train_days(trainType, lairPtr->monster_id) )
 		return;
 
 	if( trainType == LAIR_TRAIN_ORDO )

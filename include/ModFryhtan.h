@@ -156,7 +156,10 @@ public:
 	int	add_lair_soldier(Firm* firmPtr, int monsterId, int combatLevel=LAIR_TRAIN_COMBAT);
 	int	add_lair_ordo(Firm* firmPtr, int monsterId);
 	static int	train_food(int trainType)	{ return trainType==LAIR_TRAIN_ORDO ? LAIR_ORDO_FOOD : LAIR_TRAIN_FOOD; }
-	static int	train_days(int trainType)	{ return trainType==LAIR_TRAIN_ORDO ? LAIR_ORDO_DAYS : LAIR_TRAIN_DAYS; }
+	// days needed for training; small Fryhtans (1 population) take half the time
+	static int	train_days(int trainType, int monsterId)
+					{ int days = trainType==LAIR_TRAIN_ORDO ? LAIR_ORDO_DAYS : LAIR_TRAIN_DAYS;
+					  return monster_population(monsterId)==1 ? days/2 : days; }
 
 	//------ names of the Ordos ------//
 

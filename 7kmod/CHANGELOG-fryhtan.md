@@ -36,13 +36,13 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
     que funciona como un fuerte (un general y hasta 8 soldados). Cuesta **$500** y
     **$100 al año**.
   - Botón **Train** en la guarida: un Fryhtan de la especie de la guarida por **20 de
-    comida**, en **20 días**, con combate 20. Cola de hasta 8; clic derecho quita uno y
+    comida**, en **20 días** (10 si la especie es pequeña), con combate 20. Cola de hasta 8; clic derecho quita uno y
     devuelve la comida. No se puede pasar del tope de población.
   - **Población Fryhtan:** cada Fryhtan del reino, rey incluido, usa 1 (pequeño) o 2
     (grande). El tope es 18. Se ve en la ayuda de Train y en el reporte de reinos
     ("Fryhtan Population").
   - **Train Ordo:** un segundo botón entrena un general (Ordo) de la especie de la
-    guarida: **40 de comida**, **40 días**, liderazgo y combate **30**. Sale junto a la
+    guarida: **40 de comida**, **40 días** (20 si es pequeña), liderazgo y combate **30**. Sale junto a la
     guarida con un **nombre propio** (por ejemplo "Kzorr"). Los soldados ya no se pueden
     ascender (no hay Promote ni Demote).
   - Los Fryhtans entrenan su combate en la guarida con el general y ganan experiencia

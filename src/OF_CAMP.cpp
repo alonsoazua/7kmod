@@ -568,7 +568,7 @@ void FirmCamp::disp_lair_train_button(int trainType)
 		if( lairPtr->train_type(0) == trainType )
 		{
 			vga_front.indicator( button.x1+6, button.y2-11, button.x2-9, button.y2-7,
-										(float) lairPtr->train_days, (float) ModFryhtan::train_days(trainType), VGA_LIGHT_GREEN, V_BLACK );
+										(float) lairPtr->train_days, (float) ModFryhtan::train_days(trainType, lairPtr->monster_id), VGA_LIGHT_GREEN, V_BLACK );
 		}
 	}
 	else if( last_lair_train_count[trainType] > 0 )
@@ -588,7 +588,7 @@ void FirmCamp::disp_lair_train_button(int trainType)
 	{
 		snprintf( helpStr[trainType], sizeof(helpStr[trainType]),
 			_("Train a %s Ordo (general, leadership %d, combat %d) in %d days for %d food. It comes out next to the lair. It uses %d population. Fryhtan population: %d/%d. Right click removes one from the queue."),
-			ModFryhtan::monster_name(monsterId), (int) LAIR_ORDO_LEADERSHIP, (int) LAIR_ORDO_COMBAT, (int) LAIR_ORDO_DAYS, (int) LAIR_ORDO_FOOD,
+			ModFryhtan::monster_name(monsterId), (int) LAIR_ORDO_LEADERSHIP, (int) LAIR_ORDO_COMBAT, ModFryhtan::train_days(trainType, monsterId), (int) LAIR_ORDO_FOOD,
 			ModFryhtan::monster_population(monsterId),
 			mod_fryhtan.nation_population(nation_recno), mod_fryhtan.nation_population_cap(nation_recno) );
 
@@ -598,7 +598,7 @@ void FirmCamp::disp_lair_train_button(int trainType)
 	{
 		snprintf( helpStr[trainType], sizeof(helpStr[trainType]),
 			_("Train a %s (combat %d) in %d days for %d food. It uses %d population. Fryhtan population: %d/%d. Right click removes one from the queue."),
-			ModFryhtan::monster_name(monsterId), (int) LAIR_TRAIN_COMBAT, (int) LAIR_TRAIN_DAYS, (int) LAIR_TRAIN_FOOD,
+			ModFryhtan::monster_name(monsterId), (int) LAIR_TRAIN_COMBAT, ModFryhtan::train_days(trainType, monsterId), (int) LAIR_TRAIN_FOOD,
 			ModFryhtan::monster_population(monsterId),
 			mod_fryhtan.nation_population(nation_recno), mod_fryhtan.nation_population_cap(nation_recno) );
 

@@ -37,13 +37,13 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
     works like a fort (one general and up to 8 soldiers). It costs **$500** and **$100
     a year**.
   - **Train** button in the lair: a Fryhtan of the lair's species for **20 food**, in
-    **20 days**, with combat 20. Queue of up to 8; right click removes one and gives the
+    **20 days** (10 for a small species), with combat 20. Queue of up to 8; right click removes one and gives the
     food back. It can't go over the population cap.
   - **Fryhtan population:** each Fryhtan of the kingdom, king included, uses 1 (small)
     or 2 (large). The cap is 18. It shows in the Train help and in the Kingdoms report
     ("Fryhtan Population").
   - **Train Ordo:** a second button trains a general (Ordo) of the lair's species: **40
-    food**, **40 days**, leadership and combat **30**. It comes out next to the lair
+    food**, **40 days** (20 for a small species), leadership and combat **30**. It comes out next to the lair
     with a **name of its own** (for example "Kzorr"). Soldiers can no longer be promoted
     (there is no Promote or Demote).
   - Fryhtans train their combat in the lair with the general and gain experience when
