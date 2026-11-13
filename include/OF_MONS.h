@@ -148,6 +148,7 @@ public:
 
 private:
 	void	disp_monster_info(int dispY1, int refreshFlag);
+	void	disp_lair_offer(int dispY1, int refreshFlag, struct LairOffer* offerPtr);		// 7kmod-fryhtan
 
 	void 	validate_patrol_unit();
 	void 	recover_hit_points();

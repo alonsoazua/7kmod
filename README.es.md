@@ -25,7 +25,7 @@ master  ──>  7kmod  ──>  7kmod-gameplay  ──>  7kmod-pathing  ──>
 |---|---|---|---|
 | `master` | — | El juego original 7kaa 2.15.7, sin cambios. Sirve de referencia. | — |
 | **`7kmod`** (principal) | `7kaa-mod.exe` | Mejoras de interfaz y comodidad, correcciones y el **editor de escenarios**. No cambia el estilo de juego. | [`7kmod/CHANGELOG.md`](7kmod/CHANGELOG.md) |
-| `7kmod-gameplay` | `7kaa-gameplay.exe` | Todo `7kmod` más **cambios de reglas**: comercio por puerto, Fryhtans invocados con el color de su reino, la IA usa Fryhtans, etc. | `7kmod/CHANGELOG-gameplay.md` (en esa rama) |
+| `7kmod-gameplay` | `7kaa-gameplay.exe` | Todo `7kmod` más **cambios de reglas**: comercio por puerto, Fryhtans invocados con el color de su reino, la IA usa Fryhtans, jugar como reino Fryhtan, etc. | `7kmod/CHANGELOG-gameplay.md` (en esa rama) |
 | `7kmod-pathing` | `7kaa-pathing.exe` | Todo `7kmod-gameplay` más el **pathfinding experimental**. | `7kmod/CHANGELOG-pathing.md` (en esa rama) |
 | `7k-mod-IA` | `7kaa-ia.exe` | Todo `7kmod-pathing` más la **IA experimental** y límites por reino (población, unidades militares, impuestos), todo como opciones de `config.txt`. Usa su propia carpeta de configuración (`%APPDATA%\7kfans.com\7kaa-ia\`). | `7kmod/CHANGELOG-ia.md` (en esa rama) |
 

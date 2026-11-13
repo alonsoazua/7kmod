@@ -39,7 +39,14 @@
 #include <OF_MONS.h>
 #include <locale.h>
 #include <ConfigAdv.h>
+#include <ModFryhtan.h>
+#include <OUNITRES.h>
+#include <OMOUSE.h>
+#include <OSE.h>
+#include <OBOX.h>
 #include "gettext.h"
+
+static Button button_pay_tribute;		// 7kmod-fryhtan: Pay Tribute in the offer of a wild lair
 
 
 //----------- Define constant ------------//
@@ -92,6 +99,9 @@ void FirmMonster::init_derived()
 FirmMonster::~FirmMonster()
 {
 	if( sys.signal_exit_flag )
+		return;
+
+	if( mod_fryhtan.capturing_lair )		// 7kmod-fryhtan: a lair captured by a Fryhtan kingdom leaves no gold coins
 		return;
 
 	int goldAmount = 800 * (monster_res[monster_id]->level*30 + misc.random(50)) / 100;
@@ -164,6 +174,22 @@ void FirmMonster::put_info(int refreshFlag)
 {
 	disp_basic_info(INFO_Y1, refreshFlag);
 
+	//--- 7kmod-fryhtan: the offer of a lair linked to the player's Fryhtan kingdom ---//
+
+	LairOffer* offerPtr = NULL;
+
+	if( nation_array.player_recno && mod_fryhtan.is_fryhtan(nation_array.player_recno) )
+		offerPtr = mod_fryhtan.think_offer(this, nation_array.player_recno);
+
+	if( offerPtr )
+	{
+		disp_lair_offer(INFO_Y1+54, refreshFlag, offerPtr);
+		return;
+	}
+
+	if( refreshFlag == INFO_REPAINT )
+		button_pay_tribute.reset();
+
 	if( should_show_info() )
 		disp_monster_info(INFO_Y1+54, refreshFlag);
 }
@@ -177,12 +203,151 @@ int FirmMonster::detect_info()
 	if( detect_basic_info() )
 		return 1;
 
+	//--- 7kmod-fryhtan: Pay Tribute captures the lair ---//
+
+	if( button_pay_tribute.init_flag && button_pay_tribute.detect() )
+	{
+		LairOffer* offerPtr = mod_fryhtan.get_offer(this);
+
+		if( !offerPtr )
+			return 1;
+
+		int cost = mod_fryhtan.capture_cost(this, nation_array.player_recno, offerPtr);
+
+		if( !cost )		// the button is disabled then
+			return 1;
+
+		if( (~nation_array)->cash < cost )
+		{
+			box.msg( _("You don't have enough money to pay the tribute.") );
+			return 1;
+		}
+
+		int lairRecno = mod_fryhtan.pay_lair_tribute(firm_recno, nation_array.player_recno);		// this firm is deleted
+
+		button_pay_tribute.reset();
+
+		if( lairRecno )
+		{
+			se_ctrl.immediate_sound("TURN_ON");
+			power.reset_selection();
+			firm_array.selected_recno = lairRecno;		// show the new lair
+			firm_array[lairRecno]->sort_worker();		// the order of the worker list is of the last selected firm
+		}
+
+		info.disp();
+		return 1;
+	}
+
 	if( !config.show_ai_info && nation_recno!=nation_array.player_recno )
 		return 0;
 
 	return 0;
 }
 //----------- End of function FirmMonster::detect_info -----------//
+
+
+//--------- Begin of function FirmMonster::disp_lair_offer ---------//
+//
+// 7kmod-fryhtan, phase 5: the offer of a wild lair linked to a lair of the
+// player's Fryhtan kingdom, with the Pay Tribute button. It is shown instead
+// of the Ordos of the lair.
+//
+void FirmMonster::disp_lair_offer(int dispY1, int refreshFlag, LairOffer* offerPtr)
+{
+	int panelY2 = dispY1 + 205;
+
+	if( refreshFlag == INFO_REPAINT )
+	{
+		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, panelY2 );
+
+		font_san.center_put( INFO_X1, dispY1+2, INFO_X2, dispY1+20, _("Tribute Offer") );
+
+		int x=INFO_X1+6, y=dispY1+24;
+		UnitInfo* unitInfo = unit_res[ monster_res[offerPtr->monster_id]->unit_id ];
+
+		//------ the Ordo ------//
+
+		vga_front.put_bitmap( x, y, unitInfo->get_large_icon_ptr(RANK_GENERAL) );
+
+		int x1 = x+UNIT_LARGE_ICON_WIDTH+8;
+		String str;
+
+		str  = _("Ordo");
+		str += ": ";
+		str += ModFryhtan::monster_name(offerPtr->monster_id);
+		font_san.put( x1, y, str, 0, INFO_X2-4 );
+
+		str  = _("Combat");
+		str += ": ";
+		str += offerPtr->ordo_combat;
+		font_san.put( x1, y+14, str, 0, INFO_X2-4 );
+
+		str  = _("Leadership");
+		str += ": ";
+		str += offerPtr->ordo_leadership;
+		font_san.put( x1, y+28, str, 0, INFO_X2-4 );
+
+		//------ the soldiers ------//
+
+		y += UNIT_LARGE_ICON_HEIGHT + 8;
+
+		int minCombat=100, maxCombat=0;
+
+		for( int i=0 ; i<offerPtr->soldier_count ; i++ )
+		{
+			minCombat = MIN( minCombat, (int) offerPtr->soldier_combat[i] );
+			maxCombat = MAX( maxCombat, (int) offerPtr->soldier_combat[i] );
+		}
+
+		char soldierStr[100];
+
+		snprintf( soldierStr, sizeof(soldierStr), _("%d soldiers, combat %d-%d"), (int) offerPtr->soldier_count, minCombat, maxCombat );
+		font_san.put( x, y, soldierStr, 0, INFO_X2-4 );
+
+		//------ the tribute, with the leadership of the best linked general ------//
+
+		int leadership = mod_fryhtan.capture_leadership(this, nation_array.player_recno);
+		char costStr[150];
+
+		if( leadership >= 0 )
+		{
+			snprintf( costStr, sizeof(costStr), _("Tribute: $%d (leadership %d)"),
+						 mod_fryhtan.capture_cost(this, nation_array.player_recno, offerPtr), leadership );
+			font_san.put( x, y+18, costStr, 0, INFO_X2-4 );
+
+			font_san.put_paragraph( x, y+36, INFO_X2-4, y+95,
+				_("The wild Fryhtans inside will leave. The ones outside stay wild.") );
+		}
+		else
+		{
+			snprintf( costStr, sizeof(costStr), _("Base tribute: $%d"), ModFryhtan::offer_cost(offerPtr) );
+			font_san.put( x, y+18, costStr, 0, INFO_X2-4 );
+
+			font_san.put_paragraph( x, y+36, INFO_X2-4, y+95,
+				_("An Ordo or the All High must be in a linked lair to pay the tribute.") );
+		}
+
+		if( leadership >= 0 )		// without an Ordo or the king in a linked lair there is no button, the text explains why
+			button_pay_tribute.paint_text( INFO_X1+40, panelY2-30, INFO_X2-40, panelY2-6, _("Pay Tribute") );
+		else
+			button_pay_tribute.reset();
+	}
+
+	//--- the general may enter or leave a linked lair while the panel is open ---//
+
+	static int lastHasGeneral;
+	int hasGeneral = mod_fryhtan.capture_leadership(this, nation_array.player_recno) >= 0;
+
+	if( refreshFlag == INFO_REPAINT )
+		lastHasGeneral = hasGeneral;
+	else if( hasGeneral != lastHasGeneral )
+	{
+		lastHasGeneral = hasGeneral;
+		info.disp();
+	}
+}
+//----------- End of function FirmMonster::disp_lair_offer -----------//
 
 
 extern const char *monster_name_king[];
@@ -1066,7 +1231,7 @@ int FirmMonster::think_attack_neighbor()
 		if(locPtr->is_firm())
 		{
 			Firm *firmPtr = firm_array[locPtr->firm_recno()];
-			if(firmPtr->nation_recno)
+			if(firmPtr->nation_recno && !mod_fryhtan.is_fryhtan(firmPtr->nation_recno))		// 7kmod-fryhtan
 			{
 				targetNation = firmPtr->nation_recno;
 				attackFlag = 1;
@@ -1078,7 +1243,7 @@ int FirmMonster::think_attack_neighbor()
 		else if(locPtr->is_town())
 		{
 			Town *townPtr = town_array[locPtr->town_recno()];
-			if(townPtr->nation_recno)
+			if(townPtr->nation_recno && !mod_fryhtan.is_fryhtan(townPtr->nation_recno))		// 7kmod-fryhtan
 			{
 				targetNation = townPtr->nation_recno;
 				attackFlag = 1;
@@ -1215,7 +1380,8 @@ int FirmMonster::think_attack_human()
 
 		firmPtr = firm_array[firmRecno];
 
-		if( firmPtr->region_id == region_id )
+		if( firmPtr->region_id == region_id &&
+			 !mod_fryhtan.is_fryhtan(firmPtr->nation_recno) )		// 7kmod-fryhtan: the wild Fryhtans don't attack the Fryhtan kingdoms
 		{
 			targetXLoc = firmPtr->loc_x1;
 			targetYLoc = firmPtr->loc_y1;
@@ -1232,7 +1398,8 @@ int FirmMonster::think_attack_human()
 
 		townPtr = town_array[townRecno];
 
-		if( townPtr->nation_recno && townPtr->region_id == region_id )
+		if( townPtr->nation_recno && townPtr->region_id == region_id &&
+			 !mod_fryhtan.is_fryhtan(townPtr->nation_recno) )		// 7kmod-fryhtan
 		{
 			targetXLoc = townPtr->loc_x1;
 			targetYLoc = townPtr->loc_y1;

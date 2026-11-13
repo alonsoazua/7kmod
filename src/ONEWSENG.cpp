@@ -40,6 +40,7 @@
 #include <OHONORS.h>
 #include <OUNIT.h>
 #include "gettext.h"
+#include <ModFryhtan.h>
 
 //--------- Define variable type ----------//
 
@@ -441,7 +442,11 @@ void News::king_die()
 	//
 	//----------------------------------------------//
 
-	if( nation_array.player_recno && nation_name_id1 == (~nation_array)->nation_name_id )
+	if( short_para1 == 1 )		// 7kmod-fryhtan: the All High of a Fryhtan kingdom (the name of the kingdom is that of the new All High)
+	{
+		snprintf(str, MAX_STR_LEN+1, "%s", _("Your All High has been slain."));
+	}
+	else if( nation_array.player_recno && nation_name_id1 == (~nation_array)->nation_name_id )
 	{
 		// TRANSLATORS: Your King, <Name>, has been slain.
 		snprintf(str, MAX_STR_LEN+1, _("Your King, %s, has been slain."), king_name1());
@@ -475,7 +480,14 @@ void News::new_king()
 	//
 	//----------------------------------------------//
 
-	if( nation_array.player_recno && nation_name_id1 == (~nation_array)->nation_name_id )
+	if( short_para1 == 0 )		// 7kmod-fryhtan: an Ordo of a Fryhtan kingdom (no race)
+	{
+		const char* ordoName = ModFryhtan::ordo_name_by_id( (uint16_t) short_para2 );
+
+		// TRANSLATORS: <Name> is the new All High of your Fryhtan kingdom.
+		snprintf(str, MAX_STR_LEN+1, _("%s is your new All High."), ordoName ? ordoName : "");
+	}
+	else if( nation_array.player_recno && nation_name_id1 == (~nation_array)->nation_name_id )
 	{
 		// TRANSLATORS: <Name> has ascended the throne as your new King.
 		snprintf(str, MAX_STR_LEN+1, _("%s has ascended the throne as your new King."), race_res[short_para1]->get_name(short_para2));
@@ -2024,7 +2036,10 @@ char* News::nation_name1()
 {
 	static String str;
 
-	if( nation_name_id1 < 0 )		// human player - custom name
+	if( nation_name_id1 < 0 && mod_fryhtan.is_fryhtan(-nation_name_id1) )		// 7kmod-fryhtan: "<Name> <species> Horde"
+		snprintf(str, MAX_STR_LEN+1, _("%s %s Horde"), nation_array.get_human_name(nation_name_id1, 1),
+					ModFryhtan::monster_name(mod_fryhtan.monster_id(-nation_name_id1)) );
+	else if( nation_name_id1 < 0 )		// human player - custom name
 		snprintf(str, MAX_STR_LEN+1, _("%s's Kingdom"), nation_array.get_human_name(nation_name_id1, 1));	// 1-first word of the name only
 	else
 		snprintf(str, MAX_STR_LEN+1, _("%s's Kingdom"), race_res[nation_race_id1]->get_single_name( static_cast<uint16_t>(nation_name_id1) ));
@@ -2044,7 +2059,10 @@ char* News::nation_name2()
 {
 	static String str;
 
-	if( nation_name_id2 < 0 )		// human player - custom name
+	if( nation_name_id2 < 0 && mod_fryhtan.is_fryhtan(-nation_name_id2) )		// 7kmod-fryhtan: "<Name> <species> Horde"
+		snprintf(str, MAX_STR_LEN+1, _("%s %s Horde"), nation_array.get_human_name(nation_name_id2, 1),
+					ModFryhtan::monster_name(mod_fryhtan.monster_id(-nation_name_id2)) );
+	else if( nation_name_id2 < 0 )		// human player - custom name
 		snprintf(str, MAX_STR_LEN+1, _("%s's Kingdom"), nation_array.get_human_name(nation_name_id2, 1));	// 1-first word of the name only
 	else
 		snprintf(str, MAX_STR_LEN+1, _("%s's Kingdom"), race_res[nation_race_id2]->get_single_name( static_cast<uint16_t>(nation_name_id2) ));

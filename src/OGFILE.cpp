@@ -46,6 +46,7 @@
 #include <dbglog.h>
 #include "gettext.h"
 #include <OGF_REC.h>
+#include <ModFryhtan.h>
 #include "posix_string_compat.h"
 
 DBGLOG_DEFAULT_CHANNEL(GameFile);
@@ -437,6 +438,10 @@ int GameFile::write_game_header(File* filePtr)
 
 	strncpy( player_name, playerNation->king_name(), HUMAN_NAME_LEN );
 	player_name[HUMAN_NAME_LEN] = '\0';
+
+	//--- 7kmod-fryhtan: the species of a Fryhtan kingdom, for the saved game list ---//
+
+	ModFryhtan::set_header_species( player_name, HUMAN_NAME_LEN+1, mod_fryhtan.monster_id(nation_array.player_recno) );
 
 	race_id      = playerNation->race_id;
 	nation_color = playerNation->nation_color;

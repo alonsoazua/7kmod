@@ -34,6 +34,7 @@
 #include <OF_MONS.h>
 #include <OU_GOD.h>
 #include <OF_HARB.h>
+#include <ModFryhtan.h>
 
 #ifdef NO_DEBUG_UNIT
 #undef err_when
@@ -800,6 +801,14 @@ int Unit::firm_can_assign(short firmRecno)
 			return 1;
 		}
 
+		//--- 7kmod-fryhtan: the king and the generals of a Fryhtan kingdom command its lairs ---//
+
+		if( nation_recno && firmPtr->firm_id == FIRM_CAMP && nation_recno == firmPtr->nation_recno &&
+			 mod_fryhtan.is_lair(firmPtr) && (rank_id == RANK_GENERAL || rank_id == RANK_KING) )
+		{
+			return 2;
+		}
+
 		if(firmPtr->firm_id == FIRM_MONSTER && mobile_type == UNIT_LAND && !nation_recno)		// 7kmod-gameplay: Fryhtans of a nation don't go into lairs
 		{ 
 			// BUGHERE : suppose only land monster can assign
@@ -1214,7 +1223,7 @@ void Unit::process_build_firm()
 			{
 				nationPtr = nation_array[nation_recno];
 
-				if(nationPtr->cash < firmInfo->setup_cost)
+				if(nationPtr->cash < ModFryhtan::firm_setup_cost(action_para, nation_recno))		// 7kmod-fryhtan: the cost of a lair
 					shouldProceed = 0; // out of cash
 			}
 			else

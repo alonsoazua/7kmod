@@ -21,6 +21,21 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 
 ## [Sin publicar]
 
+### Agregado
+- **Jugar como reino Fryhtan** (traído de la rama experimental `7kmod-fryhtan`; solo
+  partidas de un jugador). En New Game, la pestaña **Fryhtans** permite elegir una de
+  las 13 especies. El reino empieza con su All High y una guarida con 4 soldados,
+  entrena soldados y Ordos en la guarida con comida, esclaviza pueblos para cobrarles
+  tributo, captura guaridas salvajes, no tiene diplomacia de comercio ni alianzas y
+  los Fryhtans salvajes no lo atacan. El detalle está en `CHANGELOG-fryhtan.md` y en
+  `TODO-fryhtan.md`.
+- En New Game, los nombres de las especies, las pestañas Humans/Fryhtans y la etiqueta
+  "Seats of Power Unlocked?" usan letra suavizada (TeX Gyre Pagella, tipo Palatino).
+
+### Compatibilidad
+- **Partidas guardadas:** versión 310. Carga las partidas de gameplay 0.2.0; gameplay
+  0.2.0 no carga las partidas nuevas. La carpeta sigue siendo `7kaa-mod`.
+
 ---
 
 ## [0.2.0] - 2026-11-06

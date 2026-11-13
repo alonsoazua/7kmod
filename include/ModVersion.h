@@ -39,11 +39,20 @@
 #define MOD_GAMEPLAY_VERSION	"0.2.0"
 
 
+//------- version of the 7kmod-fryhtan branch --------//
+//
+// Based on 7kmod-gameplay: the player can play as a Fryhtan kingdom.
+// Only the 7kmod-fryhtan branch defines MOD_FRYHTAN_VERSION here; the Fryhtan
+// kingdom merged into 7kmod-gameplay shows the gameplay version.
+
+
 
 
 //------- the text displayed on the main menu --------//
 
-#ifdef MOD_GAMEPLAY_VERSION
+#if defined(MOD_FRYHTAN_VERSION)
+	#define MOD_VERSION_TEXT		"7kmod-fryhtan " MOD_FRYHTAN_VERSION " (gameplay " MOD_GAMEPLAY_VERSION ", 7kmod " MOD_7KMOD_VERSION ")"
+#elif defined(MOD_GAMEPLAY_VERSION)
 	#define MOD_VERSION_TEXT		"7kmod-gameplay " MOD_GAMEPLAY_VERSION " (7kmod " MOD_7KMOD_VERSION ")"
 #else
 	#define MOD_VERSION_TEXT		"7kmod " MOD_7KMOD_VERSION

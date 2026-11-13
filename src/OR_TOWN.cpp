@@ -33,6 +33,7 @@
 #include <ONATION.h>
 #include <OUNIT.h>
 #include <OINFO.h>
+#include <ModFryhtan.h>
 #include "gettext.h"
 
 //------------- Define coordinations -----------//
@@ -291,7 +292,12 @@ static void calc_firm_total()
 	{
 		firmInfo = firm_res[i];
 
-		total_firm_cost += firmInfo->year_cost *
+		int yearCost = firmInfo->year_cost;
+
+		if( i==FIRM_CAMP && mod_fryhtan.is_fryhtan(info.viewing_nation_recno) )		// 7kmod-fryhtan: the lairs
+			yearCost = LAIR_YEAR_COST;
+
+		total_firm_cost += yearCost *
 								 firmInfo->nation_firm_count_array[info.viewing_nation_recno-1];
 
 		total_firm_count += firmInfo->nation_firm_count_array[info.viewing_nation_recno-1];
@@ -431,10 +437,21 @@ static void put_firm_rec(int recNo, int x, int y, int refreshFlag)
 
 	int firmCount = firmInfo->nation_firm_count_array[info.viewing_nation_recno-1];
 
-	font_san.put( x    , y, _(firmInfo->name) );
-	font_san.put( x+155, y, misc.format(firmInfo->year_cost,2) );
+	//--- 7kmod-fryhtan: the lairs of a Fryhtan kingdom ---//
+
+	const char* firmName = _(firmInfo->name);
+	int yearCost = firmInfo->year_cost;
+
+	if( firmId==FIRM_CAMP && mod_fryhtan.is_fryhtan(info.viewing_nation_recno) )
+	{
+		firmName = _("Lair");
+		yearCost = LAIR_YEAR_COST;
+	}
+
+	font_san.put( x    , y, firmName );
+	font_san.put( x+155, y, misc.format(yearCost,2) );
 	font_san.put( x+265, y, firmCount );
-	font_san.put( x+370, y, misc.format(firmInfo->year_cost*firmCount,2) );
+	font_san.put( x+370, y, misc.format(yearCost*firmCount,2) );
 	font_san.put( x+470, y, misc.format(firm_income_array[firmId-1], 2) );
 }
 //----------- End of static function put_firm_rec -----------//

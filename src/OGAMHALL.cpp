@@ -37,6 +37,7 @@
 #include <dbglog.h>
 #include "gettext.h"
 #include <FilePath.h>
+#include <ModFryhtan.h>
 
 #include <string.h> // for strncpy
 
@@ -252,9 +253,18 @@ void HallFameEntry::disp_info(int x, int y, int pos)
 
 	//----------------------------------------//
 
-	str  = _("King");
-	str += " ";
-	str += player_name;
+	if( ModFryhtan::header_species(player_name, HUMAN_NAME_LEN+1) )		// 7kmod-fryhtan: "<name> The All High"
+	{
+		char titleStr[HUMAN_NAME_LEN+40];
+		snprintf( titleStr, sizeof(titleStr), _("%s The All High"), player_name );
+		str = titleStr;
+	}
+	else
+	{
+		str  = _("King");
+		str += " ";
+		str += player_name;
+	}
 
 	fontPtr->put( x, y, str );
 
@@ -310,6 +320,8 @@ void HallFameEntry::record_data(int totalScore)
 	strncpy( player_name, playerNation->king_name(), HUMAN_NAME_LEN );
 	player_name[HUMAN_NAME_LEN] = '\0';
 
+	ModFryhtan::set_header_species( player_name, HUMAN_NAME_LEN+1, mod_fryhtan.monster_id(nation_array.player_recno) );		// 7kmod-fryhtan
+
 	race_id	  = playerNation->race_id;
 
 	start_year = date.year(info.game_start_date);
@@ -317,6 +329,9 @@ void HallFameEntry::record_data(int totalScore)
 
 	score  	  = totalScore;
 	population = playerNation->all_population();
+
+	if( mod_fryhtan.is_fryhtan(nation_array.player_recno) )		// 7kmod-fryhtan: with the Fryhtans
+		population += mod_fryhtan.nation_population(nation_array.player_recno);
 
 	difficulty_rating = config.difficulty_rating;
 }

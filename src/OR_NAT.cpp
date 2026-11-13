@@ -47,6 +47,8 @@
 #include <ORACERES.h>
 #include <OHELP.h>
 #include "gettext.h"
+#include <ModFryhtan.h>
+#include <OMONSRES.h>
 
 //------------- Define coordinations -----------//
 
@@ -142,6 +144,7 @@ struct KingIconArea
 {
 	short x1, y1, x2, y2;
 	char  race_id;			// 0 if the portrait of this nation is not displayed
+	char  monster_id;		// 7kmod-fryhtan: the species of a Fryhtan king, for the tooltip
 };
 
 static KingIconArea king_icon_area_array[MAX_NATION];
@@ -252,6 +255,11 @@ void Info::detect_nation()
 		{
 			help.set_custom_help( iconArea->x1, iconArea->y1, iconArea->x2, iconArea->y2,
 				_(race_res[iconArea->race_id]->name) );
+		}
+		else if( iconArea->monster_id && !nation_array.is_deleted(i+1) )		// 7kmod-fryhtan
+		{
+			help.set_custom_help( iconArea->x1, iconArea->y1, iconArea->x2, iconArea->y2,
+				ModFryhtan::monster_name(iconArea->monster_id) );
 		}
 	}
 
@@ -433,6 +441,9 @@ static void put_nation_rec(int recNo, int x, int y, int refreshFlag)
 		iconArea->x2 = x+17+UNIT_SMALL_ICON_WIDTH-1;
 		iconArea->y2 = y-5+UNIT_SMALL_ICON_HEIGHT-1;
 		iconArea->race_id = unit_res[kingUnitId]->race_id;
+
+		MonsterInfo* monsterInfo = monster_res.get_monster_by_unit_id(kingUnitId);		// 7kmod-fryhtan
+		iconArea->monster_id = monsterInfo && !iconArea->race_id ? monsterInfo->monster_id : 0;
 	}
 
 	font_san.put( x+46 , y, nationPtr->nation_name(), 0, x+215 );
@@ -636,6 +647,14 @@ static void disp_nation_info()
 		font_san.put_field( x1, y+=16, _("Your Treasure"), x2, str );
 
 		font_san.field( x1, y+=16, _("Your Continuous Peace Time"), x2, nationPtr->peace_duration_str(), x3, INFO_REPAINT, "PEACE" );
+
+		//--- 7kmod-fryhtan: the population of a Fryhtan kingdom and its cap ---//
+
+		if( mod_fryhtan.is_fryhtan(nationRecno) )
+		{
+			snprintf( xstr, MAX_STR_LEN+1, "%d/%d", mod_fryhtan.nation_population(nationRecno), mod_fryhtan.nation_population_cap(nationRecno) );
+			font_san.put_field( x1, y+=16, _("Fryhtan Population"), x2, xstr );
+		}
 	}
 	else
 	{

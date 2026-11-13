@@ -28,6 +28,7 @@
 #include <OBULLET.h>
 #include <OFIRM.h>
 #include <ModSpy.h>
+#include <ModFryhtan.h>
 #include <OFIRMDIE.h>
 #include <OGAME.h>
 #include <OGFILE.h>
@@ -469,6 +470,13 @@ int GameFile::write_file_3(File* filePtr)
 	if( !mod_spy.write_file(filePtr) )
 		return 0;
 
+	// ##### 7kmod-fryhtan: GAME_VERSION >= GAME_VERSION_7KMOD_FRYHTAN ##### //
+
+	write_book_mark( filePtr, BOOK_MARK+310 );
+
+	if( !mod_fryhtan.write_file(filePtr) )
+		return 0;
+
 	return 1;
 }
 //---------- End of function GameFile::write_file_3 -------//
@@ -746,6 +754,7 @@ int GameFile::read_file_3(File* filePtr)
 	{
 		mod_tech_res.reset();
 		mod_spy.reset();
+		mod_fryhtan.reset();
 		return 1;
 	}
 
@@ -771,6 +780,7 @@ int GameFile::read_file_3(File* filePtr)
 	if( game_file_array.load_file_game_version < GAME_VERSION_7KMOD_SPYING )
 	{
 		mod_spy.reset();
+		mod_fryhtan.reset();
 		return 1;
 	}
 
@@ -779,6 +789,20 @@ int GameFile::read_file_3(File* filePtr)
 
 	if( !mod_spy.read_file(filePtr, game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_SABOTAGE_LOG,
 								  game_file_array.load_file_game_version >= GAME_VERSION_7KMOD_SPY_COOLDOWN) )
+		return 0;
+
+	//--- 7kmod-fryhtan: Fryhtan kingdoms ---//
+
+	if( game_file_array.load_file_game_version < GAME_VERSION_7KMOD_FRYHTAN )
+	{
+		mod_fryhtan.reset();
+		return 1;
+	}
+
+	if( !read_book_mark( filePtr, BOOK_MARK+310 ) )
+		return 0;
+
+	if( !mod_fryhtan.read_file(filePtr) )
 		return 0;
 
 	return 1;

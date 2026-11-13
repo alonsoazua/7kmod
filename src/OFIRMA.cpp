@@ -34,6 +34,7 @@
 #include <OSERES.h>
 #include <OLOG.h>
 #include <ConfigAdv.h>
+#include <ModFryhtan.h>
 
 //### begin alex 22/9 ###//
 #ifdef DEBUG
@@ -147,7 +148,7 @@ int FirmArray::build_firm(int xLoc, int yLoc, int nationRecno, int firmId, char*
 
 		if( nationRecno )
 		{
-			if( nationPtr->cash < firmInfo->setup_cost )
+			if( nationPtr->cash < ModFryhtan::firm_setup_cost(firmId, nationRecno) )		// 7kmod-fryhtan: the cost of a lair
 				return 0;
 		}
 	}
@@ -166,7 +167,7 @@ int FirmArray::build_firm(int xLoc, int yLoc, int nationRecno, int firmId, char*
 	{
 		Nation* nationPtr = nation_array[nationRecno];
 
-		nationPtr->add_expense( EXPENSE_FIRM, (float)firm_res[firmId]->setup_cost);		// setup cost of the firm
+		nationPtr->add_expense( EXPENSE_FIRM, (float)ModFryhtan::firm_setup_cost(firmId, nationRecno));		// setup cost of the firm, 7kmod-fryhtan: the cost of a lair
 	}
 
 	return firmRecno;
@@ -364,6 +365,16 @@ int FirmArray::process()
 				nation_array[firmPtr->nation_recno]->is_allied_with_player ) )
 		{
 			world.visit( firmPtr->loc_x1, firmPtr->loc_y1, firmPtr->loc_x2, firmPtr->loc_y2, EXPLORE_RANGE-1 );
+		}
+
+		//--- 7kmod-fryhtan: human buildings captured by a Fryhtan kingdom are destroyed ---//
+
+		if( i%FRAMES_PER_DAY == int(sys.frame_count%FRAMES_PER_DAY) &&
+			 mod_fryhtan.should_destroy_firm(firmPtr) )
+		{
+			mod_fryhtan.destroy_firm(firmPtr);
+			del_firm( firmPtr->firm_recno );
+			continue;
 		}
 
 		//--------- process and process_ai firms ----------//

@@ -28,6 +28,7 @@
 #include <ONATION.h>
 #include <OFIRMRES.h>
 #include "gettext.h"
+#include <ModFryhtan.h>
 
 //---------- #define constant ------------//
 
@@ -389,6 +390,15 @@ int FirmInfo::can_build(int unitRecno)
 
 	if( !(get_nation_tech_level(unitPtr->nation_recno) > 0) )
 		return 0;
+
+	//--- 7kmod-fryhtan: the king and the generals of a Fryhtan kingdom only build lairs (Forts) ---//
+
+	if( mod_fryhtan.is_fryhtan(unitPtr->nation_recno) )
+	{
+		return firm_id == FIRM_CAMP &&
+				 unit_res[unitPtr->unit_id]->unit_class == UNIT_CLASS_MONSTER &&
+				 (unitPtr->rank_id == RANK_KING || unitPtr->rank_id == RANK_GENERAL);
+	}
 
 	//------ fortress of power ------//
 

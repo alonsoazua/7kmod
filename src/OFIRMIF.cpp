@@ -818,7 +818,12 @@ void Firm::disp_overseer_info(int dispY1, int refreshFlag)
 
 	Unit* unitPtr = unit_array[overseer_recno];
 
-	if( unitPtr->rank_id != RANK_KING )
+	if( unitPtr->rank_id != RANK_KING && !unitPtr->race_id )		// 7kmod-fryhtan: an Ordo has no loyalty
+	{
+		font_san.field( x, y, _("Loyalty"), x+100, _("N/A"), INFO_X2-2, refreshFlag );
+		y+=16;
+	}
+	else if( unitPtr->rank_id != RANK_KING )
 	{
 		info.disp_loyalty( x, y, x+100, unitPtr->loyalty, unitPtr->target_loyalty, nation_recno, refreshFlag );
 		set_unit_loyalty_help( unitPtr, x, y, INFO_X2-2, y+15 );		// 7kmod: loyalty breakdown

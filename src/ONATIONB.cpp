@@ -31,6 +31,8 @@
 #include <OWORLD.h>
 #include <OFIRM.h>
 #include <ModSpy.h>
+#include <ModFryhtan.h>
+#include <OMONSRES.h>
 #include <OGAME.h>
 #include <OPOWER.h>
 #include <OREGIONS.h>
@@ -158,6 +160,7 @@ void NationBase::init(int nationType, int raceId, int colorSchemeId, uint32_t pl
 	tech_res.init_nation_tech(nation_recno);
 	mod_tech_res.init_nation(nation_recno);		// 7kmod-gameplay
 	mod_spy.init_nation(nation_recno);				// 7kmod-gameplay
+	mod_fryhtan.init_nation(nation_recno);			// 7kmod-fryhtan: human nation by default
 
 	//------- reset all god knowledge --------//
 
@@ -563,12 +566,18 @@ void NationBase::set_king(int kingUnitRecno, int firstKing)
 
 	//---------- king related vars ----------//
 
-	if( nation_type == NATION_AI || !firstKing )		// for succession, no longer use the original player name
+	if( mod_fryhtan.is_fryhtan(nation_recno) )		// 7kmod-fryhtan: the name of the new All High is kept as the player's name (ModFryhtan::think_succeed_king())
+		nation_name_id = -nation_recno;
+	else if( nation_type == NATION_AI || !firstKing )		// for succession, no longer use the original player name
 		nation_name_id = kingUnit->name_id;
 	else
 		nation_name_id = -nation_recno;   // for human players, the name is retrieved from NationArray::human_name_array
 
-	race_id 			 = kingUnit->race_id;
+	//--- 7kmod-fryhtan: a Fryhtan king has no race, the nation keeps its internal race id. ---//
+
+	if( kingUnit->race_id )
+		race_id = kingUnit->race_id;
+
 	king_leadership = kingUnit->skill.skill_level;
 
 	err_when( !nation_name_id );
@@ -581,6 +590,17 @@ void NationBase::set_king(int kingUnitRecno, int firstKing)
 //
 char* NationBase::nation_name()
 {
+	//--- 7kmod-fryhtan: "<king name> <species> Horde" ---//
+
+	if( mod_fryhtan.is_fryhtan(nation_recno) )
+	{
+		// TRANSLATORS: <Name> <Fryhtan species> Horde, for a Fryhtan kingdom
+		snprintf( nation_name_str, NATION_NAME_LEN+1, _("%s %s Horde"), king_name(1),
+					 ModFryhtan::monster_name(mod_fryhtan.monster_id(nation_recno)) );
+
+		return nation_name_str;
+	}
+
 	// TRANSLATORS: <Name>'s Kingdom
 	snprintf( nation_name_str, NATION_NAME_LEN+1, _("%s's Kingdom"), king_name(1) );
 
@@ -741,7 +761,13 @@ void NationBase::next_day()
 	//-- if the player still hasn't selected a unit to succeed the died king, declare defeated if the all units are killed --//
 
 	if( !king_unit_recno )
-		check_lose();
+	{
+		if( mod_fryhtan.is_fryhtan(nation_recno) )		// 7kmod-fryhtan: the best Ordo becomes the new All High
+			mod_fryhtan.think_succeed_king(nation_recno);
+
+		if( !king_unit_recno )
+			check_lose();
+	}
 
 	//---------- debug code --------------//
 /*
@@ -1034,6 +1060,14 @@ void NationBase::consume_food(float foodConsumed)
 //
 void NationBase::change_reputation(float changeLevel)
 {
+	//--- 7kmod-fryhtan: Fryhtan kingdoms have no reputation ---//
+
+	if( mod_fryhtan.is_fryhtan(nation_recno) )
+	{
+		reputation = (float) 0;
+		return;
+	}
+
 	//--- reputation increase more slowly when it is close to 100 ----//
 
 	if( changeLevel > 0 && reputation > 0 )
@@ -1793,6 +1827,9 @@ int NationBase::has_people()
 //
 void NationBase::surrender(int toNationRecno)
 {
+	if( mod_fryhtan.is_fryhtan(toNationRecno) || mod_fryhtan.is_fryhtan(nation_recno) )		// 7kmod-fryhtan: no surrender to or of a Fryhtan kingdom
+		return;
+
 	news_array.nation_surrender(nation_recno, toNationRecno);
 
 	//---- the king demote himself to General first ----//
@@ -1981,6 +2018,15 @@ void NationBase::check_win()
 //
 void NationBase::check_lose()
 {
+	//--- 7kmod-fryhtan: a Fryhtan kingdom is defeated without lairs and units ---//
+
+	if( mod_fryhtan.is_fryhtan(nation_recno) )
+	{
+		if( !king_unit_recno && !mod_fryhtan.has_lair_or_unit(nation_recno) )
+			defeated();
+		return;
+	}
+
 	//---- if the king of this nation is dead and it has no people left ----//
 
 	if( !king_unit_recno && !has_people() )
@@ -2159,6 +2205,9 @@ void NationBase::update_nation_rating()
 //
 int NationBase::get_population_rating()
 {
+	if( mod_fryhtan.is_fryhtan(nation_recno) )		// 7kmod-fryhtan: with the Fryhtans of the kingdom
+		return all_population() + mod_fryhtan.nation_population(nation_recno);
+
 	return all_population();
 }
 //------ End of function NationBase::get_population_rating -----//

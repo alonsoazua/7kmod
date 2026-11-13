@@ -55,6 +55,9 @@
 #include "gettext.h"
 
 #include <string.h> //strncpy
+#include <ModFryhtan.h>
+#include <OMONSRES.h>
+#include <OUNITRES.h>
 #include <posix_string_compat.h> //strnicmp
 
 #ifdef USE_WINDOWS
@@ -231,6 +234,7 @@ int GameFileArray::menu(int actionMode, int *recno)
 	char deinitGameSet=0;
 	char deinitUnitRes=0;
 	char deinitRaceRes=0;
+	char deinitMonsterRes=0;		// 7kmod-fryhtan
 
 	if( !game_set.set_opened_flag )
 	{
@@ -246,6 +250,11 @@ int GameFileArray::menu(int actionMode, int *recno)
 	{
 		race_res.init();
 		deinitRaceRes = 1;
+	}
+	if( !monster_res.init_flag )		// 7kmod-fryhtan: the portraits of the All Highs in the list
+	{
+		monster_res.init();
+		deinitMonsterRes = 1;
 	}
 
 	//-------------------------------------//
@@ -575,6 +584,8 @@ int GameFileArray::menu(int actionMode, int *recno)
 			unit_res.deinit();
 		if( deinitRaceRes )
 			race_res.deinit();
+		if( deinitMonsterRes )
+			monster_res.deinit();
 	}
 
 	mouse.reset_click();
@@ -637,7 +648,14 @@ static time_t filetime_to_posix(const GameFileDate* gameFileDate)
 //
 void GameFileArray::disp_entry_info(const GameFile* entry, int x, int y)
 {
-	vga_front.put_bitmap(x+10, y+10,	unit_res[ race_res[entry->race_id]->basic_unit_id ]->king_icon_ptr);
+	//--- 7kmod-fryhtan: a Fryhtan kingdom shows the All High of its species ---//
+
+	int monsterId = ModFryhtan::header_species( entry->player_name, HUMAN_NAME_LEN+1 );
+
+	if( monsterId )
+		vga_front.put_bitmap(x+10, y+10, unit_res[ monster_res[monsterId]->unit_id ]->get_large_icon_ptr(RANK_KING) );
+	else
+		vga_front.put_bitmap(x+10, y+10,	unit_res[ race_res[entry->race_id]->basic_unit_id ]->king_icon_ptr);
 
 	x+=60;
 
@@ -649,9 +667,19 @@ void GameFileArray::disp_entry_info(const GameFile* entry, int x, int y)
 
 	String str;
 
-	str  = _("King");
-	str += " ";
-	str += entry->player_name;
+	if( monsterId )		// 7kmod-fryhtan: "<name> The All High"
+	{
+		char titleStr[HUMAN_NAME_LEN+40];
+
+		snprintf( titleStr, sizeof(titleStr), _("%s The All High"), entry->player_name );
+		str = titleStr;
+	}
+	else
+	{
+		str  = _("King");
+		str += " ";
+		str += entry->player_name;
+	}
 
 	font_bible.put( x+18, y+8, str );
 

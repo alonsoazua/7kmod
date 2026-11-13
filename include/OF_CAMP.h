@@ -104,6 +104,7 @@ public:
 
 	void 		put_info(int refreshFlag);
 	int		detect_info();
+	void		disp_lair_train_button(int trainType);		// 7kmod-fryhtan
 
 
 	void		next_day();

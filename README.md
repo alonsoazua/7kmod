@@ -26,7 +26,7 @@ master  ──>  7kmod  ──>  7kmod-gameplay  ──>  7kmod-pathing  ──>
 |---|---|---|---|
 | `master` | — | The original game, 7kaa 2.15.7, unchanged. Kept as a reference. | — |
 | **`7kmod`** (main) | `7kaa-mod.exe` | Interface and quality of life improvements, fixes and the **scenario editor**. Does not change how the game plays. | [`7kmod/CHANGELOG.en.md`](7kmod/CHANGELOG.en.md) |
-| `7kmod-gameplay` | `7kaa-gameplay.exe` | All of `7kmod` plus **rule changes**: harbor trade, invoked Fryhtans with their kingdom's color, the AI uses Fryhtans, etc. | `7kmod/CHANGELOG-gameplay.en.md` (in that branch) |
+| `7kmod-gameplay` | `7kaa-gameplay.exe` | All of `7kmod` plus **rule changes**: harbor trade, invoked Fryhtans with their kingdom's color, the AI uses Fryhtans, playing as a Fryhtan kingdom, etc. | `7kmod/CHANGELOG-gameplay.en.md` (in that branch) |
 | `7kmod-pathing` | `7kaa-pathing.exe` | All of `7kmod-gameplay` plus the **experimental pathfinding**. | `7kmod/CHANGELOG-pathing.en.md` (in that branch) |
 | `7k-mod-IA` | `7kaa-ia.exe` | All of `7kmod-pathing` plus the **experimental AI** and per-kingdom limits (population, military units, taxes), all as `config.txt` options. Uses its own settings folder (`%APPDATA%\7kfans.com\7kaa-ia\`). | `7kmod/CHANGELOG-ia.en.md` (in that branch) |
 

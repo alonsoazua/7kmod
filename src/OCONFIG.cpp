@@ -109,6 +109,7 @@ void Config::default_game_setting()
 	start_up_has_mine_nearby = 0;
    random_start_up = 0;
 	seat_of_power_unlocked = 0;		// 7kmod
+	fryhtan_monster_id = 0;			// 7kmod-fryhtan
 
 	change_difficulty(OPTION_VERY_EASY);
 
@@ -469,7 +470,7 @@ void Config::save_7kmod()
 	if( !modFile.file_create(full_path) )
 		return;
 
-	char settingArray[] = { 1, seat_of_power_unlocked };
+	char settingArray[] = { 2, seat_of_power_unlocked, fryhtan_monster_id };		// 7kmod-fryhtan: 2 settings
 
 	modFile.file_write( settingArray, sizeof(settingArray) );
 	modFile.file_close();
@@ -491,10 +492,14 @@ void Config::load_7kmod()
 	if( !misc.is_file_exist(full_path) || !modFile.file_open(full_path) )
 		return;
 
-	char settingArray[2] = { 0, 0 };
+	char settingArray[3] = { 0, 0, 0 };
+	int  fileSize = modFile.file_size();
 
-	if( modFile.file_size() >= 2 && modFile.file_read( settingArray, 2 ) && settingArray[0] >= 1 )
+	if( fileSize >= 2 && modFile.file_read( settingArray, MIN(fileSize, 3) ) && settingArray[0] >= 1 )
 		seat_of_power_unlocked = settingArray[1] ? 1 : 0;
+
+	if( fileSize >= 3 && settingArray[0] >= 2 )		// 7kmod-fryhtan
+		fryhtan_monster_id = settingArray[2];
 
 	modFile.file_close();
 }

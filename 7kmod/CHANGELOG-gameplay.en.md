@@ -22,6 +22,21 @@ the game plays. This branch includes everything in the `7kmod` branch, documente
 
 ## [Unreleased]
 
+### Added
+- **Play as a Fryhtan kingdom** (brought from the experimental `7kmod-fryhtan`
+  branch; single player games only). In New Game, the **Fryhtans** tab lets you pick
+  one of the 13 species. The kingdom starts with its All High and a lair with 4
+  soldiers, trains soldiers and Ordos in the lair with food, enslaves villages to
+  collect tribute, captures wild lairs, has no trade or alliance diplomacy, and wild
+  Fryhtans don't attack it. The details are in `CHANGELOG-fryhtan.en.md` and in
+  `TODO-fryhtan.md` (Spanish only).
+- In New Game, the species names, the Humans/Fryhtans tabs and the "Seats of Power
+  Unlocked?" label use smooth anti-aliased text (TeX Gyre Pagella, a Palatino clone).
+
+### Compatibility
+- **Saved games:** version 310. It loads gameplay 0.2.0 saves; gameplay 0.2.0 can't
+  load the new ones. The folder is still `7kaa-mod`.
+
 ---
 
 ## [0.2.0] - 2026-11-06

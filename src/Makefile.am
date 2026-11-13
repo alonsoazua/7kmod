@@ -15,6 +15,7 @@ bin_PROGRAMS = 7kaa
 	ModEditorSave.cpp \
 	ModEditorTerrain.cpp \
 	ModEditorWin.cpp \
+	ModFryhtan.cpp \
 	ModSpy.cpp \
 	ModTech.cpp \
 	ModTechIcon.cpp \

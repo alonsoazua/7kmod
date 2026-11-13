@@ -34,6 +34,7 @@
 #include <OUNIT.h>
 #include <OUNITLST.h>
 #include <OCONFIG.h>
+#include <ModFryhtan.h>
 
 #ifdef NO_DEBUG_UNIT
 #undef err_when
@@ -461,6 +462,15 @@ void Unit::draw_fryhtan_nation_icon()
 
 		if( mobile_type == UNIT_AIR )
 			dispY1 -= 20;
+	}
+
+	//--- 7kmod-fryhtan: the king and the generals of a Fryhtan kingdom have the rank icons of the human units ---//
+
+	if( rank_id > RANK_SOLDIER && mod_fryhtan.is_fryhtan(nation_recno) )
+	{
+		world.zoom_matrix->put_bitmap_clip( dispX1+maxHitBarWidth+1, dispY1-3,
+			image_icon.get_ptr( rank_id==RANK_KING ? "U_KING" : "U_GENE" ) );
+		return;
 	}
 
 	char  nationBitmap[sizeof(iconBitmap)];

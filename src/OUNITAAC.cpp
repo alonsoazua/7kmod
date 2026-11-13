@@ -746,7 +746,9 @@ void UnitArray::assign_to_camp(int destX, int destY, char remoteAction, short* s
 			unitPtr = operator[](selectedUnitArray[i]);
 			unitClass = unit_res[unitPtr->unit_id]->unit_class;
 			if(unitClass==UNIT_CLASS_HUMAN || unitClass==UNIT_CLASS_WEAPON ||
-				(unitClass==UNIT_CLASS_MONSTER && unitPtr->nation_recno && unitPtr->rank_id==RANK_SOLDIER))		// 7kmod-gameplay: Fryhtans of a nation
+				(unitClass==UNIT_CLASS_MONSTER && unitPtr->nation_recno && unitPtr->rank_id==RANK_SOLDIER) ||		// 7kmod-gameplay: Fryhtans of a nation
+				(unitClass==UNIT_CLASS_MONSTER && unitPtr->nation_recno && world.get_loc(destX, destY)->is_firm() &&
+				 unitPtr->firm_can_assign(world.get_loc(destX, destY)->firm_recno())) )		// 7kmod-fryhtan: the king and the generals into their lairs
 				assignArray[assignCount++] = selectedUnitArray[i];
 			else
 				moveArray[moveCount++] = selectedUnitArray[i];
