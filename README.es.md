@@ -48,9 +48,20 @@ master  ──>  7kmod  ──>  7kmod-gameplay  ──>  7kmod-pathing  ──>
 
 ## Instalación
 
+**Con el instalador (recomendado):** descarga `NewAdversaries-X.Y.Z-setup.exe` de
+**Releases** y ejecútalo. Trae el juego completo (no hace falta el juego original), los
+dos ejecutables, la música, los changelogs y la documentación, con accesos en el menú
+Inicio y desinstalador. Como no tiene firma digital, Windows puede mostrar "Windows
+protegió su equipo": "Más información" y luego "Ejecutar de todas formas".
+
+**A mano:**
+
 1. Instala **Seven Kingdoms: Ancient Adversaries 2.15.7** ([7kfans.com](https://7kfans.com/)).
 2. Descarga de **Releases** el ejecutable de la rama que quieras y cópialo a la carpeta
    del juego, junto a `7kaa.exe`. Abre el juego con él.
+
+El instalador se arma con `packaging/windows/newadversaries/make_installer.sh` (NSIS);
+las instrucciones están al principio del script.
 
 ## Documentación
 

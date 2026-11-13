@@ -33,6 +33,15 @@ the game plays. This branch includes everything in the `7kmod` branch, documente
 - In New Game, the species names, the Humans/Fryhtans tabs and the "Seats of Power
   Unlocked?" label use smooth anti-aliased text (TeX Gyre Pagella, a Palatino clone).
 
+- **Windows installer** `NewAdversaries-0.3.0-setup.exe` (NSIS, in
+  `packaging/windows/newadversaries/`): installs the full game with
+  `7k-newAdversaries.exe` and `7k-newAdversaries-Classic.exe`, `LEEME.txt` and
+  `README.txt` (what each executable does, where the saved games go, source code and
+  licenses), the `Changelog`, `Docs` and `Licencias` folders, the music as an optional
+  component, Start menu shortcuts, an optional desktop shortcut and an uninstaller
+  (which doesn't delete the saved games). In Spanish or English. Default folder:
+  `C:\Program Files (x86)\New Adversaries\`.
+
 ### Changed
 - **Name: New Adversaries.** The mod is called **New Adversaries** and this branch is
   the full mod (executable `7k-newAdversaries.exe`); `7kmod` is **New Adversaries

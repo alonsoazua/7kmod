@@ -51,9 +51,20 @@ master  ──>  7kmod  ──>  7kmod-gameplay  ──>  7kmod-pathing  ──>
 
 ## Installation
 
+**With the installer (recommended):** download `NewAdversaries-X.Y.Z-setup.exe` from
+**Releases** and run it. It has the full game (the original game isn't needed), both
+executables, the music, the changelogs and the documentation, with Start menu shortcuts
+and an uninstaller. As it isn't digitally signed, Windows may show "Windows protected
+your PC": "More info" and then "Run anyway".
+
+**By hand:**
+
 1. Install **Seven Kingdoms: Ancient Adversaries 2.15.7** ([7kfans.com](https://7kfans.com/)).
 2. Download the executable of the branch you want from **Releases** and copy it to the
    game folder, next to `7kaa.exe`. Start the game with it.
+
+The installer is built with `packaging/windows/newadversaries/make_installer.sh` (NSIS);
+the instructions are at the top of the script.
 
 ## Documentation
 
