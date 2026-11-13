@@ -33,6 +33,7 @@
 #include <ONATION.h>
 #include <OUNIT.h>
 #include <OINFO.h>
+#include <ModFryhtan.h>
 #include "gettext.h"
 
 //------------- Define coordinations -----------//
@@ -215,7 +216,12 @@ static void put_income_rec(int recNo, int x, int y, int refreshFlag)
 
 	Nation* nationPtr = nation_array[info.viewing_nation_recno];
 
-	font_san.put( x    , y, _(income_des_array[recNo-1]) );
+	//--- 7kmod-fryhtan: a Fryhtan kingdom gets gold for killing humans ---//
+
+	if( recNo-1 == INCOME_TREASURE && mod_fryhtan.is_fryhtan(info.viewing_nation_recno) )
+		font_san.put( x, y, _("Spoils of War and Treasure") );
+	else
+		font_san.put( x    , y, _(income_des_array[recNo-1]) );
 	font_san.put( x+370, y, misc.format( (int) nationPtr->income_365days(recNo-1), 2 ) );
 }
 //----------- End of static function put_income_rec -----------//

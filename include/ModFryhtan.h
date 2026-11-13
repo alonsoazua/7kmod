@@ -47,7 +47,12 @@ enum { LAIR_TRAIN_FOOD = 20,						// food used for training a Fryhtan in a lair
 
 enum { PROMOTE_FRYHTAN_LEADERSHIP = 20 };		// leadership of a Fryhtan promoted to general
 
+enum { KILL_REWARD_UNIT	 = 5,					// gold and food for killing a human soldier or villager
+		 KILL_REWARD_GENERAL = 20,					// a human general
+		 KILL_REWARD_KING		 = 100 };				// a human king
+
 class Firm;
+class Unit;
 
 //------- Define struct FryhtanLair -------//
 //
@@ -102,6 +107,12 @@ public:
 
 	static int	firm_setup_cost(int firmId, int nationRecno);
 	static int	firm_year_cost(Firm* firmPtr);
+
+	//------ economy (phase 3) ------//
+
+	void	reward_kill(int nationRecno, Unit* targetUnit);
+	int	should_destroy_firm(Firm* firmPtr);
+	void	destroy_firm(Firm* firmPtr);
 
 	//------ population of a Fryhtan kingdom ------//
 

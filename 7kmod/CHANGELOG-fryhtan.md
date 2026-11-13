@@ -41,6 +41,12 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
   - Los Fryhtans entrenan su combate en la guarida con el general y ganan experiencia
     al pelear.
   - La guarida no tiene Reward ni Recruit; sus Fryhtans muestran lealtad "N/A".
+- **Economía** (fase 3):
+  - **Botín:** matar una unidad humana da **$5 y 5 de comida** (soldado, aldeano o
+    defensor de un pueblo), **$20 y 20** (general) o **$100 y 100** (rey). En el reporte
+    de economía aparece como "Spoils of War and Treasure".
+  - Los **edificios humanos** que pasen al reino Fryhtan (por ejemplo, si un reino se le
+    rinde) se **destruyen**, con quien esté adentro.
 
 ### Compatibilidad
 - **Carpeta propia:** `%APPDATA%\7kfans.com\7kaa-fryhtan\` (partidas, `CONFIG.DAT`,

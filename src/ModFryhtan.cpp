@@ -37,6 +37,7 @@
 #include <OGAME.h>
 #include <OIMGRES.h>
 #include <OWORLDMT.h>
+#include <OSERES.h>
 #include <ModFryhtan.h>
 #include "gettext.h"
 
@@ -706,3 +707,76 @@ int ModFryhtan::read_file(File* filePtr)
 	return 1;
 }
 //----------- End of function ModFryhtan::read_file -----------//
+
+
+//--------- Begin of function ModFryhtan::reward_kill ---------//
+//
+// 7kmod-fryhtan: a Fryhtan kingdom gets gold and food for each human unit
+// it kills: a soldier or a villager, a general or a king.
+//
+// <int>   nationRecno - the nation of the attacker
+// <Unit*> targetUnit  - the unit killed
+//
+void ModFryhtan::reward_kill(int nationRecno, Unit* targetUnit)
+{
+	if( !nationRecno || !is_fryhtan(nationRecno) || nation_array.is_deleted(nationRecno) )
+		return;
+
+	if( !targetUnit->race_id || targetUnit->nation_recno == nationRecno )		// only human units of other nations
+		return;
+
+	int reward = KILL_REWARD_UNIT;
+
+	if( targetUnit->rank_id == RANK_KING )
+		reward = KILL_REWARD_KING;
+
+	else if( targetUnit->rank_id == RANK_GENERAL )
+		reward = KILL_REWARD_GENERAL;
+
+	Nation* nationPtr = nation_array[nationRecno];
+
+	nationPtr->add_income( INCOME_TREASURE, (float) reward );
+	nationPtr->add_food( (float) reward );
+}
+//----------- End of function ModFryhtan::reward_kill -----------//
+
+
+//--------- Begin of function ModFryhtan::should_destroy_firm ---------//
+//
+// 7kmod-fryhtan: a Fryhtan kingdom can't use human buildings, the ones it
+// captures (for example when a kingdom surrenders to it) are destroyed.
+// Its lairs are the only buildings it keeps.
+//
+int ModFryhtan::should_destroy_firm(Firm* firmPtr)
+{
+	if( !firmPtr->nation_recno || !is_fryhtan(firmPtr->nation_recno) )
+		return 0;
+
+	return !is_lair(firmPtr);
+}
+//----------- End of function ModFryhtan::should_destroy_firm -----------//
+
+
+//--------- Begin of function ModFryhtan::destroy_firm ---------//
+//
+// Destroy a human building captured by a Fryhtan kingdom. The humans inside
+// (general, workers and builder) die with it, as the kingdom has no use for
+// them. The caller deletes the firm afterwards.
+//
+void ModFryhtan::destroy_firm(Firm* firmPtr)
+{
+	if( firmPtr->builder_recno )
+	{
+		firmPtr->kill_builder(firmPtr->builder_recno);
+		firmPtr->builder_recno = 0;
+	}
+
+	if( firmPtr->overseer_recno )
+		firmPtr->kill_overseer();
+
+	if( firmPtr->worker_array && firmPtr->worker_count > 0 )
+		firmPtr->kill_all_worker();
+
+	se_res.sound( firmPtr->center_x, firmPtr->center_y, 1, 'F', firmPtr->firm_id, "DEST" );
+}
+//----------- End of function ModFryhtan::destroy_firm -----------//

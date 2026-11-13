@@ -42,6 +42,12 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   - Fryhtans train their combat in the lair with the general and gain experience when
     fighting.
   - The lair has no Reward or Recruit; its Fryhtans show loyalty "N/A".
+- **Economy** (phase 3):
+  - **Spoils:** killing a human unit gives **$5 and 5 food** (soldier, villager or town
+    defender), **$20 and 20** (general) or **$100 and 100** (king). In the Economy
+    report it shows as "Spoils of War and Treasure".
+  - **Human buildings** that pass to the Fryhtan kingdom (for example, if a kingdom
+    surrenders to it) are **destroyed**, with whoever is inside.
 
 ### Compatibility
 - **Its own folder:** `%APPDATA%\7kfans.com\7kaa-fryhtan\` (saved games, `CONFIG.DAT`,

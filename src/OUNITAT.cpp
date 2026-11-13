@@ -228,6 +228,11 @@ void Unit::hit_target(Unit* parentUnit, Unit* targetUnit, float attackDamage, sh
 				if( parentNationPtr )
 					parentNationPtr->enemy_soldier_killed++;
 			}
+
+			//--- 7kmod-fryhtan: a Fryhtan kingdom gets gold and food for killing humans ---//
+
+			if( parentNationRecno )
+				mod_fryhtan.reward_kill(parentNationRecno, targetUnit);
 		}
 
 		//--------- if it's a non-human unit ---------//

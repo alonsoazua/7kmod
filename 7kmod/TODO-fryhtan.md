@@ -273,19 +273,38 @@ el código que indexa la raza del reino no falle. La IA no usa esa raza
       Fryhtan que se está entrenando (días hechos de 20), como la barra de entrenamiento
       de un pueblo humano.
 - [ ] **Inicio con guarida:** el reino empieza con una guarida de su especie ya
-      construida y el rey adentro como general, en lugar del rey solo en el mapa.
+      construida, el rey adentro como general y **4 soldados** de la especie (combate
+      20), en lugar del rey solo en el mapa.
 - [ ] **Nombre del rey:** "<nombre del rey> The All High" (por ejemplo "Al The All
       High") en lugar de "All High <especie>", en el panel de la unidad y donde el juego
       muestre el nombre del rey. En el panel de la guarida, en vez de "King / All High
       Wyrm", la primera línea dice "Al The All High" y la segunda "All High Wyrm". El
-      reino sigue llamándose "<nombre> <especie> Horde".
+      reino sigue llamándose "<nombre> <especie> Horde". Los generales siguen como
+      "<especie> Ordo" (por ejemplo "Wyrm Ordo"), porque no tienen nombre propio.
 - [ ] Con el rey fuera, el panel de la guarida dice "Outside of the fort"; cambiarlo a
       "Outside of the lair".
 
 ### Fase 3: economía
 - [x] Mantenimiento de las guaridas en oro; unidades solo con comida (hecho en la fase 2).
-- [ ] Oro y comida al matar unidades humanas.
-- [ ] Los edificios humanos que capture se destruyen.
+- [x] Oro y comida al matar unidades humanas.
+- [x] Los edificios humanos que capture se destruyen.
+
+#### Cómo quedó la fase 3
+
+- **Recompensa por matar:** cuando una unidad del reino Fryhtan (o su proyectil) mata a
+  una unidad humana de otro reino o independiente, el reino recibe $5 y 5 de comida
+  (soldado, aldeano o defensor de un pueblo), $20 y 20 (general) o $100 y 100 (rey).
+  Está en `Unit::hit_target`, junto a los contadores de muertes del juego. El oro se
+  suma como ingreso "Recovered Treasure", que en el reporte de economía de un reino
+  Fryhtan se llama "Spoils of War and Treasure".
+- **Edificios capturados:** una vez al día, cualquier edificio de un reino Fryhtan que
+  no sea una de sus guaridas se destruye (`FirmArray::process`). El general, los
+  trabajadores y el constructor que tenga adentro mueren con él. Cubre todas las
+  formas de quedarse con un edificio (rendición de un reino, pueblos enlazados, etc.)
+  sin tocar cada una.
+- **Probado:** matar a los defensores de un pueblo independiente (+$5 y +5 de comida
+  cada uno) y pasar los fuertes de la IA al reino Fryhtan con un gancho temporal de
+  prueba (se destruyeron con sus soldados).
 
 ### Fase 4: esclavizar pueblos
 - [ ] Enlace guarida–pueblo independiente y baja de resistencia hasta 45.

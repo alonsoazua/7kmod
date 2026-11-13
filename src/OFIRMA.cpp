@@ -367,6 +367,16 @@ int FirmArray::process()
 			world.visit( firmPtr->loc_x1, firmPtr->loc_y1, firmPtr->loc_x2, firmPtr->loc_y2, EXPLORE_RANGE-1 );
 		}
 
+		//--- 7kmod-fryhtan: human buildings captured by a Fryhtan kingdom are destroyed ---//
+
+		if( i%FRAMES_PER_DAY == int(sys.frame_count%FRAMES_PER_DAY) &&
+			 mod_fryhtan.should_destroy_firm(firmPtr) )
+		{
+			mod_fryhtan.destroy_firm(firmPtr);
+			del_firm( firmPtr->firm_recno );
+			continue;
+		}
+
 		//--------- process and process_ai firms ----------//
 
 		if( firmPtr->under_construction )
