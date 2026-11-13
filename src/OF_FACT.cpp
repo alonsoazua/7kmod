@@ -204,6 +204,9 @@ void FirmFactory::auto_set_product()
 //
 void FirmFactory::put_info(int refreshFlag)
 {
+	if( disp_recruit_town_menu_if_active(refreshFlag) )		// 7kmod
+		return;
+
 	//---------- display info ------------//
 
 	disp_basic_info(INFO_Y1, refreshFlag);
@@ -221,11 +224,24 @@ void FirmFactory::put_info(int refreshFlag)
 
 	if(own_firm())
 	{
+		//--- 7kmod: on the second page of the button row, only the spy button is displayed ---//
+
+		int buttonPage = button_page();
+
 		if (refreshFlag == INFO_REPAINT)
 		{
-			button_change_production.paint(INFO_X1, INFO_Y1 + 248, 'A', "CHGPROD");
-			button_vacate_firm.paint(INFO_X1 + BUTTON_ACTION_WIDTH, INFO_Y1 + 248, 'A', "RECRUIT");
-			button_vacate_firm.set_help_code("MOBILIZE");
+			if( buttonPage==0 )
+			{
+				button_change_production.paint(INFO_X1, INFO_Y1 + 248, 'A', "CHGPROD");
+				button_vacate_firm.paint(INFO_X1 + BUTTON_ACTION_WIDTH, INFO_Y1 + 248, 'A', "RECRUIT");
+				button_vacate_firm.set_help_code("MOBILIZE");
+			}
+			else
+			{
+				button_change_production.reset();
+				button_vacate_firm.reset();
+				reset_recruit_buttons();
+			}
 		}
 
 		if( have_own_workers() )
@@ -234,11 +250,16 @@ void FirmFactory::put_info(int refreshFlag)
 			button_vacate_firm.disable();
 
 		x += (BUTTON_ACTION_WIDTH * 2);
+
+		if( buttonPage==0 )
+			disp_recruit_buttons(x, INFO_Y1+248, refreshFlag);		// 7kmod
+
+		x += BUTTON_ACTION_WIDTH*2;
 	}
 
 	//---------- display spy button ----------//
 
-	disp_spy_button(x, INFO_Y1+248, refreshFlag);
+	disp_spy_button_7kmod(x, INFO_Y1+248, refreshFlag);
 }
 //----------- End of function FirmFactory::put_info -----------//
 
@@ -247,6 +268,9 @@ void FirmFactory::put_info(int refreshFlag)
 //
 int FirmFactory::detect_info()
 {
+	if( is_recruit_town_menu_active() )		// 7kmod
+		return detect_recruit_town_menu();
+
 	//-------- detect basic info -----------//
 
 	if( detect_basic_info() )
@@ -263,11 +287,16 @@ int FirmFactory::detect_info()
 
 	//-------- detect spy button ----------//
 
-	if( detect_spy_button() )
+	if( detect_spy_button_7kmod(own_firm() ? INFO_X1+BUTTON_ACTION_WIDTH*4 : INFO_X1) )
 		return 1;
 
 	if( !own_firm() )
 		return 0;
+
+	//------ 7kmod: detect recruit buttons -------//
+
+	if( detect_recruit_buttons() )
+		return 1;
 
 	//---- detect change production button -----//
 

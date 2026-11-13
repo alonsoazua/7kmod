@@ -105,12 +105,6 @@ public:
 	void 		put_info(int refreshFlag);
 	int		detect_info();
 
-	//------- 7kmod: recruit soldiers from linked towns -------//
-
-	int		get_recruit_town_list(short* townRecnoArray);
-	int		can_recruit_from_town();
-	void		disp_recruit_town_menu(int refreshFlag);
-	int		detect_recruit_town_menu();
 
 	void		next_day();
 	void		patrol();

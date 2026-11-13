@@ -168,6 +168,7 @@ enum { MSG_QUEUE_HEADER=FIRST_REMOTE_MSG_ID,
 		 MSG_FIRM_REQ_BUILDER,
 		 MSG_F_MARKET_RESTOCK,
 		 MSG_TOWN_TRAIN_FOR_FIRM,		// 7kmod: train units in a town that go into a Fort when trained
+		 MSG_FIRM_TOGGLE_AUTO_RECRUIT,	// 7kmod-gameplay: turn the automatic recruiting of a firm on or off
 
 		 LAST_REMOTE_MSG_ID			// keep this item last
 	  };
@@ -318,6 +319,7 @@ public:
 	void	firm_request_builder();
 	void	market_switch_restock();
 	void	town_train_for_firm();		// 7kmod
+	void	firm_toggle_auto_recruit();	// 7kmod-gameplay
 };
 
 //----------- Define class Remote -----------//

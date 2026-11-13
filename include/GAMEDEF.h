@@ -34,7 +34,11 @@ extern const int GAME_VERSION;
 // 7kmod: saved game version of the mod. Saved games with an older version
 // (such as the official 2.15.x games, version 213) can still be loaded,
 // while the official game refuses to load the mod's saved games.
-#define GAME_VERSION_7KMOD	290
+#define GAME_VERSION_7KMOD_TRAIN_FIRM		290		// Town: Fort of the units under training
+#define GAME_VERSION_7KMOD_HARBOR_TRADE	291		// 7kmod-gameplay, FirmHarbor: raw material trade (7kmod writes empty fields, so that 7kmod-gameplay loads its saved games)
+#define GAME_VERSION_7KMOD_HARBOR_SUPPLY	292		// 7kmod-gameplay, FirmHarbor: trade supply from hired shipments (empty field in 7kmod)
+#define GAME_VERSION_7KMOD_AUTO_RECRUIT	293		// Firm: auto recruit flag
+#define GAME_VERSION_7KMOD	293
 
 //-------- Define constant ------------//
 

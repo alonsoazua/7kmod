@@ -78,6 +78,7 @@ static int remove_firm = 0; // true only when the firm is to be removed from the
 //
 Firm::Firm()
 {
+    auto_recruit_flag = AUTO_RECRUIT_DEFAULT;		// 7kmod-gameplay
     firm_id = 0;
     firm_build_id = 0;
     firm_recno = 0;
@@ -1979,6 +1980,11 @@ void Firm::recruit_worker()
 {
 	if( MAX_WORKER==worker_count )
       return;
+
+	//--- 7kmod-gameplay: the player's mines, factories and towers of science only recruit automatically when the auto recruit toggle is on ---//
+
+	if( !firm_ai && !auto_recruit_flag && is_auto_recruit_firm() )
+		return;
 
    if( info.game_date%5 != firm_recno%5 )    // update population once 10 days
       return;

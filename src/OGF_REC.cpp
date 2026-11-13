@@ -2454,6 +2454,7 @@ void Firm::write_record(FirmGF *r)
 	WriteInt8(should_close_flag);
 	WriteInt8(no_neighbor_space);
 	WriteInt8(ai_should_build_factory_count);
+	WriteInt8(auto_recruit_flag);		// 7kmod-gameplay
 }
 
 void Firm::read_record(FirmGF *r)
@@ -2513,6 +2514,7 @@ void Firm::read_record(FirmGF *r)
 	ReadInt8(should_close_flag);
 	ReadInt8(no_neighbor_space);
 	ReadInt8(ai_should_build_factory_count);
+	ReadInt8(auto_recruit_flag);		// 7kmod-gameplay
 }
 
 void FirmBase::write_derived_record(FirmBaseGF *r)

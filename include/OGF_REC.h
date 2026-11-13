@@ -1300,7 +1300,12 @@ struct FirmGF
 	int8_t               should_close_flag;
 	int8_t               no_neighbor_space;
 	int8_t               ai_should_build_factory_count;
+	// 7kmod-gameplay field, only in saved games of version GAME_VERSION_7KMOD_AUTO_RECRUIT or later. Keep it last.
+	int8_t               auto_recruit_flag;
 };
+
+// 7kmod-gameplay: size of FirmGF in saved games before the auto recruit flag was added
+#define FIRM_GF_SIZE_BEFORE_AUTO_RECRUIT (sizeof(FirmGF) - sizeof(int8_t))
 
 struct FirmBaseGF
 {
@@ -1360,7 +1365,20 @@ struct FirmHarborGF
 	int16_t              linked_mine_array[MAX_LINKED_FIRM_FIRM];
 	int16_t              linked_factory_array[MAX_LINKED_FIRM_FIRM];
 	int16_t              linked_market_array[MAX_LINKED_FIRM_FIRM];
+	// 7kmod-gameplay fields, only in saved games of version GAME_VERSION_7KMOD_HARBOR_TRADE or later. Keep them last.
+	int16_t              trade_raw_id;
+	float                trade_stock_qty;
+	float                trade_cur_month_production;
+	float                trade_last_month_production;
+	int16_t              trade_next_output_link_id;
+	int16_t              trade_next_output_firm_recno;
+	// only in saved games of version GAME_VERSION_7KMOD_HARBOR_SUPPLY or later. Keep it last.
+	float                trade_supply_qty;
 };
+
+// 7kmod-gameplay: size of FirmHarborGF in saved games before the harbor trade fields were added
+#define HARBOR_GF_SIZE_BEFORE_SUPPLY (sizeof(FirmHarborGF) - sizeof(float))
+#define HARBOR_GF_SIZE_BEFORE_TRADE  (HARBOR_GF_SIZE_BEFORE_SUPPLY - sizeof(int16_t)*3 - sizeof(float)*3)
 
 struct InnUnitGF
 {
