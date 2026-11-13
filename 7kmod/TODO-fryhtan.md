@@ -734,3 +734,11 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         construida por un Ordo de otra especie (sale de la especie principal, así que
         entrena la principal); se arregla con el punto anterior. Hay que revisar también
         las guaridas capturadas al probarlo.
+
+- [ ] **Sin guaridas salvajes de la especie del jugador** (balance). Si el jugador elige,
+      por ejemplo, Rattus, en el mapa no aparecen guaridas salvajes de Rattus.
+      - Las guaridas salvajes del inicio salen de las especies "activas" de la partida
+        (`MonsterRes::generate`, que escoge de `active_monster_array`); la especie del
+        reino Fryhtan del jugador se quita de esa lista al empezar.
+      - Con eso tampoco aparecen después: las guaridas salvajes nuevas salen de otras
+        guaridas salvajes de su misma especie (`OF_MONS.cpp`).
