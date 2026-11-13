@@ -419,6 +419,23 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
   partidas con el retrato del Wyrm y "New Player The All High", cargar la partida, y el
   pueblo independiente sin Grant.
 
+### Ajustes anotados (pueblos esclavizados sin general)
+- [ ] **Sin general no hay tributo:** si ninguna guarida enlazada al pueblo esclavizado
+      (con el enlace activo) tiene un Ordo o el rey adentro, el tributo de ese mes no se
+      cobra. El panel del pueblo lo dice en lugar del monto.
+- [ ] **La lealtad baja:** en ese caso la lealtad del pueblo deja de estar fija en 50 y
+      empieza a bajar. Propuesta: lealtad objetivo 0, a la velocidad normal de la
+      lealtad de un pueblo (se acerca al objetivo cada 15 días); cuando vuelve un general,
+      el objetivo regresa a 50.
+- [ ] **Rebelión contra la guarida:** si la lealtad llega al punto de rebelión (29 o
+      menos, `REBEL_LOYALTY`), los rebeldes no forman un pueblo rebelde ni atacan a su
+      pueblo: salen a atacar la guarida del reino más cercana. Por decidir:
+      - cuántos salen (propuesta: como una rebelión normal, una parte de la población
+        de la raza que se rebela, que sale del pueblo);
+      - qué pasa después (propuesta: pelean como unidades rebeldes; si destruyen la
+        guarida y el pueblo se queda sin enlace, se vuelve independiente con la regla
+        actual).
+
 ### Fase 5: capturar guaridas independientes
 - [ ] Enlace guarida propia–guarida independiente, de cualquier especie.
 - [ ] Oferta simulada (Ordo y soldados), guardada en la partida.
