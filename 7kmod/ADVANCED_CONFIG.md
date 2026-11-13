@@ -13,7 +13,9 @@ el código fuente (`ConfigAdv.cpp` y los lugares del juego que usan cada opción
 ### Dónde va el archivo
 El juego busca `config.txt` en este orden y usa el primero que encuentra:
 1. **La carpeta de configuración del ejecutable.** Para los ejecutables del mod es
-   `%APPDATA%\7kfans.com\7kaa-mod\` (la misma carpeta de las partidas guardadas y `CONFIG.DAT`).
+   `%APPDATA%\7kfans.com\7k-newAdversaries\` (New Adversaries) o
+   `%APPDATA%\7kfans.com\7k-newAdversaries-Classic\` (Classic), la misma carpeta de las
+   partidas guardadas y `CONFIG.DAT`.
    Para el juego oficial es `%APPDATA%\7kfans.com\7kaa\`.
 2. **La carpeta desde donde se ejecuta el juego** (por ejemplo `Desktop\7kaa`).
 

@@ -39,6 +39,16 @@ which includes everything in `7kmod` and documents its own changes in
   a little and the spy button goes in a second row; the factory uses pages with arrows,
   like the fort.
 
+### Changed
+- **Name: New Adversaries Classic.** The mod is called **New Adversaries**; this branch
+  is **New Adversaries Classic** (executable `7k-newAdversaries-Classic.exe`). The main
+  menu shows "New Adversaries Classic 0.3.0" and the window has the same title. Players
+  see a single version, the New Adversaries one (`MOD_PUBLIC_VERSION` in
+  `include/ModVersion.h`); this changelog keeps the `7kmod` version.
+- **Own folder:** `%APPDATA%\7kfans.com\7k-newAdversaries-Classic\` (before
+  `7kaa-mod`). It starts clean: the saved games in `7kaa-mod` aren't copied, and the
+  previous executables still open them.
+
 ### Compatibility
 - **Saved games:** version 293 (the same numbering as `7kmod-gameplay`: 291 and 292 are
   gameplay's harbor trade; 7kmod saves them empty so that gameplay can load its saved

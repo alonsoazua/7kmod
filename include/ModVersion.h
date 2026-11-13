@@ -17,7 +17,8 @@
  */
 
 //Filename    : ModVersion.h
-//Description : versions of 7kmod, displayed on the main menu
+//Description : names and versions of the mod (New Adversaries), displayed on
+//              the main menu and used for the window title and the settings folder
 //
 // Update the versions together with 7kmod/CHANGELOG.md and
 // 7kmod/CHANGELOG-gameplay.md when a version is published.
@@ -28,6 +29,15 @@
 //------- version of the 7kmod branch --------//
 
 #define MOD_7KMOD_VERSION		"0.3.0"
+
+
+//------- public version of New Adversaries --------//
+//
+// The players see a single version for New Adversaries (7kmod-gameplay) and
+// New Adversaries Classic (7kmod). The branch versions above and below are
+// kept in the changelogs.
+
+#define MOD_PUBLIC_VERSION		"0.3.0"
 
 
 //------- version of the 7kmod-gameplay branch --------//
@@ -48,14 +58,25 @@
 
 
 
-//------- the text displayed on the main menu --------//
+//------- name, settings folder and the text displayed on the main menu --------//
+//
+// MOD_GAME_NAME is also the window title. MOD_CONFIG_NAME is the folder of the
+// saved games and settings, in %APPDATA%\7kfans.com\ on Windows.
 
 #if defined(MOD_FRYHTAN_VERSION)
+	#define MOD_GAME_NAME			"7kmod-fryhtan"
+	#define MOD_CONFIG_NAME		"7kaa-fryhtan"
 	#define MOD_VERSION_TEXT		"7kmod-fryhtan " MOD_FRYHTAN_VERSION " (gameplay " MOD_GAMEPLAY_VERSION ", 7kmod " MOD_7KMOD_VERSION ")"
 #elif defined(MOD_GAMEPLAY_VERSION)
-	#define MOD_VERSION_TEXT		"7kmod-gameplay " MOD_GAMEPLAY_VERSION " (7kmod " MOD_7KMOD_VERSION ")"
+	#define MOD_GAME_NAME			"New Adversaries"
+	#define MOD_CONFIG_NAME		"7k-newAdversaries"
 #else
-	#define MOD_VERSION_TEXT		"7kmod " MOD_7KMOD_VERSION
+	#define MOD_GAME_NAME			"New Adversaries Classic"
+	#define MOD_CONFIG_NAME		"7k-newAdversaries-Classic"
+#endif
+
+#ifndef MOD_VERSION_TEXT
+	#define MOD_VERSION_TEXT		MOD_GAME_NAME " " MOD_PUBLIC_VERSION
 #endif
 
 #endif
