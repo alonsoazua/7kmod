@@ -559,6 +559,11 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
         piedra. En el repositorio solo va el header generado, no la fuente.
       - Si el texto está traducido y no existe prerenderizado, se usa la letra del
         juego como antes.
+- [ ] **Entrenamiento más rápido para especies chicas:** las especies de 1 de población
+      (Small) entrenan en la mitad del tiempo: soldado **10 días** (en vez de 20) y
+      Ordo **20 días** (en vez de 40). Las especies grandes (2 de población) siguen con
+      20 y 40 días. La comida no cambia. La barra de progreso y el texto de ayuda del
+      botón muestran los días de la especie.
 
 ### Fase 6: diplomacia y Fryhtans salvajes
 - [x] Sin comercio, amistad ni alianza con un reino Fryhtan (jugador e IA).
