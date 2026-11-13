@@ -212,9 +212,10 @@ el código que indexa la raza del reino no falle. La IA no usa esa raza
   generales y soldados según la raza del rey (`Unit::update_loyalty`, honores, espías,
   posada, IA de grandes batallas), pergaminos (los Fryhtans no los recogen).
 - **Pendiente para otras fases:**
-  - Fase 2: los Fryhtans guardan su especie en `nation_contribution`; al ganar
-    experiencia no deben sumar contribución.
-  - Fase 2: lealtad de los Fryhtans dentro de una guarida tipo fuerte (`Worker`).
+  - ~~Fase 2: los Fryhtans guardan su especie en `nation_contribution`; al ganar
+    experiencia no deben sumar contribución.~~ Hecho.
+  - ~~Fase 2: lealtad de los Fryhtans dentro de una guarida tipo fuerte (`Worker`).~~
+    Hecho: lealtad fija en 100 y el panel muestra "N/A".
   - Fase 4: lealtad de los pueblos esclavizados según la raza del rey, Train Captain y
     reclutamiento (se ocultan), e influencia del fuerte con bono por raza del rey (la
     guarida usa su propia regla).
@@ -225,16 +226,46 @@ el código que indexa la raza del reino no falle. La IA no usa esa raza
   gameplay (+25% de daño, regeneración, comida).
 
 ### Fase 2: guarida tipo fuerte
-- [ ] Construir una guarida de su especie (Build Lair del rey o de un general).
-- [ ] La guarida funciona como fuerte: general + 8 soldados, entrar, salir, patrullar,
+- [x] Construir una guarida de su especie (Build Lair del rey o de un general).
+- [x] La guarida funciona como fuerte: general + 8 soldados, entrar, salir, patrullar,
       defender.
-- [ ] Train (soldados) y Promote (generales), con el tope de población.
-- [ ] Entrenamiento de combate con el general y experiencia al pelear.
-- [ ] Población Fryhtan en el panel de la guarida y en el reporte de reinos
-      ("Population 7/18").
+- [x] Train (soldados) y Promote (generales), con el tope de población.
+- [x] Entrenamiento de combate con el general y experiencia al pelear.
+- [x] Población Fryhtan en el panel de la guarida y en el reporte de reinos
+      ("Fryhtan Population 6/18").
+
+#### Cómo quedó la fase 2
+
+- **La guarida es un fuerte** (`FIRM_CAMP`) de 3x3 que se dibuja con el gráfico de la
+  guarida de su especie (4x4), centrado y medio tile más grande, con banderas del color
+  del reino. Mientras se construye solo se ve el terreno de la guarida y las banderas
+  (las guaridas no tienen gráficos de construcción). Usar el edificio de 4x4 de verdad
+  rompería más de 20 usos del tamaño del fuerte. La especie de cada guarida se guarda
+  en `ModFryhtan` (en la partida).
+- **Nombre:** "<pueblo> Lair" si hay un pueblo cerca, si no "<especie> Lair".
+- **Build:** el rey y los generales Fryhtan tienen el botón Build con una sola opción,
+  "Lair" (el ícono del fuerte oscurecido con el Fryhtan encima). Cuesta $500 y $100 al
+  año (en lugar de lo que cuesta el fuerte); vender o cancelar usa ese costo.
+- **Panel de la guarida:** Patrol, Train y Withdraw. No hay Reward ni Recruit. Los
+  Fryhtans muestran lealtad "N/A" (internamente 100, no desertan).
+- **Train:** cuesta 20 de comida y tarda 20 días; sale un Fryhtan de la especie de la
+  guarida con combate 20, que entra a la guarida si hay lugar. Cola de hasta 8 con el
+  contador del botón; clic derecho quita uno y devuelve la comida. La ayuda del botón
+  muestra la población que usa y la población del reino. No se puede pasar del tope
+  (las unidades en cola cuentan).
+- **Promote:** un soldado Fryhtan se puede ascender a general (Ordo) con liderazgo 20;
+  Demote lo regresa.
+- **Combate:** los soldados dentro entrenan con el general como en un fuerte, y los
+  Fryhtans del reino ganan experiencia al pelear.
+- **Reporte de reinos (Information):** línea "Fryhtan Population X/Y".
+- **Probado:** construir con el rey y con un Ordo, entrar como general, cola, cancelar,
+  salir, patrullar, Promote, entrenamiento (combate 20 → 73 en 9 años, rey 60 → 100),
+  guardar y cargar con la cola a medias, costo anual.
+- **Pendiente para otras fases:** la IA le pide tributo al reino Fryhtan y le ofrece
+  comprarle comida (revisar en la fase 6).
 
 ### Fase 3: economía
-- [ ] Mantenimiento de las guaridas en oro; unidades solo con comida.
+- [x] Mantenimiento de las guaridas en oro; unidades solo con comida (hecho en la fase 2).
 - [ ] Oro y comida al matar unidades humanas.
 - [ ] Los edificios humanos que capture se destruyen.
 

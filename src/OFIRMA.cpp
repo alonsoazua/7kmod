@@ -34,6 +34,7 @@
 #include <OSERES.h>
 #include <OLOG.h>
 #include <ConfigAdv.h>
+#include <ModFryhtan.h>
 
 //### begin alex 22/9 ###//
 #ifdef DEBUG
@@ -147,7 +148,7 @@ int FirmArray::build_firm(int xLoc, int yLoc, int nationRecno, int firmId, char*
 
 		if( nationRecno )
 		{
-			if( nationPtr->cash < firmInfo->setup_cost )
+			if( nationPtr->cash < ModFryhtan::firm_setup_cost(firmId, nationRecno) )		// 7kmod-fryhtan: the cost of a lair
 				return 0;
 		}
 	}
@@ -166,7 +167,7 @@ int FirmArray::build_firm(int xLoc, int yLoc, int nationRecno, int firmId, char*
 	{
 		Nation* nationPtr = nation_array[nationRecno];
 
-		nationPtr->add_expense( EXPENSE_FIRM, (float)firm_res[firmId]->setup_cost);		// setup cost of the firm
+		nationPtr->add_expense( EXPENSE_FIRM, (float)ModFryhtan::firm_setup_cost(firmId, nationRecno));		// setup cost of the firm, 7kmod-fryhtan: the cost of a lair
 	}
 
 	return firmRecno;

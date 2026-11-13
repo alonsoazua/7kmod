@@ -647,6 +647,14 @@ static void disp_nation_info()
 		font_san.put_field( x1, y+=16, _("Your Treasure"), x2, str );
 
 		font_san.field( x1, y+=16, _("Your Continuous Peace Time"), x2, nationPtr->peace_duration_str(), x3, INFO_REPAINT, "PEACE" );
+
+		//--- 7kmod-fryhtan: the population of a Fryhtan kingdom and its cap ---//
+
+		if( mod_fryhtan.is_fryhtan(nationRecno) )
+		{
+			snprintf( xstr, MAX_STR_LEN+1, "%d/%d", mod_fryhtan.nation_population(nationRecno), mod_fryhtan.nation_population_cap(nationRecno) );
+			font_san.put_field( x1, y+=16, _("Fryhtan Population"), x2, xstr );
+		}
 	}
 	else
 	{

@@ -50,6 +50,7 @@
 #include <ConfigAdv.h>
 #include <OHONORS.h>
 #include <OF_BASE.h>
+#include <ModFryhtan.h>
 
 #if(GAME_FRAMES_PER_DAY!=FRAMES_PER_DAY)
 #error
@@ -1943,6 +1944,17 @@ void Unit::set_rank(int rankId)
 
    if( rankId > rank_id )
 		change_loyalty(PROMOTE_LOYALTY_INCREASE);
+
+	//--- 7kmod-fryhtan: a Fryhtan of a Fryhtan kingdom promoted to general starts with a fixed leadership ---//
+
+	if( rankId == RANK_GENERAL && rank_id == RANK_SOLDIER && nation_recno &&
+		 unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER && mod_fryhtan.is_fryhtan(nation_recno) )
+	{
+		skill.skill_id = SKILL_LEADING;
+
+		if( skill.skill_level < PROMOTE_FRYHTAN_LEADERSHIP )
+			skill.skill_level = PROMOTE_FRYHTAN_LEADERSHIP;
+	}
 
 	//------- demote -----------//
 

@@ -42,6 +42,7 @@
 #include <ORACERES.h>
 #include <OF_BASE.h>
 #include <ModTech.h>
+#include <ModFryhtan.h>
 
 #ifdef NO_DEBUG_UNIT
 #undef err_when
@@ -878,12 +879,18 @@ float Unit::actual_damage()
 //--------- Begin of function Unit::gain_experience ---------//
 void Unit::gain_experience()
 {
-	if(unit_res[unit_id]->unit_class != UNIT_CLASS_HUMAN)
+	//--- 7kmod-fryhtan: the Fryhtans of a Fryhtan kingdom also gain experience ---//
+	//
+	// A Fryhtan keeps its monster id. in nation_contribution, so it has no contribution.
+
+	int isKingdomFryhtan = unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER && mod_fryhtan.is_fryhtan(nation_recno);
+
+	if(unit_res[unit_id]->unit_class != UNIT_CLASS_HUMAN && !isKingdomFryhtan)
 		return; // no experience gain if unit is not human
 
 	//---- increase the unit's contribution to the nation ----//
 
-	if( nation_contribution < MAX_NATION_CONTRIBUTION )
+	if( !isKingdomFryhtan && nation_contribution < MAX_NATION_CONTRIBUTION )
 	{
 		nation_contribution++;
 

@@ -51,12 +51,15 @@
 #include <OTOWN.h>
 #include <OBUTTCUS.h>
 #include <vga_util.h>
+#include <ModFryhtan.h>
 
 
 //----------- Define static vars -------------//
 
 static Button3D button_patrol, button_reward, button_defense;
 static Button3D button_withdraw;			// 7kmod
+static Button3D button_lair_train;		// 7kmod-fryhtan: Train in a lair of a Fryhtan kingdom
+static short    last_lair_train_count;	// 7kmod-fryhtan: the last number displayed on button_lair_train
 
 //------ 7kmod: recruit soldiers from linked towns ------//
 
@@ -413,8 +416,23 @@ void FirmCamp::put_info(int refreshFlag)
 
 		if( refreshFlag==INFO_REPAINT )
 		{
-			if( buttonPage==0 )
+			if( buttonPage==0 && mod_fryhtan.is_lair(this) )
 			{
+				//--- 7kmod-fryhtan: a lair has Train instead of Reward (Fryhtans have no loyalty) and Recruit ---//
+
+				button_patrol.paint( INFO_X1, INFO_Y1+242, 'A', "PATROL" );
+				button_lair_train.paint( INFO_X1+BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', "TRAIN" );
+				button_lair_train.set_help_code("");		// the custom help is set in disp_lair_train_button()
+				button_reward.reset();
+				button_recruit_town.reset();
+				last_lair_train_count = 0;
+
+				button_withdraw.paint( INFO_X2-BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', "RETCAMP" );
+				button_defense.reset();
+			}
+			else if( buttonPage==0 )
+			{
+				button_lair_train.reset();		// 7kmod-fryhtan
 				button_patrol.paint( INFO_X1, INFO_Y1+242, 'A', "PATROL" );
 				button_reward.paint( INFO_X1+BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', "REWARDCB" );
 				button_recruit_town.paint( INFO_X1+BUTTON_ACTION_WIDTH*2, INFO_Y1+242, 'A', "TRAIN" );		// 7kmod
@@ -430,6 +448,7 @@ void FirmCamp::put_info(int refreshFlag)
 				button_reward.reset();
 				button_withdraw.reset();
 				button_recruit_town.reset();
+				button_lair_train.reset();		// 7kmod-fryhtan
 
 				button_defense.paint( INFO_X1, INFO_Y1+242, 'A', defense_flag ? (char*)"DEFENSE1" : (char*)"DEFENSE0" );		// 7kmod: first place of the second page
 			}
@@ -464,16 +483,24 @@ void FirmCamp::put_info(int refreshFlag)
 				_("Withdraw"), _("All the units of this fort that are outside of it return to it.") );
 		}
 
-		if( nation_array[nation_recno]->cash >= REWARD_COST &&
-			 ( (overseer_recno && unit_array[overseer_recno]->rank_id != RANK_KING)
-			  || selected_worker_id ) )
+		if( button_reward.init_flag )		// 7kmod-fryhtan: not in a lair
 		{
-			button_reward.enable();
+			if( nation_array[nation_recno]->cash >= REWARD_COST &&
+				 ( (overseer_recno && unit_array[overseer_recno]->rank_id != RANK_KING)
+				  || selected_worker_id ) )
+			{
+				button_reward.enable();
+			}
+			else
+			{
+				button_reward.disable();
+			}
 		}
-		else
-		{
-			button_reward.disable();
-		}
+
+		//------- 7kmod-fryhtan: Train in a lair -------//
+
+		if( button_lair_train.init_flag )
+			disp_lair_train_button();
 
 	}
 	else
@@ -492,6 +519,59 @@ void FirmCamp::put_info(int refreshFlag)
 	#endif
 }
 //----------- End of function FirmCamp::put_info -----------//
+
+
+//--------- Begin of function FirmCamp::disp_lair_train_button ---------//
+//
+// 7kmod-fryhtan: enable the Train button of a lair if one more Fryhtan can
+// be trained, show the queue on it and set its help with the population.
+//
+void FirmCamp::disp_lair_train_button()
+{
+	if( mod_fryhtan.can_train_in_lair(firm_recno) )
+		button_lair_train.enable();
+	else
+		button_lair_train.disable();
+
+	//------ the number of Fryhtans in the training queue ------//
+
+	FryhtanLair* lairPtr = mod_fryhtan.get_lair(firm_recno);
+	int count = lairPtr ? lairPtr->train_count : 0;
+
+	if( count > 0 )
+	{
+		if( count != last_lair_train_count )
+			button_lair_train.paint();
+
+		vga_front.bar( button_lair_train.x1+8, button_lair_train.y1+10, button_lair_train.x2-12, button_lair_train.y2-15, V_WHITE );
+		vga_front.rect( button_lair_train.x1+8, button_lair_train.y1+10, button_lair_train.x2-12, button_lair_train.y2-15, 1, V_BLACK );
+
+		font_mid.center_put( button_lair_train.x1+8, button_lair_train.y1+10, button_lair_train.x2-12, button_lair_train.y2-15,
+									misc.format(count) );
+	}
+	else if( last_lair_train_count > 0 )
+	{
+		button_lair_train.paint();		// remove the number
+	}
+
+	last_lair_train_count = count;
+
+	//------ help: the species, the cost and the population ------//
+
+	int monsterId = mod_fryhtan.lair_monster_id(firm_recno);
+
+	static char helpStr[200];
+
+	snprintf( helpStr, sizeof(helpStr),
+		_("Train a %s (combat %d) in %d days for %d food. It uses %d population. Fryhtan population: %d/%d. Right click removes one from the queue."),
+		ModFryhtan::monster_name(monsterId), (int) LAIR_TRAIN_COMBAT, (int) LAIR_TRAIN_DAYS, (int) LAIR_TRAIN_FOOD,
+		ModFryhtan::monster_population(monsterId),
+		mod_fryhtan.nation_population(nation_recno), mod_fryhtan.nation_population_cap(nation_recno) );
+
+	help.set_custom_help( button_lair_train.x1, button_lair_train.y1, button_lair_train.x2, button_lair_train.y2,
+		_("Train"), helpStr );
+}
+//----------- End of function FirmCamp::disp_lair_train_button -----------//
 
 
 //--------- Begin of function FirmCamp::detect_info ---------//
@@ -611,6 +691,28 @@ int FirmCamp::detect_info()
 			patrol();
 		}
 		return 1;
+	}
+
+	//------- 7kmod-fryhtan: Train in a lair (right click removes one from the queue) -------//
+
+	if( button_lair_train.init_flag )
+	{
+		if( mouse.any_click(button_lair_train.x1, button_lair_train.y1, button_lair_train.x2, button_lair_train.y2, RIGHT_BUTTON) )
+		{
+			if( mod_fryhtan.cancel_lair_train(firm_recno) )		// also when the button is disabled
+			{
+				se_ctrl.immediate_sound("TURN_OFF");
+				info.disp();
+			}
+			return 1;
+		}
+
+		if( button_lair_train.detect() && mod_fryhtan.add_lair_train(firm_recno) )
+		{
+			se_ctrl.immediate_sound("TURN_ON");
+			info.disp();
+			return 1;
+		}
 	}
 
 	//----------- detect reward -----------//
@@ -1300,6 +1402,13 @@ void FirmCamp::next_day()
 
 	Firm::next_day();
 
+	//----- 7kmod-fryhtan: the training queue of a lair -----//
+
+	mod_fryhtan.next_day_lair(firm_recno);
+
+	if( firm_array.is_deleted(firm_recno) )
+		return;
+
 	//----- update the patrol_unit_array -----//
 
 	validate_patrol_unit();
@@ -1350,8 +1459,8 @@ void FirmCamp::train_unit()
 		return;
 
 	int 		 overseerSkill = overseerUnit->skill.skill_level;
-	RaceInfo* overseerRaceInfo = race_res[overseerUnit->race_id];
 	int		 incValue;
+	int		 isLair = mod_fryhtan.is_lair(this);		// 7kmod-fryhtan: the Fryhtans of a lair train with their general
 
 	//------- increase the commander's leadership ---------//
 
@@ -1383,7 +1492,7 @@ void FirmCamp::train_unit()
 
 	for( int i=0 ; i<worker_count ; i++, workerPtr++ )
 	{
-		if( !workerPtr->race_id )
+		if( !workerPtr->race_id && !(isLair && unit_res[workerPtr->unit_id]->unit_class == UNIT_CLASS_MONSTER) )
 			continue;
 
 		//------- increase worker skill -----------//

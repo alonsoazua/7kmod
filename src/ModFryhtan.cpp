@@ -30,6 +30,13 @@
 #include <OTOWN.h>
 #include <OWORLD.h>
 #include <ONATION.h>
+#include <OFIRM.h>
+#include <OFIRMA.h>
+#include <OFIRMID.h>
+#include <OFIRMRES.h>
+#include <OGAME.h>
+#include <OIMGRES.h>
+#include <OWORLDMT.h>
 #include <ModFryhtan.h>
 #include "gettext.h"
 
@@ -40,6 +47,9 @@ ModFryhtan mod_fryhtan;
 void ModFryhtan::reset()
 {
 	memset( nation_monster_id, 0, sizeof(nation_monster_id) );
+
+	if( lair_array )
+		memset( lair_array, 0, sizeof(FryhtanLair) * lair_array_size );
 }
 //----------- End of function ModFryhtan::reset -----------//
 
@@ -145,6 +155,367 @@ int ModFryhtan::create_start_king(int nationRecno)
 	return unitRecno;
 }
 //----------- End of function ModFryhtan::create_start_king -----------//
+
+
+//--------- Begin of function ModFryhtan::set_lair ---------//
+//
+// Mark a Fort of a Fryhtan kingdom as a lair of the given species.
+//
+void ModFryhtan::set_lair(int firmRecno, int monsterId)
+{
+	if( firmRecno < 1 )
+		return;
+
+	if( firmRecno > lair_array_size )
+	{
+		int newSize = firmRecno + 50;
+
+		lair_array = (FryhtanLair*) mem_resize( lair_array, sizeof(FryhtanLair) * newSize );
+		memset( lair_array+lair_array_size, 0, sizeof(FryhtanLair) * (newSize-lair_array_size) );
+		lair_array_size = newSize;
+	}
+
+	FryhtanLair* lairPtr = lair_array+firmRecno-1;
+
+	memset( lairPtr, 0, sizeof(FryhtanLair) );
+	lairPtr->monster_id = monsterId;
+}
+//----------- End of function ModFryhtan::set_lair -----------//
+
+
+//--------- Begin of function ModFryhtan::del_lair ---------//
+//
+void ModFryhtan::del_lair(int firmRecno)
+{
+	if( firmRecno >= 1 && firmRecno <= lair_array_size )
+		memset( lair_array+firmRecno-1, 0, sizeof(FryhtanLair) );
+}
+//----------- End of function ModFryhtan::del_lair -----------//
+
+
+//--------- Begin of function ModFryhtan::get_lair ---------//
+//
+FryhtanLair* ModFryhtan::get_lair(int firmRecno)
+{
+	if( firmRecno < 1 || firmRecno > lair_array_size )
+		return NULL;
+
+	FryhtanLair* lairPtr = lair_array+firmRecno-1;
+
+	return lairPtr->monster_id ? lairPtr : NULL;
+}
+//----------- End of function ModFryhtan::get_lair -----------//
+
+
+//--------- Begin of function ModFryhtan::lair_monster_id ---------//
+//
+int ModFryhtan::lair_monster_id(int firmRecno)
+{
+	FryhtanLair* lairPtr = get_lair(firmRecno);
+
+	return lairPtr ? lairPtr->monster_id : 0;
+}
+//----------- End of function ModFryhtan::lair_monster_id -----------//
+
+
+//--------- Begin of function ModFryhtan::is_lair ---------//
+//
+int ModFryhtan::is_lair(Firm* firmPtr)
+{
+	return firmPtr->firm_id == FIRM_CAMP && lair_monster_id(firmPtr->firm_recno) != 0;
+}
+//----------- End of function ModFryhtan::is_lair -----------//
+
+
+//--------- Begin of function ModFryhtan::lair_unit_id ---------//
+//
+int ModFryhtan::lair_unit_id(int firmRecno)
+{
+	int monsterId = lair_monster_id(firmRecno);
+
+	return monsterId ? monster_res[monsterId]->unit_id : 0;
+}
+//----------- End of function ModFryhtan::lair_unit_id -----------//
+
+
+//--------- Begin of function ModFryhtan::lair_train_population ---------//
+//
+int ModFryhtan::lair_train_population(int firmRecno)
+{
+	int monsterId = lair_monster_id(firmRecno);
+
+	return monsterId ? monster_population(monsterId) : 0;
+}
+//----------- End of function ModFryhtan::lair_train_population -----------//
+
+
+//--------- Begin of function ModFryhtan::can_train_in_lair ---------//
+//
+// Whether one more Fryhtan can be queued for training in the lair: enough
+// food, free population and room in the queue.
+//
+int ModFryhtan::can_train_in_lair(int firmRecno, int showMsg)
+{
+	FryhtanLair* lairPtr = get_lair(firmRecno);
+
+	if( !lairPtr || firm_array.is_deleted(firmRecno) )
+		return 0;
+
+	Firm* firmPtr = firm_array[firmRecno];
+
+	if( firmPtr->under_construction || !firmPtr->nation_recno )
+		return 0;
+
+	if( lairPtr->train_count >= LAIR_MAX_TRAIN_QUEUE )
+		return 0;
+
+	if( nation_array[firmPtr->nation_recno]->food < LAIR_TRAIN_FOOD )
+		return 0;
+
+	if( nation_population(firmPtr->nation_recno) + lair_train_population(firmRecno) >
+		 nation_population_cap(firmPtr->nation_recno) )
+	{
+		return 0;
+	}
+
+	return 1;
+}
+//----------- End of function ModFryhtan::can_train_in_lair -----------//
+
+
+//--------- Begin of function ModFryhtan::add_lair_train ---------//
+//
+// Queue one Fryhtan for training in the lair. The food is paid now.
+//
+int ModFryhtan::add_lair_train(int firmRecno)
+{
+	if( !can_train_in_lair(firmRecno) )
+		return 0;
+
+	FryhtanLair* lairPtr = get_lair(firmRecno);
+	Firm* firmPtr = firm_array[firmRecno];
+
+	nation_array[firmPtr->nation_recno]->consume_food( (float) LAIR_TRAIN_FOOD );
+
+	lairPtr->train_count++;
+	return 1;
+}
+//----------- End of function ModFryhtan::add_lair_train -----------//
+
+
+//--------- Begin of function ModFryhtan::cancel_lair_train ---------//
+//
+// Remove the last Fryhtan from the training queue, returning its food.
+//
+int ModFryhtan::cancel_lair_train(int firmRecno)
+{
+	FryhtanLair* lairPtr = get_lair(firmRecno);
+
+	if( !lairPtr || lairPtr->train_count <= 0 )
+		return 0;
+
+	Firm* firmPtr = firm_array[firmRecno];
+
+	nation_array[firmPtr->nation_recno]->add_food( (float) LAIR_TRAIN_FOOD );
+
+	if( --lairPtr->train_count == 0 )
+		lairPtr->train_days = 0;
+
+	return 1;
+}
+//----------- End of function ModFryhtan::cancel_lair_train -----------//
+
+
+//--------- Begin of function ModFryhtan::next_day_lair ---------//
+//
+// Called by FirmCamp::next_day() of a lair. When a Fryhtan has finished its
+// training it comes out next to the lair and goes into it if there is room.
+//
+void ModFryhtan::next_day_lair(int firmRecno)
+{
+	FryhtanLair* lairPtr = get_lair(firmRecno);
+
+	if( !lairPtr || lairPtr->train_count <= 0 )
+		return;
+
+	Firm* firmPtr = firm_array[firmRecno];
+
+	if( firmPtr->under_construction )
+		return;
+
+	if( ++lairPtr->train_days < LAIR_TRAIN_DAYS )
+		return;
+
+	//------ locate a space next to the lair ------//
+
+	int unitId = monster_res[lairPtr->monster_id]->unit_id;
+	SpriteInfo* spriteInfo = sprite_res[ unit_res[unitId]->sprite_id ];
+
+	int xLoc=firmPtr->loc_x1, yLoc=firmPtr->loc_y1;
+
+	if( !world.locate_space( &xLoc, &yLoc, firmPtr->loc_x2, firmPtr->loc_y2,
+									 spriteInfo->loc_width, spriteInfo->loc_height, unit_res[unitId]->mobile_type ) )
+	{
+		return;		// try again the next day
+	}
+
+	//------ add the trained Fryhtan ------//
+
+	int unitRecno = unit_array.add_unit( unitId, firmPtr->nation_recno, RANK_SOLDIER, 100, xLoc, yLoc );
+
+	if( !unitRecno )
+		return;
+
+	Unit* unitPtr = unit_array[unitRecno];
+
+	unitPtr->set_monster_id( lairPtr->monster_id );
+	unitPtr->set_combat_level( LAIR_TRAIN_COMBAT );
+	unitPtr->hit_points = (float) unitPtr->max_hit_points;
+
+	lairPtr->train_days = 0;
+	lairPtr->train_count--;
+
+	//------ it goes into the lair if there is room ------//
+
+	if( firmPtr->worker_count < MAX_WORKER )
+		firmPtr->assign_unit(unitRecno);
+}
+//----------- End of function ModFryhtan::next_day_lair -----------//
+
+
+//--------- Begin of function ModFryhtan::draw_lair ---------//
+//
+// Draw a lair of a Fryhtan kingdom: the lair of its species, centered on
+// the 3x3 Fort (the lair graphics are 4x4), with the flags of the kingdom.
+// While it is being built only the ground of the lair is shown.
+//
+void ModFryhtan::draw_lair(Firm* firmPtr, int displayLayer)
+{
+	MonsterInfo* monsterInfo = monster_res[ lair_monster_id(firmPtr->firm_recno) ];
+	FirmBuild*   firmBuild   = firm_res.get_build( firm_res[FIRM_MONSTER]->get_build_id(monsterInfo->firm_build_code) );
+
+	int absX = firmPtr->loc_x1 * ZOOM_LOC_WIDTH - ZOOM_LOC_WIDTH/2;
+	int absY = firmPtr->loc_y1 * ZOOM_LOC_HEIGHT - ZOOM_LOC_HEIGHT/2;
+
+	char* colorRemapTable = game.get_color_remap_table(firmPtr->nation_recno, firm_array.selected_recno == firmPtr->firm_recno);
+
+	if( firmBuild->ground_bitmap_recno )
+		firm_res.get_bitmap(firmBuild->ground_bitmap_recno)->draw_at(absX, absY, NULL, displayLayer);
+
+	//------- the flags of the kingdom at the top corners -------//
+
+	#define LAIR_FLAG_WIDTH 9
+
+	char *flagBitmapPtr = image_spict.get_ptr("FLAG-S0");
+	int drawY = firmPtr->loc_y1 * ZOOM_LOC_HEIGHT - World::view_top_y + ZOOM_Y1;
+	int drawX = firmPtr->loc_x1 * ZOOM_LOC_WIDTH - World::view_top_x + ZOOM_X1;
+
+	world.zoom_matrix->put_bitmap_remap_clip(drawX, drawY, flagBitmapPtr, colorRemapTable, 1);	// 1-the bitmap is compressed
+
+	drawX = (firmPtr->loc_x2+1) * ZOOM_LOC_WIDTH - LAIR_FLAG_WIDTH - World::view_top_x + ZOOM_X1;
+	world.zoom_matrix->put_bitmap_remap_clip(drawX, drawY, flagBitmapPtr, colorRemapTable, 1);
+
+	//------- the lair -------//
+
+	if( firmPtr->under_construction )
+		return;
+
+	FirmBitmap* firmBitmap = firm_res.get_bitmap( firmBuild->first_bitmap(1) );
+
+	if( firmBitmap )
+		firmBitmap->draw_at(absX, absY, colorRemapTable, displayLayer);
+}
+//----------- End of function ModFryhtan::draw_lair -----------//
+
+
+//--------- Begin of function ModFryhtan::firm_setup_cost ---------//
+//
+int ModFryhtan::firm_setup_cost(int firmId, int nationRecno)
+{
+	if( firmId == FIRM_CAMP && mod_fryhtan.is_fryhtan(nationRecno) )
+		return LAIR_SETUP_COST;
+
+	return firm_res[firmId]->setup_cost;
+}
+//----------- End of function ModFryhtan::firm_setup_cost -----------//
+
+
+//--------- Begin of function ModFryhtan::firm_year_cost ---------//
+//
+int ModFryhtan::firm_year_cost(Firm* firmPtr)
+{
+	if( mod_fryhtan.is_lair(firmPtr) )
+		return LAIR_YEAR_COST;
+
+	return firm_res[firmPtr->firm_id]->year_cost;
+}
+//----------- End of function ModFryhtan::firm_year_cost -----------//
+
+
+//--------- Begin of function ModFryhtan::nation_population ---------//
+//
+// The Fryhtan population of a nation: each small Fryhtan counts 1 and each
+// large one 2, including the king, the Fryhtans in its lairs and those in
+// the training queues.
+//
+int ModFryhtan::nation_population(int nationRecno)
+{
+	int population = 0;
+	int i;
+
+	for( i=unit_array.size() ; i>0 ; i-- )
+	{
+		if( unit_array.is_deleted(i) )
+			continue;
+
+		Unit* unitPtr = unit_array[i];
+
+		if( unitPtr->nation_recno == nationRecno &&
+			 unit_res[unitPtr->unit_id]->unit_class == UNIT_CLASS_MONSTER )
+		{
+			population += unit_population(unitPtr->unit_id);
+		}
+	}
+
+	for( i=firm_array.size() ; i>0 ; i-- )
+	{
+		if( firm_array.is_deleted(i) )
+			continue;
+
+		Firm* firmPtr = firm_array[i];
+
+		if( firmPtr->nation_recno != nationRecno || firmPtr->firm_id != FIRM_CAMP )
+			continue;
+
+		for( int j=0 ; j<firmPtr->worker_count ; j++ )
+		{
+			int unitId = firmPtr->worker_array[j].unit_id;
+
+			if( unit_res[unitId]->unit_class == UNIT_CLASS_MONSTER )
+				population += unit_population(unitId);
+		}
+
+		FryhtanLair* lairPtr = get_lair(i);
+
+		if( lairPtr )
+			population += lairPtr->train_count * monster_population(lairPtr->monster_id);
+	}
+
+	return population;
+}
+//----------- End of function ModFryhtan::nation_population -----------//
+
+
+//--------- Begin of function ModFryhtan::nation_population_cap ---------//
+//
+// The Fryhtan population allowed: 18, plus 1 for each person living in the
+// enslaved towns of the nation (phase 4).
+//
+int ModFryhtan::nation_population_cap(int nationRecno)
+{
+	return FRYHTAN_BASE_POPULATION;
+}
+//----------- End of function ModFryhtan::nation_population_cap -----------//
 
 
 //--------- Begin of function ModFryhtan::is_large_monster ---------//
@@ -275,7 +646,32 @@ int ModFryhtan::menu_next_species(int monsterId, int dir)
 //
 int ModFryhtan::write_file(File* filePtr)
 {
-	return filePtr->file_put_short_array( nation_monster_id, MAX_NATION );
+	if( !filePtr->file_put_short_array( nation_monster_id, MAX_NATION ) )
+		return 0;
+
+	//------- the lairs -------//
+
+	int lairCount = 0;		// write up to the last lair
+
+	for( int i=lair_array_size ; i>0 ; i-- )
+	{
+		if( lair_array[i-1].monster_id )
+		{
+			lairCount = i;
+			break;
+		}
+	}
+
+	if( !filePtr->file_put_short( (int16_t) lairCount ) )
+		return 0;
+
+	if( lairCount > 0 &&
+		 !filePtr->file_put_short_array( (int16_t*) lair_array, lairCount * (sizeof(FryhtanLair)/sizeof(int16_t)) ) )
+	{
+		return 0;
+	}
+
+	return 1;
 }
 //----------- End of function ModFryhtan::write_file -----------//
 
@@ -284,6 +680,29 @@ int ModFryhtan::write_file(File* filePtr)
 //
 int ModFryhtan::read_file(File* filePtr)
 {
-	return filePtr->file_get_short_array( nation_monster_id, MAX_NATION );
+	reset();
+
+	if( !filePtr->file_get_short_array( nation_monster_id, MAX_NATION ) )
+		return 0;
+
+	//------- the lairs -------//
+
+	if( filePtr->file_pos() >= filePtr->file_size() )		// a saved game of phase 1, without lairs
+		return 1;
+
+	int lairCount = filePtr->file_get_short();
+
+	if( lairCount < 0 )
+		return 0;
+
+	if( lairCount > 0 )
+	{
+		set_lair( lairCount, 1 );		// allocate the array
+
+		if( !filePtr->file_get_short_array( (int16_t*) lair_array, lairCount * (sizeof(FryhtanLair)/sizeof(int16_t)) ) )
+			return 0;
+	}
+
+	return 1;
 }
 //----------- End of function ModFryhtan::read_file -----------//

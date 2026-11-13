@@ -54,6 +54,7 @@
 #include <OUNITLST.h>
 #include <stdio.h>
 #include "gettext.h"
+#include <ModFryhtan.h>
 
 #ifdef NO_DEBUG_UNIT
 #undef err_when
@@ -595,6 +596,38 @@ void Unit::disp_button(int dispY1)
 		*/
 	}
 
+	//--- 7kmod-fryhtan: the Fryhtans of the player's Fryhtan kingdom: build a lair, promote and demote ---//
+
+	else if( unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER &&
+				nation_recno && nation_recno == nation_array.player_recno && mod_fryhtan.is_fryhtan(nation_recno) )
+	{
+		if( firm_res[FIRM_CAMP]->can_build(sprite_recno) )
+		{
+			button_build.paint( x, dispY1, 'A', "BUILD" );
+			x += BUTTON_ACTION_WIDTH;
+		}
+
+		if( unit_array.selected_count==1 )
+		{
+			if( rank_id==RANK_SOLDIER )
+			{
+				button_promote.paint( x, dispY1, 'A', "PROMOTE" );
+				x += BUTTON_ACTION_WIDTH;
+			}
+			else if( rank_id==RANK_GENERAL )
+			{
+				button_demote.paint( x, dispY1, 'A', "DEMOTE"  );
+				x += BUTTON_ACTION_WIDTH;
+			}
+		}
+
+		if( x+BUTTON_ACTION_WIDTH-5 > INFO_X2 )
+		{
+			x  = INFO_X1;
+			dispY1 += BUTTON_ACTION_HEIGHT;
+		}
+	}
+
 	//------ "Return Camp" button -------//
 
 	if( home_camp_firm_recno &&
@@ -1118,6 +1151,11 @@ void Unit::disp_build(int refreshFlag)
 		String str;
 
 		str = _(select_where_to_build[power.command_para-1]);
+
+		//--- 7kmod-fryhtan: a Fryhtan kingdom builds lairs instead of forts ---//
+
+		if( power.command_para == FIRM_CAMP && mod_fryhtan.is_fryhtan(nation_recno) )
+			str = _("Please select a location to build the Lair.");
 
 		int dispLines, totalLines;
 		font_san.count_line( INFO_X1+7, INFO_Y1+5, INFO_X2-7, INFO_Y2-5, str, 0, dispLines, totalLines );
@@ -2176,6 +2214,17 @@ static void disp_firm_button(ButtonCustom *button, int)
 	mouse.hide_area(button->x1, button->y1, button->x2, button->y2 );
 
 	vga_front.put_bitmap_trans_remap_decompress(button->x1, button->y1,	bitmap, (char*) button->custom_para.ptr);
+
+	//--- 7kmod-fryhtan: the lair of a Fryhtan kingdom, the Fort button with the Fryhtan over it ---//
+
+	int unitId = (button->custom_para.value >> 16) & 0xffff;
+
+	if( firmId == FIRM_CAMP && unit_res[unitId]->unit_class == UNIT_CLASS_MONSTER )
+	{
+		vga_front.adjust_brightness( button->x1+3, button->y1+3, button->x2-3, button->y2-3, -4 );
+		vga_front.put_bitmap( button->x2-UNIT_LARGE_ICON_WIDTH-6, button->y1+7, unit_res[unitId]->get_large_icon_ptr(RANK_SOLDIER) );
+		font_san.put( button->x1+8, button->y2-20, _("Lair") );
+	}
 
 	if( button->pushed_flag )
 	{

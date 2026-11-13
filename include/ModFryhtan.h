@@ -37,6 +37,31 @@ enum { FRYHTAN_DEFAULT_MONSTER_ID = 6 };		// Rokken, the default choice in the n
 enum { FRYHTAN_KING_COMBAT = 60,				// combat and leadership of the starting All High
 		 FRYHTAN_KING_LEADERSHIP = 60 };
 
+enum { LAIR_SETUP_COST = 500,						// cost of building a lair
+		 LAIR_YEAR_COST  = 100 };					// yearly upkeep of a lair
+
+enum { LAIR_TRAIN_FOOD = 20,						// food used for training a Fryhtan in a lair
+		 LAIR_TRAIN_DAYS = 20,						// days needed for training it
+		 LAIR_TRAIN_COMBAT = 20,					// combat level of a trained Fryhtan
+		 LAIR_MAX_TRAIN_QUEUE = 8 };
+
+enum { PROMOTE_FRYHTAN_LEADERSHIP = 20 };		// leadership of a Fryhtan promoted to general
+
+class Firm;
+
+//------- Define struct FryhtanLair -------//
+//
+// The lairs of a Fryhtan kingdom are Forts (FirmCamp) drawn with the lair of
+// a Fryhtan species. This keeps their species and their training queue,
+// indexed by firm recno.
+
+struct FryhtanLair
+{
+	int16_t	monster_id;			// 0 if the firm is not a lair of a Fryhtan kingdom
+	int16_t	train_count;		// no. of Fryhtans queued for training
+	int16_t	train_days;			// days spent training the first one in the queue
+};
+
 //------- Define class ModFryhtan -------//
 
 class ModFryhtan
@@ -56,6 +81,33 @@ public:
 
 	int	create_start_king(int nationRecno);	// the only unit of a Fryhtan kingdom at the start of a game
 
+	//------ lairs ------//
+
+	FryhtanLair*	lair_array;
+	int				lair_array_size;
+
+	void	set_lair(int firmRecno, int monsterId);
+	void	del_lair(int firmRecno);
+	FryhtanLair*	get_lair(int firmRecno);		// NULL if the firm is not a lair
+	int	lair_monster_id(int firmRecno);
+	int	is_lair(Firm* firmPtr);
+
+	int	lair_unit_id(int firmRecno);
+	int	lair_train_population(int firmRecno);	// population needed for training one more Fryhtan in this lair
+	int	can_train_in_lair(int firmRecno, int showMsg=0);
+	int	add_lair_train(int firmRecno);
+	int	cancel_lair_train(int firmRecno);
+	void	next_day_lair(int firmRecno);
+	void	draw_lair(Firm* firmPtr, int displayLayer);
+
+	static int	firm_setup_cost(int firmId, int nationRecno);
+	static int	firm_year_cost(Firm* firmPtr);
+
+	//------ population of a Fryhtan kingdom ------//
+
+	int	nation_population(int nationRecno);
+	int	nation_population_cap(int nationRecno);
+
 	static int	is_large_monster(int monsterId);
 	static int	monster_population(int monsterId);		// 1 for small Fryhtans, 2 for large ones
 	static int	unit_population(int unitId);
@@ -69,6 +121,8 @@ public:
 	static const char*	menu_species_size_text(int monsterId);
 	static int				menu_next_species(int monsterId, int dir);		// dir: 1 - next, -1 - previous, in alphabetical order
 	static int				is_valid_species(int monsterId)	{ return monsterId >= 1 && monsterId <= FRYHTAN_SPECIES_COUNT; }
+
+	ModFryhtan()		{ lair_array=NULL; lair_array_size=0; reset(); }
 
 	int	write_file(File* filePtr);
 	int	read_file(File* filePtr);

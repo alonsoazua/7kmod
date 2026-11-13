@@ -27,12 +27,25 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
   - **Sin reputación** (queda en 0) y sus Fryhtans **sin lealtad**.
   - **Sin edificios humanos:** sus unidades no tienen menú de construcción.
   - Los aldeanos de pueblos independientes no se unen a un reino Fryhtan.
-  - Por ahora el reino no puede hacer nada más: las guaridas llegan en la fase 2.
+- **Guaridas** (fase 2):
+  - El rey y los generales Fryhtan tienen **Build → Lair**: una guarida de su especie
+    que funciona como un fuerte (un general y hasta 8 soldados). Cuesta **$500** y
+    **$100 al año**.
+  - Botón **Train** en la guarida: un Fryhtan de la especie de la guarida por **20 de
+    comida**, en **20 días**, con combate 20. Cola de hasta 8; clic derecho quita uno y
+    devuelve la comida. No se puede pasar del tope de población.
+  - **Población Fryhtan:** cada Fryhtan del reino, rey incluido, usa 1 (pequeño) o 2
+    (grande). El tope es 18. Se ve en la ayuda de Train y en el reporte de reinos
+    ("Fryhtan Population").
+  - **Promote:** un soldado Fryhtan se puede ascender a general (Ordo) con liderazgo 20.
+  - Los Fryhtans entrenan su combate en la guarida con el general y ganan experiencia
+    al pelear.
+  - La guarida no tiene Reward ni Recruit; sus Fryhtans muestran lealtad "N/A".
 
 ### Compatibilidad
 - **Carpeta propia:** `%APPDATA%\7kfans.com\7kaa-fryhtan\` (partidas, `CONFIG.DAT`,
   `7KMOD.DAT` y `config.txt`), aparte de los demás ejecutables del mod.
 - **Partidas guardadas:** versión 310 (`GAME_VERSION_7KMOD_FRYHTAN`): guarda la especie
-  de cada reino. Carga las partidas de gameplay (versión 300 o anterior). Los demás
+  de cada reino, la especie de cada guarida y su cola de Train. Carga las partidas de gameplay (versión 300 o anterior). Los demás
   ejecutables del mod no cargan las partidas de esta rama.
 - **Multijugador:** la opción Fryhtan no existe en multijugador.

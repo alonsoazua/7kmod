@@ -55,6 +55,7 @@
 #include <OSERES.h>
 #include <OLOG.h>
 #include <ConfigAdv.h>
+#include <ModFryhtan.h>
 
 static char random_race();
 
@@ -1508,6 +1509,9 @@ void Town::update_target_resistance()
 		firmPtr = firm_array[linked_firm_array[i]];
 
 		if( firmPtr->firm_id!=FIRM_CAMP || !firmPtr->overseer_recno )
+			continue;
+
+		if( mod_fryhtan.is_lair(firmPtr) )		// 7kmod-fryhtan: the influence of the lairs comes in phase 4 (TODO-fryhtan.md)
 			continue;
 
 		//-------- get nation and commander info ------------//

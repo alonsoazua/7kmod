@@ -59,6 +59,7 @@
 #include <ConfigAdv.h>
 #include <ModTech.h>
 #include <OF_BASE.h>
+#include <ModFryhtan.h>
 
 
 //---------- define static member vars -------------//
@@ -223,6 +224,11 @@ void Firm::init(int xLoc, int yLoc, int nationRecno, int firmId, const char* bui
    hit_points     = (float) 0;
    max_hit_points = firmInfo->max_hit_points;
 
+	//--- 7kmod-fryhtan: the Forts of a Fryhtan kingdom are its lairs, of the species of the kingdom ---//
+
+	if( firm_id == FIRM_CAMP && mod_fryhtan.is_fryhtan(nation_recno) )
+		mod_fryhtan.set_lair( firm_recno, mod_fryhtan.monster_id(nation_recno) );
+
 	//------ set construction and builder -------//
 
 	under_construction = firmInfo->buildable;       // whether the firm is under construction, if the firm is not buildable it is completed in the first place
@@ -296,6 +302,8 @@ void Firm::deinit()
       return;
 
 	deinit_derived();
+
+	mod_fryhtan.del_lair(firm_recno);		// 7kmod-fryhtan
 
 	remove_firm = 1; // set static parameter
 
@@ -484,9 +492,20 @@ char* Firm::firm_name()
 {
 	static String str;
 
-	if( !closest_town_name_id )
+	if( !closest_town_name_id && mod_fryhtan.is_lair(this) )		// 7kmod-fryhtan: "<Species> Lair"
+	{
+		// TRANSLATORS: <Fryhtan species> Lair, a lair of a Fryhtan kingdom
+		snprintf( str, MAX_STR_LEN+1, _("%s Lair"), ModFryhtan::monster_name(mod_fryhtan.lair_monster_id(firm_recno)) );
+	}
+	else if( !closest_town_name_id )
 	{
 		str = _(firm_res[firm_id]->name);
+	}
+	else if( mod_fryhtan.is_lair(this) )		// 7kmod-fryhtan: "<Town> <Species> Lair"
+	{
+		// TRANSLATORS: <Town> <Fryhtan species> Lair, a lair of a Fryhtan kingdom
+		snprintf( str, MAX_STR_LEN+1, _("%s %s Lair"), town_res.get_name(closest_town_name_id),
+					 ModFryhtan::monster_name(mod_fryhtan.lair_monster_id(firm_recno)) );
 	}
 	else
 	{
@@ -1718,6 +1737,14 @@ void Firm::update_loyalty()
 
 	for( int i=0 ; i<worker_count ; i++, workerPtr++ )
 	{
+		//--- 7kmod-fryhtan: Fryhtans have no loyalty ---//
+
+		if( unit_res[workerPtr->unit_id]->unit_class == UNIT_CLASS_MONSTER )
+		{
+			workerPtr->worker_loyalty = 100;
+			continue;
+		}
+
 		int targetLoyalty = workerPtr->target_loyalty(firm_recno);
 
 		if( targetLoyalty > workerPtr->worker_loyalty )
@@ -1801,7 +1828,7 @@ void Firm::pay_expense()
 
 	//-------- fixed expenses ---------//
 
-	float dayExpense = (float) firm_res[firm_id]->year_cost / 365;
+	float dayExpense = (float) ModFryhtan::firm_year_cost(this) / 365;		// 7kmod-fryhtan: the upkeep of a lair
 
 	if( nationPtr->cash >= dayExpense )
 	{
@@ -1932,7 +1959,7 @@ void Firm::add_income(int incomeType, float incomeAmt)
 //
 int Firm::year_expense()
 {
-	int totalExpense = firm_res[firm_id]->year_cost;
+	int totalExpense = ModFryhtan::firm_year_cost(this);		// 7kmod-fryhtan
 
 	//---- pay salary to workers from foreign towns ----//
 
@@ -1972,7 +1999,7 @@ void Firm::sell_firm(char remoteAction)
 
 	Nation* nationPtr = nation_array[nation_recno];
 
-	int sellIncome = firm_res[firm_id]->setup_cost / 2 * (int) hit_points / (int) max_hit_points;
+	int sellIncome = ModFryhtan::firm_setup_cost(firm_id, nation_recno) / 2 * (int) hit_points / (int) max_hit_points;		// 7kmod-fryhtan
 
 	nationPtr->add_income(INCOME_SELL_FIRM, (float)sellIncome);
 
@@ -2018,7 +2045,7 @@ void Firm::cancel_construction(char remoteAction)
 
 	Nation* nationPtr = nation_array[nation_recno];
 
-	nationPtr->add_expense( EXPENSE_FIRM, (float) -firm_res[firm_id]->setup_cost/2 );
+	nationPtr->add_expense( EXPENSE_FIRM, (float) -ModFryhtan::firm_setup_cost(firm_id, nation_recno)/2 );		// 7kmod-fryhtan
 
    firm_array.del_firm(firm_recno);
 }
@@ -3871,6 +3898,9 @@ int Worker::is_nation(int firmRecno, int nationRecno, int checkSpy)
 //
 int Firm::can_assign_capture()
 {
+	if( mod_fryhtan.is_lair(this) )		// 7kmod-fryhtan: the lairs of a Fryhtan kingdom can't be captured, only destroyed
+		return 0;
+
 	return (overseer_recno==0 && worker_count==0);
 }
 //----------- End of function Worker::can_assign_capture ---------//

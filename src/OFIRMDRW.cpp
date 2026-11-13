@@ -36,6 +36,7 @@
 #include <OF_BASE.h>
 #include <OSE.h>
 #include <OREMOTE.h>
+#include <ModFryhtan.h>
 
 //------- define static vars -------//
 
@@ -68,6 +69,14 @@ static Point slot_point_array[] =
 //
 void Firm::draw(int displayLayer)
 {
+	//--- 7kmod-fryhtan: a lair of a Fryhtan kingdom is drawn with the lair of its species ---//
+
+	if( mod_fryhtan.is_lair(this) )
+	{
+		mod_fryhtan.draw_lair(this, displayLayer);
+		return;
+	}
+
 	FirmBuild* firmBuild = firm_res.get_build(firm_build_id);
 
 	// if in construction, don't draw ground unless the last construction frame
