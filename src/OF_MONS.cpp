@@ -224,6 +224,7 @@ int FirmMonster::detect_info()
 			se_ctrl.immediate_sound("TURN_ON");
 			power.reset_selection();
 			firm_array.selected_recno = lairRecno;		// show the new lair
+			firm_array[lairRecno]->sort_worker();		// the order of the worker list is of the last selected firm
 		}
 
 		info.disp();
@@ -246,7 +247,7 @@ int FirmMonster::detect_info()
 //
 void FirmMonster::disp_lair_offer(int dispY1, int refreshFlag, LairOffer* offerPtr)
 {
-	int panelY2 = dispY1 + 182;
+	int panelY2 = dispY1 + 205;
 
 	if( refreshFlag == INFO_REPAINT )
 	{
@@ -303,7 +304,7 @@ void FirmMonster::disp_lair_offer(int dispY1, int refreshFlag, LairOffer* offerP
 		snprintf( costStr, sizeof(costStr), _("Tribute: $%d"), ModFryhtan::offer_cost(offerPtr) );
 		font_san.put( x, y+18, costStr, 0, INFO_X2-4 );
 
-		font_san.put_paragraph( x, y+36, INFO_X2-4, y+80,
+		font_san.put_paragraph( x, y+36, INFO_X2-4, y+95,
 			_("The wild Fryhtans inside will leave. The ones outside stay wild.") );
 
 		button_pay_tribute.paint_text( INFO_X1+40, panelY2-30, INFO_X2-40, panelY2-6, _("Pay Tribute") );

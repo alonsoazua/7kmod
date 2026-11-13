@@ -470,6 +470,12 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
   salvaje): oferta de una guarida Rattus (Ordo combate 63 y liderazgo 36, 6 soldados de
   22–39, $482), Pay Tribute, la guarida Rattus del reino con "Naggol / Rattus Ordo" y
   sus 6 soldados, población 19/18, y Train de Rattus.
+- **Bug corregido:** el juego se cerraba al pagar el tributo si antes estaba seleccionado
+  otro edificio con soldados (pasaba con una partida cargada): la lista de soldados del
+  panel usa un orden que se calcula solo para el edificio seleccionado
+  (`Firm::sort_worker()`), y la guarida nueva se mostraba con el orden del anterior. Se
+  recalcula al seleccionarla. También se agrandó el recuadro de la oferta para que se
+  lea todo el texto.
 - **Pendiente para la fase 6:** los Fryhtans salvajes todavía atacan al reino, así que
   construir junto a una guarida salvaje es peligroso hasta entonces.
 
