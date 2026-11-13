@@ -1356,7 +1356,7 @@ static void disp_fryhtan_kingdom(Config& tempConfig, int lastMonsterId)
 
 		char lineStr[200];
 
-		// TRANSLATORS: Fryhtan kingdom: <Name> <Fryhtan species> Horde (Large: 2 population)
+		// TRANSLATORS: Fryhtan kingdom: <Name> <Fryhtan species> Horde (Large: 3 population)
 		snprintf( lineStr, sizeof(lineStr), _("Fryhtan kingdom: %s %s Horde (%s)"), firstName,
 					 speciesName, ModFryhtan::menu_species_size_text(lastMonsterId) );
 

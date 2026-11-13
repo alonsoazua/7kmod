@@ -21,7 +21,7 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
     (las 10 razas) y **Fryhtans** (las 13 especies en el mismo lugar, 10 por página, con
     flechas ▲ ▼ para cambiar de página); la elegida va subrayada. Debajo
     del nombre se ve cómo quedará el reino, por ejemplo "Fryhtan kingdom: Al Rokken
-    Horde (Large: 2 population)". La pestaña y la especie se recuerdan.
+    Horde (Large: 3 population)". La pestaña y la especie se recuerdan.
   - Los nombres de las especies, las pestañas y la etiqueta "Seats of Power Unlocked?"
     usan letra suavizada (TeX Gyre Pagella, tipo Palatino), prerenderizada con
     `7kmod/tools/make_smooth_text.py`.
@@ -38,8 +38,8 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
   - Botón **Train** en la guarida: un Fryhtan de la especie de la guarida por **20 de
     comida**, en **20 días** (10 si la especie es pequeña), con combate 20. Cola de hasta 8; clic derecho quita uno y
     devuelve la comida. No se puede pasar del tope de población.
-  - **Población Fryhtan:** cada Fryhtan del reino, rey incluido, usa 1 (pequeño) o 2
-    (grande). El tope es 18. Se ve en la ayuda de Train y en el reporte de reinos
+  - **Población Fryhtan:** cada Fryhtan del reino, rey incluido, usa 2 (pequeño) o 3
+    (grande). El tope base es 20. Se ve en la ayuda de Train y en el reporte de reinos
     ("Fryhtan Population").
   - **Train Ordo:** un segundo botón entrena un general (Ordo) de la especie de la
     guarida: **40 de comida**, **40 días** (20 si es pequeña), liderazgo y combate **30**. Sale junto a la
@@ -49,7 +49,10 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
     al pelear.
   - La guarida no tiene Reward ni Recruit; sus Fryhtans muestran lealtad "N/A".
 - **Inicio:** el reino empieza con el rey como general de una guarida ya construida y
-  4 soldados de su especie.
+  4 soldados de su especie, y con un **pueblo esclavizado de 20 personas** de una raza
+  al azar, enlazado a la guarida (donde un reino humano tiene su pueblo inicial). Con
+  el rey en la guarida, paga tributo desde el primer mes; el tope de población empieza
+  en 40.
 - **El rey** se llama "<nombre> The All High" en su panel y en el de la guarida (por
   ejemplo "Al The All High"), sobre "All High <especie>".
 - El rey y los Ordos llevan el **ícono de rey o de general** sobre la unidad.
@@ -70,6 +73,9 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
     del mejor general de las guaridas enlazadas (el doble con liderazgo 100). Produce comida, crece, no
     se rebela y su gente no se va.
   - Cada persona esclavizada sube en 1 el **tope de población** Fryhtan.
+  - **Periodo de gracia:** durante el primer mes después de esclavizarlo, el pueblo no
+    se puede rebelar, para que el general tenga tiempo de regresar a la guarida (la
+    lealtad empieza en 30 y sin general baja).
   - Si pierde el enlace con todas las guaridas, se vuelve independiente.
   - Al destruir o vender una guarida ya no aparece un fuerte humano.
 - **Cierre** (fase 7):

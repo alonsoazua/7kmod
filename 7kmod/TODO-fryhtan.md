@@ -671,7 +671,7 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
 Ajustes y cosas nuevas para el reino Fryhtan, ya con la versión 1 en `7kmod-gameplay`.
 Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
 
-- [ ] **Periodo de gracia de 1 mes al esclavizar un pueblo.** Al esclavizar un pueblo,
+- [x] **Periodo de gracia de 1 mes al esclavizar un pueblo.** Al esclavizar un pueblo,
       su gente queda con lealtad 30 (`Town::set_nation`, como cualquier pueblo que cambia
       de dueño). Pero el general suele estar afuera peleando, así que ninguna guarida
       enlazada tiene un Ordo o el rey adentro y la lealtad objetivo es 0: en unos 5 días
@@ -684,7 +684,7 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         poner `last_rebel_date` 2 meses en el pasado; como el juego no deja rebelarse
         dos veces en menos de 3 meses (`REBEL_INTERVAL_MONTH`), eso da exactamente un mes.
 
-- [ ] **Empezar con un pueblo esclavizado de 20 personas.** Hoy el reino Fryhtan empieza
+- [x] **Empezar con un pueblo esclavizado de 20 personas.** Hoy el reino Fryhtan empieza
       solo con su guarida (el All High y 4 soldados adentro). Con el cambio, también
       empieza con un pueblo esclavizado de 20 personas, ya enlazado a la guarida inicial
       (cerca de ella, a distancia de enlace), como lo haría un reino humano con su pueblo
@@ -694,10 +694,10 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       - El tope de población sube con la gente esclavizada (base + 20).
       - La gente del pueblo es de **una raza al azar**.
 
-- [ ] **Tope de población base de 20** (hoy 18). El tope sigue siendo la base + la gente
+- [x] **Tope de población base de 20** (hoy 18). El tope sigue siendo la base + la gente
       de los pueblos esclavizados; con el pueblo inicial, el reino empezaría con 40.
 
-- [ ] **Los Fryhtans cuestan más población:** las especies grandes pasan de 2 a **3** y
+- [x] **Los Fryhtans cuestan más población:** las especies grandes pasan de 2 a **3** y
       las pequeñas de 1 a **2**.
       - Cambia el texto de las especies en New Game ("Large: 2 population" → 3,
         "Small: 1 population" → 2).
@@ -705,3 +705,17 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         cuesten 1 de población; hay que cambiarlo para que revise que la especie sea
         pequeña (si no, ninguna especie entrenaría más rápido).
       - El rey y los 4 soldados del inicio ocupan 15 (grandes) o 10 (pequeñas) del tope.
+
+#### Cómo quedaron
+
+- **Gracia:** `Town::set_nation` pone `last_rebel_date` 2 meses en el pasado cuando el
+  nuevo dueño es un reino Fryhtan.
+- **Pueblo inicial:** `ModFryhtan::create_start_king` crea el pueblo (raza al azar, 20
+  personas, lealtad 50) donde un reino humano tendría su pueblo inicial, y la guarida 6
+  casillas a la derecha, como el fuerte inicial humano; quedan enlazados.
+- **Población:** `FRYHTAN_BASE_POPULATION` 20, `FRYHTAN_SMALL_POPULATION` 2 y
+  `FRYHTAN_LARGE_POPULATION` 3; el entrenamiento a mitad de tiempo usa
+  `is_large_monster()`.
+- **Probado** con un Rokken: pueblo maya de 20 enlazado a la guarida, tributo de $160
+  (con el liderazgo 60 del rey) y la ayuda de Train dice "uses 3 population. Fryhtan
+  population: 15/40". La gracia no se probó en partida.

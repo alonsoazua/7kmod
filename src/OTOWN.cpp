@@ -822,6 +822,11 @@ void Town::set_nation(int newNationRecno)
 		}
 	}
 
+	//--- 7kmod-fryhtan: a town just enslaved can't rebel for a month (rebellions are at least REBEL_INTERVAL_MONTH apart) ---//
+
+	if( mod_fryhtan.is_fryhtan(nation_recno) )
+		last_rebel_date = info.game_date - (3-1)*30;
+
 	//------- reset town_combat_level -------//
 
 	town_combat_level = 0;

@@ -113,8 +113,9 @@ int ModFryhtan::nation_unit_id(int nationRecno)
 
 //--------- Begin of function ModFryhtan::create_start_king ---------//
 //
-// A Fryhtan kingdom starts with its king (an All High of its species) only,
-// at a place chosen like the starting town of a human kingdom.
+// A Fryhtan kingdom starts with its king (an All High of its species) in a
+// lair with its first soldiers, and an enslaved town of a random race linked
+// to the lair, at a place chosen like the starting town of a human kingdom.
 //
 // return: <int> the unit recno of the king, 0 if there is no space.
 //
@@ -134,7 +135,18 @@ int ModFryhtan::create_start_king(int nationRecno)
 	if( !town_array.think_town_loc(MAX_WORLD_X_LOC*MAX_WORLD_Y_LOC, xLoc, yLoc) )
 		return 0;
 
-	//------ build the starting lair there (a finished Fort, free of charge) ------//
+	//---- the enslaved town, where a human kingdom has its starting town ----//
+
+	int townRaceId = misc.random(MAX_RACE)+1;
+
+	int townRecno = town_array.add_town(nationRecno, townRaceId, xLoc, yLoc);
+
+	town_array[townRecno]->init_pop( townRaceId, FRYHTAN_START_TOWN_POPULATION, ENSLAVED_TOWN_LOYALTY, 0, 1 );		// last 1-first initialization at the beginning of the game
+	town_array[townRecno]->auto_set_layout();
+
+	//------ build the starting lair next to it, where a human kingdom has its starting fort (a finished Fort, free of charge) ------//
+
+	xLoc += 6;
 
 	if( !world.can_build_firm(xLoc, yLoc, FIRM_CAMP) )
 		return 0;
@@ -143,7 +155,7 @@ int ModFryhtan::create_start_king(int nationRecno)
 
 	int firmRecno = firm_array.create_firm(FIRM_CAMP);
 
-	firm_array[firmRecno]->init( xLoc, yLoc, nationRecno, FIRM_CAMP, race_res[nationPtr->race_id]->code );		// Firm::init() marks it as a lair of the kingdom's species
+	firm_array[firmRecno]->init( xLoc, yLoc, nationRecno, FIRM_CAMP, race_res[nationPtr->race_id]->code );		// Firm::init() marks it as a lair of the kingdom's species, and links it to the town
 
 	Firm* firmPtr = firm_array[firmRecno];
 
@@ -789,7 +801,7 @@ int ModFryhtan::is_large_monster(int monsterId)
 //
 int ModFryhtan::monster_population(int monsterId)
 {
-	return is_large_monster(monsterId) ? 2 : 1;
+	return is_large_monster(monsterId) ? FRYHTAN_LARGE_POPULATION : FRYHTAN_SMALL_POPULATION;
 }
 //----------- End of function ModFryhtan::monster_population -----------//
 
@@ -818,7 +830,7 @@ const char* ModFryhtan::monster_name(int monsterId)
 //
 const char* ModFryhtan::monster_size_text(int monsterId)
 {
-	return is_large_monster(monsterId) ? _("Large: 2 population") : _("Small: 1 population");
+	return is_large_monster(monsterId) ? _("Large: 3 population") : _("Small: 2 population");
 }
 //----------- End of function ModFryhtan::monster_size_text -----------//
 
@@ -873,7 +885,7 @@ const char* ModFryhtan::menu_species_size_text(int monsterId)
 		return "";
 
 	return menu_species_level_array[monsterId-1] >= FRYHTAN_LARGE_MIN_LEVEL ?
-			 _("Large: 2 population") : _("Small: 1 population");
+			 _("Large: 3 population") : _("Small: 2 population");
 }
 //----------- End of function ModFryhtan::menu_species_size_text -----------//
 

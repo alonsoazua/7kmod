@@ -30,11 +30,14 @@ class File;
 
 //------- Define constant -------//
 
-enum { FRYHTAN_LARGE_MIN_LEVEL = 6 };		// monster level from which a Fryhtan is large (2 population)
-enum { FRYHTAN_BASE_POPULATION = 18 };
+enum { FRYHTAN_LARGE_MIN_LEVEL = 6 };		// monster level from which a Fryhtan is large (FRYHTAN_LARGE_POPULATION)
+enum { FRYHTAN_BASE_POPULATION = 20 };
+enum { FRYHTAN_SMALL_POPULATION = 2,		// population taken by a small Fryhtan of the kingdom
+		 FRYHTAN_LARGE_POPULATION = 3 };		// and by a large one
 enum { FRYHTAN_SPECIES_COUNT = 13 };			// no. of records in MONSTER.DBF
 enum { FRYHTAN_DEFAULT_MONSTER_ID = 6 };		// Rokken, the default choice in the new game screen		// population of Fryhtans allowed at the start
 enum { FRYHTAN_START_SOLDIER_COUNT = 4 };		// soldiers in the starting lair
+enum { FRYHTAN_START_TOWN_POPULATION = 20 };		// people of the starting enslaved town
 
 enum { FRYHTAN_KING_COMBAT = 60,				// combat and leadership of the starting All High
 		 FRYHTAN_KING_LEADERSHIP = 60 };
@@ -156,10 +159,10 @@ public:
 	int	add_lair_soldier(Firm* firmPtr, int monsterId, int combatLevel=LAIR_TRAIN_COMBAT);
 	int	add_lair_ordo(Firm* firmPtr, int monsterId);
 	static int	train_food(int trainType)	{ return trainType==LAIR_TRAIN_ORDO ? LAIR_ORDO_FOOD : LAIR_TRAIN_FOOD; }
-	// days needed for training; small Fryhtans (1 population) take half the time
+	// days needed for training; small Fryhtans take half the time
 	static int	train_days(int trainType, int monsterId)
 					{ int days = trainType==LAIR_TRAIN_ORDO ? LAIR_ORDO_DAYS : LAIR_TRAIN_DAYS;
-					  return monster_population(monsterId)==1 ? days/2 : days; }
+					  return is_large_monster(monsterId) ? days : days/2; }
 
 	//------ names of the Ordos ------//
 
@@ -215,7 +218,7 @@ public:
 	int	nation_population_cap(int nationRecno);
 
 	static int	is_large_monster(int monsterId);
-	static int	monster_population(int monsterId);		// 1 for small Fryhtans, 2 for large ones
+	static int	monster_population(int monsterId);		// FRYHTAN_SMALL_POPULATION or FRYHTAN_LARGE_POPULATION
 	static int	unit_population(int unitId);
 
 	static const char*	monster_name(int monsterId);

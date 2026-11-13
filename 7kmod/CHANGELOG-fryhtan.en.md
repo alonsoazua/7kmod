@@ -22,7 +22,7 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
     and **Fryhtans** (the 13 species in the same place, 10 per page, with ▲ ▼
     arrows to change the page); the chosen one is underlined. Below the
     name it shows how the kingdom will be called, for example "Fryhtan kingdom: Al
-    Rokken Horde (Large: 2 population)". The tab and the species are remembered.
+    Rokken Horde (Large: 3 population)". The tab and the species are remembered.
   - The species names, the tabs and the "Seats of Power Unlocked?" label use smooth
     anti-aliased text (TeX Gyre Pagella, a Palatino clone), pre-rendered with
     `7kmod/tools/make_smooth_text.py`.
@@ -39,8 +39,8 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   - **Train** button in the lair: a Fryhtan of the lair's species for **20 food**, in
     **20 days** (10 for a small species), with combat 20. Queue of up to 8; right click removes one and gives the
     food back. It can't go over the population cap.
-  - **Fryhtan population:** each Fryhtan of the kingdom, king included, uses 1 (small)
-    or 2 (large). The cap is 18. It shows in the Train help and in the Kingdoms report
+  - **Fryhtan population:** each Fryhtan of the kingdom, king included, uses 2 (small)
+    or 3 (large). The base cap is 20. It shows in the Train help and in the Kingdoms report
     ("Fryhtan Population").
   - **Train Ordo:** a second button trains a general (Ordo) of the lair's species: **40
     food**, **40 days** (20 for a small species), leadership and combat **30**. It comes out next to the lair
@@ -50,7 +50,9 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
     fighting.
   - The lair has no Reward or Recruit; its Fryhtans show loyalty "N/A".
 - **Start:** the kingdom starts with the king as general of an already built lair and 4
-  soldiers of its species.
+  soldiers of its species, and with an **enslaved town of 20 people** of a random race,
+  linked to the lair (where a human kingdom has its starting town). With the king in
+  the lair, it pays tribute from the first month; the population cap starts at 40.
 - **The king** is called "<name> The All High" in his panel and in the lair's (for
   example "Al The All High"), over "All High <species>".
 - The king and the Ordos have the **king or general icon** over the unit.
@@ -70,6 +72,9 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
     of the best general of the linked lairs (double with leadership 100). It produces food, grows, doesn't
     rebel and its people don't leave.
   - Each enslaved person raises the Fryhtan **population cap** by 1.
+  - **Grace period:** during the first month after it's enslaved, the town can't rebel,
+    so that the general has time to go back to the lair (the loyalty starts at 30 and
+    drops without a general).
   - If it loses the link with all the lairs, it becomes independent.
   - Destroying or selling a lair no longer shows a human Fort.
 - **Closing** (phase 7):
