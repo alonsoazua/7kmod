@@ -531,9 +531,9 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
       - Se quitan el botón "Fryhtan" y el selector con flechas de la fase 1; la línea
         "Fryhtan kingdom: <nombre> <especie> Horde (Large/Small: N population)" se queda
         debajo cuando la pestaña Fryhtans está activa.
-      - Por decidir al implementarlo: cómo caben 13 recuadros donde hay 10 (propuesta:
-        recuadros un poco más chicos o dos filas), y si se recuerda la pestaña elegida
-        (propuesta: sí, en 7KMOD.DAT, como ya se recuerda la especie).
+      - Aprobado: los 13 recuadros caben haciéndolos un poco más chicos o en dos filas
+        (se elige al implementarlo según lo que se vea mejor), y la pestaña elegida se
+        recuerda en 7KMOD.DAT, como ya se recuerda la especie.
 
 ### Fase 6: diplomacia y Fryhtans salvajes
 - [x] Sin comercio, amistad ni alianza con un reino Fryhtan (jugador e IA).
