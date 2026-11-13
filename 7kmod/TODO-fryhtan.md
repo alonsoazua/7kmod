@@ -671,16 +671,15 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
 Ajustes y cosas nuevas para el reino Fryhtan, ya con la versión 1 en `7kmod-gameplay`.
 Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
 
-- [ ] **Periodo de gracia de 1 mes al esclavizar un pueblo.** Hoy, al esclavizar un
-      pueblo, su gente queda con la lealtad muy baja (cerca de 0, porque se esclaviza
-      peleando) y el juego revisa la rebelión cada 15 días: si la lealtad está en 29 o
-      menos, se rebela casi enseguida. Con el cambio, durante el primer mes después de
-      esclavizarlo el pueblo no se puede rebelar.
+- [ ] **Periodo de gracia de 1 mes al esclavizar un pueblo.** Al esclavizar un pueblo,
+      su gente queda con lealtad 30 (`Town::set_nation`, como cualquier pueblo que cambia
+      de dueño). Pero el general suele estar afuera peleando, así que ninguna guarida
+      enlazada tiene un Ordo o el rey adentro y la lealtad objetivo es 0: en unos 5 días
+      baja a 29 (punto de rebelión) y, como el juego revisa la rebelión cada 15 días, el
+      pueblo se puede rebelar antes de que el general regrese a la guarida. Con el
+      cambio, durante el primer mes después de esclavizarlo el pueblo no se puede
+      rebelar, para darle tiempo al general de regresar (con general, la lealtad sube
+      hacia 50).
       - Idea para implementarlo sin datos nuevos en la partida guardada: al esclavizar,
         poner `last_rebel_date` 2 meses en el pasado; como el juego no deja rebelarse
         dos veces en menos de 3 meses (`REBEL_INTERVAL_MONTH`), eso da exactamente un mes.
-      - Ojo: la lealtad sube hacia 50 (con general) muy despacio: cada 5 días sube la
-        diferencia / 30. Desde 0 llega a unos 10 al terminar el mes y tarda unos 4 meses
-        en pasar de 29. Así que, solo con la gracia, el pueblo todavía se rebelaría al
-        terminar el mes. Falta decidir si además la lealtad empieza más alta al
-        esclavizarlo (por ejemplo, en 30).
