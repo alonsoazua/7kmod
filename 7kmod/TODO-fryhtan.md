@@ -742,3 +742,11 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         reino Fryhtan del jugador se quita de esa lista al empezar.
       - Con eso tampoco aparecen después: las guaridas salvajes nuevas salen de otras
         guaridas salvajes de su misma especie (`OF_MONS.cpp`).
+
+- [ ] **Sonido "ready" al terminar de entrenar** un soldado o un Ordo en la guarida, como
+      cuando un pueblo humano termina de entrenar una unidad.
+      - Los Fryhtans no tienen sonido "RDY" propio en `RESOURCE/STD.SET` (solo ataque y
+        muerte), pero todas las razas humanas usan el mismo archivo `READY`, que también
+        suena cuando la fábrica de guerra termina un arma. Se usa ese mismo sonido, solo
+        para las guaridas del jugador y si la guarida está a la vista, como en el
+        original (`se_res.far_sound`).
