@@ -510,6 +510,15 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
 - **Probado:** con el Ordo afuera, aviso y sin botón; con el Ordo adentro (liderazgo 30),
   tributo de $5,940 por una oferta Droog de base $1,980 (×3), pago y captura.
 
+### Ajustes anotados (después de la fase 6)
+- [ ] **Línea de enlace al colocar la guarida:** al elegir dónde construir una guarida
+      (Build → Lair, con el cuadro de colocación siguiendo al mouse), se dibujan las
+      líneas hacia las guaridas salvajes que quedarían enlazadas desde ese lugar (a 8
+      casillas o menos), igual que al colocar un fuerte se ven las líneas hacia los
+      pueblos que enlazaría (`World::draw_link_line`). Así se sabe antes de construir
+      qué guaridas salvajes se podrán capturar desde ahí. Se siguen viendo también las
+      líneas normales del fuerte hacia los pueblos.
+
 ### Fase 6: diplomacia y Fryhtans salvajes
 - [x] Sin comercio, amistad ni alianza con un reino Fryhtan (jugador e IA).
 - [x] Los reinos de la IA no se pueden rendir a un reino Fryhtan (ni ofrecer la
