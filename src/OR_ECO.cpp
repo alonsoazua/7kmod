@@ -216,10 +216,13 @@ static void put_income_rec(int recNo, int x, int y, int refreshFlag)
 
 	Nation* nationPtr = nation_array[info.viewing_nation_recno];
 
-	//--- 7kmod-fryhtan: a Fryhtan kingdom gets gold for killing humans ---//
+	//--- 7kmod-fryhtan: a Fryhtan kingdom gets gold for killing humans and from its enslaved towns ---//
 
 	if( recNo-1 == INCOME_TREASURE && mod_fryhtan.is_fryhtan(info.viewing_nation_recno) )
 		font_san.put( x, y, _("Spoils of War and Treasure") );
+
+	else if( recNo-1 == INCOME_TAX && mod_fryhtan.is_fryhtan(info.viewing_nation_recno) )		// the monthly tribute of the enslaved towns
+		font_san.put( x, y, _("Tribute from Enslaved Towns") );
 	else
 		font_san.put( x    , y, _(income_des_array[recNo-1]) );
 	font_san.put( x+370, y, misc.format( (int) nationPtr->income_365days(recNo-1), 2 ) );

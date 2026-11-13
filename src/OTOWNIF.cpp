@@ -53,6 +53,7 @@
 #include <OFIRMID.h>
 #include <OPOWER.h>
 #include <ModTech.h>
+#include <ModFryhtan.h>
 
 
 //------------- Define coordinations -----------//
@@ -392,9 +393,34 @@ void Town::disp_main_menu(int refreshFlag)
 		y+=23;
 	}
 
+	//--- 7kmod-fryhtan: an enslaved town has no buttons (no Recruit, Train, Collect Tax or Grant), only its tribute ---//
+
+	if( nation_recno && nation_recno==nation_array.player_recno && mod_fryhtan.is_enslaved_town(this) )
+	{
+		if( refreshFlag == INFO_REPAINT )
+		{
+			button_recruit.reset();
+			button_train.reset();
+			button_tax.reset();
+			button_grant.reset();
+			button_train_captain.reset();
+			button_back_fort.reset();
+
+			char str[200];
+
+			snprintf( str, sizeof(str), _("Enslaved town. At the end of the month you will receive $%d as tribute."),
+						 mod_fryhtan.town_tribute(this) );
+
+			vga_util.d3_panel_up( BUTTON_X1, y, BUTTON_X2, y+52 );
+			font_san.put_paragraph( BUTTON_X1+6, y+4, BUTTON_X2-6, y+50, str );
+		}
+
+		y += 55;
+	}
+
 	//----------- create the paint button ----------//
 
-	if( nation_recno==nation_array.player_recno )
+	else if( nation_recno==nation_array.player_recno )
 	{
 		int fortMode = fort_recruit_valid();		// 7kmod
 

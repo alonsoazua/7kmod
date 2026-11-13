@@ -395,6 +395,11 @@ void Town::next_day()
 	update_camp_link();
 	LOG_MSG(misc.get_random_seed());
 
+	//--- 7kmod-fryhtan: an enslaved town pays its tribute, and becomes independent without a lair ---//
+
+	if( mod_fryhtan.is_enslaved_town(this) )
+		mod_fryhtan.next_day_town(this);
+
 	//------ update target loyalty/resistance -------//
 
 	if( info.game_date%15 == town_recno%15 )
@@ -449,7 +454,8 @@ void Town::next_day()
 
 	//------ think town people migration -------//
 
-	if( config_adv.town_migration && info.game_date%15 == town_recno%15 )
+	if( config_adv.town_migration && info.game_date%15 == town_recno%15 &&
+		 !mod_fryhtan.is_enslaved_town(this) )		// 7kmod-fryhtan: the people of an enslaved town don't leave
 	{
 		LOG_MSG(" think_migrate");
 		think_migrate();
@@ -461,7 +467,8 @@ void Town::next_day()
 
 	//-------- think about rebel -----//
 
-	if( nation_recno && info.game_date%15 == town_recno%15 )
+	if( nation_recno && info.game_date%15 == town_recno%15 &&
+		 !mod_fryhtan.is_enslaved_town(this) )		// 7kmod-fryhtan: an enslaved town doesn't rebel
 	{
 		LOG_MSG(" think_rebel");
 		think_rebel();
@@ -528,7 +535,7 @@ void Town::next_day()
 
 	//------ auto collect tax and auto grant -------//
 
-	if( nation_recno )
+	if( nation_recno && !mod_fryhtan.is_enslaved_town(this) )		// 7kmod-fryhtan: no taxes or grants in an enslaved town
 	{
 		LOG_MSG(" process_auto");
 		process_auto();
@@ -540,7 +547,8 @@ void Town::next_day()
 
 	//------ collect yearly tax -------//
 
-	if( nation_recno && info.game_month==1 && info.game_day==1 )
+	if( nation_recno && info.game_month==1 && info.game_day==1 &&
+		 !mod_fryhtan.is_enslaved_town(this) )		// 7kmod-fryhtan: an enslaved town pays a monthly tribute instead
 	{
 		collect_yearly_tax();
 	}
@@ -830,7 +838,7 @@ void Town::set_nation(int newNationRecno)
 
 	if( train_unit_recno )
 	{
-		if( newNationRecno )
+		if( newNationRecno && !mod_fryhtan.is_fryhtan(newNationRecno) )		// 7kmod-fryhtan: an enslaved town trains nobody
 			unit_array[train_unit_recno]->change_nation(newNationRecno);
 		else // independent nations cannot train units
 			cancel_train_unit();
@@ -1214,6 +1222,16 @@ void Town::update_target_loyalty()
 	if( !nation_recno )		// return if independent towns
 		return;
 
+	//--- 7kmod-fryhtan: the people of an enslaved town have a fixed loyalty ---//
+
+	if( mod_fryhtan.is_enslaved_town(this) )
+	{
+		for( int i=0 ; i<MAX_RACE ; i++ )
+			race_target_loyalty_array[i] = ENSLAVED_TOWN_LOYALTY;
+
+		return;
+	}
+
 	//----- update loyalty of individual races -------//
 	//
 	// Loyalty is determined by:
@@ -1511,8 +1529,18 @@ void Town::update_target_resistance()
 		if( firmPtr->firm_id!=FIRM_CAMP || !firmPtr->overseer_recno )
 			continue;
 
-		if( mod_fryhtan.is_lair(firmPtr) )		// 7kmod-fryhtan: the influence of the lairs comes in phase 4 (TODO-fryhtan.md)
+		//--- 7kmod-fryhtan: a lair lowers the resistance of all the races toward its kingdom down to ENSLAVE_MIN_RESISTANCE ---//
+
+		if( mod_fryhtan.is_lair(firmPtr) )
+		{
+			for( j=0 ; j<MAX_RACE ; j++ )
+			{
+				if( race_pop_array[j] > 0 )
+					race_target_resistance_array[j][firmPtr->nation_recno-1] = ENSLAVE_MIN_RESISTANCE;
+			}
+
 			continue;
+		}
 
 		//-------- get nation and commander info ------------//
 
@@ -1604,7 +1632,12 @@ void Town::update_resistance()
 				{
 					float decValue = (race_resistance_array[i][j]-targetResistance) / 30;
 
-					race_resistance_array[i][j] -= MAX(1, decValue);
+					decValue = MAX(1, decValue);
+
+					if( mod_fryhtan.is_fryhtan(j+1) )		// 7kmod-fryhtan: the leadership of the lair's general decides the speed
+						decValue = mod_fryhtan.resistance_decrease(this, j+1, race_resistance_array[i][j], targetResistance);
+
+					race_resistance_array[i][j] -= decValue;
 
 					if(race_resistance_array[i][j] < targetResistance) // avoid resistance oscillate between taregtLoyalty-1 and taregtLoyalty+1
 						race_resistance_array[i][j] = (float)targetResistance;
@@ -1830,6 +1863,11 @@ int Town::think_surrender()
 void Town::surrender(int toNationRecno)
 {
 	err_when( !toNationRecno );
+
+	//--- 7kmod-fryhtan: a Fryhtan kingdom only enslaves a town linked to one of its lairs ---//
+
+	if( mod_fryhtan.is_fryhtan(toNationRecno) && !mod_fryhtan.can_enslave_town(this, toNationRecno) )
+		return;
 
 	//--- if this is a rebel town and the mobile rebel count is > 0, don't surrender (this function can be called by update_resistance() when resistance drops to zero ---//
 
@@ -2829,17 +2867,37 @@ void Town::being_attacked(int attackerUnitRecno, float attackDamage)
 				change_loyalty( raceId, -loyaltyDec * attackDamage / (20/ATTACK_SLOW_DOWN) );
 			}
 
-			//--- if the resistance of all the races are zero, think_change_nation() ---//
-
-			int i;
-			for( i=0 ; i<MAX_RACE ; i++ )
+			//--- 7kmod-fryhtan: a Fryhtan kingdom enslaves the town when the loyalty of its people drops to zero (if a lair is linked to it) ---//
+			//
+			// Only the races living in the town count: the loop below also checks
+			// the races without population, which keep their old loyalty.
+			//
+			if( attackerNationRecno && mod_fryhtan.is_fryhtan(attackerNationRecno) )
 			{
-				if( race_loyalty_array[i] >= (float) 1 )		// values between 0 and 1 are considered as 0
-					break;
-			}
+				int r;
+				for( r=0 ; r<MAX_RACE ; r++ )
+				{
+					if( race_pop_array[r] > 0 && race_loyalty_array[r] >= (float) 1 )
+						break;
+				}
 
-			if( i==MAX_RACE )                  		// if resistance of all races drop to zero
-				think_surrender();
+				if( r==MAX_RACE )
+					surrender(attackerNationRecno);
+			}
+			else
+			{
+				//--- if the resistance of all the races are zero, think_change_nation() ---//
+
+				int i;
+				for( i=0 ; i<MAX_RACE ; i++ )
+				{
+					if( race_loyalty_array[i] >= (float) 1 )		// values between 0 and 1 are considered as 0
+						break;
+				}
+
+				if( i==MAX_RACE )                  		// if resistance of all races drop to zero
+					think_surrender();
+			}
 		}
 		else						// if the town is an independent town
 		{

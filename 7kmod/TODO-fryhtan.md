@@ -10,9 +10,9 @@ siendo humanos. Solo partidas de un jugador (sin multijugador).
 
 ## 1. Reglas confirmadas
 
-- **Inicio:** el reino empieza con su rey, un **All High** de la especie elegida, dentro
-  de una guarida ya construida (ajuste pendiente, ver "Ajustes anotados").
-  No hay pueblo, guarida ni otras unidades al inicio.
+- **Inicio:** el reino empieza con su rey, un **All High** de la especie elegida, como
+  general de una guarida ya construida, con **4 soldados** de su especie (combate 20).
+  No hay pueblos al inicio.
 - **Guaridas:** funcionan como un **fuerte**: un general (o el rey) y hasta **8 soldados**. Los soldados entrenan con el
   general, salen a patrullar y regresan, igual que en un fuerte.
 - **Edificios humanos:** el reino Fryhtan no puede construir ni usar edificios humanos
@@ -217,9 +217,10 @@ el código que indexa la raza del reino no falle. La IA no usa esa raza
     experiencia no deben sumar contribución.~~ Hecho.
   - ~~Fase 2: lealtad de los Fryhtans dentro de una guarida tipo fuerte (`Worker`).~~
     Hecho: lealtad fija en 100 y el panel muestra "N/A".
-  - Fase 4: lealtad de los pueblos esclavizados según la raza del rey, Train Captain y
+  - ~~Fase 4: lealtad de los pueblos esclavizados según la raza del rey, Train Captain y
     reclutamiento (se ocultan), e influencia del fuerte con bono por raza del rey (la
-    guarida usa su propia regla).
+    guarida usa su propia regla).~~ Hecho: lealtad fija de 50, sin botones, y la
+    guarida tiene su propia regla de influencia.
   - Fase 7: la lista de partidas guardadas muestra "King <nombre>" con retrato humano;
     los mensajes de fin de partida dicen "<nombre>'s Kingdom"; la imagen de fin de
     partida y el Hall of Fame usan la raza interna; sucesión del rey.
@@ -269,20 +270,24 @@ el código que indexa la raza del reino no falle. La IA no usa esa raza
   comprarle comida (revisar en la fase 6).
 
 ### Ajustes anotados (después de la fase 2)
-- [ ] **Barra de progreso de Train:** mostrar en el panel de la guarida el avance del
+- [x] **Barra de progreso de Train:** mostrar en el panel de la guarida el avance del
       Fryhtan que se está entrenando (días hechos de 20), como la barra de entrenamiento
       de un pueblo humano.
-- [ ] **Inicio con guarida:** el reino empieza con una guarida de su especie ya
+- [x] **Inicio con guarida:** el reino empieza con una guarida de su especie ya
       construida, el rey adentro como general y **4 soldados** de la especie (combate
       20), en lugar del rey solo en el mapa.
-- [ ] **Nombre del rey:** "<nombre del rey> The All High" (por ejemplo "Al The All
+- [x] **Nombre del rey:** "<nombre del rey> The All High" (por ejemplo "Al The All
       High") en lugar de "All High <especie>", en el panel de la unidad y donde el juego
       muestre el nombre del rey. En el panel de la guarida, en vez de "King / All High
       Wyrm", la primera línea dice "Al The All High" y la segunda "All High Wyrm". El
       reino sigue llamándose "<nombre> <especie> Horde". Los generales siguen como
       "<especie> Ordo" (por ejemplo "Wyrm Ordo"), porque no tienen nombre propio.
-- [ ] Con el rey fuera, el panel de la guarida dice "Outside of the fort"; cambiarlo a
+- [x] Con el rey fuera, el panel de la guarida dice "Outside of the fort"; cambiarlo a
       "Outside of the lair".
+
+Cómo quedaron: la barra es una línea verde en la parte de abajo del botón Train (bajo
+el contador de la cola). La guarida inicial no le cuesta nada al reino. El nombre del
+rey usa el nombre completo; con nombres largos se corta en el panel.
 
 ### Fase 3: economía
 - [x] Mantenimiento de las guaridas en oro; unidades solo con comida (hecho en la fase 2).
@@ -307,12 +312,49 @@ el código que indexa la raza del reino no falle. La IA no usa esa raza
   prueba (se destruyeron con sus soldados).
 
 ### Fase 4: esclavizar pueblos
-- [ ] Enlace guarida–pueblo independiente y baja de resistencia hasta 45.
-- [ ] Captura por combate: resistencia a 0 → pueblo esclavizado.
-- [ ] Pueblos de reinos humanos: lealtad a 0 peleando → pueblo esclavizado.
-- [ ] Panel del pueblo esclavizado: sin Recruit, Train, Collect Tax ni Grant; muestra el
+- [x] Enlace guarida–pueblo independiente y baja de resistencia hasta 45.
+- [x] Captura por combate: resistencia a 0 → pueblo esclavizado.
+- [x] Pueblos de reinos humanos: lealtad a 0 peleando → pueblo esclavizado.
+- [x] Panel del pueblo esclavizado: sin Recruit, Train, Collect Tax ni Grant; muestra el
       tributo del mes.
-- [ ] Tributo mensual; la población esclavizada sube el tope de población.
+- [x] Tributo mensual; la población esclavizada sube el tope de población.
+
+#### Cómo quedó la fase 4
+
+- **Pueblo esclavizado** = cualquier pueblo de un reino Fryhtan (no hace falta otra
+  marca).
+- **Influencia de la guarida** (`Town::update_target_resistance`): una guarida con
+  general o rey enlazada a un pueblo independiente baja la resistencia de todas sus
+  razas hacia el reino hasta 45. La velocidad es la de un fuerte (la diferencia / 30,
+  mínimo 1, cada 5 días) por el liderazgo / 100 del mejor general enlazado (mínimo 10):
+  con liderazgo 60 baja un 60 % de lo que bajaría un fuerte.
+- **Esclavizar:** hace falta una guarida del reino enlazada al pueblo (con o sin
+  general). Sin ella, el pueblo no cambia de dueño aunque su resistencia o lealtad
+  llegue a 0.
+  - Independiente: resistencia a 0 peleando, como cualquier reino.
+  - De un reino humano: atacar el pueblo baja la lealtad de su gente; cuando la de todas
+    las razas que viven ahí llega a 0, queda esclavizado. (El juego original revisa
+    también las razas sin población, que guardan su lealtad vieja, así que para el
+    reino Fryhtan solo cuentan las que viven en el pueblo.) Si el pueblo estaba
+    entrenando una unidad, se cancela.
+- **El pueblo esclavizado:**
+  - Lealtad fija de 50: no se rebela, su gente no migra a otros pueblos, no hay
+    impuestos anuales, ni impuestos o regalos automáticos.
+  - Panel sin botones; muestra "Enslaved town. At the end of the month you will
+    receive $X as tribute."
+  - Paga $5 por persona el día 1 de cada mes (ingreso "Tribute from Enslaved Towns" en
+    el reporte de economía).
+  - Produce comida y crece como cualquier pueblo.
+  - Si pierde el enlace con todas las guaridas del reino (por ejemplo, si la destruyen o
+    la venden), se vuelve independiente con resistencia 100 hacia ese reino.
+  - Otro reino lo puede capturar como a cualquier pueblo.
+- **Tope de población:** 18 + la gente de todos los pueblos esclavizados del reino.
+- **Arreglo de paso:** al destruir o vender una guarida aparecía un fuerte humano (la
+  animación de destrucción usa el gráfico del fuerte); ahora las guaridas no la tienen.
+- **Probado:** esclavizar un pueblo independiente (resistencia inicial 41, a 0
+  peleando), tributo ($70 con 14 personas), tope 10/32, liberación al vender la guarida,
+  y esclavizar un pueblo de un reino de la IA (con un gancho temporal que le dio a la
+  IA un pueblo enlazado a la guarida, porque los reinos de la IA estaban en otras islas).
 
 ### Fase 5: capturar guaridas independientes
 - [ ] Enlace guarida propia–guarida independiente, de cualquier especie.

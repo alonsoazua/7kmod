@@ -303,6 +303,8 @@ void Firm::deinit()
 
 	deinit_derived();
 
+	int isLair = mod_fryhtan.is_lair(this);		// 7kmod-fryhtan
+
 	mod_fryhtan.del_lair(firm_recno);		// 7kmod-fryhtan
 
 	remove_firm = 1; // set static parameter
@@ -331,7 +333,7 @@ void Firm::deinit()
 	if( !sys.signal_exit_flag )
 	{
 		// ##### begin Gilbert 28/10 ########//
-		if( !under_construction )
+		if( !under_construction && !isLair )		// 7kmod-fryhtan: the destruction animation of a lair would show a Fort
 		{
 			// -------- create a firm die record ------//
 			// can be called as soon as restore_world_matrix

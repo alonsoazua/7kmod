@@ -189,7 +189,14 @@ void Battle::run(NewNationPara *mpGame, int mpPlayerCount)
 		 nation_array[nation_array.player_recno]->king_unit_recno )
 	{
 		Unit* kingUnit = unit_array[ nation_array[nation_array.player_recno]->king_unit_recno ];
-		world.go_loc( kingUnit->next_x_loc(), kingUnit->next_y_loc() );
+
+		if( kingUnit->unit_mode == UNIT_MODE_OVERSEE && !firm_array.is_deleted(kingUnit->unit_mode_para) )		// the king starts in his lair
+		{
+			Firm* firmPtr = firm_array[kingUnit->unit_mode_para];
+			world.go_loc( firmPtr->center_x, firmPtr->center_y );
+		}
+		else
+			world.go_loc( kingUnit->next_x_loc(), kingUnit->next_y_loc() );
 	}
 
 	//---- reset config parameter ----//
@@ -466,7 +473,7 @@ void Battle::create_pregame_object()
 
 		nationPtr = nation_array[nationRecno];
 
-		//--- 7kmod-fryhtan: a Fryhtan kingdom starts with its king only ---//
+		//--- 7kmod-fryhtan: a Fryhtan kingdom starts with its king in a lair, with 4 soldiers ---//
 
 		if( mod_fryhtan.is_fryhtan(nationRecno) )
 		{

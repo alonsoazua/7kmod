@@ -34,6 +34,8 @@ enum { FRYHTAN_LARGE_MIN_LEVEL = 6 };		// monster level from which a Fryhtan is 
 enum { FRYHTAN_BASE_POPULATION = 18 };
 enum { FRYHTAN_SPECIES_COUNT = 13 };			// no. of records in MONSTER.DBF
 enum { FRYHTAN_DEFAULT_MONSTER_ID = 6 };		// Rokken, the default choice in the new game screen		// population of Fryhtans allowed at the start
+enum { FRYHTAN_START_SOLDIER_COUNT = 4 };		// soldiers in the starting lair
+
 enum { FRYHTAN_KING_COMBAT = 60,				// combat and leadership of the starting All High
 		 FRYHTAN_KING_LEADERSHIP = 60 };
 
@@ -51,8 +53,13 @@ enum { KILL_REWARD_UNIT	 = 5,					// gold and food for killing a human soldier o
 		 KILL_REWARD_GENERAL = 20,					// a human general
 		 KILL_REWARD_KING		 = 100 };				// a human king
 
+enum { ENSLAVE_MIN_RESISTANCE = 45,			// the lairs lower the resistance of an independent town down to this
+		 ENSLAVED_TOWN_LOYALTY  = 50,			// fixed loyalty of the people of an enslaved town
+		 TRIBUTE_PER_PERSON		= 5 };			// monthly tribute of an enslaved town for each person
+
 class Firm;
 class Unit;
+class Town;
 
 //------- Define struct FryhtanLair -------//
 //
@@ -103,10 +110,20 @@ public:
 	int	add_lair_train(int firmRecno);
 	int	cancel_lair_train(int firmRecno);
 	void	next_day_lair(int firmRecno);
+	int	add_lair_soldier(Firm* firmPtr, int monsterId);
 	void	draw_lair(Firm* firmPtr, int displayLayer);
 
 	static int	firm_setup_cost(int firmId, int nationRecno);
 	static int	firm_year_cost(Firm* firmPtr);
+
+	//------ enslaved towns (phase 4) ------//
+
+	int	is_enslaved_town(Town* townPtr);
+	int	lair_leadership(Town* townPtr, int nationRecno);
+	float	resistance_decrease(Town* townPtr, int nationRecno, float resistance, float targetResistance);
+	int	can_enslave_town(Town* townPtr, int nationRecno);
+	int	next_day_town(Town* townPtr);
+	int	town_tribute(Town* townPtr);
 
 	//------ economy (phase 3) ------//
 
@@ -124,6 +141,7 @@ public:
 	static int	unit_population(int unitId);
 
 	static const char*	monster_name(int monsterId);
+	static const char*	king_title(int nationRecno);		// "<king name> The All High"
 	static const char*	monster_size_text(int monsterId);
 
 	//--- for the new game screen, where MonsterRes is not loaded yet ---//

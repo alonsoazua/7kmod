@@ -38,6 +38,9 @@
 #include <OIMGRES.h>
 #include <OWORLDMT.h>
 #include <OSERES.h>
+#include <ORACERES.h>
+#include <OINFO.h>
+#include <OTOWN.h>
 #include <ModFryhtan.h>
 #include "gettext.h"
 
@@ -125,18 +128,33 @@ int ModFryhtan::create_start_king(int nationRecno)
 	if( !town_array.think_town_loc(MAX_WORLD_X_LOC*MAX_WORLD_Y_LOC, xLoc, yLoc) )
 		return 0;
 
+	//------ build the starting lair there (a finished Fort, free of charge) ------//
+
+	if( !world.can_build_firm(xLoc, yLoc, FIRM_CAMP) )
+		return 0;
+
+	Nation* nationPtr = nation_array[nationRecno];
+
+	int firmRecno = firm_array.create_firm(FIRM_CAMP);
+
+	firm_array[firmRecno]->init( xLoc, yLoc, nationRecno, FIRM_CAMP, race_res[nationPtr->race_id]->code );		// Firm::init() marks it as a lair of the kingdom's species
+
+	Firm* firmPtr = firm_array[firmRecno];
+
+	firmPtr->complete_construction();
+
+	//---------- create the king next to the lair ----------//
+
 	SpriteInfo* spriteInfo = sprite_res[ unit_res[unitId]->sprite_id ];
 
-	xLoc += STD_TOWN_LOC_WIDTH/2;
-	yLoc += STD_TOWN_LOC_HEIGHT/2;
+	xLoc = firmPtr->loc_x1;
+	yLoc = firmPtr->loc_y1;
 
-	if( !world.locate_space( &xLoc, &yLoc, xLoc, yLoc, spriteInfo->loc_width, spriteInfo->loc_height,
+	if( !world.locate_space( &xLoc, &yLoc, firmPtr->loc_x2, firmPtr->loc_y2, spriteInfo->loc_width, spriteInfo->loc_height,
 									 unit_res[unitId]->mobile_type ) )
 	{
 		return 0;
 	}
-
-	//---------- create the king ----------//
 
 	int unitRecno = unit_array.add_unit( unitId, nationRecno, RANK_KING, 100, xLoc, yLoc );
 
@@ -151,7 +169,14 @@ int ModFryhtan::create_start_king(int nationRecno)
 	unitPtr->set_combat_level(FRYHTAN_KING_COMBAT);
 	unitPtr->hit_points = (float) unitPtr->max_hit_points;
 
-	nation_array[nationRecno]->set_king(unitRecno, 1);		// 1-the first king of the nation
+	nationPtr->set_king(unitRecno, 1);		// 1-the first king of the nation
+
+	//------ the king commands the lair, with its first soldiers ------//
+
+	firmPtr->assign_overseer(unitRecno);
+
+	for( int i=0 ; i<FRYHTAN_START_SOLDIER_COUNT ; i++ )
+		add_lair_soldier(firmPtr, monsterId);
 
 	return unitRecno;
 }
@@ -347,9 +372,27 @@ void ModFryhtan::next_day_lair(int firmRecno)
 	if( ++lairPtr->train_days < LAIR_TRAIN_DAYS )
 		return;
 
+	if( !add_lair_soldier(firmPtr, lairPtr->monster_id) )
+		return;		// no space next to the lair, try again the next day
+
+	lairPtr->train_days = 0;
+	lairPtr->train_count--;
+}
+//----------- End of function ModFryhtan::next_day_lair -----------//
+
+
+//--------- Begin of function ModFryhtan::add_lair_soldier ---------//
+//
+// Add a Fryhtan soldier (combat LAIR_TRAIN_COMBAT) of the given species next
+// to a lair. It goes into the lair if there is room.
+//
+// return: <int> the unit recno, 0 if there is no space for it
+//
+int ModFryhtan::add_lair_soldier(Firm* firmPtr, int monsterId)
+{
 	//------ locate a space next to the lair ------//
 
-	int unitId = monster_res[lairPtr->monster_id]->unit_id;
+	int unitId = monster_res[monsterId]->unit_id;
 	SpriteInfo* spriteInfo = sprite_res[ unit_res[unitId]->sprite_id ];
 
 	int xLoc=firmPtr->loc_x1, yLoc=firmPtr->loc_y1;
@@ -357,31 +400,30 @@ void ModFryhtan::next_day_lair(int firmRecno)
 	if( !world.locate_space( &xLoc, &yLoc, firmPtr->loc_x2, firmPtr->loc_y2,
 									 spriteInfo->loc_width, spriteInfo->loc_height, unit_res[unitId]->mobile_type ) )
 	{
-		return;		// try again the next day
+		return 0;
 	}
 
-	//------ add the trained Fryhtan ------//
+	//------ add the Fryhtan ------//
 
 	int unitRecno = unit_array.add_unit( unitId, firmPtr->nation_recno, RANK_SOLDIER, 100, xLoc, yLoc );
 
 	if( !unitRecno )
-		return;
+		return 0;
 
 	Unit* unitPtr = unit_array[unitRecno];
 
-	unitPtr->set_monster_id( lairPtr->monster_id );
+	unitPtr->set_monster_id( monsterId );
 	unitPtr->set_combat_level( LAIR_TRAIN_COMBAT );
 	unitPtr->hit_points = (float) unitPtr->max_hit_points;
-
-	lairPtr->train_days = 0;
-	lairPtr->train_count--;
 
 	//------ it goes into the lair if there is room ------//
 
 	if( firmPtr->worker_count < MAX_WORKER )
 		firmPtr->assign_unit(unitRecno);
+
+	return unitRecno;
 }
-//----------- End of function ModFryhtan::next_day_lair -----------//
+//----------- End of function ModFryhtan::add_lair_soldier -----------//
 
 
 //--------- Begin of function ModFryhtan::draw_lair ---------//
@@ -514,7 +556,22 @@ int ModFryhtan::nation_population(int nationRecno)
 //
 int ModFryhtan::nation_population_cap(int nationRecno)
 {
-	return FRYHTAN_BASE_POPULATION;
+	//--- each person of its enslaved towns raises the cap by 1 ---//
+
+	int cap = FRYHTAN_BASE_POPULATION;
+
+	for( int i=town_array.size() ; i>0 ; i-- )
+	{
+		if( town_array.is_deleted(i) )
+			continue;
+
+		Town* townPtr = town_array[i];
+
+		if( townPtr->nation_recno == nationRecno )
+			cap += townPtr->population;
+	}
+
+	return cap;
 }
 //----------- End of function ModFryhtan::nation_population_cap -----------//
 
@@ -780,3 +837,136 @@ void ModFryhtan::destroy_firm(Firm* firmPtr)
 	se_res.sound( firmPtr->center_x, firmPtr->center_y, 1, 'F', firmPtr->firm_id, "DEST" );
 }
 //----------- End of function ModFryhtan::destroy_firm -----------//
+
+
+//--------- Begin of function ModFryhtan::king_title ---------//
+//
+// 7kmod-fryhtan: the title of the king of a Fryhtan kingdom, "<king name> The
+// All High" (for example "Al The All High"). The unit name of the king is
+// still "All High <species>".
+//
+const char* ModFryhtan::king_title(int nationRecno)
+{
+	static char str[NationBase::NATION_NAME_LEN+40];
+
+	// TRANSLATORS: <King name> The All High, the king of a Fryhtan kingdom
+	snprintf( str, sizeof(str), _("%s The All High"), nation_array[nationRecno]->king_name() );
+
+	return str;
+}
+//----------- End of function ModFryhtan::king_title -----------//
+
+
+//--------- Begin of function ModFryhtan::is_enslaved_town ---------//
+//
+// 7kmod-fryhtan: the towns of a Fryhtan kingdom are enslaved towns.
+//
+int ModFryhtan::is_enslaved_town(Town* townPtr)
+{
+	return townPtr->nation_recno && is_fryhtan(townPtr->nation_recno);
+}
+//----------- End of function ModFryhtan::is_enslaved_town -----------//
+
+
+//--------- Begin of function ModFryhtan::lair_leadership ---------//
+//
+// The best leadership of the generals (or the king) in the lairs of the
+// given Fryhtan kingdom that have an active link with the town.
+//
+// return: <int> the leadership, 0 if there is no such lair
+//
+int ModFryhtan::lair_leadership(Town* townPtr, int nationRecno)
+{
+	int bestLeadership = 0;
+
+	for( int i=0 ; i<townPtr->linked_firm_count ; i++ )
+	{
+		if( townPtr->linked_firm_enable_array[i] != LINK_EE )
+			continue;
+
+		Firm* firmPtr = firm_array[ townPtr->linked_firm_array[i] ];
+
+		if( firmPtr->nation_recno != nationRecno || !firmPtr->overseer_recno || !is_lair(firmPtr) )
+			continue;
+
+		int leadership = unit_array[firmPtr->overseer_recno]->skill.get_skill(SKILL_LEADING);
+
+		if( leadership > bestLeadership )
+			bestLeadership = leadership;
+	}
+
+	return bestLeadership;
+}
+//----------- End of function ModFryhtan::lair_leadership -----------//
+
+
+//--------- Begin of function ModFryhtan::resistance_decrease ---------//
+//
+// How much the resistance of an independent town drops toward a Fryhtan
+// kingdom in one update (every 5 days). The lairs lower it toward
+// ENSLAVE_MIN_RESISTANCE, at the speed of a Fort (the gap / 30, at least 1)
+// times the leadership / 100 of the best general.
+//
+float ModFryhtan::resistance_decrease(Town* townPtr, int nationRecno, float resistance, float targetResistance)
+{
+	float decValue = (resistance - targetResistance) / 30;
+
+	decValue = MAX(1, decValue);
+
+	int leadership = MAX( 10, lair_leadership(townPtr, nationRecno) );
+
+	return decValue * leadership / 100;
+}
+//----------- End of function ModFryhtan::resistance_decrease -----------//
+
+
+//--------- Begin of function ModFryhtan::can_enslave_town ---------//
+//
+// A Fryhtan kingdom can only enslave a town that is linked to one of its
+// lairs.
+//
+int ModFryhtan::can_enslave_town(Town* townPtr, int nationRecno)
+{
+	return townPtr->has_linked_camp(nationRecno, 0);
+}
+//----------- End of function ModFryhtan::can_enslave_town -----------//
+
+
+//--------- Begin of function ModFryhtan::next_day_town ---------//
+//
+// Daily processing of an enslaved town.
+//
+// return: <int> 1 if the town is still enslaved, 0 if it has become independent
+//
+int ModFryhtan::next_day_town(Town* townPtr)
+{
+	int nationRecno = townPtr->nation_recno;
+
+	//---- if it has lost the link with all the lairs, it becomes independent ----//
+
+	if( !townPtr->has_linked_camp(nationRecno, 0) )
+	{
+		for( int i=0 ; i<MAX_RACE ; i++ )		// the kingdom has to fight it again to enslave it
+			townPtr->race_resistance_array[i][nationRecno-1] = (float) 100;
+
+		townPtr->set_nation(0);
+		return 0;
+	}
+
+	//------- the tribute, at the start of each month -------//
+
+	if( info.game_day == 1 )
+		nation_array[nationRecno]->add_income( INCOME_TAX, (float) town_tribute(townPtr) );
+
+	return 1;
+}
+//----------- End of function ModFryhtan::next_day_town -----------//
+
+
+//--------- Begin of function ModFryhtan::town_tribute ---------//
+//
+int ModFryhtan::town_tribute(Town* townPtr)
+{
+	return townPtr->population * TRIBUTE_PER_PERSON;
+}
+//----------- End of function ModFryhtan::town_tribute -----------//

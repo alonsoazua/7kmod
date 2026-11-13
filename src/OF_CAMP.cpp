@@ -548,6 +548,11 @@ void FirmCamp::disp_lair_train_button()
 
 		font_mid.center_put( button_lair_train.x1+8, button_lair_train.y1+10, button_lair_train.x2-12, button_lair_train.y2-15,
 									misc.format(count) );
+
+		//--- the progress of the Fryhtan being trained, a bar at the bottom of the button ---//
+
+		vga_front.indicator( button_lair_train.x1+6, button_lair_train.y2-11, button_lair_train.x2-9, button_lair_train.y2-7,
+									(float) lairPtr->train_days, (float) LAIR_TRAIN_DAYS, VGA_LIGHT_GREEN, V_BLACK );
 	}
 	else if( last_lair_train_count > 0 )
 	{
@@ -1310,7 +1315,12 @@ void FirmCamp::disp_camp_info(int dispY1, int refreshFlag)
 	if( overseerUnit->rank_id == RANK_KING )
 	{
 		if( refreshFlag == INFO_REPAINT )
-			font_san.put( x1, y, _("King") );
+		{
+			if( mod_fryhtan.is_fryhtan(nation_recno) )		// 7kmod-fryhtan: "<name> The All High"
+				font_san.put( x1, y, mod_fryhtan.king_title(nation_recno), 0, INFO_X2-2 );
+			else
+				font_san.put( x1, y, _("King") );
+		}
 
 		y+=14;
 	}
@@ -1378,14 +1388,20 @@ void FirmCamp::disp_absent_overseer(int unitRecno, int dispY1, int refreshFlag)
 
 		if( unitPtr->rank_id == RANK_KING )
 		{
-			font_san.put( x1, y, _("King") );
+			if( mod_fryhtan.is_fryhtan(nation_recno) )		// 7kmod-fryhtan: "<name> The All High"
+				font_san.put( x1, y, mod_fryhtan.king_title(nation_recno), 0, INFO_X2-2 );
+			else
+				font_san.put( x1, y, _("King") );
 			y+=14;
 		}
 
 		font_san.put( x1, y, unitPtr->unit_name(0), 0, INFO_X2-2 );
 		y+=14;
 
-		font_san.put( x1, y, _("Outside of the fort"), 0, INFO_X2-2 );
+		if( mod_fryhtan.is_lair(this) )		// 7kmod-fryhtan
+			font_san.put( x1, y, _("Outside of the lair"), 0, INFO_X2-2 );
+		else
+			font_san.put( x1, y, _("Outside of the fort"), 0, INFO_X2-2 );
 	}
 
 	if( mouse.in_area(x, dispY1+4, x+UNIT_LARGE_ICON_WIDTH+3, dispY1+4+UNIT_LARGE_ICON_HEIGHT+3) )

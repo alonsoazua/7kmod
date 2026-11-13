@@ -1798,6 +1798,11 @@ void Unit::disp_unit_profile(int dispY1, int refreshFlag)
 		}
 	}
 
+	//--- 7kmod-fryhtan: the king of a Fryhtan kingdom, "<name> The All High" over "All High <species>" ---//
+
+	if( !race_id && rank_id == RANK_KING && nation_recno && mod_fryhtan.is_fryhtan(nation_recno) )
+		str = mod_fryhtan.king_title(nation_recno);
+
 	//---------------- paint the panel --------------//
 
 	vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+44);

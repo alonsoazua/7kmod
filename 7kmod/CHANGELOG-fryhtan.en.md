@@ -22,7 +22,7 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
     selector **< Rokken >** (right of Zulu), with the 13 species. Below the name it shows
     how the kingdom will be called, for example "Fryhtan kingdom: Al Rokken Horde
     (Large: 2 population)". Choosing a race goes back to a human kingdom.
-  - The kingdom starts **with its king only**, an All High of the species with combat
+  - The kingdom starts with its king, an All High of the species with combat
     60 and leadership 60.
   - It's called "<name> <species> Horde", also in the news.
   - **No reputation** (it stays at 0) and its Fryhtans have **no loyalty**.
@@ -42,6 +42,24 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   - Fryhtans train their combat in the lair with the general and gain experience when
     fighting.
   - The lair has no Reward or Recruit; its Fryhtans show loyalty "N/A".
+- **Start:** the kingdom starts with the king as general of an already built lair and 4
+  soldiers of its species.
+- **The king** is called "<name> The All High" in his panel and in the lair's (for
+  example "Al The All High"), over "All High <species>".
+- **Progress bar** of the Fryhtan in training on the Train button. With the king out,
+  the lair says "Outside of the lair".
+- **Enslaved towns** (phase 4):
+  - A lair with a general linked to an independent town lowers its resistance down to
+    **45**; the general's leadership decides how fast. Taking it to 0 requires fighting.
+  - A town of a human kingdom is enslaved by fighting the loyalty of its people down to
+    0.
+  - In both cases a lair linked to the town is needed.
+  - The enslaved town doesn't recruit, train or pay taxes: it pays a **tribute of $5 per
+    person a month** ("Tribute from Enslaved Towns"). It produces food, grows, doesn't
+    rebel and its people don't leave.
+  - Each enslaved person raises the Fryhtan **population cap** by 1.
+  - If it loses the link with all the lairs, it becomes independent.
+  - Destroying or selling a lair no longer shows a human Fort.
 - **Economy** (phase 3):
   - **Spoils:** killing a human unit gives **$5 and 5 food** (soldier, villager or town
     defender), **$20 and 20** (general) or **$100 and 100** (king). In the Economy
