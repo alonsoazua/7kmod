@@ -37,6 +37,7 @@
 #include <OSE.h>
 #include <OREMOTE.h>
 #include <ModFryhtan.h>
+#include <OF_MONS.h>
 
 //------- define static vars -------//
 
@@ -468,6 +469,49 @@ int Firm::draw_detect_link_line(int actionDetect)
 		{
 			if( nation_recno == nation_array.player_recno )
 				world.zoom_matrix->put_bitmap_clip( townX-11, townY-11, bitmapPtr );
+		}
+	}
+
+	//--- 7kmod-fryhtan: the links between the player's lairs and the wild lairs (phase 5), animated if the lair has a general ---//
+
+	if( !actionDetect && nation_array.player_recno && mod_fryhtan.is_fryhtan(nation_array.player_recno) &&
+		 (firm_id == FIRM_MONSTER || (nation_recno == nation_array.player_recno && mod_fryhtan.is_lair(this))) )
+	{
+		for( i=firm_array.size() ; i>0 ; i-- )
+		{
+			if( firm_array.is_deleted(i) || i == firm_recno )
+				continue;
+
+			firmPtr = firm_array[i];
+
+			Firm* lairPtr;
+			Firm* wildPtr;
+
+			if( firm_id == FIRM_MONSTER )
+			{
+				if( firmPtr->nation_recno != nation_array.player_recno )
+					continue;
+				lairPtr = firmPtr;
+				wildPtr = this;
+			}
+			else
+			{
+				if( firmPtr->firm_id != FIRM_MONSTER )
+					continue;
+				lairPtr = this;
+				wildPtr = firmPtr;
+			}
+
+			if( !mod_fryhtan.is_linked_lair(lairPtr, (FirmMonster*) wildPtr) )
+				continue;
+
+			firmX = ( ZOOM_X1 + (firmPtr->loc_x1-world.zoom_matrix->top_x_loc) * ZOOM_LOC_WIDTH
+					  + ZOOM_X1 + (firmPtr->loc_x2-world.zoom_matrix->top_x_loc+1) * ZOOM_LOC_WIDTH ) / 2;
+
+			firmY = ( ZOOM_Y1 + (firmPtr->loc_y1-world.zoom_matrix->top_y_loc) * ZOOM_LOC_HEIGHT
+					  + ZOOM_Y1 + (firmPtr->loc_y2-world.zoom_matrix->top_y_loc+1) * ZOOM_LOC_HEIGHT ) / 2;
+
+			anim_line.draw_line(&vga_back, srcX, srcY, firmX, firmY, lairPtr->overseer_recno != 0 );
 		}
 	}
 

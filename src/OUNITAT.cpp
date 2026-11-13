@@ -1032,8 +1032,8 @@ int Unit::independent_nation_can_attack(short nationRecno)
 
 //######## begin trevor 22/8 ##########//
 		case UNIT_MODE_MONSTER:
-				if( unit_mode_para==0 )
-					return nationRecno; // attack anything that is not independent
+				if( unit_mode_para==0 )		// attack anything that is not independent
+					return nationRecno && !mod_fryhtan.is_fryhtan(nationRecno);		// 7kmod-fryhtan: except the Fryhtan kingdoms
 
 				firmMonster = (FirmMonster*) firm_array[unit_mode_para];
 

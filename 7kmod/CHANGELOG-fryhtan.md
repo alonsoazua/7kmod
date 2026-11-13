@@ -68,6 +68,11 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
   - Cada persona esclavizada sube en 1 el **tope de población** Fryhtan.
   - Si pierde el enlace con todas las guaridas, se vuelve independiente.
   - Al destruir o vender una guarida ya no aparece un fuerte humano.
+- **Diplomacia y Fryhtans salvajes** (fase 6):
+  - Con un reino Fryhtan no hay comercio, amistad, alianza, embargo, compra de comida ni
+    rendición. Sí hay guerra, cese al fuego, tributo, ayuda y tecnología.
+  - Los reinos de la IA no se rinden ante un reino Fryhtan.
+  - Los **Fryhtans salvajes no atacan** al reino Fryhtan (sí se defienden si los atacas).
 - **Pueblos esclavizados sin general:** si ninguna guarida enlazada tiene un Ordo o el
   rey adentro, el pueblo no paga tributo y su lealtad baja. Si llega al punto de
   rebelión, los rebeldes salen a atacar la guarida más cercana.
@@ -75,9 +80,13 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
   - Una guarida salvaje de cualquier especie a 8 casillas o menos de una guarida del
     reino muestra una **oferta**: un Ordo con el combate del mejor Ordo de la guarida y
     liderazgo 30–60, y 4–6 soldados (especie grande) o 6–8 (pequeña) con combate 20–40.
-  - El tributo es la suma de los combates × $2. Con **Pay Tribute** la guarida pasa al
-    reino con ese Ordo y esos soldados; los Fryhtans salvajes de adentro se van y los de
-    afuera siguen salvajes. Se puede pasar del tope de población.
+  - El tributo base es la suma de los combates × $10, y lo ajusta el liderazgo del mejor
+    general de tus guaridas enlazadas: ×1 con liderazgo 100 y ×3 con 30 o menos. Sin un
+    Ordo o el All High en una guarida enlazada no se puede pagar.
+  - Con **Pay Tribute** la guarida pasa al reino con ese Ordo y esos soldados; los
+    Fryhtans salvajes de adentro se van y los de afuera siguen salvajes. Se puede pasar
+    del tope de población.
+  - Una **línea de enlace** une tus guaridas con las guaridas salvajes enlazadas.
   - Cada guarida capturada entrena su propia especie.
 - **Economía** (fase 3):
   - **Botín:** matar una unidad humana da **$2 y 5 de comida** (soldado, aldeano o

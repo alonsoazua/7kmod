@@ -209,7 +209,15 @@ int FirmMonster::detect_info()
 	{
 		LairOffer* offerPtr = mod_fryhtan.get_offer(this);
 
-		if( offerPtr && (~nation_array)->cash < ModFryhtan::offer_cost(offerPtr) )
+		if( !offerPtr )
+			return 1;
+
+		int cost = mod_fryhtan.capture_cost(this, nation_array.player_recno, offerPtr);
+
+		if( !cost )		// the button is disabled then
+			return 1;
+
+		if( (~nation_array)->cash < cost )
 		{
 			box.msg( _("You don't have enough money to pay the tribute.") );
 			return 1;
@@ -297,17 +305,46 @@ void FirmMonster::disp_lair_offer(int dispY1, int refreshFlag, LairOffer* offerP
 		snprintf( soldierStr, sizeof(soldierStr), _("%d soldiers, combat %d-%d"), (int) offerPtr->soldier_count, minCombat, maxCombat );
 		font_san.put( x, y, soldierStr, 0, INFO_X2-4 );
 
-		//------ the tribute ------//
+		//------ the tribute, with the leadership of the best linked general ------//
 
-		char costStr[100];
+		int leadership = mod_fryhtan.capture_leadership(this, nation_array.player_recno);
+		char costStr[150];
 
-		snprintf( costStr, sizeof(costStr), _("Tribute: $%d"), ModFryhtan::offer_cost(offerPtr) );
-		font_san.put( x, y+18, costStr, 0, INFO_X2-4 );
+		if( leadership >= 0 )
+		{
+			snprintf( costStr, sizeof(costStr), _("Tribute: $%d (leadership %d)"),
+						 mod_fryhtan.capture_cost(this, nation_array.player_recno, offerPtr), leadership );
+			font_san.put( x, y+18, costStr, 0, INFO_X2-4 );
 
-		font_san.put_paragraph( x, y+36, INFO_X2-4, y+95,
-			_("The wild Fryhtans inside will leave. The ones outside stay wild.") );
+			font_san.put_paragraph( x, y+36, INFO_X2-4, y+95,
+				_("The wild Fryhtans inside will leave. The ones outside stay wild.") );
+		}
+		else
+		{
+			snprintf( costStr, sizeof(costStr), _("Base tribute: $%d"), ModFryhtan::offer_cost(offerPtr) );
+			font_san.put( x, y+18, costStr, 0, INFO_X2-4 );
 
-		button_pay_tribute.paint_text( INFO_X1+40, panelY2-30, INFO_X2-40, panelY2-6, _("Pay Tribute") );
+			font_san.put_paragraph( x, y+36, INFO_X2-4, y+95,
+				_("An Ordo or the All High must be in a linked lair to pay the tribute.") );
+		}
+
+		if( leadership >= 0 )		// without an Ordo or the king in a linked lair there is no button, the text explains why
+			button_pay_tribute.paint_text( INFO_X1+40, panelY2-30, INFO_X2-40, panelY2-6, _("Pay Tribute") );
+		else
+			button_pay_tribute.reset();
+	}
+
+	//--- the general may enter or leave a linked lair while the panel is open ---//
+
+	static int lastHasGeneral;
+	int hasGeneral = mod_fryhtan.capture_leadership(this, nation_array.player_recno) >= 0;
+
+	if( refreshFlag == INFO_REPAINT )
+		lastHasGeneral = hasGeneral;
+	else if( hasGeneral != lastHasGeneral )
+	{
+		lastHasGeneral = hasGeneral;
+		info.disp();
 	}
 }
 //----------- End of function FirmMonster::disp_lair_offer -----------//
@@ -1194,7 +1231,7 @@ int FirmMonster::think_attack_neighbor()
 		if(locPtr->is_firm())
 		{
 			Firm *firmPtr = firm_array[locPtr->firm_recno()];
-			if(firmPtr->nation_recno)
+			if(firmPtr->nation_recno && !mod_fryhtan.is_fryhtan(firmPtr->nation_recno))		// 7kmod-fryhtan
 			{
 				targetNation = firmPtr->nation_recno;
 				attackFlag = 1;
@@ -1206,7 +1243,7 @@ int FirmMonster::think_attack_neighbor()
 		else if(locPtr->is_town())
 		{
 			Town *townPtr = town_array[locPtr->town_recno()];
-			if(townPtr->nation_recno)
+			if(townPtr->nation_recno && !mod_fryhtan.is_fryhtan(townPtr->nation_recno))		// 7kmod-fryhtan
 			{
 				targetNation = townPtr->nation_recno;
 				attackFlag = 1;
@@ -1343,7 +1380,8 @@ int FirmMonster::think_attack_human()
 
 		firmPtr = firm_array[firmRecno];
 
-		if( firmPtr->region_id == region_id )
+		if( firmPtr->region_id == region_id &&
+			 !mod_fryhtan.is_fryhtan(firmPtr->nation_recno) )		// 7kmod-fryhtan: the wild Fryhtans don't attack the Fryhtan kingdoms
 		{
 			targetXLoc = firmPtr->loc_x1;
 			targetYLoc = firmPtr->loc_y1;
@@ -1360,7 +1398,8 @@ int FirmMonster::think_attack_human()
 
 		townPtr = town_array[townRecno];
 
-		if( townPtr->nation_recno && townPtr->region_id == region_id )
+		if( townPtr->nation_recno && townPtr->region_id == region_id &&
+			 !mod_fryhtan.is_fryhtan(townPtr->nation_recno) )		// 7kmod-fryhtan
 		{
 			targetXLoc = townPtr->loc_x1;
 			targetYLoc = townPtr->loc_y1;

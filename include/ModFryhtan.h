@@ -101,7 +101,9 @@ enum { OFFER_MAX_SOLDIER = 8 };
 
 enum { OFFER_ORDO_MIN_LEADERSHIP = 30, OFFER_ORDO_MAX_LEADERSHIP = 60,
 		 OFFER_SOLDIER_MIN_COMBAT  = 20, OFFER_SOLDIER_MAX_COMBAT  = 40,
-		 OFFER_COST_PER_COMBAT	  = 2,		// the tribute: the sum of the combat levels x 2
+		 OFFER_COST_PER_COMBAT	  = 10,		// the base tribute: the sum of the combat levels x 10
+		 OFFER_MIN_LEADERSHIP	  = 30,		// the tribute is x3 with this leadership of the best linked general...
+		 OFFER_MAX_LEADERSHIP	  = 100,		// ...and x1 with this one
 		 LAIR_CAPTURE_DISTANCE	  = 8 };		// a wild lair is linked to a lair of the kingdom within this distance (as a town to a Fort)
 
 struct LairOffer
@@ -175,7 +177,10 @@ public:
 	LairOffer*	get_offer(FirmMonster* firmPtr);		// NULL if there is no offer
 	LairOffer*	think_offer(FirmMonster* firmPtr, int nationRecno);		// create the offer if the lair is linked
 	void	del_offer(int firmRecno);
-	static int	offer_cost(LairOffer* offerPtr);
+	static int	offer_cost(LairOffer* offerPtr);		// the base cost
+	int	is_linked_lair(Firm* lairPtr, FirmMonster* monsterFirm);
+	int	capture_leadership(FirmMonster* monsterFirm, int nationRecno);		// -1 if no Ordo or king is in a linked lair
+	int	capture_cost(FirmMonster* monsterFirm, int nationRecno, LairOffer* offerPtr);
 	int	pay_lair_tribute(int firmRecno, int nationRecno);
 
 	//------ enslaved towns (phase 4) ------//

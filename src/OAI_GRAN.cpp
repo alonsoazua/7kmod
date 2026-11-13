@@ -28,6 +28,7 @@
 #include <OF_CAMP.h>
 #include <ONATION.h>
 #include <ConfigAdv.h>
+#include <ModFryhtan.h>
 
 
 //----- Begin of function Nation::think_grand_plan -----//
@@ -335,6 +336,9 @@ int Nation::think_surrender()
 			continue;
 
 		if( !get_relation(i)->has_contact )		// don't surrender to a nation without contact
+			continue;
+
+		if( mod_fryhtan.is_fryhtan(i) )		// 7kmod-fryhtan: never surrender to a Fryhtan kingdom
 			continue;
 
 		nationPtr = nation_array[i];

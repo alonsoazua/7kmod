@@ -1819,6 +1819,9 @@ int NationBase::has_people()
 //
 void NationBase::surrender(int toNationRecno)
 {
+	if( mod_fryhtan.is_fryhtan(toNationRecno) || mod_fryhtan.is_fryhtan(nation_recno) )		// 7kmod-fryhtan: no surrender to or of a Fryhtan kingdom
+		return;
+
 	news_array.nation_surrender(nation_recno, toNationRecno);
 
 	//---- the king demote himself to General first ----//

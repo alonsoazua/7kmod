@@ -1352,19 +1352,85 @@ int ModFryhtan::is_linked_wild_lair(FirmMonster* monsterFirm, int nationRecno)
 
 		Firm* firmPtr = firm_array[i];
 
-		if( firmPtr->nation_recno != nationRecno || firmPtr->under_construction || !is_lair(firmPtr) )
-			continue;
-
-		if( misc.rects_distance( monsterFirm->loc_x1, monsterFirm->loc_y1, monsterFirm->loc_x2, monsterFirm->loc_y2,
-										 firmPtr->loc_x1, firmPtr->loc_y1, firmPtr->loc_x2, firmPtr->loc_y2 ) <= LAIR_CAPTURE_DISTANCE )
-		{
+		if( firmPtr->nation_recno == nationRecno && is_linked_lair(firmPtr, monsterFirm) )
 			return 1;
-		}
 	}
 
 	return 0;
 }
 //----------- End of function ModFryhtan::is_linked_wild_lair -----------//
+
+
+//--------- Begin of function ModFryhtan::is_linked_lair ---------//
+//
+// Whether a finished lair of a Fryhtan kingdom is linked to a wild lair:
+// within LAIR_CAPTURE_DISTANCE of it.
+//
+int ModFryhtan::is_linked_lair(Firm* lairPtr, FirmMonster* monsterFirm)
+{
+	if( lairPtr->under_construction || !lairPtr->nation_recno || !is_lair(lairPtr) || monsterFirm->nation_recno )
+		return 0;
+
+	return misc.rects_distance( monsterFirm->loc_x1, monsterFirm->loc_y1, monsterFirm->loc_x2, monsterFirm->loc_y2,
+										 lairPtr->loc_x1, lairPtr->loc_y1, lairPtr->loc_x2, lairPtr->loc_y2 ) <= LAIR_CAPTURE_DISTANCE;
+}
+//----------- End of function ModFryhtan::is_linked_lair -----------//
+
+
+//--------- Begin of function ModFryhtan::capture_leadership ---------//
+//
+// The best leadership of the Ordos (or the king) in the lairs of the kingdom
+// linked to a wild lair.
+//
+// return: <int> the leadership, -1 if no Ordo or king is in a linked lair
+//
+int ModFryhtan::capture_leadership(FirmMonster* monsterFirm, int nationRecno)
+{
+	int bestLeadership = -1;
+
+	for( int i=firm_array.size() ; i>0 ; i-- )
+	{
+		if( firm_array.is_deleted(i) )
+			continue;
+
+		Firm* firmPtr = firm_array[i];
+
+		if( firmPtr->nation_recno != nationRecno || !firmPtr->overseer_recno || !is_linked_lair(firmPtr, monsterFirm) )
+			continue;
+
+		int leadership = unit_array[firmPtr->overseer_recno]->skill.get_skill(SKILL_LEADING);
+
+		if( leadership > bestLeadership )
+			bestLeadership = leadership;
+	}
+
+	return bestLeadership;
+}
+//----------- End of function ModFryhtan::capture_leadership -----------//
+
+
+//--------- Begin of function ModFryhtan::capture_cost ---------//
+//
+// The tribute for capturing a wild lair: the base cost (the sum of the combat
+// levels x OFFER_COST_PER_COMBAT) with the leadership of the best linked
+// general: x1 with leadership 100, x3 with 30 or less, gradual in between.
+//
+// return: <int> the cost, 0 if no Ordo or king is in a linked lair (it can't be captured)
+//
+int ModFryhtan::capture_cost(FirmMonster* monsterFirm, int nationRecno, LairOffer* offerPtr)
+{
+	int leadership = capture_leadership(monsterFirm, nationRecno);
+
+	if( leadership < 0 )
+		return 0;
+
+	leadership = MAX( OFFER_MIN_LEADERSHIP, MIN( OFFER_MAX_LEADERSHIP, leadership ) );
+
+	int range = OFFER_MAX_LEADERSHIP - OFFER_MIN_LEADERSHIP;		// 70
+
+	return offer_cost(offerPtr) * ( range + 2 * (OFFER_MAX_LEADERSHIP-leadership) ) / range;
+}
+//----------- End of function ModFryhtan::capture_cost -----------//
 
 
 //--------- Begin of function ModFryhtan::get_offer ---------//
@@ -1511,9 +1577,9 @@ int ModFryhtan::pay_lair_tribute(int firmRecno, int nationRecno)
 		return 0;
 
 	Nation* nationPtr = nation_array[nationRecno];
-	int cost = offer_cost(offerPtr);
+	int cost = capture_cost(monsterFirm, nationRecno, offerPtr);
 
-	if( nationPtr->cash < cost )
+	if( !cost || nationPtr->cash < cost )		// no Ordo or king in a linked lair, or not enough money
 		return 0;
 
 	LairOffer offer = *offerPtr;		// it is deleted with the wild lair

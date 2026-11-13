@@ -30,6 +30,7 @@
 #include <OU_MONS.h>
 #include "gettext.h"
 #include <ConfigAdv.h>
+#include <ModFryhtan.h>
 
 static char random_race();
 
@@ -347,6 +348,9 @@ int UnitMonster::random_attack()
 			if( unit_array.is_deleted(unitRecno) )
 				continue;
 
+			if( mod_fryhtan.is_fryhtan(unit_array[unitRecno]->nation_recno) )		// 7kmod-fryhtan: the wild Fryhtans don't attack the Fryhtan kingdoms
+				continue;
+
 			rc = 1;
 		}
 
@@ -359,6 +363,9 @@ int UnitMonster::random_attack()
 			if( firm_array.is_deleted(firmRecno) )
 				continue;
 
+			if( mod_fryhtan.is_fryhtan(firm_array[firmRecno]->nation_recno) )		// 7kmod-fryhtan
+				continue;
+
 			rc = 1;
 		}
 
@@ -369,6 +376,9 @@ int UnitMonster::random_attack()
 			int townRecno = locPtr->town_recno();
 
 			if( town_array.is_deleted(townRecno) )
+				continue;
+
+			if( mod_fryhtan.is_fryhtan(town_array[townRecno]->nation_recno) )		// 7kmod-fryhtan
 				continue;
 
 			rc = 1;

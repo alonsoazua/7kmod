@@ -34,6 +34,7 @@
 #include <OREMOTE.h>
 // #### begin Gilbert 9/10 ######//
 #include <OSE.h>
+#include <ModFryhtan.h>
 // #### end Gilbert 9/10 ######//
 #include "gettext.h"
 
@@ -519,6 +520,23 @@ int TalkRes::can_send_msg(int toNationRecno, int fromNationRecno, int talkId)
 
 	NationRelation *nationRelation = fromNation->get_relation(toNationRecno);
 	int relationStatus = nationRelation->status;
+
+	//--- 7kmod-fryhtan: no trade, friendship, alliance, food trade or surrender with a Fryhtan kingdom ---//
+
+	if( mod_fryhtan.is_fryhtan(toNationRecno) || mod_fryhtan.is_fryhtan(fromNationRecno) )
+	{
+		switch( talkId )
+		{
+			case TALK_PROPOSE_TRADE_TREATY:
+			case TALK_PROPOSE_FRIENDLY_TREATY:
+			case TALK_PROPOSE_ALLIANCE_TREATY:
+			case TALK_REQUEST_TRADE_EMBARGO:
+			case TALK_REQUEST_BUY_FOOD:
+			case TALK_REQUEST_SURRENDER:
+			case TALK_SURRENDER:
+				return 0;
+		}
+	}
 
 	switch( talkId )
 	{

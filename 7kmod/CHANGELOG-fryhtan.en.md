@@ -68,6 +68,12 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   - Each enslaved person raises the Fryhtan **population cap** by 1.
   - If it loses the link with all the lairs, it becomes independent.
   - Destroying or selling a lair no longer shows a human Fort.
+- **Diplomacy and wild Fryhtans** (phase 6):
+  - With a Fryhtan kingdom there is no trade, friendship, alliance, embargo, food
+    purchase or surrender. War, ceasefire, tribute, aid and technology are allowed.
+  - AI kingdoms don't surrender to a Fryhtan kingdom.
+  - **Wild Fryhtans don't attack** the Fryhtan kingdom (they do defend if you attack
+    them).
 - **Enslaved towns without a general:** if no linked lair has an Ordo or the king
   inside, the town pays no tribute and its loyalty drops. If it reaches the rebellion
   point, the rebels go out to attack the nearest lair.
@@ -75,9 +81,13 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   - A wild lair of any species within 8 tiles of a lair of the kingdom shows an
     **offer**: an Ordo with the combat of the lair's best Ordo and leadership 30–60, and
     4–6 soldiers (large species) or 6–8 (small) with combat 20–40.
-  - The tribute is the sum of the combat levels × $2. With **Pay Tribute** the lair
-    passes to the kingdom with that Ordo and those soldiers; the wild Fryhtans inside
-    leave and the ones outside stay wild. The population cap can be exceeded.
+  - The base tribute is the sum of the combat levels × $10, adjusted by the leadership
+    of the best general of your linked lairs: ×1 with leadership 100 and ×3 with 30 or
+    less. Without an Ordo or the All High in a linked lair it can't be paid.
+  - With **Pay Tribute** the lair passes to the kingdom with that Ordo and those
+    soldiers; the wild Fryhtans inside leave and the ones outside stay wild. The
+    population cap can be exceeded.
+  - A **link line** joins your lairs with the linked wild lairs.
   - Each captured lair trains its own species.
 - **Economy** (phase 3):
   - **Spoils:** killing a human unit gives **$2 and 5 food** (soldier, villager or town

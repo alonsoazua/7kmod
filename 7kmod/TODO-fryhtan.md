@@ -480,28 +480,63 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
   construir junto a una guarida salvaje es peligroso hasta entonces.
 
 ### Ajustes anotados (después de la fase 5)
-- [ ] **Tributo de captura ×5:** el costo de una guarida salvaje pasa de la suma de los
+- [x] **Tributo de captura ×5:** el costo de una guarida salvaje pasa de la suma de los
       combates × $2 a la suma × **$10**. Por ejemplo, la oferta Rattus de la prueba
       (Ordo 63 + soldados 178) costaría $2,410 en lugar de $482.
-- [ ] **Línea de enlace:** dibujar una línea entre cada guarida del jugador y las
+- [x] **Línea de enlace:** dibujar una línea entre cada guarida del jugador y las
       guaridas salvajes enlazadas a ella (a 8 casillas o menos), como la línea punteada
       de un fuerte con un pueblo. Se ve al seleccionar la guarida del jugador o la
       guarida salvaje.
-- [ ] **Hace falta un general:** solo se puede capturar (Pay Tribute) si alguna guarida
+- [x] **Hace falta un general:** solo se puede capturar (Pay Tribute) si alguna guarida
       del jugador enlazada a la guarida salvaje tiene un Ordo o el rey adentro. Sin
       general, la oferta se ve pero el botón está desactivado y el panel lo explica.
-- [ ] **El liderazgo cambia el costo:** se usa el general (Ordo o rey) con más liderazgo
+- [x] **El liderazgo cambia el costo:** se usa el general (Ordo o rey) con más liderazgo
       de las guaridas enlazadas. Con liderazgo 100 se paga el costo base (suma de los
       combates × $10); con 30, el triple; en medio, gradual:
       costo = base × (1 + 2 × (100 − liderazgo) / 70). Por ejemplo, ×2 con liderazgo 65
       y ×2.14 con el rey al inicio (liderazgo 60). Con liderazgo menor a 30 se queda en ×3. El
       panel muestra el costo ya con el liderazgo.
 
+#### Cómo quedaron
+
+- **Costo:** `ModFryhtan::capture_cost()` = suma de combates × $10 × (70 + 2 × (100 −
+  liderazgo)) / 70, con el liderazgo entre 30 y 100. El panel muestra "Tribute: $X
+  (leadership Y)". Sin general muestra "Base tribute: $X", el aviso "An Ordo or the All
+  High must be in a linked lair to pay the tribute." y no hay botón (el estilo de botón
+  desactivado del juego casi no se distingue).
+- **Línea:** se dibuja al seleccionar tu guarida (hacia las guaridas salvajes enlazadas)
+  o una guarida salvaje (hacia tus guaridas enlazadas). Es animada si tu guarida tiene
+  general, y fija si no, como el enlace de un fuerte con un pueblo.
+- **Probado:** con el Ordo afuera, aviso y sin botón; con el Ordo adentro (liderazgo 30),
+  tributo de $5,940 por una oferta Droog de base $1,980 (×3), pago y captura.
+
 ### Fase 6: diplomacia y Fryhtans salvajes
-- [ ] Sin comercio, amistad ni alianza con un reino Fryhtan (jugador e IA).
-- [ ] Los reinos de la IA no se pueden rendir a un reino Fryhtan (ni ofrecer la
+- [x] Sin comercio, amistad ni alianza con un reino Fryhtan (jugador e IA).
+- [x] Los reinos de la IA no se pueden rendir a un reino Fryhtan (ni ofrecer la
       rendición ni aceptarla).
-- [ ] Los Fryhtans salvajes no atacan al reino Fryhtan.
+- [x] Los Fryhtans salvajes no atacan al reino Fryhtan.
+
+#### Cómo quedó la fase 6
+
+- **Diplomacia** (`TalkRes::can_send_msg`): entre un reino Fryhtan y cualquier otro no
+  se pueden enviar (ni el jugador ni la IA) las propuestas de comercio, amistad, alianza,
+  embargo comercial, compra de comida ni rendición (pedirla u ofrecerla). Quedan
+  declarar la guerra, pedir el cese al fuego, ofrecer o exigir tributo y ayuda, y
+  tecnología. En el reporte de reinos, con la IA neutral solo aparecen "Declare war",
+  "Offer to pay tribute" y "Demand tribute". También se quitó comprar comida, que en la
+  fase 2 se había visto que la IA ofrecía.
+- **Rendición:** la IA no elige a un reino Fryhtan al pensar en rendirse
+  (`Nation::think_surrender`), y `NationBase::surrender()` no hace nada si alguno de los
+  dos reinos es Fryhtan (cubre también al espía que hereda el trono).
+- **Fryhtans salvajes:** las guaridas no eligen como objetivo edificios ni pueblos de
+  un reino Fryhtan (`FirmMonster::think_attack_human`, `think_attack_neighbor`), las
+  unidades no los atacan al buscar objetivos (`UnitMonster::random_attack`) ni al
+  estar paradas (`Unit::independent_nation_can_attack`). Los salvajes sí se defienden
+  si el reino los ataca, porque eso marca al reino como hostil para esa guarida.
+- **Probado:** el menú de diplomacia y 19 años a velocidad máxima: ningún Fryhtan
+  salvaje atacó al reino (comprobado con una traza temporal de los ataques). El reino
+  de la prueba, que no hizo nada, fue destruido por un reino humano de la IA con
+  soldados y armas de asedio, lo que es normal.
 
 ### Fase 7: cierre
 - [ ] Reportes (F1–F8) con sentido para un reino Fryhtan.
