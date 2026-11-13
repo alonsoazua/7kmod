@@ -385,6 +385,7 @@ public:
 	//------ 7kmod: recruiting and training from linked towns ------//
 
 	char	auto_recruit_flag;		// 7kmod-gameplay: whether the player's mine, factory or tower of science recruits workers automatically
+	enum { AUTO_RECRUIT_DEFAULT = 0 };	// 7kmod-gameplay: the player's firms don't recruit automatically by default (7kmod: 1, like the original game)
 
 	int	is_recruit_firm();				// whether units can be recruited and trained for this firm from linked towns
 	int	recruit_train_skill_id();		// the skill trained for this firm

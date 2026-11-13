@@ -924,6 +924,9 @@ int Firm::read_file(File* filePtr)
 		return 0;
 	read_record(&gf_rec.firm);
 
+	if( game_file_array.load_file_game_version < GAME_VERSION_7KMOD_AUTO_RECRUIT )		// 7kmod: older saved games use the default
+		auto_recruit_flag = AUTO_RECRUIT_DEFAULT;
+
 	if( !game_file_array.same_version && firm_id > FIRM_BASE )
 		firm_build_id += MAX_RACE - VERSION_1_MAX_RACE;
 
@@ -1071,6 +1074,7 @@ int FirmFactory::read_derived_file(File* filePtr)
 //--------- Begin of function FirmHarbor::write_derived_file ---------//
 int FirmHarbor::write_derived_file(File *filePtr)
 {
+	memset(&gf_rec.firm_harbor, 0, sizeof(FirmHarborGF));		// 7kmod: the harbor trade fields of 7kmod-gameplay stay empty in 7kmod
 	write_derived_record(&gf_rec.firm_harbor);
 	if( !filePtr->file_write(&gf_rec, sizeof(FirmHarborGF)) )
 		return 0;

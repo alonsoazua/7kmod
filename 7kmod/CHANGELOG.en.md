@@ -25,6 +25,26 @@ which includes everything in `7kmod` and documents its own changes in
 
 ## [Unreleased]
 
+### Added
+- **Recruit and train from the production buildings** (brought from `7kmod-gameplay`):
+  mines, factories, towers of science and war factories have the **Recruit** button
+  (Train icon), like the fort. It opens the linked town with Recruit, which puts the
+  unit directly into the building, and Train, which trains the building's skill
+  (mining, manufacturing or research) and the unit goes in by itself when it's done.
+  "Back to <building>" is shortened to "Back" if it doesn't fit.
+- **Auto recruit button** (defense icon) in those buildings of the player, to turn it on
+  or off. **It's on by default**, like in the original game (in `7kmod-gameplay` it's
+  off by default).
+- **Button layout:** in the tower of science and the war factory the buttons moved up
+  a little and the spy button goes in a second row; the factory uses pages with arrows,
+  like the fort.
+
+### Compatibility
+- **Saved games:** version 293 (the same numbering as `7kmod-gameplay`: 291 and 292 are
+  gameplay's harbor trade; 7kmod saves them empty so that gameplay can load its saved
+  games). Older saved games load with the auto recruit on.
+- **Multiplayer:** the button uses the new network message `MSG_FIRM_TOGGLE_AUTO_RECRUIT`.
+
 ---
 
 ## [0.3.0] - 2026-11-06

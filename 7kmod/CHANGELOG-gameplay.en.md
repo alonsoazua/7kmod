@@ -36,6 +36,8 @@ the game plays. This branch includes everything in the `7kmod` branch, documente
 ### Compatibility
 - **Saved games:** version 310. It loads gameplay 0.2.0 saves; gameplay 0.2.0 can't
   load the new ones. The folder is still `7kaa-mod`.
+- **Recruit and auto recruit** are now also in `7kmod` (on by default there); in
+  gameplay they stay off by default. Gameplay loads 7kmod saved games of version 293.
 
 ---
 

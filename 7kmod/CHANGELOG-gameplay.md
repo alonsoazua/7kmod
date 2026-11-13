@@ -35,6 +35,9 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 ### Compatibilidad
 - **Partidas guardadas:** versión 310. Carga las partidas de gameplay 0.2.0; gameplay
   0.2.0 no carga las partidas nuevas. La carpeta sigue siendo `7kaa-mod`.
+- **Recruit y reclutamiento automático** ahora también están en `7kmod` (allí activado
+  por defecto); en gameplay sigue desactivado por defecto. Gameplay carga las partidas
+  de 7kmod de la versión 293.
 
 ---
 

@@ -83,7 +83,7 @@ static int remove_firm = 0; // true only when the firm is to be removed from the
 //
 Firm::Firm()
 {
-    auto_recruit_flag = 0;		// 7kmod-gameplay
+    auto_recruit_flag = AUTO_RECRUIT_DEFAULT;		// 7kmod-gameplay
     firm_id = 0;
     firm_build_id = 0;
     firm_recno = 0;

@@ -24,6 +24,27 @@ escenarios (desde la 0.2.0) está descrito en `TODO-editor.md`.
 
 ## [Sin publicar]
 
+### Agregado
+- **Reclutar y entrenar desde los edificios de producción** (traído de `7kmod-gameplay`):
+  minas, fábricas, torres de ciencia y fábricas de guerra tienen el botón **Recruit**
+  (icono de Train), igual que el fuerte. Abre el pueblo enlazado con Recruit, que mete la
+  unidad directo al edificio, y Train, que entrena la profesión del edificio (minería,
+  manufactura o investigación) y la unidad entra sola al terminar. "Back to <edificio>"
+  se acorta a "Back" si no cabe.
+- **Botón de reclutamiento automático** (icono de defensa) en esos edificios del
+  jugador, para activarlo o desactivarlo. **Está activado por defecto**, como en el juego
+  original (en `7kmod-gameplay` está desactivado por defecto).
+- **Acomodo de botones:** en la torre de ciencia y la fábrica de guerra los botones
+  subieron un poco y el de espías va en una segunda fila; la fábrica usa páginas con
+  flechas, como el fuerte.
+
+### Compatibilidad
+- **Partidas guardadas:** versión 293 (la misma numeración que `7kmod-gameplay`: 291 y
+  292 son del comercio del puerto de gameplay; 7kmod las guarda vacías para que
+  gameplay pueda cargar sus partidas). Las partidas anteriores se cargan con el
+  reclutamiento automático activado.
+- **Multijugador:** el botón usa el mensaje de red nuevo `MSG_FIRM_TOGGLE_AUTO_RECRUIT`.
+
 ---
 
 ## [0.3.0] - 2026-11-06
