@@ -359,8 +359,8 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
 ### Ajustes anotados (después de la fase 4)
 - [ ] **Íconos de rango:** mostrar sobre el rey y los generales de un reino Fryhtan el
       ícono de rey y de general que tienen las unidades humanas.
-- [ ] **Recompensa por matar:** bajarla a **$2 y 2 de comida** por soldado, aldeano o
-      defensor y **$10 y 10** por general (el rey sigue en $100 y 100).
+- [ ] **Recompensa por matar:** bajar solo el oro: **$2** por soldado, aldeano o defensor
+      y **$10** por general. La comida no cambia (5 y 20) y el rey sigue en $100 y 100.
 - [ ] **Liderazgo y tributo:** el liderazgo del mejor general o rey de una guarida
       enlazada al pueblo esclavizado sube el tributo: tributo = $5 × personas × (1 +
       liderazgo / 100). Con liderazgo 100 se cobra el doble ($10 por persona). El texto
@@ -368,9 +368,19 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
 - [ ] **Grant a pueblos independientes:** quitar el botón para los reinos Fryhtan (hoy
       aparece y no debería).
 - [ ] **Nombres de Ordos:** los generales Fryhtan (Ordos) del reino reciben un nombre
-      propio de una lista (`7kmod/FRYHTAN_NAMES.md`), por ejemplo "Gharvok". El rey sigue
-      con el nombre del jugador. Falta decidir cómo se muestra (por ejemplo "Gharvok" en
-      la primera línea y "Wyrm Ordo" en la segunda, como el rey).
+      propio al azar de la lista `7kmod/FRYHTAN_NAMES.md` (65 nombres, aprobada), sin
+      repetir uno en uso en el reino. Se muestra como el rey: el nombre en la primera
+      línea ("Gharvok") y "Wyrm Ordo" en la segunda. El rey sigue con el nombre del
+      jugador.
+- [ ] **Train Ordo en lugar de Promote:** ya no se pueden ascender soldados a general.
+      La guarida tiene un botón nuevo para entrenar un Ordo de su especie:
+      - tarda el doble que un soldado (**40 días**);
+      - sale con **liderazgo 30 y combate 30**;
+      - aparece **afuera** de la guarida (no entra como soldado);
+      - comparte la cola con Train y cuenta en el tope de población igual que un
+        soldado de su tamaño.
+      Por confirmar: costo en comida (propuesta: el doble, **40**), y si se quita también
+      Demote (propuesta: sí, un Ordo no se puede degradar).
 
 ### Fase 5: capturar guaridas independientes
 - [ ] Enlace guarida propia–guarida independiente, de cualquier especie.
