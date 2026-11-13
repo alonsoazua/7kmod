@@ -683,3 +683,14 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       - Idea para implementarlo sin datos nuevos en la partida guardada: al esclavizar,
         poner `last_rebel_date` 2 meses en el pasado; como el juego no deja rebelarse
         dos veces en menos de 3 meses (`REBEL_INTERVAL_MONTH`), eso da exactamente un mes.
+
+- [ ] **Empezar con un pueblo esclavizado de 20 personas.** Hoy el reino Fryhtan empieza
+      solo con su guarida (el All High y 4 soldados adentro). Con el cambio, también
+      empieza con un pueblo esclavizado de 20 personas, ya enlazado a la guarida inicial
+      (cerca de ella, a distancia de enlace), como lo haría un reino humano con su pueblo
+      inicial.
+      - Con el rey en la guarida hay general al mando, así que el pueblo paga tributo
+        desde el primer mes ($5 × 20 = $100) y su lealtad va hacia 50.
+      - El tope de población sube de 18 a 38 (18 + la gente esclavizada).
+      - Falta decidir la raza de la gente del pueblo (por ejemplo, una al azar, o mezcla
+        de dos).
