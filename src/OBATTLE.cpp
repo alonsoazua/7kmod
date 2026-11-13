@@ -49,6 +49,8 @@
 #include <CmdLine.h>
 #include <FilePath.h>
 #include <ConfigAdv.h>
+#include <ModFryhtan.h>
+#include <ModEditor.h>
 
 //---------- define static functions -------------//
 
@@ -127,6 +129,18 @@ void Battle::run(NewNationPara *mpGame, int mpPlayerCount)
 								config.player_nation_color );
 
 		nation_array.set_human_name( nationRecno, config.player_name );
+
+		//--- 7kmod-fryhtan: the player's kingdom is a Fryhtan kingdom ---//
+		//
+		// Single player games only (not in the scenario editor). The nation keeps
+		// the chosen race as an internal race id, it is never shown.
+
+		if( config.fryhtan_monster_id > 0 && config.fryhtan_monster_id <= monster_res.monster_count &&
+			 !mod_editor.editing_flag )
+		{
+			mod_fryhtan.set_nation_monster( nationRecno, config.fryhtan_monster_id );
+			nation_array[nationRecno]->reputation = (float) 0;
+		}
 	}
 
 	//--------- create ai nations --------//
@@ -167,6 +181,15 @@ void Battle::run(NewNationPara *mpGame, int mpPlayerCount)
 			world.go_loc( townPtr->loc_x1, townPtr->loc_y1 );
 			break;
 		}
+	}
+
+	//--- 7kmod-fryhtan: a Fryhtan kingdom has no town, center the view on its king ---//
+
+	if( nation_array.player_recno && mod_fryhtan.is_fryhtan(nation_array.player_recno) &&
+		 nation_array[nation_array.player_recno]->king_unit_recno )
+	{
+		Unit* kingUnit = unit_array[ nation_array[nation_array.player_recno]->king_unit_recno ];
+		world.go_loc( kingUnit->next_x_loc(), kingUnit->next_y_loc() );
 	}
 
 	//---- reset config parameter ----//
@@ -442,6 +465,19 @@ void Battle::create_pregame_object()
 			continue;
 
 		nationPtr = nation_array[nationRecno];
+
+		//--- 7kmod-fryhtan: a Fryhtan kingdom starts with its king only ---//
+
+		if( mod_fryhtan.is_fryhtan(nationRecno) )
+		{
+			if( !mod_fryhtan.create_start_king(nationRecno) )
+			{
+				noSpaceFlag = 1;
+				break;
+			}
+
+			continue;
+		}
 
 		//--------- create town -----------//
 

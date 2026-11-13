@@ -1,0 +1,79 @@
+/*
+ * Seven Kingdoms: Ancient Adversaries
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+//Filename    : ModFryhtan.h
+//Description : 7kmod-fryhtan: Fryhtan kingdoms. The player can play as a
+//              kingdom of Fryhtans. See 7kmod/TODO-fryhtan.md.
+
+#ifndef __MODFRYHTAN_H
+#define __MODFRYHTAN_H
+
+#include <stdint.h>
+#include <GAMEDEF.h>
+
+class File;
+
+//------- Define constant -------//
+
+enum { FRYHTAN_LARGE_MIN_LEVEL = 6 };		// monster level from which a Fryhtan is large (2 population)
+enum { FRYHTAN_BASE_POPULATION = 18 };
+enum { FRYHTAN_SPECIES_COUNT = 13 };			// no. of records in MONSTER.DBF
+enum { FRYHTAN_DEFAULT_MONSTER_ID = 6 };		// Rokken, the default choice in the new game screen		// population of Fryhtans allowed at the start
+enum { FRYHTAN_KING_COMBAT = 60,				// combat and leadership of the starting All High
+		 FRYHTAN_KING_LEADERSHIP = 60 };
+
+//------- Define class ModFryhtan -------//
+
+class ModFryhtan
+{
+public:
+	int16_t	nation_monster_id[MAX_NATION];		// the Fryhtan species (monster id.) of each nation, 0 for human nations
+
+public:
+	void	reset();
+	void	init_nation(int nationRecno);
+
+	void	set_nation_monster(int nationRecno, int monsterId);
+	int	monster_id(int nationRecno);
+	int	is_fryhtan(int nationRecno)		{ return monster_id(nationRecno) != 0; }
+
+	int	nation_unit_id(int nationRecno);		// the unit id. of the species of the nation
+
+	int	create_start_king(int nationRecno);	// the only unit of a Fryhtan kingdom at the start of a game
+
+	static int	is_large_monster(int monsterId);
+	static int	monster_population(int monsterId);		// 1 for small Fryhtans, 2 for large ones
+	static int	unit_population(int unitId);
+
+	static const char*	monster_name(int monsterId);
+	static const char*	monster_size_text(int monsterId);
+
+	//--- for the new game screen, where MonsterRes is not loaded yet ---//
+
+	static const char*	menu_species_name(int monsterId);
+	static const char*	menu_species_size_text(int monsterId);
+	static int				menu_next_species(int monsterId, int dir);		// dir: 1 - next, -1 - previous, in alphabetical order
+	static int				is_valid_species(int monsterId)	{ return monsterId >= 1 && monsterId <= FRYHTAN_SPECIES_COUNT; }
+
+	int	write_file(File* filePtr);
+	int	read_file(File* filePtr);
+};
+
+extern ModFryhtan mod_fryhtan;
+
+#endif

@@ -40,6 +40,7 @@
 #include <OHONORS.h>
 #include <OUNIT.h>
 #include "gettext.h"
+#include <ModFryhtan.h>
 
 //--------- Define variable type ----------//
 
@@ -2024,7 +2025,10 @@ char* News::nation_name1()
 {
 	static String str;
 
-	if( nation_name_id1 < 0 )		// human player - custom name
+	if( nation_name_id1 < 0 && mod_fryhtan.is_fryhtan(-nation_name_id1) )		// 7kmod-fryhtan: "<Name> <species> Horde"
+		snprintf(str, MAX_STR_LEN+1, _("%s %s Horde"), nation_array.get_human_name(nation_name_id1, 1),
+					ModFryhtan::monster_name(mod_fryhtan.monster_id(-nation_name_id1)) );
+	else if( nation_name_id1 < 0 )		// human player - custom name
 		snprintf(str, MAX_STR_LEN+1, _("%s's Kingdom"), nation_array.get_human_name(nation_name_id1, 1));	// 1-first word of the name only
 	else
 		snprintf(str, MAX_STR_LEN+1, _("%s's Kingdom"), race_res[nation_race_id1]->get_single_name( static_cast<uint16_t>(nation_name_id1) ));
@@ -2044,7 +2048,10 @@ char* News::nation_name2()
 {
 	static String str;
 
-	if( nation_name_id2 < 0 )		// human player - custom name
+	if( nation_name_id2 < 0 && mod_fryhtan.is_fryhtan(-nation_name_id2) )		// 7kmod-fryhtan: "<Name> <species> Horde"
+		snprintf(str, MAX_STR_LEN+1, _("%s %s Horde"), nation_array.get_human_name(nation_name_id2, 1),
+					ModFryhtan::monster_name(mod_fryhtan.monster_id(-nation_name_id2)) );
+	else if( nation_name_id2 < 0 )		// human player - custom name
 		snprintf(str, MAX_STR_LEN+1, _("%s's Kingdom"), nation_array.get_human_name(nation_name_id2, 1));	// 1-first word of the name only
 	else
 		snprintf(str, MAX_STR_LEN+1, _("%s's Kingdom"), race_res[nation_race_id2]->get_single_name( static_cast<uint16_t>(nation_name_id2) ));

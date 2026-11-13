@@ -35,6 +35,7 @@
 #include <OTOWN.h>
 #include <OLOG.h>
 #include <ConfigAdv.h>
+#include <ModFryhtan.h>
 
 //------- Begin of function Town::think_independent_town --------//
 //
@@ -318,6 +319,9 @@ int Town::think_independent_unit_join_nation()
 		nationPtr = nation_array[i];
 
 		if( !nationPtr->race_id )
+			continue;
+
+		if( mod_fryhtan.is_fryhtan(i) )		// 7kmod-fryhtan: independent villagers don't join Fryhtan kingdoms
 			continue;
 
 		if( nationPtr->cash <= 0 )

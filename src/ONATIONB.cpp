@@ -31,6 +31,8 @@
 #include <OWORLD.h>
 #include <OFIRM.h>
 #include <ModSpy.h>
+#include <ModFryhtan.h>
+#include <OMONSRES.h>
 #include <OGAME.h>
 #include <OPOWER.h>
 #include <OREGIONS.h>
@@ -158,6 +160,7 @@ void NationBase::init(int nationType, int raceId, int colorSchemeId, uint32_t pl
 	tech_res.init_nation_tech(nation_recno);
 	mod_tech_res.init_nation(nation_recno);		// 7kmod-gameplay
 	mod_spy.init_nation(nation_recno);				// 7kmod-gameplay
+	mod_fryhtan.init_nation(nation_recno);			// 7kmod-fryhtan: human nation by default
 
 	//------- reset all god knowledge --------//
 
@@ -568,7 +571,11 @@ void NationBase::set_king(int kingUnitRecno, int firstKing)
 	else
 		nation_name_id = -nation_recno;   // for human players, the name is retrieved from NationArray::human_name_array
 
-	race_id 			 = kingUnit->race_id;
+	//--- 7kmod-fryhtan: a Fryhtan king has no race, the nation keeps its internal race id. ---//
+
+	if( kingUnit->race_id )
+		race_id = kingUnit->race_id;
+
 	king_leadership = kingUnit->skill.skill_level;
 
 	err_when( !nation_name_id );
@@ -581,6 +588,17 @@ void NationBase::set_king(int kingUnitRecno, int firstKing)
 //
 char* NationBase::nation_name()
 {
+	//--- 7kmod-fryhtan: "<king name> <species> Horde" ---//
+
+	if( mod_fryhtan.is_fryhtan(nation_recno) )
+	{
+		// TRANSLATORS: <Name> <Fryhtan species> Horde, for a Fryhtan kingdom
+		snprintf( nation_name_str, NATION_NAME_LEN+1, _("%s %s Horde"), king_name(1),
+					 ModFryhtan::monster_name(mod_fryhtan.monster_id(nation_recno)) );
+
+		return nation_name_str;
+	}
+
 	// TRANSLATORS: <Name>'s Kingdom
 	snprintf( nation_name_str, NATION_NAME_LEN+1, _("%s's Kingdom"), king_name(1) );
 
@@ -1034,6 +1052,14 @@ void NationBase::consume_food(float foodConsumed)
 //
 void NationBase::change_reputation(float changeLevel)
 {
+	//--- 7kmod-fryhtan: Fryhtan kingdoms have no reputation ---//
+
+	if( mod_fryhtan.is_fryhtan(nation_recno) )
+	{
+		reputation = (float) 0;
+		return;
+	}
+
 	//--- reputation increase more slowly when it is close to 100 ----//
 
 	if( changeLevel > 0 && reputation > 0 )

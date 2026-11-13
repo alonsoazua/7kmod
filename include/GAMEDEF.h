@@ -45,7 +45,8 @@ extern const int GAME_VERSION;
 #define GAME_VERSION_7KMOD_SPYING		298	// 7kmod-gameplay: ModSpy (accidents, intelligence reports)
 #define GAME_VERSION_7KMOD_SABOTAGE_LOG	299	// 7kmod-gameplay: ModSpy, accidents caused by spies
 #define GAME_VERSION_7KMOD_SPY_COOLDOWN	300	// 7kmod-gameplay: ModSpy, cooldown of the spies after an accident
-#define GAME_VERSION_7KMOD	300
+#define GAME_VERSION_7KMOD_FRYHTAN		310	// 7kmod-fryhtan: ModFryhtan (Fryhtan kingdoms)
+#define GAME_VERSION_7KMOD	310
 
 //-------- Define constant ------------//
 
@@ -63,7 +64,7 @@ extern const int GAME_VERSION;
 
 // config dir
 #define CONFIG_ORGANIZATION_NAME "7kfans.com"
-#define CONFIG_APPLICATION_NAME "7kaa-mod"	// 7kmod: keep saves/config separate from the official game
+#define CONFIG_APPLICATION_NAME "7kaa-fryhtan"	// 7kmod-fryhtan: own folder for saves/config, apart from the official game and the other 7kmod executables (7kmod: "7kaa-mod")
 
 // data dirs
 #define DIR_RES         "RESOURCE" PATH_DELIM

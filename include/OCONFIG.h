@@ -126,6 +126,8 @@ public:
 	char			start_up_has_mine_nearby;
 	char			random_start_up;
 	char			seat_of_power_unlocked;		// 7kmod: human kingdoms start knowing the Seat of Power of their race.
+	char			fryhtan_monster_id;			// 7kmod-fryhtan: the Fryhtan species of the player's kingdom, 0 for a human kingdom.
+														// Only used when a single player game starts; saved in 7KMOD.DAT.
 														// Not in ConfigGF, it is only used when a game starts and saved in 7KMOD.DAT.
 
 	//--------- goal ----------//
