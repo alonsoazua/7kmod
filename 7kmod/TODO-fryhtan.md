@@ -521,6 +521,20 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
       Hecho en `World::draw_link_line()`; probado con un Ordo junto a una guarida
       salvaje.
 
+### Ajustes anotados (después de la fase 7)
+- [ ] **Pestañas Humanos / Fryhtans en New Game:** en la página básica, encima de los
+      recuadros de las razas, dos pestañas: **Humans** y **Fryhtans**.
+      - **Humans** (la de inicio): los recuadros de las 10 razas humanas, como en el
+        juego original.
+      - **Fryhtans:** en el mismo lugar, recuadros con las 13 especies (retrato de su All
+        High y nombre), para elegir una con un clic, igual que una raza.
+      - Se quitan el botón "Fryhtan" y el selector con flechas de la fase 1; la línea
+        "Fryhtan kingdom: <nombre> <especie> Horde (Large/Small: N population)" se queda
+        debajo cuando la pestaña Fryhtans está activa.
+      - Por decidir al implementarlo: cómo caben 13 recuadros donde hay 10 (propuesta:
+        recuadros un poco más chicos o dos filas), y si se recuerda la pestaña elegida
+        (propuesta: sí, en 7KMOD.DAT, como ya se recuerda la especie).
+
 ### Fase 6: diplomacia y Fryhtans salvajes
 - [x] Sin comercio, amistad ni alianza con un reino Fryhtan (jugador e IA).
 - [x] Los reinos de la IA no se pueden rendir a un reino Fryhtan (ni ofrecer la
