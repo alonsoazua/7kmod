@@ -180,17 +180,17 @@ void Game::editor_new_map(int randomSeed)
 // define bit flag for refreshFlag
 static void disp_virtual_button(ButtonCustom *, int);
 static void disp_virtual_tick(ButtonCustom *, int);
-static void make_option_cell(int srcX, int srcY, int destX, int destY, const char* text);		// 7kmod-fryhtan
 static void disp_fryhtan_kingdom(Config& tempConfig, int lastMonsterId);	// 7kmod-fryhtan
 static void disp_species_button(ButtonCustom *, int);		// 7kmod-fryhtan
 
 //------- 7kmod-fryhtan: the Humans / Fryhtans tabs and the grid of species -------//
 
 enum { RACE_GRID_X1 = 222,
-		 RACE_GRID_WIDTH = 5*BASIC_OPTION_X_SPACE,		// the 10 race buttons, 5 x 2
+		 RACE_GRID_WIDTH = 6*BASIC_OPTION_X_SPACE,		// the 10 race buttons (5 x 2) and the empty column at their right
 		 RACE_GRID_HEIGHT = 2*BASIC_OPTION_HEIGHT,
 		 SPECIES_COLUMNS = 7,
-		 SPECIES_CELL_WIDTH = RACE_GRID_WIDTH / SPECIES_COLUMNS };		// 55: the 13 species in 7 x 2
+		 SPECIES_CELL_WIDTH = RACE_GRID_WIDTH / SPECIES_COLUMNS,		// 66: the 13 species in 7 x 2
+		 KINGDOM_TAB_HEIGHT = 18 };		// the text tabs above the grid
 
 static char race_grid_buf[RACE_GRID_WIDTH*RACE_GRID_HEIGHT];		// the race buttons of the background
 static char species_grid_buf[RACE_GRID_WIDTH*RACE_GRID_HEIGHT];	// the species buttons made from them
@@ -198,6 +198,7 @@ static char species_grid_buf[RACE_GRID_WIDTH*RACE_GRID_HEIGHT];	// the species b
 static void save_grid(char* gridBuf, int y1);
 static void restore_grid(const char* gridBuf, int y1);
 static void make_species_grid(int y1, const int* speciesArray);
+static void disp_kingdom_tabs(int x1, int y1, int fryhtanFlag, int* humanX2, int* fryhtanX1, int* fryhtanX2);
 
 #define SGOPTION_PAGE           0x40000000
 #define SGOPTION_RACE           0x00000001
@@ -273,19 +274,14 @@ static int select_option()
 
 	// --------- 7kmod-fryhtan: the Humans / Fryhtans tabs ---------- //
 	//
-	// Two tabs at the right of the race buttons: Humans (the 10 races) and
-	// Fryhtans (the 13 species in the same place, 7 x 2). The tab follows the
-	// kingdom chosen (Config::fryhtan_monster_id), which is kept in 7KMOD.DAT.
+	// Two text tabs above the race buttons, the chosen one underlined: Humans
+	// (the 10 races) and Fryhtans (the 13 species in the same place, 7 x 2, in
+	// the whole width). The tab follows the kingdom chosen
+	// (Config::fryhtan_monster_id), which is kept in 7KMOD.DAT.
 
-	const int tabX1 = RACE_GRID_X1+RACE_GRID_WIDTH;
 	const int fryhtanY1 = offsetY+81;		// the first row of races
-	const int fryhtanTabY1 = fryhtanY1+BASIC_OPTION_HEIGHT;
-
-	ButtonCustom humanTab, fryhtanTab;
-	humanTab.create(tabX1, fryhtanY1, tabX1+BASIC_OPTION_X_SPACE-1, fryhtanY1+BASIC_OPTION_HEIGHT-1,
-		disp_virtual_button, ButtonCustomPara(NULL, 0), 0, 0);
-	fryhtanTab.create(tabX1, fryhtanTabY1, tabX1+BASIC_OPTION_X_SPACE-1, fryhtanTabY1+BASIC_OPTION_HEIGHT-1,
-		disp_virtual_button, ButtonCustomPara(NULL, 0), 0, 0);
+	const int tabX1 = RACE_GRID_X1+2, tabY1 = fryhtanY1-KINGDOM_TAB_HEIGHT-1;
+	int humanTabX2=0, fryhtanTabX1=0, fryhtanTabX2=0;		// set by disp_kingdom_tabs()
 
 	//------ the species, in alphabetical order ------//
 
@@ -670,10 +666,7 @@ static int select_option()
 #endif
 					image_menu.put_back( 234, 15, menuTitleBitmap);
 
-					//--- 7kmod-fryhtan: the tabs and the species buttons, made from the race buttons ---//
-
-					make_option_cell( RACE_GRID_X1+4*BASIC_OPTION_X_SPACE, fryhtanY1, tabX1, fryhtanY1, _("Humans") );
-					make_option_cell( RACE_GRID_X1+4*BASIC_OPTION_X_SPACE, fryhtanTabY1, tabX1, fryhtanTabY1, _("Fryhtans") );
+					//--- 7kmod-fryhtan: the species buttons, made from the race buttons ---//
 
 					save_grid( race_grid_buf, fryhtanY1 );
 					make_species_grid( fryhtanY1, speciesArray );
@@ -698,14 +691,16 @@ static int select_option()
 								speciesIndex = i;
 						}
 
-						vga_util.blt_buf( RACE_GRID_X1, fryhtanY1, tabX1-1, fryhtanY1+RACE_GRID_HEIGHT-1, 0 );		// the empty cell
+						vga_util.blt_buf( RACE_GRID_X1, fryhtanY1, RACE_GRID_X1+RACE_GRID_WIDTH-1, fryhtanY1+RACE_GRID_HEIGHT-1, 0 );		// the empty cell
 						speciesGroup.paint( speciesIndex );
 					}
 					else
+					{
+						vga_util.blt_buf( RACE_GRID_X1, fryhtanY1, RACE_GRID_X1+RACE_GRID_WIDTH-1, fryhtanY1+RACE_GRID_HEIGHT-1, 0 );		// the empty column at the right
 						raceGroup.paint( reverse_race_table[tempConfig.race_id-1] );
+					}
 
-					humanTab.paint( tempConfig.fryhtan_monster_id ? 0 : 1 );
-					fryhtanTab.paint( tempConfig.fryhtan_monster_id ? 1 : 0 );
+					disp_kingdom_tabs( tabX1, tabY1, tempConfig.fryhtan_monster_id != 0, &humanTabX2, &fryhtanTabX1, &fryhtanTabX2 );
 					disp_fryhtan_kingdom( tempConfig, lastFryhtanMonsterId );
 				}
 				if( refreshFlag & SGOPTION_COLOR )
@@ -904,7 +899,7 @@ static int select_option()
 				tempConfig.fryhtan_monster_id = lastFryhtanMonsterId;
 				refreshFlag |= SGOPTION_FRYHTAN_KINGDOM;		// the kingdom name below
 			}
-			else if( mouse.single_click(humanTab.x1, humanTab.y1, humanTab.x2, humanTab.y2) )
+			else if( mouse.single_click(tabX1, tabY1, humanTabX2, tabY1+KINGDOM_TAB_HEIGHT-1) )
 			{
 				if( tempConfig.fryhtan_monster_id )		// back to a human kingdom
 				{
@@ -912,7 +907,7 @@ static int select_option()
 					refreshFlag |= SGOPTION_FRYHTAN_KINGDOM;
 				}
 			}
-			else if( mouse.single_click(fryhtanTab.x1, fryhtanTab.y1, fryhtanTab.x2, fryhtanTab.y2) )
+			else if( mouse.single_click(fryhtanTabX1, tabY1, fryhtanTabX2, tabY1+KINGDOM_TAB_HEIGHT-1) )
 			{
 				if( !tempConfig.fryhtan_monster_id )
 				{
@@ -1274,54 +1269,6 @@ static int select_option()
 #endif
 #undef Y_SHIFT_FLAG
 
-//------ Begin of static function make_option_cell ------//
-//
-// 7kmod-fryhtan: make a new option button on the background (vga_back) by
-// copying the cell of a race button, erasing its text with pixels of the
-// face of the button and writing a new text in the same style as the labels.
-//
-static void make_option_cell(int srcX, int srcY, int destX, int destY, const char* text)
-{
-	int y;
-
-	for( y=0 ; y<BASIC_OPTION_HEIGHT ; y++ )
-	{
-		memcpy( vga_back.buf_ptr(destX, destY+y), vga_back.buf_ptr(srcX, srcY+y), BASIC_OPTION_X_SPACE );
-	}
-
-	//--- erase the text with pixels picked from the face of the button above the text ---//
-
-	const int faceX1 = 6, faceX2 = BASIC_OPTION_X_SPACE-8;
-	const int bandY1 = 4, bandY2 = 6;
-	const int textY1 = 7, textY2 = BASIC_OPTION_HEIGHT-8;
-
-	unsigned int seed = 12345;		// a local generator, not misc.random(), which the game uses
-
-	for( y=textY1 ; y<=textY2 ; y++ )
-	{
-		for( int x=faceX1 ; x<=faceX2 ; x++ )
-		{
-			seed = seed * 1103515245 + 12345;
-			int pickX = faceX1 + (seed>>16) % (faceX2-faceX1+1);
-			int pickY = bandY1 + (seed>>8) % (bandY2-bandY1+1);
-
-			*vga_back.buf_ptr(destX+x, destY+y) = *vga_back.buf_ptr(destX+pickX, destY+pickY);
-		}
-	}
-
-	//------------ write the text ------------//
-
-	if( text && text[0] )
-	{
-		int textWidth = font_std.text_width(text);
-		int textX = destX + (BASIC_OPTION_X_SPACE-textWidth)/2 - 1;
-		int textY = destY + (BASIC_OPTION_HEIGHT-font_std.height())/2 - 1;
-
-		for( int boldX=0 ; boldX<2 ; boldX++ )		// drawn twice, 1 pixel apart, to look as bold as the race names
-			font_std.put_slanted( vga_back.buf_ptr(), vga_back.buf_pitch(), textX+boldX, textY, text );
-	}
-}
-//------ End of static function make_option_cell ------//
 
 
 //------ Begin of static function disp_fryhtan_kingdom ------//
@@ -1560,3 +1507,50 @@ static void disp_species_button(ButtonCustom *button, int)
 	mouse.show_area();
 }
 //------ End of static function disp_species_button ------//
+
+
+//------ Begin of static function disp_kingdom_tabs ------//
+//
+// 7kmod-fryhtan: the text tabs "Humans" and "Fryhtans" above the race
+// buttons, the chosen one underlined. It returns the click areas.
+//
+static void disp_kingdom_tabs(int x1, int y1, int fryhtanFlag, int* humanX2, int* fryhtanX1, int* fryhtanX2)
+{
+	const int gap = 24;
+	const char* humanStr = _("Humans");
+	const char* fryhtanStr = _("Fryhtans");
+
+	int humanWidth = font_std.text_width(humanStr);
+	int fryhtanWidth = font_std.text_width(fryhtanStr);
+
+	*humanX2   = x1+humanWidth+3;
+	*fryhtanX1 = *humanX2+gap;
+	*fryhtanX2 = *fryhtanX1+fryhtanWidth+3;
+
+	int y2 = y1+KINGDOM_TAB_HEIGHT-1;
+
+	mouse.hide_area(x1, y1, *fryhtanX2+4, y2);
+
+	vga_util.blt_buf( x1, y1, *fryhtanX2+4, y2, 0 );		// the background
+
+	int textY = y1 + (KINGDOM_TAB_HEIGHT-font_std.height())/2 - 2;
+
+	for( int tab=0 ; tab<2 ; tab++ )
+	{
+		int tabX1 = tab==0 ? x1 : *fryhtanX1;
+		int tabX2 = tab==0 ? *humanX2 : *fryhtanX2;
+		const char* str = tab==0 ? humanStr : fryhtanStr;
+		int chosen = (tab==1) == (fryhtanFlag!=0);
+
+		font_std.put_slanted( vga_front.buf_ptr(), vga_front.buf_pitch(), tabX1+1, textY, str );		// slanted, as the labels
+
+		if( chosen )
+		{
+			font_std.put_slanted( vga_front.buf_ptr(), vga_front.buf_pitch(), tabX1+2, textY, str );		// bold, as the race names
+			vga_front.bar( tabX1, y2-2, tabX2, y2-1, V_BLACK );		// the underline
+		}
+	}
+
+	mouse.show_area();
+}
+//------ End of static function disp_kingdom_tabs ------//

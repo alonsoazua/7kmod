@@ -18,8 +18,9 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
 
 ### Added
 - **Fryhtan kingdom** (phase 1 of `TODO-fryhtan.md`; single player games only):
-  - In New Game, basic page, two tabs at the right of the races: **Humans** (the 10
-    races) and **Fryhtans** (buttons with the 13 species in the same place). Below the
+  - In New Game, basic page, two text tabs above the races: **Humans** (the 10 races)
+    and **Fryhtans** (buttons with the 13 species in the same place); the chosen one is
+    underlined. Below the
     name it shows how the kingdom will be called, for example "Fryhtan kingdom: Al
     Rokken Horde (Large: 2 population)". The tab and the species are remembered.
   - The kingdom starts with its king, an All High of the species with combat
