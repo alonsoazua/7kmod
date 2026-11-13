@@ -691,6 +691,17 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       inicial.
       - Con el rey en la guarida hay general al mando, así que el pueblo paga tributo
         desde el primer mes ($5 × 20 = $100) y su lealtad va hacia 50.
-      - El tope de población sube de 18 a 38 (18 + la gente esclavizada).
-      - Falta decidir la raza de la gente del pueblo (por ejemplo, una al azar, o mezcla
-        de dos).
+      - El tope de población sube con la gente esclavizada (base + 20).
+      - La gente del pueblo es de **una raza al azar**.
+
+- [ ] **Tope de población base de 20** (hoy 18). El tope sigue siendo la base + la gente
+      de los pueblos esclavizados; con el pueblo inicial, el reino empezaría con 40.
+
+- [ ] **Los Fryhtans cuestan más población:** las especies grandes pasan de 2 a **3** y
+      las pequeñas de 1 a **2**.
+      - Cambia el texto de las especies en New Game ("Large: 2 population" → 3,
+        "Small: 1 population" → 2).
+      - Ojo: el entrenamiento a la mitad de tiempo de las especies pequeñas hoy revisa que
+        cuesten 1 de población; hay que cambiarlo para que revise que la especie sea
+        pequeña (si no, ninguna especie entrenaría más rápido).
+      - El rey y los 4 soldados del inicio ocupan 15 (grandes) o 10 (pequeñas) del tope.
