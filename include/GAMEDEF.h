@@ -24,6 +24,8 @@
 #ifndef __GAMEDEF_H
 #define __GAMEDEF_H
 
+#include <ModVersion.h>		// 7kmod: name of the mod and its settings folder
+
 //----------- define game version ------------//
 
 //#define GAME_VERSION_STR   "1.1"
@@ -52,7 +54,7 @@ extern const int GAME_VERSION;
 
 #define APP_NAME           "SK"                         // application name
 #define WIN_CLASS_NAME     "Seven_Kingdoms"             // for registering window class
-#define WIN_TITLE          "Seven Kingdoms"             // window title
+#define WIN_TITLE          MOD_GAME_NAME                // window title (7kmod: name of the mod, ModVersion.h)
 
 //------- Data sub-directories -------//
 
@@ -64,7 +66,7 @@ extern const int GAME_VERSION;
 
 // config dir
 #define CONFIG_ORGANIZATION_NAME "7kfans.com"
-#define CONFIG_APPLICATION_NAME "7kaa-fryhtan"	// 7kmod-fryhtan: own folder for saves/config, apart from the official game and the other 7kmod executables (7kmod: "7kaa-mod")
+#define CONFIG_APPLICATION_NAME MOD_CONFIG_NAME	// 7kmod: own folder for saves/config, apart from the official game (ModVersion.h)
 
 // data dirs
 #define DIR_RES         "RESOURCE" PATH_DELIM

@@ -22,6 +22,33 @@ the game plays. This branch includes everything in the `7kmod` branch, documente
 
 ## [Unreleased]
 
+### Added
+- **Play as a Fryhtan kingdom** (brought from the experimental `7kmod-fryhtan`
+  branch; single player games only). In New Game, the **Fryhtans** tab lets you pick
+  one of the 13 species. The kingdom starts with its All High and a lair with 4
+  soldiers, trains soldiers and Ordos in the lair with food, enslaves villages to
+  collect tribute, captures wild lairs, has no trade or alliance diplomacy, and wild
+  Fryhtans don't attack it. The details are in `CHANGELOG-fryhtan.en.md` and in
+  `TODO-fryhtan.md` (Spanish only).
+- In New Game, the species names, the Humans/Fryhtans tabs and the "Seats of Power
+  Unlocked?" label use smooth anti-aliased text (TeX Gyre Pagella, a Palatino clone).
+
+### Changed
+- **Name: New Adversaries.** The mod is called **New Adversaries** and this branch is
+  the full mod (executable `7k-newAdversaries.exe`); `7kmod` is **New Adversaries
+  Classic**. The main menu shows "New Adversaries 0.3.0" and the window has the same
+  title. Players see a single public version (`MOD_PUBLIC_VERSION` in
+  `include/ModVersion.h`); this changelog keeps the gameplay version.
+- **Own folder:** `%APPDATA%\7kfans.com\7k-newAdversaries\` (before `7kaa-mod`). It
+  starts clean: the saved games in `7kaa-mod` aren't copied, and the previous
+  executables still open them.
+
+### Compatibility
+- **Saved games:** version 310. It loads gameplay 0.2.0 saves; gameplay 0.2.0 can't
+  load the new ones.
+- **Recruit and auto recruit** are now also in `7kmod` (on by default there); in
+  gameplay they stay off by default. Gameplay loads 7kmod saved games of version 293.
+
 ---
 
 ## [0.2.0] - 2026-11-06

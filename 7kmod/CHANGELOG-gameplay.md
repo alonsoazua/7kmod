@@ -21,6 +21,34 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 
 ## [Sin publicar]
 
+### Agregado
+- **Jugar como reino Fryhtan** (traído de la rama experimental `7kmod-fryhtan`; solo
+  partidas de un jugador). En New Game, la pestaña **Fryhtans** permite elegir una de
+  las 13 especies. El reino empieza con su All High y una guarida con 4 soldados,
+  entrena soldados y Ordos en la guarida con comida, esclaviza pueblos para cobrarles
+  tributo, captura guaridas salvajes, no tiene diplomacia de comercio ni alianzas y
+  los Fryhtans salvajes no lo atacan. El detalle está en `CHANGELOG-fryhtan.md` y en
+  `TODO-fryhtan.md`.
+- En New Game, los nombres de las especies, las pestañas Humans/Fryhtans y la etiqueta
+  "Seats of Power Unlocked?" usan letra suavizada (TeX Gyre Pagella, tipo Palatino).
+
+### Cambiado
+- **Nombre: New Adversaries.** El mod se llama **New Adversaries** y esta rama es el mod
+  completo (ejecutable `7k-newAdversaries.exe`); `7kmod` es **New Adversaries Classic**.
+  El menú principal muestra "New Adversaries 0.3.0" y la ventana se titula igual. Para
+  los jugadores hay una sola versión pública (`MOD_PUBLIC_VERSION` en
+  `include/ModVersion.h`); este changelog sigue llevando la versión de gameplay.
+- **Carpeta propia:** `%APPDATA%\7kfans.com\7k-newAdversaries\` (antes `7kaa-mod`). Se
+  empieza en limpio: las partidas de `7kaa-mod` no se copian, y los ejecutables
+  anteriores las siguen abriendo.
+
+### Compatibilidad
+- **Partidas guardadas:** versión 310. Carga las partidas de gameplay 0.2.0; gameplay
+  0.2.0 no carga las partidas nuevas.
+- **Recruit y reclutamiento automático** ahora también están en `7kmod` (allí activado
+  por defecto); en gameplay sigue desactivado por defecto. Gameplay carga las partidas
+  de 7kmod de la versión 293.
+
 ---
 
 ## [0.2.0] - 2026-11-06

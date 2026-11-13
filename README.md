@@ -1,9 +1,22 @@
-# 7kmod
+# New Adversaries (7kmod)
 
 **English** | [Español](README.es.md)
 
-A mod of **Seven Kingdoms: Ancient Adversaries** based on the open source version
-**7kaa 2.15.7** by [7kfans](https://7kfans.com/) (tag `v2.15.7` in this repository).
+**New Adversaries** is a mod of **Seven Kingdoms: Ancient Adversaries** based on the
+open source version **7kaa 2.15.7** by [7kfans](https://7kfans.com/) (tag `v2.15.7` in
+this repository). Seven Kingdoms is a trademark of Enlight Software; this is not an
+official project.
+
+It's played with two executables, with a single public version (the first one is
+**0.3.0**):
+
+- **New Adversaries** (`7k-newAdversaries.exe`, `7kmod-gameplay` branch): the full mod,
+  with the rule changes and the Fryhtan kingdom.
+- **New Adversaries Classic** (`7k-newAdversaries-Classic.exe`, `7kmod` branch): the
+  interface improvements and the scenario editor, with the original rules.
+
+Each one keeps its saved games and settings in its own folder,
+`%APPDATA%\7kfans.com\7k-newAdversaries\` and `...\7k-newAdversaries-Classic\`.
 
 The mod adds interface and quality of life improvements, an in-game scenario editor and,
 in separate branches, rule changes, pathfinding changes and AI changes.
@@ -25,8 +38,8 @@ master  ──>  7kmod  ──>  7kmod-gameplay  ──>  7kmod-pathing  ──>
 | Branch | Executable | What it has | Changelog |
 |---|---|---|---|
 | `master` | — | The original game, 7kaa 2.15.7, unchanged. Kept as a reference. | — |
-| **`7kmod`** (main) | `7kaa-mod.exe` | Interface and quality of life improvements, fixes and the **scenario editor**. Does not change how the game plays. | [`7kmod/CHANGELOG.en.md`](7kmod/CHANGELOG.en.md) |
-| `7kmod-gameplay` | `7kaa-gameplay.exe` | All of `7kmod` plus **rule changes**: harbor trade, invoked Fryhtans with their kingdom's color, the AI uses Fryhtans, etc. | `7kmod/CHANGELOG-gameplay.en.md` (in that branch) |
+| **`7kmod`** (main) | `7k-newAdversaries-Classic.exe` | Interface and quality of life improvements, fixes and the **scenario editor**. Does not change how the game plays. | [`7kmod/CHANGELOG.en.md`](7kmod/CHANGELOG.en.md) |
+| `7kmod-gameplay` | `7k-newAdversaries.exe` | All of `7kmod` plus **rule changes**: harbor trade, invoked Fryhtans with their kingdom's color, the AI uses Fryhtans, playing as a Fryhtan kingdom, etc. | `7kmod/CHANGELOG-gameplay.en.md` (in that branch) |
 | `7kmod-pathing` | `7kaa-pathing.exe` | All of `7kmod-gameplay` plus the **experimental pathfinding**. | `7kmod/CHANGELOG-pathing.en.md` (in that branch) |
 | `7k-mod-IA` | `7kaa-ia.exe` | All of `7kmod-pathing` plus the **experimental AI** and per-kingdom limits (population, military units, taxes), all as `config.txt` options. Uses its own settings folder (`%APPDATA%\7kfans.com\7kaa-ia\`). | `7kmod/CHANGELOG-ia.en.md` (in that branch) |
 
