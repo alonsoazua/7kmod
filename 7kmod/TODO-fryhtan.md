@@ -10,7 +10,8 @@ siendo humanos. Solo partidas de un jugador (sin multijugador).
 
 ## 1. Reglas confirmadas
 
-- **Inicio:** el reino empieza solo con su rey, un **All High** de la especie elegida.
+- **Inicio:** el reino empieza con su rey, un **All High** de la especie elegida, dentro
+  de una guarida ya construida (ajuste pendiente, ver "Ajustes anotados").
   No hay pueblo, guarida ni otras unidades al inicio.
 - **Guaridas:** funcionan como un **fuerte**: un general (o el rey) y hasta **8 soldados**. Los soldados entrenan con el
   general, salen a patrullar y regresan, igual que en un fuerte.
@@ -261,8 +262,25 @@ el código que indexa la raza del reino no falle. La IA no usa esa raza
 - **Probado:** construir con el rey y con un Ordo, entrar como general, cola, cancelar,
   salir, patrullar, Promote, entrenamiento (combate 20 → 73 en 9 años, rey 60 → 100),
   guardar y cargar con la cola a medias, costo anual.
+- **Bug corregido:** el rey y los generales no podían volver a entrar a la guarida con
+  clic derecho (gameplay solo deja entrar a los soldados Fryhtan al fuerte,
+  `UnitArray::assign_to_camp`); solo caminaban hasta ella.
 - **Pendiente para otras fases:** la IA le pide tributo al reino Fryhtan y le ofrece
   comprarle comida (revisar en la fase 6).
+
+### Ajustes anotados (después de la fase 2)
+- [ ] **Barra de progreso de Train:** mostrar en el panel de la guarida el avance del
+      Fryhtan que se está entrenando (días hechos de 20), como la barra de entrenamiento
+      de un pueblo humano.
+- [ ] **Inicio con guarida:** el reino empieza con una guarida de su especie ya
+      construida y el rey adentro como general, en lugar del rey solo en el mapa.
+- [ ] **Nombre del rey:** "<nombre del rey> The All High" (por ejemplo "Al The All
+      High") en lugar de "All High <especie>", en el panel de la unidad y donde el juego
+      muestre el nombre del rey. En el panel de la guarida, en vez de "King / All High
+      Wyrm", la primera línea dice "Al The All High" y la segunda "All High Wyrm". El
+      reino sigue llamándose "<nombre> <especie> Horde".
+- [ ] Con el rey fuera, el panel de la guarida dice "Outside of the fort"; cambiarlo a
+      "Outside of the lair".
 
 ### Fase 3: economía
 - [x] Mantenimiento de las guaridas en oro; unidades solo con comida (hecho en la fase 2).
