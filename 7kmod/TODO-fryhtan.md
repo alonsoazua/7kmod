@@ -522,7 +522,7 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
       salvaje.
 
 ### Ajustes anotados (después de la fase 7)
-- [ ] **Pestañas Humanos / Fryhtans en New Game:** en la página básica, encima de los
+- [x] **Pestañas Humanos / Fryhtans en New Game:** en la página básica, encima de los
       recuadros de las razas, dos pestañas: **Humans** y **Fryhtans**.
       - **Humans** (la de inicio): los recuadros de las 10 razas humanas, como en el
         juego original.
@@ -534,6 +534,14 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
       - Aprobado: los 13 recuadros caben haciéndolos un poco más chicos o en dos filas
         (se elige al implementarlo según lo que se vea mejor), y la pestaña elegida se
         recuerda en 7KMOD.DAT, como ya se recuerda la especie.
+      - **Cómo quedó:** las pestañas "Humans" (arriba) y "Fryhtans" (abajo) están en la
+        columna de la derecha, donde estaban el botón Fryhtan y el selector. Con Fryhtans,
+        la cuadrícula de las razas se cambia por 14 recuadros más angostos (7 x 2, 55
+        píxeles) hechos con los de las razas: las 13 especies en orden alfabético y uno
+        vacío. Los nombres usan la misma letra (la más grande en la que caben todos). Son
+        recuadros con el nombre, como los de las razas; los retratos no caben en ese
+        tamaño. La pestaña es la elección misma (`Config::fryhtan_monster_id`, que ya se
+        guarda en 7KMOD.DAT), así que no hizo falta otro dato.
 
 ### Fase 6: diplomacia y Fryhtans salvajes
 - [x] Sin comercio, amistad ni alianza con un reino Fryhtan (jugador e IA).

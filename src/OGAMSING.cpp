@@ -181,7 +181,23 @@ void Game::editor_new_map(int randomSeed)
 static void disp_virtual_button(ButtonCustom *, int);
 static void disp_virtual_tick(ButtonCustom *, int);
 static void make_option_cell(int srcX, int srcY, int destX, int destY, const char* text);		// 7kmod-fryhtan
-static void disp_fryhtan_kingdom(int x1, int y1, Config& tempConfig, int lastMonsterId);	// 7kmod-fryhtan
+static void disp_fryhtan_kingdom(Config& tempConfig, int lastMonsterId);	// 7kmod-fryhtan
+static void disp_species_button(ButtonCustom *, int);		// 7kmod-fryhtan
+
+//------- 7kmod-fryhtan: the Humans / Fryhtans tabs and the grid of species -------//
+
+enum { RACE_GRID_X1 = 222,
+		 RACE_GRID_WIDTH = 5*BASIC_OPTION_X_SPACE,		// the 10 race buttons, 5 x 2
+		 RACE_GRID_HEIGHT = 2*BASIC_OPTION_HEIGHT,
+		 SPECIES_COLUMNS = 7,
+		 SPECIES_CELL_WIDTH = RACE_GRID_WIDTH / SPECIES_COLUMNS };		// 55: the 13 species in 7 x 2
+
+static char race_grid_buf[RACE_GRID_WIDTH*RACE_GRID_HEIGHT];		// the race buttons of the background
+static char species_grid_buf[RACE_GRID_WIDTH*RACE_GRID_HEIGHT];	// the species buttons made from them
+
+static void save_grid(char* gridBuf, int y1);
+static void restore_grid(const char* gridBuf, int y1);
+static void make_species_grid(int y1, const int* speciesArray);
 
 #define SGOPTION_PAGE           0x40000000
 #define SGOPTION_RACE           0x00000001
@@ -255,19 +271,47 @@ static int select_option()
 #endif
 	}
 
-	// --------- 7kmod-fryhtan: Fryhtan kingdom option ---------- //
+	// --------- 7kmod-fryhtan: the Humans / Fryhtans tabs ---------- //
 	//
-	// A "Fryhtan" button at the right of the first row of races and a species
-	// selector (< Rokken >) below it. While a Fryhtan kingdom is chosen the race
-	// buttons are darkened; choosing a race returns to a human kingdom.
+	// Two tabs at the right of the race buttons: Humans (the 10 races) and
+	// Fryhtans (the 13 species in the same place, 7 x 2). The tab follows the
+	// kingdom chosen (Config::fryhtan_monster_id), which is kept in 7KMOD.DAT.
 
-	const int fryhtanX1 = 222+5*BASIC_OPTION_X_SPACE;
-	const int fryhtanY1 = offsetY+81;
-	const int speciesY1 = fryhtanY1+BASIC_OPTION_HEIGHT;
+	const int tabX1 = RACE_GRID_X1+RACE_GRID_WIDTH;
+	const int fryhtanY1 = offsetY+81;		// the first row of races
+	const int fryhtanTabY1 = fryhtanY1+BASIC_OPTION_HEIGHT;
 
-	ButtonCustom fryhtanButton;
-	fryhtanButton.create(fryhtanX1, fryhtanY1, fryhtanX1+BASIC_OPTION_X_SPACE-1, fryhtanY1+BASIC_OPTION_HEIGHT-1,
+	ButtonCustom humanTab, fryhtanTab;
+	humanTab.create(tabX1, fryhtanY1, tabX1+BASIC_OPTION_X_SPACE-1, fryhtanY1+BASIC_OPTION_HEIGHT-1,
 		disp_virtual_button, ButtonCustomPara(NULL, 0), 0, 0);
+	fryhtanTab.create(tabX1, fryhtanTabY1, tabX1+BASIC_OPTION_X_SPACE-1, fryhtanTabY1+BASIC_OPTION_HEIGHT-1,
+		disp_virtual_button, ButtonCustomPara(NULL, 0), 0, 0);
+
+	//------ the species, in alphabetical order ------//
+
+	int speciesArray[FRYHTAN_SPECIES_COUNT];
+
+	for( i=0 ; i<FRYHTAN_SPECIES_COUNT ; i++ )
+		speciesArray[i] = i+1;
+
+	for( i=1 ; i<FRYHTAN_SPECIES_COUNT ; i++ )		// insertion sort by name
+	{
+		for( int j=i ; j>0 && strcmp(ModFryhtan::menu_species_name(speciesArray[j-1]), ModFryhtan::menu_species_name(speciesArray[j])) > 0 ; j-- )
+		{
+			int t = speciesArray[j]; speciesArray[j] = speciesArray[j-1]; speciesArray[j-1] = t;
+		}
+	}
+
+	ButtonCustomGroup speciesGroup(FRYHTAN_SPECIES_COUNT);
+
+	for( i=0 ; i<FRYHTAN_SPECIES_COUNT ; i++ )
+	{
+		int cellX1 = RACE_GRID_X1 + (i%SPECIES_COLUMNS)*SPECIES_CELL_WIDTH;
+		int cellY1 = fryhtanY1 + (i/SPECIES_COLUMNS)*BASIC_OPTION_HEIGHT;
+
+		speciesGroup[i].create(cellX1, cellY1, cellX1+SPECIES_CELL_WIDTH-1, cellY1+BASIC_OPTION_HEIGHT-1,
+			disp_species_button, ButtonCustomPara(&speciesGroup, speciesArray[i]), 0, 0);
+	}
 
 	int lastFryhtanMonsterId = ModFryhtan::is_valid_species(tempConfig.fryhtan_monster_id) ?
 										tempConfig.fryhtan_monster_id : FRYHTAN_DEFAULT_MONSTER_ID;
@@ -626,32 +670,43 @@ static int select_option()
 #endif
 					image_menu.put_back( 234, 15, menuTitleBitmap);
 
-					//--- 7kmod-fryhtan: the Fryhtan button and the species cell, made from the race buttons ---//
+					//--- 7kmod-fryhtan: the tabs and the species buttons, made from the race buttons ---//
 
-					make_option_cell( 222+4*BASIC_OPTION_X_SPACE, fryhtanY1, fryhtanX1, fryhtanY1, _("Fryhtan") );
-					make_option_cell( 222+4*BASIC_OPTION_X_SPACE, speciesY1, fryhtanX1, speciesY1, "" );
+					make_option_cell( RACE_GRID_X1+4*BASIC_OPTION_X_SPACE, fryhtanY1, tabX1, fryhtanY1, _("Humans") );
+					make_option_cell( RACE_GRID_X1+4*BASIC_OPTION_X_SPACE, fryhtanTabY1, tabX1, fryhtanTabY1, _("Fryhtans") );
+
+					save_grid( race_grid_buf, fryhtanY1 );
+					make_species_grid( fryhtanY1, speciesArray );
+					save_grid( species_grid_buf, fryhtanY1 );
+					restore_grid( tempConfig.fryhtan_monster_id ? species_grid_buf : race_grid_buf, fryhtanY1 );
 
 					vga_util.blt_buf(0,0,VGA_WIDTH-1,VGA_HEIGHT-1,0);
 				}
 				if( refreshFlag & (SGOPTION_RACE|SGOPTION_FRYHTAN_KINGDOM) )
 				{
-					if( tempConfig.fryhtan_monster_id )		// 7kmod-fryhtan: no race is chosen, darken the race buttons
-					{
-						for( i=0 ; i<MAX_RACE ; i++ )
-							raceGroup[i].paint(0);
+					//--- 7kmod-fryhtan: the grid of the active tab: races or species ---//
 
-						mouse.hide_area(222, fryhtanY1, fryhtanX1-1, speciesY1+BASIC_OPTION_HEIGHT-1);
-						IMGcopyRemap(vga_front.buf_ptr(), vga_front.buf_pitch(),
-							vga_back.buf_ptr(), vga_back.buf_pitch(),
-							222, fryhtanY1, fryhtanX1-1, speciesY1+BASIC_OPTION_HEIGHT-1,
-							vga.vga_color_table->get_table(-4) );
-						mouse.show_area();
+					restore_grid( tempConfig.fryhtan_monster_id ? species_grid_buf : race_grid_buf, fryhtanY1 );
+
+					if( tempConfig.fryhtan_monster_id )
+					{
+						int speciesIndex = 0;
+
+						for( i=0 ; i<FRYHTAN_SPECIES_COUNT ; i++ )
+						{
+							if( speciesArray[i] == tempConfig.fryhtan_monster_id )
+								speciesIndex = i;
+						}
+
+						vga_util.blt_buf( RACE_GRID_X1, fryhtanY1, tabX1-1, fryhtanY1+RACE_GRID_HEIGHT-1, 0 );		// the empty cell
+						speciesGroup.paint( speciesIndex );
 					}
 					else
 						raceGroup.paint( reverse_race_table[tempConfig.race_id-1] );
 
-					fryhtanButton.paint( tempConfig.fryhtan_monster_id ? 1 : 0 );
-					disp_fryhtan_kingdom( fryhtanX1, speciesY1, tempConfig, lastFryhtanMonsterId );
+					humanTab.paint( tempConfig.fryhtan_monster_id ? 0 : 1 );
+					fryhtanTab.paint( tempConfig.fryhtan_monster_id ? 1 : 0 );
+					disp_fryhtan_kingdom( tempConfig, lastFryhtanMonsterId );
 				}
 				if( refreshFlag & SGOPTION_COLOR )
 					colorGroup.paint( tempConfig.player_nation_color-1 );
@@ -679,7 +734,7 @@ static int select_option()
 					playerNameField.paint();
 
 					if( !(refreshFlag & (SGOPTION_RACE|SGOPTION_FRYHTAN_KINGDOM)) )		// 7kmod-fryhtan: the kingdom name follows the player name
-						disp_fryhtan_kingdom( fryhtanX1, speciesY1, tempConfig, lastFryhtanMonsterId );
+						disp_fryhtan_kingdom( tempConfig, lastFryhtanMonsterId );
 				}
 			}
 
@@ -837,37 +892,33 @@ static int select_option()
 		// --------- detect basic option -------- //
 		if( optionMode == OPTION_BASIC )
 		{
-			if( raceGroup.detect() >= 0)
+			if( !tempConfig.fryhtan_monster_id && raceGroup.detect() >= 0)
 			{
 				tempConfig.race_id = raceGroup[raceGroup()].custom_para.value;
-
-				if( tempConfig.fryhtan_monster_id )		// 7kmod-fryhtan: back to a human kingdom
+				//refreshFlag |= SGOPTION_RACE;
+			}
+			//--- 7kmod-fryhtan: the Humans / Fryhtans tabs and the species buttons ---//
+			else if( tempConfig.fryhtan_monster_id && speciesGroup.detect() >= 0 )
+			{
+				lastFryhtanMonsterId = speciesGroup[speciesGroup()].custom_para.value;
+				tempConfig.fryhtan_monster_id = lastFryhtanMonsterId;
+				refreshFlag |= SGOPTION_FRYHTAN_KINGDOM;		// the kingdom name below
+			}
+			else if( mouse.single_click(humanTab.x1, humanTab.y1, humanTab.x2, humanTab.y2) )
+			{
+				if( tempConfig.fryhtan_monster_id )		// back to a human kingdom
 				{
 					tempConfig.fryhtan_monster_id = 0;
 					refreshFlag |= SGOPTION_FRYHTAN_KINGDOM;
 				}
-				//refreshFlag |= SGOPTION_RACE;
 			}
-			//--- 7kmod-fryhtan: the Fryhtan button and the species selector ---//
-			else if( mouse.single_click(fryhtanX1, fryhtanY1, fryhtanX1+BASIC_OPTION_X_SPACE-1, fryhtanY1+BASIC_OPTION_HEIGHT-1) )
+			else if( mouse.single_click(fryhtanTab.x1, fryhtanTab.y1, fryhtanTab.x2, fryhtanTab.y2) )
 			{
 				if( !tempConfig.fryhtan_monster_id )
 				{
 					tempConfig.fryhtan_monster_id = lastFryhtanMonsterId;
 					refreshFlag |= SGOPTION_FRYHTAN_KINGDOM;
 				}
-			}
-			else if( mouse.single_click(fryhtanX1, speciesY1, fryhtanX1+BASIC_OPTION_X_SPACE/2-1, speciesY1+BASIC_OPTION_HEIGHT-1) )
-			{
-				lastFryhtanMonsterId = ModFryhtan::menu_next_species(lastFryhtanMonsterId, -1);
-				tempConfig.fryhtan_monster_id = lastFryhtanMonsterId;
-				refreshFlag |= SGOPTION_FRYHTAN_KINGDOM;
-			}
-			else if( mouse.single_click(fryhtanX1+BASIC_OPTION_X_SPACE/2, speciesY1, fryhtanX1+BASIC_OPTION_X_SPACE-1, speciesY1+BASIC_OPTION_HEIGHT-1) )
-			{
-				lastFryhtanMonsterId = ModFryhtan::menu_next_species(lastFryhtanMonsterId, 1);
-				tempConfig.fryhtan_monster_id = lastFryhtanMonsterId;
-				refreshFlag |= SGOPTION_FRYHTAN_KINGDOM;
 			}
 			else if( colorGroup.detect() >= 0)
 			{
@@ -1275,38 +1326,13 @@ static void make_option_cell(int srcX, int srcY, int destX, int destY, const cha
 
 //------ Begin of static function disp_fryhtan_kingdom ------//
 //
-// 7kmod-fryhtan: display the species selector (< Rokken >) and, below the
-// player name, the name and the size of the Fryhtan kingdom.
+// 7kmod-fryhtan: display, below the player name, the name and the size of
+// the Fryhtan kingdom.
 //
-static void disp_fryhtan_kingdom(int x1, int y1, Config& tempConfig, int lastMonsterId)
+static void disp_fryhtan_kingdom(Config& tempConfig, int lastMonsterId)
 {
 	const int offsetY = 124;
-	int x2 = x1+BASIC_OPTION_X_SPACE-1, y2 = y1+BASIC_OPTION_HEIGHT-1;
-
-	//------- the species selector -------//
-
-	mouse.hide_area(x1, y1, x2, y2);
-
-	if( tempConfig.fryhtan_monster_id )
-	{
-		IMGcopy(vga_front.buf_ptr(), vga_front.buf_pitch(), vga_back.buf_ptr(), vga_back.buf_pitch(), x1, y1, x2, y2);
-	}
-	else
-	{
-		IMGcopyRemap(vga_front.buf_ptr(), vga_front.buf_pitch(), vga_back.buf_ptr(), vga_back.buf_pitch(),
-			x1, y1, x2, y2, vga.vga_color_table->get_table(-4) );
-	}
-
 	const char* speciesName = ModFryhtan::menu_species_name(lastMonsterId);
-
-	font_san.put( x1+4, y1+9, "<" );
-	font_san.put( x2-9, y1+9, ">" );
-
-	Font* nameFont = font_san.text_width(speciesName) <= x2-x1-22 ? &font_san : &font_small;		// the long names use the small font
-
-	nameFont->center_put( x1+10, y1+2, x2-10, y2-2, speciesName );
-
-	mouse.show_area();
 
 	//------- the name and the size of the kingdom below the player name -------//
 
@@ -1392,3 +1418,145 @@ static void disp_virtual_tick(ButtonCustom *button, int )
 
 	mouse.show_area();
 }
+
+
+//------ Begin of static function save_grid / restore_grid ------//
+//
+// 7kmod-fryhtan: save or put back the area of the race buttons in the
+// background (vga_back).
+//
+static void save_grid(char* gridBuf, int y1)
+{
+	for( int y=0 ; y<RACE_GRID_HEIGHT ; y++ )
+		memcpy( gridBuf+y*RACE_GRID_WIDTH, vga_back.buf_ptr(RACE_GRID_X1, y1+y), RACE_GRID_WIDTH );
+}
+
+static void restore_grid(const char* gridBuf, int y1)
+{
+	for( int y=0 ; y<RACE_GRID_HEIGHT ; y++ )
+		memcpy( vga_back.buf_ptr(RACE_GRID_X1, y1+y), gridBuf+y*RACE_GRID_WIDTH, RACE_GRID_WIDTH );
+}
+//------ End of static function save_grid / restore_grid ------//
+
+
+//------ Begin of static function make_species_grid ------//
+//
+// 7kmod-fryhtan: make the 13 species buttons (and an empty one) in the area
+// of the race buttons of the background (vga_back), from a race button
+// (race_grid_buf must have been saved): the left part of the button and its
+// right border, with the text erased and the name of the species written.
+//
+static void make_species_grid(int y1, const int* speciesArray)
+{
+	const int rightBorder = 6;
+	unsigned int seed = 23456;		// a local generator, not misc.random(), which the game uses
+
+	for( int i=0 ; i<SPECIES_COLUMNS*2 ; i++ )
+	{
+		int col = i%SPECIES_COLUMNS, row = i/SPECIES_COLUMNS;
+		int destX = RACE_GRID_X1 + col*SPECIES_CELL_WIDTH;
+		int destY = y1 + row*BASIC_OPTION_HEIGHT;
+		const char* srcCell = race_grid_buf + row*BASIC_OPTION_HEIGHT*RACE_GRID_WIDTH;		// the first race button of the row
+
+		//------- copy the button, narrower -------//
+
+		int x, y;
+
+		for( y=0 ; y<BASIC_OPTION_HEIGHT ; y++ )
+		{
+			char* destPtr = vga_back.buf_ptr(destX, destY+y);
+			const char* srcPtr = srcCell + y*RACE_GRID_WIDTH;
+
+			memcpy( destPtr, srcPtr, SPECIES_CELL_WIDTH-rightBorder );
+			memcpy( destPtr+SPECIES_CELL_WIDTH-rightBorder, srcPtr+BASIC_OPTION_X_SPACE-rightBorder, rightBorder );
+		}
+
+		//--- erase the text with pixels picked from the face of the button above the text ---//
+
+		const int faceX1 = 6, faceX2 = SPECIES_CELL_WIDTH-rightBorder-2;
+		const int bandY1 = 4, bandY2 = 6;
+		const int textY1 = 7, textY2 = BASIC_OPTION_HEIGHT-6;		// also the tails of letters like the g of Mughul
+
+		for( y=textY1 ; y<=textY2 ; y++ )
+		{
+			for( x=faceX1 ; x<=SPECIES_CELL_WIDTH-rightBorder ; x++ )
+			{
+				seed = seed * 1103515245 + 12345;
+				int pickX = faceX1 + (seed>>16) % (faceX2-faceX1+1);
+				int pickY = bandY1 + (seed>>8) % (bandY2-bandY1+1);
+
+				*vga_back.buf_ptr(destX+x, destY+y) = *vga_back.buf_ptr(destX+pickX, destY+pickY);
+			}
+		}
+
+		//------------ the name of the species ------------//
+
+		if( i >= FRYHTAN_SPECIES_COUNT )		// the empty button at the end
+			continue;
+
+		const char* text = ModFryhtan::menu_species_name(speciesArray[i]);
+
+		//--- the same font for all the names: the race font if all fit, else the smaller ones ---//
+
+		static Font* fontPtr = NULL;
+
+		if( !fontPtr )
+		{
+			Font* fontArray[] = { &font_std, &font_san, &font_mid, &font_small };
+			int f;
+
+			for( f=0 ; f<4 ; f++ )
+			{
+				int k;
+				for( k=0 ; k<FRYHTAN_SPECIES_COUNT ; k++ )
+				{
+					if( fontArray[f]->text_width(ModFryhtan::menu_species_name(speciesArray[k])) > SPECIES_CELL_WIDTH-10 )
+						break;
+				}
+
+				if( k==FRYHTAN_SPECIES_COUNT )
+					break;
+			}
+
+			fontPtr = fontArray[ MIN(f,3) ];
+		}
+
+		int textWidth = fontPtr->text_width(text);
+		int textX = destX + (SPECIES_CELL_WIDTH-textWidth)/2 - 1;
+		int textY = destY + (BASIC_OPTION_HEIGHT-fontPtr->height())/2 - 1;
+
+		for( int boldX=0 ; boldX<2 ; boldX++ )		// drawn twice, 1 pixel apart, to look as bold as the race names
+			fontPtr->put_slanted( vga_back.buf_ptr(), vga_back.buf_pitch(), textX+boldX, textY, text );
+	}
+}
+//------ End of static function make_species_grid ------//
+
+
+//------ Begin of static function disp_species_button ------//
+//
+// 7kmod-fryhtan: a species button, as disp_virtual_button() for a button
+// narrower than the race buttons (a black frame instead of BAS_DOWN).
+//
+static void disp_species_button(ButtonCustom *button, int)
+{
+	mouse.hide_area(button->x1, button->y1, button->x2, button->y2);
+
+	if( !button->pushed_flag )
+	{
+		IMGcopy(vga_front.buf_ptr(), vga_front.buf_pitch(),
+			vga_back.buf_ptr(), vga_back.buf_pitch(),
+			button->x1, button->y1, button->x2, button->y2 );
+	}
+	else
+	{
+		IMGcopyRemap(vga_front.buf_ptr(), vga_front.buf_pitch(),
+			vga_back.buf_ptr(), vga_back.buf_pitch(),
+			button->x1, button->y1, button->x2, button->y2,
+			vga.vga_color_table->get_table(-2) );
+
+		vga_front.rect( button->x1, button->y1, button->x2, button->y2, 2, V_BLACK );
+	}
+
+	mouse.show_area();
+}
+//------ End of static function disp_species_button ------//
