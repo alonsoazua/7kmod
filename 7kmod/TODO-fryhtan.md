@@ -479,6 +479,15 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
 - **Pendiente para la fase 6:** los Fryhtans salvajes todavía atacan al reino, así que
   construir junto a una guarida salvaje es peligroso hasta entonces.
 
+### Ajustes anotados (después de la fase 5)
+- [ ] **Tributo de captura ×5:** el costo de una guarida salvaje pasa de la suma de los
+      combates × $2 a la suma × **$10**. Por ejemplo, la oferta Rattus de la prueba
+      (Ordo 63 + soldados 178) costaría $2,410 en lugar de $482.
+- [ ] **Línea de enlace:** dibujar una línea entre cada guarida del jugador y las
+      guaridas salvajes enlazadas a ella (a 8 casillas o menos), como la línea punteada
+      de un fuerte con un pueblo. Se ve al seleccionar la guarida del jugador o la
+      guarida salvaje.
+
 ### Fase 6: diplomacia y Fryhtans salvajes
 - [ ] Sin comercio, amistad ni alianza con un reino Fryhtan (jugador e IA).
 - [ ] Los reinos de la IA no se pueden rendir a un reino Fryhtan (ni ofrecer la
