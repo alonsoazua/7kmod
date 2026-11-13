@@ -60,7 +60,7 @@ siendo humanos. Solo partidas de un jugador (sin multijugador).
 - **Fryhtans salvajes:** no atacan a los reinos Fryhtan.
 - **Diplomacia:** los reinos humanos no pueden comerciar ni hacer pactos de amistad o de
   alianza con un reino Fryhtan. Sí se permiten la paz, el cese al fuego, la guerra, el
-  tributo y la ayuda.
+  tributo y la ayuda. Los reinos de la IA **no se pueden rendir** a un reino Fryhtan.
 
 ---
 
@@ -300,8 +300,8 @@ el código que indexa la raza del reino no falle. La IA no usa esa raza
 - **Edificios capturados:** una vez al día, cualquier edificio de un reino Fryhtan que
   no sea una de sus guaridas se destruye (`FirmArray::process`). El general, los
   trabajadores y el constructor que tenga adentro mueren con él. Cubre todas las
-  formas de quedarse con un edificio (rendición de un reino, pueblos enlazados, etc.)
-  sin tocar cada una.
+  formas de quedarse con un edificio (pueblos enlazados, etc.) sin tocar cada una. La
+  rendición de un reino de la IA ante un reino Fryhtan se quitará en la fase 6.
 - **Probado:** matar a los defensores de un pueblo independiente (+$5 y +5 de comida
   cada uno) y pasar los fuertes de la IA al reino Fryhtan con un gancho temporal de
   prueba (se destruyeron con sus soldados).
@@ -323,6 +323,8 @@ el código que indexa la raza del reino no falle. La IA no usa esa raza
 
 ### Fase 6: diplomacia y Fryhtans salvajes
 - [ ] Sin comercio, amistad ni alianza con un reino Fryhtan (jugador e IA).
+- [ ] Los reinos de la IA no se pueden rendir a un reino Fryhtan (ni ofrecer la
+      rendición ni aceptarla).
 - [ ] Los Fryhtans salvajes no atacan al reino Fryhtan.
 
 ### Fase 7: cierre
