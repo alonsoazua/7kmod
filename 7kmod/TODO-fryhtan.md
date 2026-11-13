@@ -719,3 +719,18 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
 - **Probado** con un Rokken: pueblo maya de 20 enlazado a la guarida, tributo de $160
   (con el liderazgo 60 del rey) y la ayuda de Train dice "uses 3 population. Fryhtan
   population: 15/40". La gracia no se probó en partida.
+
+- [ ] **Los Ordos construyen guaridas de su especie.** Hoy toda guarida que construye el
+      reino es de la especie principal (`Firm::init` le pone la especie del reino), sin
+      importar quién la construye. Un reino puede tener Ordos de otras especies (por
+      ejemplo, el de una guarida salvaje capturada); con el cambio, la guarida que
+      construye un Ordo es de la especie de ese Ordo (y la del rey, de la especie del
+      rey). Hay que tomar la especie del constructor al empezar la construcción.
+- [ ] **Train entrena la especie de la guarida.** El soldado y el Ordo que se entrenan
+      en una guarida deben ser de la especie de esa guarida (su ícono, su nombre en la
+      ayuda de Train, su costo de población y su tiempo de entrenamiento).
+      - Según el código, Train ya usa la especie guardada en la guarida, y una guarida
+        capturada guarda la especie salvaje. El caso que hoy falla es el de una guarida
+        construida por un Ordo de otra especie (sale de la especie principal, así que
+        entrena la principal); se arregla con el punto anterior. Hay que revisar también
+        las guaridas capturadas al probarlo.
