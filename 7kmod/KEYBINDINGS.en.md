@@ -3,7 +3,7 @@
 **English** | [Español](KEYBINDINGS.md)
 
 Complete list of the keys and mouse combinations of the game 2.15.7 and of the mod's
-executables (`7kaa-mod.exe` and `7kaa-gameplay.exe`), taken from the code. Shortcuts
+executables (`7k-newAdversaries.exe` and `7k-newAdversaries-Classic.exe`), taken from the code. Shortcuts
 added by the mod are marked **(mod)**.
 
 ## Before you start

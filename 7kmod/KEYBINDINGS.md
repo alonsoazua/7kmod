@@ -3,7 +3,7 @@
 [English](KEYBINDINGS.en.md) | **Español**
 
 Lista completa de las teclas y combinaciones con el ratón del juego 2.15.7 y de los
-ejecutables del mod (`7kaa-mod.exe` y `7kaa-gameplay.exe`), sacada del código. Los
+ejecutables del mod (`7k-newAdversaries.exe` y `7k-newAdversaries-Classic.exe`), sacada del código. Los
 atajos que agrega el mod están marcados como **(mod)**.
 
 ## Antes de empezar

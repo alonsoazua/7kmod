@@ -13,7 +13,9 @@ source code (`ConfigAdv.cpp` and the places in the game that use each option).
 ### Where the file goes
 The game looks for `config.txt` in this order and uses the first one it finds:
 1. **The executable's settings folder.** For the mod's executables it's
-   `%APPDATA%\7kfans.com\7kaa-mod\` (the same folder as the saved games and `CONFIG.DAT`).
+   `%APPDATA%\7kfans.com\7k-newAdversaries\` (New Adversaries) or
+   `%APPDATA%\7kfans.com\7k-newAdversaries-Classic\` (Classic), the same folder as the
+   saved games and `CONFIG.DAT`.
    For the official game it's `%APPDATA%\7kfans.com\7kaa\`.
 2. **The folder the game is run from** (for example `Desktop\7kaa`).
 

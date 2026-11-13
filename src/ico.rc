@@ -23,13 +23,13 @@ BEGIN
 		BEGIN
 			VALUE "Comments",         ""
 			VALUE "CompanyName",      "7kfans.com"
-            VALUE "FileDescription",  "Seven Kingdoms: Ancient Adversaries executable for Windows (from the open-source project)"
+            VALUE "FileDescription",  "New Adversaries, a mod of Seven Kingdoms: Ancient Adversaries (from the open-source project)"
             VALUE "FileVersion",      SKVERSION
             VALUE "InternalName",     "7kaa"
 			VALUE "LegalCopyright",   "Source code under GPL license"
             VALUE "LegalTrademarks",  "Seven Kingdoms is a trademark of Enlight Software"
             VALUE "OriginalFilename", "7kaa.exe"
-            VALUE "ProductName",      "Seven Kingdoms: Ancient Adversaries"
+            VALUE "ProductName",      "New Adversaries (a Seven Kingdoms mod)"
             VALUE "ProductVersion",   SKVERSION
 		END
 	END
