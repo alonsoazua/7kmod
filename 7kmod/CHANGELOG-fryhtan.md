@@ -68,6 +68,18 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
   - Cada persona esclavizada sube en 1 el **tope de población** Fryhtan.
   - Si pierde el enlace con todas las guaridas, se vuelve independiente.
   - Al destruir o vender una guarida ya no aparece un fuerte humano.
+- **Cierre** (fase 7):
+  - **Sucesión:** si muere el All High, el Ordo con más combate pasa a ser el nuevo
+    All High (si no hay Ordos, el Fryhtan con más combate) y el reino toma su nombre
+    ("Zhovrek The All High", "Zhovrek Wyrm Horde").
+  - **Derrota:** el reino pierde solo cuando ya no tiene guaridas ni Fryhtans.
+  - Fin de partida con textos "Your Horde has …" e imágenes propias (los Fryhtans si
+    ganas, los humanos celebrando si pierdes). El Hall of Fame muestra "<nombre> The
+    All High".
+  - Reportes: "Lair" con su costo en Villages, "In Lair" en Military, y los Fryhtans
+    cuentan en el puntaje de población del Ranking.
+  - Al colocar una guarida se ven las **líneas hacia las guaridas salvajes** que quedarían
+    enlazadas.
 - **Diplomacia y Fryhtans salvajes** (fase 6):
   - Con un reino Fryhtan no hay comercio, amistad, alianza, embargo, compra de comida ni
     rendición. Sí hay guerra, cese al fuego, tributo, ayuda y tecnología.

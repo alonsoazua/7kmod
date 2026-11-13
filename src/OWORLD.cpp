@@ -44,6 +44,8 @@
 #include <OREMOTE.h>
 #include <ONEWS.h>
 #include <ConfigAdv.h>
+#include <ModFryhtan.h>
+#include <ONATION.h>
 
 
 //------------ Define static class variables ------------//
@@ -1419,6 +1421,36 @@ void World::draw_link_line(int srcFirmId, int srcTownRecno, int srcXLoc1,
 				  + ZOOM_Y1 + (firmPtr->loc_y2-zoom_matrix->top_y_loc+1) * ZOOM_LOC_HEIGHT ) / 2;
 
 		anim_line.draw_line(&vga_back, srcX, srcY, firmX, firmY);
+	}
+
+	//--- 7kmod-fryhtan: placing a lair, the lines to the wild lairs it would be linked to ---//
+
+	if( srcFirmId == FIRM_CAMP && nation_array.player_recno && mod_fryhtan.is_fryhtan(nation_array.player_recno) )
+	{
+		for( i=firm_array.size() ; i>0 ; i-- )
+		{
+			if( firm_array.is_deleted(i) )
+				continue;
+
+			firmPtr = firm_array[i];
+
+			if( firmPtr->firm_id != FIRM_MONSTER || firmPtr->nation_recno )
+				continue;
+
+			if( misc.rects_distance(firmPtr->loc_x1, firmPtr->loc_y1, firmPtr->loc_x2, firmPtr->loc_y2,
+				 srcXLoc1, srcYLoc1, srcXLoc2, srcYLoc2) > LAIR_CAPTURE_DISTANCE )
+			{
+				continue;
+			}
+
+			firmX = ( ZOOM_X1 + (firmPtr->loc_x1-zoom_matrix->top_x_loc) * ZOOM_LOC_WIDTH
+					  + ZOOM_X1 + (firmPtr->loc_x2-zoom_matrix->top_x_loc+1) * ZOOM_LOC_WIDTH ) / 2;
+
+			firmY = ( ZOOM_Y1 + (firmPtr->loc_y1-zoom_matrix->top_y_loc) * ZOOM_LOC_HEIGHT
+					  + ZOOM_Y1 + (firmPtr->loc_y2-zoom_matrix->top_y_loc+1) * ZOOM_LOC_HEIGHT ) / 2;
+
+			anim_line.draw_line(&vga_back, srcX, srcY, firmX, firmY);
+		}
 	}
 }
 //----------- End of function World::draw_link_line ------------//

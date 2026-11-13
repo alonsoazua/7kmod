@@ -30,6 +30,7 @@
 #include <OSPY.h>
 #include <OUNIT.h>
 #include <ONEWS.h>
+#include <ModFryhtan.h>
 
 
 //------ Begin of function NewsArray::diplomacy -----//
@@ -199,7 +200,10 @@ void NewsArray::nation_surrender(int nationRecno, int toNationRecno)
 //
 void NewsArray::king_die(int nationRecno)
 {
-	add_news( NEWS_KING_DIE, NEWS_NORMAL, nationRecno );
+	News* newsPtr = add_news( NEWS_KING_DIE, NEWS_NORMAL, nationRecno );
+
+	if( newsPtr )		// 7kmod-fryhtan: 1-the All High of a Fryhtan kingdom
+		newsPtr->short_para1 = mod_fryhtan.is_fryhtan(nationRecno) ? 1 : 0;
 }
 //------- End of function NewsArray::king_die -----//
 

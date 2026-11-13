@@ -223,7 +223,7 @@ el código que indexa la raza del reino no falle. La IA no usa esa raza
     guarida tiene su propia regla de influencia.
   - ~~Fase 7: la lista de partidas guardadas muestra "King <nombre>" con retrato
     humano~~ (pasó a los ajustes después de la fase 4); fase 7: los mensajes de fin de partida dicen "<nombre>'s Kingdom"; la imagen de fin de
-    partida y el Hall of Fame usan la raza interna; sucesión del rey.
+    partida y el Hall of Fame usan la raza interna; sucesión del rey. (Hecho en la fase 7.)
 - **Nota:** los Fryhtans del reino tienen las reglas de los Fryhtans invocados de
   gameplay (+25% de daño, regeneración, comida).
 
@@ -511,13 +511,15 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
   tributo de $5,940 por una oferta Droog de base $1,980 (×3), pago y captura.
 
 ### Ajustes anotados (después de la fase 6)
-- [ ] **Línea de enlace al colocar la guarida:** al elegir dónde construir una guarida
+- [x] **Línea de enlace al colocar la guarida:** al elegir dónde construir una guarida
       (Build → Lair, con el cuadro de colocación siguiendo al mouse), se dibujan las
       líneas hacia las guaridas salvajes que quedarían enlazadas desde ese lugar (a 8
       casillas o menos), igual que al colocar un fuerte se ven las líneas hacia los
       pueblos que enlazaría (`World::draw_link_line`). Así se sabe antes de construir
       qué guaridas salvajes se podrán capturar desde ahí. Se siguen viendo también las
       líneas normales del fuerte hacia los pueblos.
+      Hecho en `World::draw_link_line()`; probado con un Ordo junto a una guarida
+      salvaje.
 
 ### Fase 6: diplomacia y Fryhtans salvajes
 - [x] Sin comercio, amistad ni alianza con un reino Fryhtan (jugador e IA).
@@ -548,12 +550,49 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
   soldados y armas de asedio, lo que es normal.
 
 ### Fase 7: cierre
-- [ ] Reportes (F1–F8) con sentido para un reino Fryhtan.
-- [ ] Condición de derrota y sucesión del rey.
-- [ ] Guardar y cargar.
-- [ ] Pruebas en Linux y ejecutable de Windows.
-- [ ] `CHANGELOG-fryhtan.md` y `CHANGELOG-fryhtan.en.md` (creados en la fase 1; se
+- [x] Reportes (F1–F8) con sentido para un reino Fryhtan.
+- [x] Condición de derrota y sucesión del rey.
+- [x] Guardar y cargar.
+- [x] Pruebas en Linux y ejecutable de Windows.
+- [x] `CHANGELOG-fryhtan.md` y `CHANGELOG-fryhtan.en.md` (creados en la fase 1; se
       actualizan en cada fase).
+
+#### Cómo quedó la fase 7
+
+- **Sucesión** (`ModFryhtan::think_succeed_king`, cada día sin rey): el nuevo All High es
+  el Ordo con más combate (en el mapa o al mando de una guarida); si no hay Ordos, el
+  Fryhtan con más combate en el mapa; si tampoco, el soldado con más combate de una
+  guarida (sale de ella). Se queda con su nombre de Ordo (o recibe uno de la lista) y
+  el reino toma ese nombre: "Zhovrek The All High", "Zhovrek Wyrm Horde". El nombre se
+  guarda como el nombre del jugador (`NationArray::human_name_array`), así todo lo que
+  muestra el nombre del reino o del rey sigue funcionando.
+  - Noticias: "Your All High has been slain." y "<nombre> is your new All High.".
+  - Si no queda ningún Fryhtan pero sí guaridas, el reino sigue sin rey y el primer
+    Fryhtan que se entrene pasa a ser el All High.
+- **Derrota:** el reino pierde cuando no tiene rey, ni guaridas, ni unidades Fryhtan
+  (`NationBase::check_lose`). Antes solo contaba humanos y pueblos.
+- **Fin de partida:**
+  - Textos "Your Horde has …" en lugar de "Your Kingdom has …" (derrota, tiempo
+    límite y metas).
+  - Imagen: al ganar, la de los Fryhtans sobre el campo de batalla (`LOSEGAME`, la que
+    el juego usa cuando pierdes contra ellos); al perder, la de la raza humana interna
+    (los humanos celebrando).
+  - "Final Population" suma los Fryhtans.
+- **Hall of Fame:** "<nombre> The All High" (con la misma marca de especie que la lista
+  de partidas) y la población con los Fryhtans.
+- **Reportes:**
+  - Villages: los fuertes de la lista de edificios se llaman "Lair" con su costo real
+    ($100 al año).
+  - Military: "In Lair" y sin la fila "Human General".
+  - Ranking: el puntaje de población suma los Fryhtans del reino.
+  - Kingdoms (fases 2 y 6), Economy (fases 3 y 4), Trade, Technology y Espionage se
+    ven bien sin cambios (vacíos para un reino Fryhtan).
+- **Guardar y cargar:** probado con una partida del jugador de la versión anterior
+  (con una oferta pendiente): se carga, se guarda y se vuelve a cargar con la oferta y
+  la lista de partidas con el retrato del Rattus.
+- **Probado** (con ganchos temporales que mataron al rey): sucesión con un Ordo
+  ("Zhovrek"), sin Ordos (sale el mejor soldado de la guarida, "Vazzrik") y derrota al
+  destruir la única guarida con todos adentro.
 
 ---
 

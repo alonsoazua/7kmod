@@ -68,6 +68,18 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   - Each enslaved person raises the Fryhtan **population cap** by 1.
   - If it loses the link with all the lairs, it becomes independent.
   - Destroying or selling a lair no longer shows a human Fort.
+- **Closing** (phase 7):
+  - **Succession:** if the All High dies, the Ordo with the best combat becomes the new
+    All High (without Ordos, the Fryhtan with the best combat) and the kingdom takes
+    his name ("Zhovrek The All High", "Zhovrek Wyrm Horde").
+  - **Defeat:** the kingdom only loses when it has no lairs and no Fryhtans left.
+  - End of game with "Your Horde has …" texts and its own pictures (the Fryhtans if you
+    win, the humans celebrating if you lose). The Hall of Fame shows "<name> The All
+    High".
+  - Reports: "Lair" with its cost in Villages, "In Lair" in Military, and the Fryhtans
+    count in the population score of the Ranking.
+  - When placing a lair, the **lines to the wild lairs** it would be linked to are
+    shown.
 - **Diplomacy and wild Fryhtans** (phase 6):
   - With a Fryhtan kingdom there is no trade, friendship, alliance, embargo, food
     purchase or surrender. War, ceasefire, tribute, aid and technology are allowed.

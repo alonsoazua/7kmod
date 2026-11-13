@@ -566,7 +566,9 @@ void NationBase::set_king(int kingUnitRecno, int firstKing)
 
 	//---------- king related vars ----------//
 
-	if( nation_type == NATION_AI || !firstKing )		// for succession, no longer use the original player name
+	if( mod_fryhtan.is_fryhtan(nation_recno) )		// 7kmod-fryhtan: the name of the new All High is kept as the player's name (ModFryhtan::think_succeed_king())
+		nation_name_id = -nation_recno;
+	else if( nation_type == NATION_AI || !firstKing )		// for succession, no longer use the original player name
 		nation_name_id = kingUnit->name_id;
 	else
 		nation_name_id = -nation_recno;   // for human players, the name is retrieved from NationArray::human_name_array
@@ -759,7 +761,13 @@ void NationBase::next_day()
 	//-- if the player still hasn't selected a unit to succeed the died king, declare defeated if the all units are killed --//
 
 	if( !king_unit_recno )
-		check_lose();
+	{
+		if( mod_fryhtan.is_fryhtan(nation_recno) )		// 7kmod-fryhtan: the best Ordo becomes the new All High
+			mod_fryhtan.think_succeed_king(nation_recno);
+
+		if( !king_unit_recno )
+			check_lose();
+	}
 
 	//---------- debug code --------------//
 /*
@@ -2010,6 +2018,15 @@ void NationBase::check_win()
 //
 void NationBase::check_lose()
 {
+	//--- 7kmod-fryhtan: a Fryhtan kingdom is defeated without lairs and units ---//
+
+	if( mod_fryhtan.is_fryhtan(nation_recno) )
+	{
+		if( !king_unit_recno && !mod_fryhtan.has_lair_or_unit(nation_recno) )
+			defeated();
+		return;
+	}
+
 	//---- if the king of this nation is dead and it has no people left ----//
 
 	if( !king_unit_recno && !has_people() )
@@ -2188,6 +2205,9 @@ void NationBase::update_nation_rating()
 //
 int NationBase::get_population_rating()
 {
+	if( mod_fryhtan.is_fryhtan(nation_recno) )		// 7kmod-fryhtan: with the Fryhtans of the kingdom
+		return all_population() + mod_fryhtan.nation_population(nation_recno);
+
 	return all_population();
 }
 //------ End of function NationBase::get_population_rating -----//

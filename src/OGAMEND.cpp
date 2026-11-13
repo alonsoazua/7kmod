@@ -44,6 +44,9 @@
 #include <PlayerStats.h>
 // ####### begin Gilbert 29/10 ########//
 #include <OPOWER.h>
+#include <ModFryhtan.h>
+
+#define FRYHTAN_PLAYER	( nation_array.player_recno && mod_fryhtan.is_fryhtan(nation_array.player_recno) )		// 7kmod-fryhtan
 // ####### end Gilbert 29/10 ########//
 #include "gettext.h"
 
@@ -132,10 +135,15 @@ void Game::game_end(int winNationRecno, int playerDestroyed, int surrenderToNati
 
 		if( winNationRecno && (winNationRecno == nation_array.player_recno) )
 		{
-			fileName = race_res[(~nation_array)->race_id]->code;
+			if( FRYHTAN_PLAYER )		// 7kmod-fryhtan: the picture of the Fryhtans over a battlefield, for a Fryhtan victory
+				fileName = "LOSEGAME";
+			else
+				fileName = race_res[(~nation_array)->race_id]->code;
 			songId = 9;
 			winFlag = 1;
 		}
+		else if( FRYHTAN_PLAYER && nation_array.player_recno )		// 7kmod-fryhtan: a defeated Fryhtan kingdom: the humans celebrate
+			fileName = race_res[(~nation_array)->race_id]->code;
 		else
 			fileName = "LOSEGAME";
 
@@ -280,7 +288,7 @@ static void disp_goal_str(int winNationRecno)
 		if( winNationRecno == nation_array.player_recno )
 		{
 			str += "\n";
-			str += _("Your Kingdom has Achieved the Highest Fryhtan Battling Score !");
+			str += (FRYHTAN_PLAYER ? _("Your Horde has Achieved the Highest Fryhtan Battling Score !") : _("Your Kingdom has Achieved the Highest Fryhtan Battling Score !"));
 		}
 		else
 		{
@@ -297,7 +305,7 @@ static void disp_goal_str(int winNationRecno)
 		if( winNationRecno == nation_array.player_recno )
 		{
 			// TRANSLATORS: Your Kingdom has Reached its Population/Economic Score/Total Score Goal of <Number> !
-			snprintf(str2, MAX_STR_LEN+1, _("Your Kingdom has Reached its Population Goal of %s !"), misc.format(config.goal_population));
+			snprintf(str2, MAX_STR_LEN+1, (FRYHTAN_PLAYER ? _("Your Horde has Reached its Population Goal of %s !") : _("Your Kingdom has Reached its Population Goal of %s !")), misc.format(config.goal_population));
 		}
 		else
 		{
@@ -315,7 +323,7 @@ static void disp_goal_str(int winNationRecno)
 		if( winNationRecno == nation_array.player_recno )
 		{
 			// TRANSLATORS: Your Kingdom has Reached its Population/Economic Score/Total Score Goal of <Number> !
-			snprintf(str2, MAX_STR_LEN+1, _("Your Kingdom has Reached its Economic Score Goal of %s !"), misc.format(config.goal_economic_score));
+			snprintf(str2, MAX_STR_LEN+1, (FRYHTAN_PLAYER ? _("Your Horde has Reached its Economic Score Goal of %s !") : _("Your Kingdom has Reached its Economic Score Goal of %s !")), misc.format(config.goal_economic_score));
 		}
 		else
 		{
@@ -333,7 +341,7 @@ static void disp_goal_str(int winNationRecno)
 		if( winNationRecno == nation_array.player_recno )
 		{
 			// TRANSLATORS: Your Kingdom has Reached its Population/Economic Score/Total Score Goal of <Number> !
-			snprintf(str2, MAX_STR_LEN+1, _("Your Kingdom has Reached its Total Score Goal of %s !"), misc.format(config.goal_total_score));
+			snprintf(str2, MAX_STR_LEN+1, (FRYHTAN_PLAYER ? _("Your Horde has Reached its Total Score Goal of %s !") : _("Your Kingdom has Reached its Total Score Goal of %s !")), misc.format(config.goal_total_score));
 		}
 		else
 		{
@@ -350,7 +358,7 @@ static void disp_goal_str(int winNationRecno)
 	{
 		if( winNationRecno == nation_array.player_recno )
 		{
-			str += _("Your Kingdom has Defeated All Other Kingdoms !");
+			str += (FRYHTAN_PLAYER ? _("Your Horde has Defeated All Other Kingdoms !") : _("Your Kingdom has Defeated All Other Kingdoms !"));
 		}
 		else
 		{
@@ -389,11 +397,11 @@ static void disp_losing_str(int surrenderToNationRecno)
 
 	else if( config.goal_year_limit_flag && info.game_date >= info.goal_deadline )
 	{
-		str = _("Your Kingdom has Failed to Achieve its Goal Within the Time Limit.");
+		str = (FRYHTAN_PLAYER ? _("Your Horde has Failed to Achieve its Goal Within the Time Limit.") : _("Your Kingdom has Failed to Achieve its Goal Within the Time Limit."));
 	}
 	else		// you're defeated by another kingdom
 	{
-		str = _("Your Kingdom has Gone Down to Ignominious Defeat !");
+		str = (FRYHTAN_PLAYER ? _("Your Horde has Gone Down to Ignominious Defeat !") : _("Your Kingdom has Gone Down to Ignominious Defeat !"));
 	}
 
 	font_bible.center_put(0, 0, VGA_WIDTH-1, 139, str );
@@ -426,7 +434,8 @@ static void disp_stat()
 	put_stat( y		, _("Duration of Your Rule"), info.game_duration_str() );
 	put_stat( y+=20, _("Total Gaming Time"), info.play_time_str() );
 
-	put_stat( y+=30, _("Final Population"), nationPtr->all_population() );
+	put_stat( y+=30, _("Final Population"), nationPtr->all_population() +
+		(mod_fryhtan.is_fryhtan(nationPtr->nation_recno) ? mod_fryhtan.nation_population(nationPtr->nation_recno) : 0) );		// 7kmod-fryhtan: with the Fryhtans
 	put_stat( y+=20, _("Final Treasure")  , misc.format((int)nationPtr->cash,2) );
 
 	put_stat( y+=30, _("Enemy Soldiers Dispatched"), nationPtr->enemy_soldier_killed );

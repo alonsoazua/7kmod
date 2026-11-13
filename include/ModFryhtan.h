@@ -161,7 +161,13 @@ public:
 	//------ names of the Ordos ------//
 
 	static const char*	ordo_name(Unit* unitPtr);		// NULL if the unit has no Ordo name
+	static const char*	ordo_name_by_id(int nameId);		// NULL if the name id. is not an Ordo name
 	int	new_ordo_name_id(int nationRecno);
+
+	//------ succession and defeat (phase 7) ------//
+
+	int	think_succeed_king(int nationRecno);
+	int	has_lair_or_unit(int nationRecno);
 	void	draw_lair(Firm* firmPtr, int displayLayer);
 
 	static int	firm_setup_cost(int firmId, int nationRecno);

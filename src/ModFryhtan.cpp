@@ -557,7 +557,13 @@ const char* ModFryhtan::ordo_name(Unit* unitPtr)
 	if( unitPtr->race_id || unitPtr->rank_id != RANK_GENERAL )
 		return NULL;
 
-	int nameIndex = (int) unitPtr->name_id - ORDO_NAME_ID_BASE;
+	return ordo_name_by_id(unitPtr->name_id);
+}
+
+
+const char* ModFryhtan::ordo_name_by_id(int nameId)
+{
+	int nameIndex = nameId - ORDO_NAME_ID_BASE;
 
 	if( nameIndex < 1 || nameIndex > ORDO_NAME_COUNT )
 		return NULL;
@@ -1637,3 +1643,147 @@ int ModFryhtan::pay_lair_tribute(int firmRecno, int nationRecno)
 	return lairRecno;
 }
 //----------- End of function ModFryhtan::pay_lair_tribute -----------//
+
+
+//--------- Begin of function ModFryhtan::think_succeed_king ---------//
+//
+// 7kmod-fryhtan, phase 7: when the All High of a Fryhtan kingdom dies, the
+// Ordo with the best combat (on the map or commanding a lair) becomes the new
+// All High. Without Ordos, the Fryhtan with the best combat on the map, and
+// without those, the one with the best combat in a lair (it comes out).
+//
+// The new All High keeps his Ordo name (or gets one of the list), and the
+// kingdom is called by it ("<name> <species> Horde"). The name is kept as the
+// player's name (NationArray::human_name_array), so all the places that show
+// the name of the kingdom or of its king keep working.
+//
+// return: <int> 1 if there is a new All High
+//
+int ModFryhtan::think_succeed_king(int nationRecno)
+{
+	Nation* nationPtr = nation_array[nationRecno];
+
+	if( nationPtr->king_unit_recno || !is_fryhtan(nationRecno) )
+		return 0;
+
+	//------ the best Ordo, or the best Fryhtan on the map ------//
+
+	int bestUnitRecno=0, bestRank= -1, bestCombat= -1;
+	int i;
+
+	for( i=unit_array.size() ; i>0 ; i-- )
+	{
+		if( unit_array.is_deleted(i) )
+			continue;
+
+		Unit* unitPtr = unit_array[i];
+
+		if( unitPtr->nation_recno != nationRecno || unit_res[unitPtr->unit_id]->unit_class != UNIT_CLASS_MONSTER ||
+			 !unitPtr->is_visible() && unitPtr->unit_mode != UNIT_MODE_OVERSEE )
+		{
+			continue;
+		}
+
+		if( unitPtr->hit_points <= 0 || unitPtr->cur_action == SPRITE_DIE )
+			continue;
+
+		int rank = unitPtr->rank_id==RANK_GENERAL ? 1 : 0;
+		int combat = unitPtr->skill.combat_level;
+
+		if( rank > bestRank || (rank==bestRank && combat > bestCombat) )
+		{
+			bestRank = rank;
+			bestCombat = combat;
+			bestUnitRecno = i;
+		}
+	}
+
+	//------ none on the map: the best soldier of a lair comes out ------//
+
+	if( !bestUnitRecno )
+	{
+		Firm* bestFirm = NULL;
+		int bestWorkerId = 0;
+
+		for( i=firm_array.size() ; i>0 ; i-- )
+		{
+			if( firm_array.is_deleted(i) )
+				continue;
+
+			Firm* firmPtr = firm_array[i];
+
+			if( firmPtr->nation_recno != nationRecno || !is_lair(firmPtr) )
+				continue;
+
+			for( int j=0 ; j<firmPtr->worker_count ; j++ )
+			{
+				if( firmPtr->worker_array[j].combat_level > bestCombat )
+				{
+					bestCombat = firmPtr->worker_array[j].combat_level;
+					bestFirm = firmPtr;
+					bestWorkerId = j+1;
+				}
+			}
+		}
+
+		if( bestFirm )
+			bestUnitRecno = bestFirm->mobilize_worker( bestWorkerId, COMMAND_AUTO );
+	}
+
+	if( !bestUnitRecno || unit_array.is_deleted(bestUnitRecno) )
+		return 0;
+
+	//------ his name ------//
+
+	Unit* kingUnit = unit_array[bestUnitRecno];
+
+	if( !ordo_name_by_id(kingUnit->name_id) )
+		kingUnit->name_id = (uint16_t) new_ordo_name_id(nationRecno);
+
+	char nameStr[HUMAN_NAME_LEN+1];
+
+	strncpy( nameStr, ordo_name_by_id(kingUnit->name_id), HUMAN_NAME_LEN );
+	nameStr[HUMAN_NAME_LEN] = '\0';
+
+	nation_array.set_human_name( nationRecno, nameStr );
+
+	//------ the succession (news, set_king) ------//
+
+	nationPtr->succeed_king( bestUnitRecno );
+	return 1;
+}
+//----------- End of function ModFryhtan::think_succeed_king -----------//
+
+
+//--------- Begin of function ModFryhtan::has_lair_or_unit ---------//
+//
+// 7kmod-fryhtan, phase 7: a Fryhtan kingdom is defeated when it has no lairs
+// and no units left.
+//
+int ModFryhtan::has_lair_or_unit(int nationRecno)
+{
+	int i;
+
+	for( i=firm_array.size() ; i>0 ; i-- )
+	{
+		if( !firm_array.is_deleted(i) && firm_array[i]->nation_recno == nationRecno && is_lair(firm_array[i]) )
+			return 1;
+	}
+
+	for( i=unit_array.size() ; i>0 ; i-- )
+	{
+		if( unit_array.is_deleted(i) )
+			continue;
+
+		Unit* unitPtr = unit_array[i];
+
+		if( unitPtr->nation_recno == nationRecno && unit_res[unitPtr->unit_id]->unit_class == UNIT_CLASS_MONSTER &&
+			 unitPtr->hit_points > 0 )
+		{
+			return 1;
+		}
+	}
+
+	return 0;
+}
+//----------- End of function ModFryhtan::has_lair_or_unit -----------//

@@ -442,7 +442,11 @@ void News::king_die()
 	//
 	//----------------------------------------------//
 
-	if( nation_array.player_recno && nation_name_id1 == (~nation_array)->nation_name_id )
+	if( short_para1 == 1 )		// 7kmod-fryhtan: the All High of a Fryhtan kingdom (the name of the kingdom is that of the new All High)
+	{
+		snprintf(str, MAX_STR_LEN+1, "%s", _("Your All High has been slain."));
+	}
+	else if( nation_array.player_recno && nation_name_id1 == (~nation_array)->nation_name_id )
 	{
 		// TRANSLATORS: Your King, <Name>, has been slain.
 		snprintf(str, MAX_STR_LEN+1, _("Your King, %s, has been slain."), king_name1());
@@ -476,7 +480,14 @@ void News::new_king()
 	//
 	//----------------------------------------------//
 
-	if( nation_array.player_recno && nation_name_id1 == (~nation_array)->nation_name_id )
+	if( short_para1 == 0 )		// 7kmod-fryhtan: an Ordo of a Fryhtan kingdom (no race)
+	{
+		const char* ordoName = ModFryhtan::ordo_name_by_id( (uint16_t) short_para2 );
+
+		// TRANSLATORS: <Name> is the new All High of your Fryhtan kingdom.
+		snprintf(str, MAX_STR_LEN+1, _("%s is your new All High."), ordoName ? ordoName : "");
+	}
+	else if( nation_array.player_recno && nation_name_id1 == (~nation_array)->nation_name_id )
 	{
 		// TRANSLATORS: <Name> has ascended the throne as your new King.
 		snprintf(str, MAX_STR_LEN+1, _("%s has ascended the throne as your new King."), race_res[short_para1]->get_name(short_para2));

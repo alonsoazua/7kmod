@@ -38,6 +38,7 @@
 #include <OMOUSE.h>
 #include <OWORLD.h>
 #include <OSE.h>
+#include <ModFryhtan.h>
 #include "gettext.h"
 
 //------------- Define coordinations -----------//
@@ -494,7 +495,10 @@ static void put_troop_rec(int recNo, int x, int y, int refreshFlag)
 	{
 		int firmId = firm_array[ unitPtr->unit_mode_para ]->firm_id;
 
-		if( firmId == FIRM_CAMP )
+		if( firmId == FIRM_CAMP && mod_fryhtan.is_lair(firm_array[unitPtr->unit_mode_para]) )		// 7kmod-fryhtan
+			statusStr = _("In Lair");
+
+		else if( firmId == FIRM_CAMP )
 			statusStr = _("In Fort");
 
 		else if( firmId == FIRM_BASE )
@@ -541,10 +545,13 @@ static int unit_filter(int recNo)
 
 	Nation* nationPtr = nation_array[info.viewing_nation_recno];
 
-	unitTypeCount++;
+	if( !mod_fryhtan.is_fryhtan(info.viewing_nation_recno) )		// 7kmod-fryhtan: a Fryhtan kingdom has no human generals
+	{
+		unitTypeCount++;
 
-	if( recNo && unitTypeCount==recNo )
-		return -1;
+		if( recNo && unitTypeCount==recNo )
+			return -1;
+	}
 
 	//------- count non-human unit types -------//
 
