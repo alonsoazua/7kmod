@@ -347,7 +347,11 @@ int ModFryhtan::can_train_in_lair(int firmRecno, int trainType)
 	if( nation_array[firmPtr->nation_recno]->food < train_food(trainType) )
 		return 0;
 
-	if( nation_population(firmPtr->nation_recno) + lair_train_population(firmRecno) >
+	if( nation_array[firmPtr->nation_recno]->cash < train_cost(lairPtr->monster_id) )
+		return 0;
+
+	if( FRYHTAN_POPULATION_LIMIT &&
+		 nation_population(firmPtr->nation_recno) + lair_train_population(firmRecno) >
 		 nation_population_cap(firmPtr->nation_recno) )
 	{
 		return 0;
@@ -360,7 +364,7 @@ int ModFryhtan::can_train_in_lair(int firmRecno, int trainType)
 
 //--------- Begin of function ModFryhtan::add_lair_train ---------//
 //
-// Queue one Fryhtan for training in the lair. The food is paid now.
+// Queue one Fryhtan for training in the lair. The gold and the food are paid now.
 //
 int ModFryhtan::add_lair_train(int firmRecno, int trainType)
 {
@@ -371,6 +375,7 @@ int ModFryhtan::add_lair_train(int firmRecno, int trainType)
 	Firm* firmPtr = firm_array[firmRecno];
 
 	nation_array[firmPtr->nation_recno]->consume_food( (float) train_food(trainType) );
+	nation_array[firmPtr->nation_recno]->add_expense( EXPENSE_TRAIN_UNIT, (float) train_cost(lairPtr->monster_id) );
 
 	if( trainType == LAIR_TRAIN_ORDO )
 		lairPtr->ordo_mask |= (1 << lairPtr->train_count);
@@ -384,7 +389,7 @@ int ModFryhtan::add_lair_train(int firmRecno, int trainType)
 //--------- Begin of function ModFryhtan::cancel_lair_train ---------//
 //
 // Remove the last Fryhtan of the given type (soldier or Ordo) from the
-// training queue, returning its food.
+// training queue, returning its gold and food.
 //
 int ModFryhtan::cancel_lair_train(int firmRecno, int trainType)
 {
@@ -409,6 +414,7 @@ int ModFryhtan::cancel_lair_train(int firmRecno, int trainType)
 	Firm* firmPtr = firm_array[firmRecno];
 
 	nation_array[firmPtr->nation_recno]->add_food( (float) train_food(trainType) );
+	nation_array[firmPtr->nation_recno]->add_expense( EXPENSE_TRAIN_UNIT, (float) -train_cost(lairPtr->monster_id) );		// the gold back
 
 	//------ remove it, the ones after it move one place forward ------//
 
@@ -866,7 +872,7 @@ const char* ModFryhtan::monster_name(int monsterId)
 //
 const char* ModFryhtan::monster_size_text(int monsterId)
 {
-	return is_large_monster(monsterId) ? _("Large: 3 population") : _("Small: 2 population");
+	return is_large_monster(monsterId) ? _("Large: $200 per unit") : _("Small: $150 per unit");
 }
 //----------- End of function ModFryhtan::monster_size_text -----------//
 
@@ -921,7 +927,7 @@ const char* ModFryhtan::menu_species_size_text(int monsterId)
 		return "";
 
 	return menu_species_level_array[monsterId-1] >= FRYHTAN_LARGE_MIN_LEVEL ?
-			 _("Large: 3 population") : _("Small: 2 population");
+			 _("Large: $200 per unit") : _("Small: $150 per unit");
 }
 //----------- End of function ModFryhtan::menu_species_size_text -----------//
 

@@ -931,6 +931,16 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       (`LAIR_SMALL_TRAIN_DAYS`). El Ordo queda igual (40 / 20 días). La barra de progreso y
       la ayuda de Train muestran los días nuevos (probado: "Train a Rokken ... in 15 days").
 
+- [x] **Prueba: sin límite de población y entrenar cuesta oro.** El tope de población
+      Fryhtan queda desactivado (`FRYHTAN_POPULATION_LIMIT` 0; el cálculo sigue en el
+      código). Entrenar un soldado o un Ordo cuesta **$150** (especie pequeña) o **$200**
+      (grande), además de la comida de siempre (20 / 40); se cobra al ponerlo en la cola y
+      se devuelve con clic derecho. El Ordo tarda **20** (pequeño) o **30** días (grande),
+      antes 20 / 40. La ayuda de Train dice el oro y la comida; el reporte de reinos
+      muestra solo cuántos Fryhtans hay; New Game dice "Large: $200 per unit" / "Small:
+      $150 per unit". Probado: Train de Rokken cobró $200 y 20 de comida, y el clic
+      derecho los devolvió.
+
 ## 8. Economía oscura (en diseño)
 
 El diseño en borrador está en `DISENO-fryhtan-oscuro.md`: el Enforcer de los pueblos

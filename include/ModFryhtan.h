@@ -32,6 +32,7 @@ class File;
 
 enum { FRYHTAN_LARGE_MIN_LEVEL = 6 };		// monster level from which a Fryhtan is large (FRYHTAN_LARGE_POPULATION)
 enum { FRYHTAN_BASE_POPULATION = 20 };
+enum { FRYHTAN_POPULATION_LIMIT = 0 };		// 1: training is limited by the Fryhtan population cap (off for now)
 enum { FRYHTAN_SMALL_POPULATION = 2,		// population taken by a small Fryhtan of the kingdom
 		 FRYHTAN_LARGE_POPULATION = 3 };		// and by a large one
 enum { FRYHTAN_SPECIES_COUNT = 13 };			// no. of records in MONSTER.DBF
@@ -48,11 +49,14 @@ enum { LAIR_SETUP_COST = 500,						// cost of building a lair
 enum { LAIR_TRAIN_FOOD = 20,						// food used for training a Fryhtan in a lair
 		 LAIR_TRAIN_DAYS = 15,						// days needed for training it (a large one)
 		 LAIR_SMALL_TRAIN_DAYS = 10,				// days needed for training a small one
+		 LAIR_SMALL_TRAIN_COST = 150,			// gold for training a small Fryhtan, soldier or Ordo
+		 LAIR_LARGE_TRAIN_COST = 200,			// gold for training a large one
 		 LAIR_TRAIN_COMBAT = 20,					// combat level of a trained Fryhtan
 		 LAIR_MAX_TRAIN_QUEUE = 8 };
 
 enum { LAIR_ORDO_FOOD = 40,						// food used for training an Ordo (general) in a lair
-		 LAIR_ORDO_DAYS = 40,						// days needed for training it
+		 LAIR_ORDO_DAYS = 30,						// days needed for training it (a large one)
+		 LAIR_SMALL_ORDO_DAYS = 20,				// days needed for training a small one
 		 LAIR_ORDO_COMBAT = 30,						// combat level of a trained Ordo
 		 LAIR_ORDO_LEADERSHIP = 30 };				// leadership of a trained Ordo
 
@@ -173,10 +177,13 @@ public:
 	int	add_lair_soldier(Firm* firmPtr, int monsterId, int combatLevel=LAIR_TRAIN_COMBAT);
 	int	add_lair_ordo(Firm* firmPtr, int monsterId);
 	static int	train_food(int trainType)	{ return trainType==LAIR_TRAIN_ORDO ? LAIR_ORDO_FOOD : LAIR_TRAIN_FOOD; }
-	// days needed for training: a small Fryhtan soldier takes LAIR_SMALL_TRAIN_DAYS, a small Ordo half the time
+	// days needed for training, by the size of the species
 	static int	train_days(int trainType, int monsterId)
-					{ if( trainType==LAIR_TRAIN_ORDO ) return is_large_monster(monsterId) ? LAIR_ORDO_DAYS : LAIR_ORDO_DAYS/2;
+					{ if( trainType==LAIR_TRAIN_ORDO ) return is_large_monster(monsterId) ? LAIR_ORDO_DAYS : LAIR_SMALL_ORDO_DAYS;
 					  return is_large_monster(monsterId) ? LAIR_TRAIN_DAYS : LAIR_SMALL_TRAIN_DAYS; }
+
+	// gold for training a soldier or an Ordo, by the size of the species
+	static int	train_cost(int monsterId)	{ return is_large_monster(monsterId) ? LAIR_LARGE_TRAIN_COST : LAIR_SMALL_TRAIN_COST; }
 
 	//------ names of the Ordos ------//
 
