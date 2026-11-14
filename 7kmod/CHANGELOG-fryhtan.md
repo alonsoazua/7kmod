@@ -77,7 +77,7 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
     peleando.
   - En los dos casos hace falta una guarida enlazada al pueblo.
   - El pueblo esclavizado no recluta, no entrena y no paga impuestos: paga un **tributo
-    de $5 por persona al mes** ("Tribute from Enslaved Towns"), que sube con el liderazgo
+    de $3 por persona al mes** ("Tribute from Enslaved Towns"), que sube con el liderazgo
     del mejor general de las guaridas enlazadas (el doble con liderazgo 100). Produce comida, crece, no
     se rebela y su gente no se va.
   - Cada persona esclavizada sube en 1 el **tope de población** Fryhtan.
@@ -113,7 +113,9 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
   en su ayuda si no se puede) abre una vista con la raza principal, la población, la
   resistencia, lo que da el Raid y los defensores, con los botones **Raid village** y
   **Cancel**. Una vez cada 2 meses por pueblo:
-  - Roba $1 y 1 de comida por persona (hasta 30) y baja la resistencia 5.
+  - Roba **$2 y 2 de comida por persona** (hasta 60, es decir 30 personas), por
+    (100 + liderazgo) / 100 del general de la guarida que hace el Raid: el doble con
+    liderazgo 100. Baja la resistencia 5.
   - Salen hasta 1 defensor por cada 10 personas, más 1 (y +1 con resistencia mayor de
     50, +2 mayor de 80), y atacan la guarida del mejor general. El primero es el líder:
     combate +20 y se lleva el doble de resistencia. Cada defensor que muere baja la
@@ -123,6 +125,22 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
   - Por ahora no mata aldeanos.
   - Noticia con lo robado y los defensores.
 - El **All High del inicio** tiene liderazgo **100** (antes 60).
+- **Las construcciones del reino se reparan solas**, como si tuvieran un constructor de
+  skill 20: 1 punto de vida cada 5 días, salvo mientras las atacan o con el oro en
+  negativo.
+- **Ninguna unidad humana se une al reino Fryhtan:**
+  - Los espías humanos no pueden disfrazarse de un reino Fryhtan (ni en su menú ni los
+    de la IA, que tampoco los mandan a pueblos esclavizados). Antes un espía de la IA
+    salía de un pueblo disfrazado de tu reino con el mensaje de que una unidad se había
+    unido.
+  - Un espía enemigo que estaba en un pueblo que esclavizaste sale de ahí como unidad
+    independiente, y si deja de ser espía se queda como aldeano.
+  - Las unidades que traicionan, los rebeldes sin líder y los aldeanos de la propaganda
+    no se pasan a un reino Fryhtan, y los aldeanos de un pueblo esclavizado no le
+    entregan un edificio humano (captura por trabajadores).
+- **Corregido:** al morir un Ordo, la noticia mostraba texto basura en lugar del
+  nombre. Ahora dice "Your Ordo, <nombre>, has been slain."; también se corrigió el
+  nombre en las noticias de asesinato, traición y honores.
 - **Pueblos esclavizados sin guarida:** un pueblo esclavizado que se queda sin ninguna
   guarida enlazada sigue siendo del reino **3 meses** (sin tributo y sin rebelarse); si
   en ese tiempo vuelve a tener una guarida enlazada, sigue esclavizado. Al terminar se

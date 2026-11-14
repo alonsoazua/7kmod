@@ -73,12 +73,15 @@ enum { KILL_GOLD_UNIT		= 2,					// gold for killing a human soldier, villager or
 		 KILL_FOOD_GENERAL	= 20,					// a human general
 		 KILL_FOOD_KING		= 100 };				// a human king
 
-enum { LOST_LAIR_GRACE_DAYS = 90 };			// an enslaved town without a linked lair becomes independent after this
+enum { LOST_LAIR_GRACE_DAYS = 90 };
+
+enum { FRYHTAN_REPAIR_DAYS = 5 };				// the buildings of a Fryhtan kingdom recover 1 hit point in this time, like a construction worker of skill 20			// an enslaved town without a linked lair becomes independent after this
 
 //--- raiding an independent town from a linked lair ---//
 
 enum { RAID_INTERVAL_DAYS = 60,				// a town can be raided once in this time
-		 RAID_MAX_LOOT = 30,						// at most this much gold and food ($1 and 1 food per person)
+		 RAID_LOOT_PER_PERSON = 2,				// gold and food stolen for each person, x (100 + leadership) / 100...
+		 RAID_MAX_LOOT = 60,						// ...from at most this much before the leadership (30 people)
 		 RAID_PEOPLE_PER_DEFENDER = 10,			// one defender attacks the lair for each this many people, plus one...
 		 RAID_RESISTANCE_EXTRA1 = 50,			// ...one more above this resistance...
 		 RAID_RESISTANCE_EXTRA2 = 80,			// ...and two more above this one
@@ -89,7 +92,7 @@ enum { RAID_INTERVAL_DAYS = 60,				// a town can be raided once in this time
 enum { ENSLAVE_MIN_RESISTANCE = 45,			// the lairs lower the resistance of an independent town down to this
 		 ENSLAVED_TOWN_LOYALTY  = 50,			// fixed loyalty of the people of an enslaved town with an Ordo or the king in a linked lair
 		 ENSLAVED_TOWN_NO_COMMANDER_LOYALTY = 0,	// its target loyalty when no Ordo or king commands a linked lair
-		 TRIBUTE_PER_PERSON		= 5 };			// monthly tribute of an enslaved town for each person
+		 TRIBUTE_PER_PERSON		= 3 };			// monthly tribute of an enslaved town for each person
 
 class Firm;
 class Unit;
@@ -251,6 +254,7 @@ public:
 	int	raid_max_defender(Town* townPtr, int nationRecno);		// the most defenders that come out
 	int	raid_defender_count(Town* townPtr, int nationRecno);	// about how many defenders will come out
 	int	is_raid_weakened(Town* townPtr, int nationRecno);		// its resistance is too low to raid it
+	int	raid_loot(Town* townPtr, int nationRecno);			// the gold (and food) a raid steals
 	int	raid_town(Town* townPtr, int nationRecno);
 	void	reward_town_villager(int nationRecno);			// a villager killed in a town attacked by a Fryhtan kingdom
 	//------ economy (phase 3) ------//

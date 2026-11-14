@@ -613,7 +613,7 @@ void NewsArray::unit_betray(int unitRecno, int betrayToNationRecno)
 	if( !newsPtr )		// only news of nations that have contact with the player are added
 		return;
 
-	newsPtr->short_para1 = unitPtr->race_id;
+	newsPtr->short_para1 = unitPtr->race_id ? unitPtr->race_id : -unitPtr->unit_id;		// 7kmod-fryhtan: minus the unit id. for a Fryhtan
 	newsPtr->short_para2 = unitPtr->name_id;
 	newsPtr->short_para3 = unitPtr->rank_id;
 
@@ -648,7 +648,7 @@ void NewsArray::unit_assassinated(int unitRecno, int spyKilled)
 	if( !newsPtr )		// only news of nations that have contact with the player are added
 		return;
 
-	newsPtr->short_para1 = unitPtr->race_id;
+	newsPtr->short_para1 = unitPtr->race_id ? unitPtr->race_id : -unitPtr->unit_id;		// 7kmod-fryhtan: minus the unit id. for a Fryhtan
 	newsPtr->short_para2 = unitPtr->name_id;
 	newsPtr->short_para3 = unitPtr->rank_id;
 	newsPtr->short_para4 = spyKilled;
@@ -709,7 +709,7 @@ void NewsArray::general_die(int unitRecno)
 	if( !newsPtr )		// only news of nations that have contact with the player are added
 		return;
 
-	newsPtr->short_para1 = unitPtr->race_id;
+	newsPtr->short_para1 = unitPtr->race_id ? unitPtr->race_id : -unitPtr->unit_id;		// 7kmod-fryhtan: minus the unit id. for a Fryhtan
 	newsPtr->short_para2 = unitPtr->name_id;
 
 	//------- set location --------//
@@ -738,7 +738,7 @@ void NewsArray::general_honors(int unitRecno)
 
 	newsPtr->short_para1 = unitRecno;
 	newsPtr->short_para2 = unitPtr->name_id;
-	newsPtr->short_para3 = unitPtr->race_id;
+	newsPtr->short_para3 = unitPtr->race_id ? unitPtr->race_id : -unitPtr->unit_id;		// 7kmod-fryhtan: minus the unit id. for a Fryhtan
 
 	short xLoc, yLoc;
 

@@ -73,7 +73,7 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   - A town of a human kingdom is enslaved by fighting the loyalty of its people down to
     0.
   - In both cases a lair linked to the town is needed.
-  - The enslaved town doesn't recruit, train or pay taxes: it pays a **tribute of $5 per
+  - The enslaved town doesn't recruit, train or pay taxes: it pays a **tribute of $3 per
     person a month** ("Tribute from Enslaved Towns"), which goes up with the leadership
     of the best general of the linked lairs (double with leadership 100). It produces food, grows, doesn't
     rebel and its people don't leave.
@@ -111,7 +111,9 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   it can't be done) opens a view with the main race, the population, the resistance,
   what the raid gives and the defenders, with the **Raid village** and **Cancel**
   buttons. Once every 2 months per town:
-  - It steals $1 and 1 food per person (up to 30) and lowers the resistance by 5.
+  - It steals **$2 and 2 food per person** (up to 60, that is 30 people), times
+    (100 + leadership) / 100 of the general of the lair that raids: double with
+    leadership 100. It lowers the resistance by 5.
   - Up to 1 defender per 10 people plus 1 comes out (+1 with a resistance over 50, +2
     over 80) and attacks the lair of the best general. The first one is the leader:
     combat +20, and it carries twice the resistance. Each defender killed lowers the
@@ -121,6 +123,21 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   - For now it doesn't kill villagers.
   - A news message with the loot and the defenders.
 - The **starting All High** has leadership **100** (60 before).
+- **The kingdom's buildings repair themselves**, as if they had a construction worker
+  of skill 20: 1 hit point every 5 days, except while under attack or with negative
+  gold.
+- **No human unit joins the Fryhtan kingdom:**
+  - Human spies can't cloak as a Fryhtan kingdom (neither in their menu nor the AI's,
+    which doesn't send them to enslaved towns either). Before, an AI spy came out of a
+    town cloaked as your kingdom with the message that a unit had joined.
+  - An enemy spy who was in a town you enslaved leaves it as an independent unit, and if
+    he stops being a spy he stays as a villager.
+  - Betraying units, leaderless rebels and propaganda villagers don't go over to a
+    Fryhtan kingdom, and the villagers of an enslaved town don't hand it a human
+    building (capture by workers).
+- **Fixed:** when an Ordo died, the news showed garbage text instead of the name. Now
+  it says "Your Ordo, <name>, has been slain."; the name in the assassination, betrayal
+  and honors news was fixed too.
 - **Enslaved towns without a lair:** an enslaved town left without any linked lair
   stays in the kingdom for **3 months** (no tribute, no rebellion); if it's linked to a
   lair again in that time, it stays enslaved. Then it becomes independent with the news

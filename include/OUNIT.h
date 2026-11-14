@@ -748,6 +748,7 @@ protected:
 	void  disp_spy_menu(int dispY1, int refreshFlag);
 	void  detect_spy_menu(int dispY1);
 	int   spy_menu_height();
+	int   can_spy_cloak_as(int nationRecno);		// 7kmod-fryhtan
 	void  disp_hit_point(int dispY1);
 	int   detect_select_hotkey();
 

@@ -877,7 +877,7 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
 - **Ejemplo** de la prueba: pueblo de 16 con resistencia 86 → 4 defensores (1 + 1 + 2),
   resistencia a 55 al salir (el líder se lleva el doble, más la baja base de 5).
 
-- [ ] **Ajuste de tributo y Raid.**
+- [x] **Ajuste de tributo y Raid.**
       - **Tributo de los pueblos esclavizados:** baja de $5 a **$3 por persona** al mes
         (`TRIBUTE_PER_PERSON`). El liderazgo del general (o el rey) de la guarida enlazada
         lo sigue subiendo como hoy: x2 con liderazgo 100.
@@ -890,6 +890,9 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       - Actualizar el texto de la vista de Raid (lo que se obtiene) y la noticia.
       - Ejemplo: pueblo de 16 y general con liderazgo 60 → 16 × 2 × 1.6 = **$51 y 51 de
         comida** (hoy $16 y 16).
+      - **Cómo quedó:** `TRIBUTE_PER_PERSON` 3; `RAID_LOOT_PER_PERSON` 2 y `RAID_MAX_LOOT`
+        60; `ModFryhtan::raid_loot` calcula lo robado (lo usan `raid_town` y la vista de
+        Raid); la noticia ya mostraba la cantidad robada.
 
 - [x] **Gracia de 3 meses al perder la guarida de un pueblo esclavizado.** Hoy, en cuanto
       un pueblo esclavizado se queda sin guarida enlazada (`ModFryhtan::next_day_town`),
@@ -955,7 +958,7 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       $150 per unit". Probado: Train de Rokken cobró $200 y 20 de comida, y el clic
       derecho los devolvió.
 
-- [ ] **Bug: unidades humanas que se unen al reino Fryhtan a mitad de partida.** En
+- [x] **Bug: unidades humanas que se unen al reino Fryhtan a mitad de partida.** En
       pruebas se unieron unidades humanas al reino Fryhtan; un reino Fryhtan no debe
       tener unidades humanas (fuera de las del diseño de la economía oscura).
       - **Caso visto:** salió el mensaje de que se unió una unidad, que venía saliendo de
@@ -984,8 +987,25 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         aldeano). Al elegir a quién traicionar se saltan los reinos Fryhtan, y si el reino
         Fryhtan captura un edificio humano, la gente de adentro no se une (se va o se
         vuelve independiente).
+      - **Causa más probable del caso visto:** un espía de la IA en un pueblo independiente
+        sale de ahí y se **disfraza de tu reino** para meterse en un pueblo esclavizado
+        (`Nation::think_assign_spy_target_town`); al cambiar de disfraz sale la noticia
+        "Independent unit … has joined your force." (`Unit::spy_change_nation`).
+      - **Cómo quedó:**
+        - Ningún espía puede disfrazarse de un reino Fryhtan que no sea el suyo
+          (`Unit::spy_change_nation`); el menú de disfraz del espía no muestra los reinos
+          Fryhtan (`Unit::can_spy_cloak_as`), y la IA no manda espías a pueblos
+          esclavizados (`think_assign_spy_target_town`, `ai_assign_spy`).
+        - Un espía que sale de un pueblo esclavizado disfrazado del reino Fryhtan sale como
+          unidad independiente, sin noticia (`Spy::mobilize_town_spy`). Si deja de ser
+          espía estando en el pueblo, se queda como aldeano; fuera del pueblo no deja de
+          ser espía (`Spy::think_betray`).
+        - `Unit::think_betray` y `Rebel::process_leader_quit` saltan los reinos Fryhtan;
+          la propaganda no le da aldeanos (`ModSpy::add_villager`), y un reino Fryhtan no
+          puede capturar un edificio humano por sus trabajadores
+          (`Firm::can_worker_capture`).
 
-- [ ] **Bug: texto basura en la noticia cuando muere un general Fryhtan.** La noticia
+- [x] **Bug: texto basura en la noticia cuando muere un general Fryhtan.** La noticia
       "Your general, <nombre>, has been slain." (`News::general_die`) saca el nombre de la
       tabla de nombres de la raza (`race_res[race_id]`), pero los Fryhtans no tienen raza
       (`race_id` 0), así que lee memoria que no es suya y sale basura.
@@ -996,8 +1016,15 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       - Revisar las demás noticias que usan el nombre de la raza con unidades que
         podrían ser Fryhtans: general asesinado por un espía (`News::unit_assassinated`),
         general que te traiciona o se independiza, y el general que pide honores.
+      - **Cómo quedó:** las noticias guardan, para un Fryhtan, menos su tipo de unidad en
+        lugar de la raza, y `news_unit_name` (`ONEWSENG.cpp`) usa el nombre del Ordo (por
+        ejemplo "Feskul") o el de la especie. La noticia dice "Your Ordo, Feskul, has been
+        slain."; el asesinato dice "Your Ordo, …" o "Your All High has been
+        assassinated by an enemy spy."; también traición y honores. Los nombres de Ordo
+        (desde 60000) no caben en un `short`, así que se leen como `uint16_t`. Probado:
+        un Ordo muerto da "Your Ordo, Feskul, has been slain."
 
-- [ ] **Las construcciones Fryhtan se regeneran solas.** Hoy un edificio solo se repara
+- [x] **Las construcciones Fryhtan se regeneran solas.** Hoy un edificio solo se repara
       si tiene un constructor adentro, y los Fryhtans no tienen constructores. La idea es
       que las construcciones del reino Fryhtan (guaridas) recuperen vida solas, como si
       tuvieran un constructor de skill 20.
@@ -1006,6 +1033,8 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       - Igual que con un constructor: no se repara mientras el edificio está bajo ataque
         (hasta un día después del último golpe), ni si el reino tiene el oro en negativo.
       - Solo para las construcciones de reinos Fryhtan; las guaridas salvajes no cambian.
+      - **Cómo quedó:** en `Firm::next_day`, con `FRYHTAN_REPAIR_DAYS` 5, sin constructor
+        y fuera de construcción. Probado: una guarida a 180/200 subió 1 punto cada 5 días.
 
 ## 8. Economía oscura (en diseño)
 

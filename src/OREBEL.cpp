@@ -31,6 +31,7 @@
 #include <ORACERES.h>
 #include <ONATION.h>
 #include <ConfigAdv.h>
+#include <ModFryhtan.h>
 
 
 //--------- Begin of function RebelArray::RebelArray ----------//
@@ -328,6 +329,9 @@ void Rebel::process_leader_quit()
 				continue;
 
 			nationPtr = nation_array[i];
+
+			if( mod_fryhtan.is_fryhtan(i) )		// 7kmod-fryhtan: human rebels don't join a Fryhtan kingdom
+				continue;
 
 			if( nationPtr->reputation > maxReputation )
 			{

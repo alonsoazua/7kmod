@@ -1591,6 +1591,26 @@ int ModFryhtan::raid_lair(Town* townPtr, int nationRecno)
 //----------- End of function ModFryhtan::raid_lair -----------//
 
 
+//--------- Begin of function ModFryhtan::raid_loot ---------//
+//
+// The gold (and the same food) a raid steals: RAID_LOOT_PER_PERSON per person,
+// at most RAID_MAX_LOOT, x (100 + leadership) / 100 with the leadership of the
+// general of the lair that raids (x2 with leadership 100).
+//
+int ModFryhtan::raid_loot(Town* townPtr, int nationRecno)
+{
+	int loot = MIN( townPtr->population * (int) RAID_LOOT_PER_PERSON, (int) RAID_MAX_LOOT );
+	int lairRecno = raid_lair(townPtr, nationRecno);
+	int leadership = 0;
+
+	if( lairRecno && firm_array[lairRecno]->overseer_recno )
+		leadership = unit_array[ firm_array[lairRecno]->overseer_recno ]->skill.get_skill(SKILL_LEADING);
+
+	return loot * (100 + leadership) / 100;
+}
+//----------- End of function ModFryhtan::raid_loot -----------//
+
+
 //--------- Begin of function ModFryhtan::can_see_raid ---------//
 //
 // The Raid button is shown on an independent town linked to a lair of the
@@ -1708,7 +1728,7 @@ int ModFryhtan::raid_town(Town* townPtr, int nationRecno)
 
 	Nation* nationPtr = nation_array[nationRecno];
 
-	int loot = MIN( population, (int) RAID_MAX_LOOT );
+	int loot = raid_loot(townPtr, nationRecno);
 
 	nationPtr->add_income( INCOME_TREASURE, (float) loot );
 	nationPtr->add_food( (float) loot );

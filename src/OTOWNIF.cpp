@@ -764,7 +764,7 @@ void Town::disp_raid_menu(int refreshFlag)
 	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, panelY2 );
 
 	int x = INFO_X1+6;
-	int loot = MIN( (int) population, (int) RAID_MAX_LOOT );
+	int loot = mod_fryhtan.raid_loot(this, nation_array.player_recno);
 
 	// TRANSLATORS: Raid <Town>?
 	snprintf( str, sizeof(str), _("Raid %s?"), town_name() );

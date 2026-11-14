@@ -1897,6 +1897,9 @@ void Unit::disp_spy_menu(int dispY1, int refreshFlag)
 			{
 				if( nation_array.is_deleted(i) || !nationPtr->get_relation(i)->has_contact )
 					continue;
+
+				if( !can_spy_cloak_as(i) )		// 7kmod-fryhtan
+					continue;
 			}
 		}
 		else if( canChangeOwnCloak )
@@ -1940,6 +1943,20 @@ void Unit::disp_spy_menu(int dispY1, int refreshFlag)
 //----------- End of function Unit::disp_spy_menu -----------//
 
 
+//--------- Begin of function Unit::can_spy_cloak_as ---------//
+//
+// 7kmod-fryhtan: whether the cloak of the nation is shown in the spy menu. A
+// human spy can't pass as a unit of a Fryhtan kingdom (only the current cloak
+// and the true nation are always shown).
+//
+int Unit::can_spy_cloak_as(int nationRecno)
+{
+	return nationRecno == nation_recno || nationRecno == true_nation_recno() ||
+			 !mod_fryhtan.is_fryhtan(nationRecno);
+}
+//----------- End of function Unit::can_spy_cloak_as -----------//
+
+
 //--------- Begin of function Unit::spy_menu_height ---------//
 //
 // Return the height of the spy menu.
@@ -1957,7 +1974,7 @@ int Unit::spy_menu_height()
 		if( nation_array.is_deleted(i) )
 			continue;
 
-		if( i==nation_recno || nationPtr->get_relation(i)->has_contact )
+		if( i==nation_recno || (nationPtr->get_relation(i)->has_contact && can_spy_cloak_as(i)) )		// 7kmod-fryhtan: can_spy_cloak_as()
 			cloakCount++;
 	}
 
@@ -1998,6 +2015,9 @@ void Unit::detect_spy_menu(int dispY1)
 			if( canChangeAnyCloak )
 			{
 				if( nation_array.is_deleted(i) || !nationPtr->get_relation(i)->has_contact )
+					continue;
+
+				if( !can_spy_cloak_as(i) )		// 7kmod-fryhtan
 					continue;
 			}
 			else

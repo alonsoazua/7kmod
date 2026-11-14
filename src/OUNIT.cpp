@@ -50,6 +50,7 @@
 #include <ConfigAdv.h>
 #include <OHONORS.h>
 #include <OF_BASE.h>
+#include <ModFryhtan.h>
 
 #if(GAME_FRAMES_PER_DAY!=FRAMES_PER_DAY)
 #error
@@ -1342,6 +1343,9 @@ int Unit::think_betray()
 		if( !curNation->get_relation(i)->has_contact || i==nation_recno )
 			continue;
 
+		if( mod_fryhtan.is_fryhtan(i) )		// 7kmod-fryhtan: human units don't turn towards a Fryhtan kingdom
+			continue;
+
 		nationPtr = nation_array[i];
 
 		//--- only if the nation has a base town in the region where the unit stands ---//
@@ -2259,6 +2263,14 @@ void Unit::spy_change_nation(int newNationRecno, char remoteAction, int groupDef
 
 	if( newNationRecno && nation_array.is_deleted(newNationRecno) )      // this can happen in a multiplayer message
 		return;
+
+	//--- 7kmod-fryhtan: a human spy can't pass as a unit of a Fryhtan kingdom, which has no human units ---//
+
+	if( newNationRecno && mod_fryhtan.is_fryhtan(newNationRecno) &&
+		 newNationRecno != spy_array[spy_recno]->true_nation_recno )
+	{
+		return;
+	}
 
 	//------- if this is a remote action -------//
 

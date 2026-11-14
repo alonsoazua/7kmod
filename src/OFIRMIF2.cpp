@@ -43,6 +43,7 @@
 #include <OFIRM.h>
 #include <OREMOTE.h>
 #include "gettext.h"
+#include <ModFryhtan.h>
 
 //------------- Define coordinations -----------//
 
@@ -689,6 +690,9 @@ int Firm::can_worker_capture(int captureNationRecno)
 		return 0;									// neutral units cannot capture
 
 	if( nation_recno == captureNationRecno )		// cannot capture its own firm
+		return 0;
+
+	if( mod_fryhtan.is_fryhtan(captureNationRecno) && firm_id != FIRM_MONSTER && !mod_fryhtan.is_lair(this) )		// 7kmod-fryhtan: the human workers of an enslaved town don't hand a human building to a Fryhtan kingdom
 		return 0;
 
 	//----- if this firm needs an overseer, can only capture it when the overseer is the spy ---//

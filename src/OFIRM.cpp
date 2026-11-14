@@ -1646,6 +1646,21 @@ void Firm::next_day()
 
 	process_repair();
 
+	//--- 7kmod-fryhtan: the buildings of a Fryhtan kingdom repair themselves, like a construction worker of skill 20 (Firm::process_repair) ---//
+
+	if( nation_recno && !under_construction && !builder_recno &&
+		 hit_points < max_hit_points &&
+		 info.game_date % FRYHTAN_REPAIR_DAYS == firm_recno % FRYHTAN_REPAIR_DAYS &&
+		 info.game_date > last_attacked_date+1 &&		// not while it is under attack
+		 mod_fryhtan.is_fryhtan(nation_recno) &&
+		 nation_array[nation_recno]->cash >= 0 )
+	{
+		hit_points++;
+
+		if( hit_points > max_hit_points )
+			hit_points = max_hit_points;
+	}
+
 	//--- 7kmod-gameplay: the Building Repair technology repairs all the buildings of the nation ---//
 
 	if( hit_points < max_hit_points &&
