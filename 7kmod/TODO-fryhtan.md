@@ -768,20 +768,16 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
   partidas las especies salvajes activas no incluyeron a los Rokken; el sonido se
   llamó al salir el soldado (en la nube no hay audio para oírlo).
 
-- [ ] **Saqueo.** Cuando los Fryhtans del reino atacan un edificio o un pueblo de otro
-      reino, roban oro y comida mientras lo dañan, no solo al matar unidades. Así
-      atacar se vuelve la economía principal de la horda.
-      - Cada golpe a un edificio o a un pueblo roba oro y comida en proporción al daño.
-      - **De dónde sale:** en el juego el oro y la comida son del reino, no de cada
-        edificio, así que lo robado se le quita a la reserva del reino dueño (hasta lo
-        que tenga) y pasa al reino Fryhtan. Un pueblo independiente no tiene reserva:
-        ahí solo se gana.
-      - Se ve con un número flotante o en el reporte, para que el jugador note el saqueo.
-      - Por definir: cuánto por punto de daño (por ejemplo, $1 y 1 de comida por cada
-        10 de daño) y un tope por golpe, para que no sea la única fuente de ingresos.
+- [ ] **Saqueo de pueblos.** Cuando los Fryhtans del reino atacan un pueblo (de otro
+      reino o independiente), **cada aldeano que muere da el mismo bono que matar a un
+      aldeano**: $2 de oro y 5 de comida (`KILL_GOLD_UNIT` y `KILL_FOOD_UNIT`). Hoy ese
+      bono solo se da al matar unidades (`ModFryhtan::reward_kill`); la gente que muere
+      dentro del pueblo al atacarlo no da nada.
+      - **No afecta a los edificios:** atacarlos no da oro ni comida.
+      - El bono sale de la nada, como el de matar unidades: no se le quita al reino
+        dueño.
       - Relación con la tecnología de los **Ick** ("Saqueadores", en
-        `DISENO-fryhtan-oscuro.md`): con el saqueo general, la de los Ick podría
-        duplicarlo para esa especie.
+        `DISENO-fryhtan-oscuro.md`): podría duplicar este bono para esa especie.
 
 ## 8. Economía oscura (en diseño)
 
