@@ -941,6 +941,22 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       $150 per unit". Probado: Train de Rokken cobró $200 y 20 de comida, y el clic
       derecho los devolvió.
 
+- [ ] **Bug: unidades humanas que se unen al reino Fryhtan a mitad de partida.** En
+      pruebas se unieron unidades humanas al reino Fryhtan; un reino Fryhtan no debe
+      tener unidades humanas (fuera de las del diseño de la economía oscura).
+      - Caminos posibles a revisar:
+        1. **Traición** (`Unit::think_betray`): una unidad humana con lealtad baja se
+           pasa al reino con mejor puntaje que tenga un pueblo base en su región; los
+           pueblos esclavizados podrían contar como pueblo base del reino Fryhtan.
+        2. **Captura de edificios** (`Firm::capture_firm` → `Unit::betray`): los
+           trabajadores o soldados de un edificio capturado cambian al reino que lo
+           captura.
+        3. Otros cambios de reino de unidades (`Unit::change_nation`) que lleguen a un
+           reino Fryhtan.
+      - Arreglo propuesto: ninguna unidad humana puede pasarse a un reino Fryhtan
+        (saltar los reinos Fryhtan al elegir a quién traicionar); si captura un edificio
+        humano, la gente de adentro no se une (se va o se vuelve independiente).
+
 ## 8. Economía oscura (en diseño)
 
 El diseño en borrador está en `DISENO-fryhtan-oscuro.md`: el Enforcer de los pueblos
