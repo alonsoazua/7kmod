@@ -1296,23 +1296,23 @@ void News::town_raided()
 	char killStr[60];
 
 	if( short_para3 == 0 )
-		snprintf(killStr, sizeof(killStr), "%s", _("nobody killed"));
+		killStr[0] = '\0';		// the raids don't kill villagers for now
 	else
-		// TRANSLATORS: <Number> villager(s) killed (in a raid)
-		snprintf(killStr, sizeof(killStr), ngettext("%d villager killed", "%d villagers killed", short_para3), short_para3);
+		// TRANSLATORS: , <Number> villager(s) killed (in a raid)
+		snprintf(killStr, sizeof(killStr), ngettext(", %d villager killed", ", %d villagers killed", short_para3), short_para3);
 
 	if( short_para4 > 0 )
 	{
-		// TRANSLATORS: Raided <Town>: $<Gold> and <Food> food, <N villagers killed>. <Number> defenders are attacking your lair.
+		// TRANSLATORS: Raided <Town>: $<Gold> and <Food> food<, N villagers killed>. <Number> defenders are attacking your lair.
 		snprintf(str, MAX_STR_LEN+1,
-					ngettext("Raided %s: $%d and %d food, %s. %d defender is attacking your lair.",
-								"Raided %s: $%d and %d food, %s. %d defenders are attacking your lair.", short_para4),
+					ngettext("Raided %s: $%d and %d food%s. %d defender is attacking your lair.",
+								"Raided %s: $%d and %d food%s. %d defenders are attacking your lair.", short_para4),
 					town_res.get_name(short_para1), short_para2, short_para2, killStr, short_para4);
 	}
 	else
 	{
-		// TRANSLATORS: Raided <Town>: $<Gold> and <Food> food, <N villagers killed>. Its resistance has dropped.
-		snprintf(str, MAX_STR_LEN+1, _("Raided %s: $%d and %d food, %s. Its resistance has dropped."),
+		// TRANSLATORS: Raided <Town>: $<Gold> and <Food> food<, N villagers killed>. Its resistance has dropped.
+		snprintf(str, MAX_STR_LEN+1, _("Raided %s: $%d and %d food%s. Its resistance has dropped."),
 					town_res.get_name(short_para1), short_para2, short_para2, killStr);
 	}
 }

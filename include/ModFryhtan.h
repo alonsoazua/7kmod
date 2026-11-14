@@ -40,7 +40,7 @@ enum { FRYHTAN_START_SOLDIER_COUNT = 4 };		// soldiers in the starting lair
 enum { FRYHTAN_START_TOWN_POPULATION = 20 };		// people of the starting enslaved town
 
 enum { FRYHTAN_KING_COMBAT = 60,				// combat and leadership of the starting All High
-		 FRYHTAN_KING_LEADERSHIP = 60 };
+		 FRYHTAN_KING_LEADERSHIP = 100 };
 
 enum { LAIR_SETUP_COST = 500,						// cost of building a lair
 		 LAIR_YEAR_COST  = 100 };					// yearly upkeep of a lair
@@ -72,12 +72,15 @@ enum { LOST_LAIR_GRACE_DAYS = 90 };			// an enslaved town without a linked lair 
 
 //--- raiding an independent town from a linked lair ---//
 
-enum { RAID_INTERVAL_DAYS = 30,				// a town can be raided once in this time
+enum { RAID_INTERVAL_DAYS = 60,				// a town can be raided once in this time
 		 RAID_MAX_LOOT = 30,						// at most this much gold and food ($1 and 1 food per person)
-		 RAID_PEOPLE_PER_DEFENDER = 10,			// one defender attacks the lair for each this many people
-		 RAID_MIN_RESISTANCE_DEC = 5,			// resistance decrease when no defenders come out
-		 RAID_MAX_RESISTANCE_DEC = 10,
-		 RAID_MIN_DEFEND_RESISTANCE = 30 };		// MIN_INDEPENDENT_DEFEND_LOYALTY: no defenders come out below this
+		 RAID_PEOPLE_PER_DEFENDER = 10,			// one defender attacks the lair for each this many people, plus one...
+		 RAID_RESISTANCE_EXTRA1 = 50,			// ...one more above this resistance...
+		 RAID_RESISTANCE_EXTRA2 = 80,			// ...and two more above this one
+		 RAID_RESISTANCE_DEC = 5,					// each raid lowers the resistance by this, after the defenders come out
+		 RAID_MIN_RESISTANCE = 30,				// MIN_INDEPENDENT_DEFEND_LOYALTY: no defenders come out below this, the town can't be raided
+		 RAID_LEADER_COMBAT_BONUS = 20,			// the leader of the defenders is stronger
+		 RAID_KILL_VILLAGERS = 0 };				// 1: a raid kills villagers by the size of the town (off for now)
 enum { ENSLAVE_MIN_RESISTANCE = 45,			// the lairs lower the resistance of an independent town down to this
 		 ENSLAVED_TOWN_LOYALTY  = 50,			// fixed loyalty of the people of an enslaved town with an Ordo or the king in a linked lair
 		 ENSLAVED_TOWN_NO_COMMANDER_LOYALTY = 0,	// its target loyalty when no Ordo or king commands a linked lair
@@ -235,9 +238,11 @@ public:
 	void		reset_town_dates(int townRecno);		// a new town or a town with a new owner
 
 	int	raid_lair(Town* townPtr, int nationRecno);		// the linked lair with the best general, 0 if none
-	int	can_see_raid(Town* townPtr, int nationRecno);	// whether the Raid button is shown
+	int	can_see_raid(Town* townPtr, int nationRecno);	// whether the Raid panel is shown
 	int	raid_days_left(Town* townPtr);						// 0 if it can be raided now
+	int	raid_max_defender(Town* townPtr, int nationRecno);		// the most defenders that come out
 	int	raid_defender_count(Town* townPtr, int nationRecno);	// about how many defenders will come out
+	int	is_raid_weakened(Town* townPtr, int nationRecno);		// its resistance is too low to raid it
 	int	raid_town(Town* townPtr, int nationRecno);
 	void	reward_town_villager(int nationRecno);			// a villager killed in a town attacked by a Fryhtan kingdom
 	//------ economy (phase 3) ------//

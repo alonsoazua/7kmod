@@ -1612,20 +1612,54 @@ int ModFryhtan::raid_days_left(Town* townPtr)
 //----------- End of function ModFryhtan::raid_days_left -----------//
 
 
+//--------- Begin of function ModFryhtan::raid_max_defender ---------//
+//
+// The most defenders that come out in a raid: one for each
+// RAID_PEOPLE_PER_DEFENDER people plus one, and one more with a resistance
+// above RAID_RESISTANCE_EXTRA1 or two more above RAID_RESISTANCE_EXTRA2.
+//
+int ModFryhtan::raid_max_defender(Town* townPtr, int nationRecno)
+{
+	int resistance = townPtr->average_resistance(nationRecno);
+	int maxCount = townPtr->population / RAID_PEOPLE_PER_DEFENDER + 1;
+
+	if( resistance > RAID_RESISTANCE_EXTRA2 )
+		maxCount += 2;
+	else if( resistance > RAID_RESISTANCE_EXTRA1 )
+		maxCount += 1;
+
+	return maxCount;
+}
+//----------- End of function ModFryhtan::raid_max_defender -----------//
+
+
+//--------- Begin of function ModFryhtan::is_raid_weakened ---------//
+//
+// A town with a resistance of RAID_MIN_RESISTANCE or less toward the
+// kingdom can't be raided: no defenders would come out. It's ready to be
+// attacked directly.
+//
+int ModFryhtan::is_raid_weakened(Town* townPtr, int nationRecno)
+{
+	return townPtr->average_resistance(nationRecno) <= RAID_MIN_RESISTANCE;
+}
+//----------- End of function ModFryhtan::is_raid_weakened -----------//
+
+
 //--------- Begin of function ModFryhtan::raid_defender_count ---------//
 //
-// About how many defenders come out to attack the lair: one for each
-// RAID_PEOPLE_PER_DEFENDER people, if the resistance toward the kingdom is
-// high enough (the rule of Town::mobilize_defender(), on the average).
+// About how many defenders come out to attack the lair: up to
+// raid_max_defender(), if the resistance toward the kingdom is high enough
+// (the rule of Town::mobilize_defender(), on the average).
 //
 int ModFryhtan::raid_defender_count(Town* townPtr, int nationRecno)
 {
-	int maxCount = MAX( 1, townPtr->population / RAID_PEOPLE_PER_DEFENDER );
+	int maxCount = raid_max_defender(townPtr, nationRecno);
 
 	float resistance = (float) townPtr->average_resistance(nationRecno);
 	int   count = 0;
 
-	while( count < maxCount && resistance >= RAID_MIN_DEFEND_RESISTANCE && resistance >= count*5 )
+	while( count < maxCount && resistance >= RAID_MIN_RESISTANCE && resistance >= count*5 )
 	{
 		resistance -= resistance / MAX(1, townPtr->population - count);
 		count++;
@@ -1639,16 +1673,17 @@ int ModFryhtan::raid_defender_count(Town* townPtr, int nationRecno)
 //--------- Begin of function ModFryhtan::raid_town ---------//
 //
 // Raid an independent town from a linked lair: steal a little gold and
-// food, kill some villagers, and call out its defenders to attack the
-// lair. Killing them lowers the resistance of the town; the ones that go
-// back to the town give it back. When no defenders come out any more, the
-// raid lowers the resistance directly.
+// food, call out its defenders (led by a stronger one) to attack the lair,
+// and lower its resistance by RAID_RESISTANCE_DEC. Killing the defenders
+// lowers the resistance of the town; the ones that go back to the town give
+// it back. A town with a resistance of RAID_MIN_RESISTANCE or less can't be
+// raided: it's ready to be attacked directly.
 //
 // return: <int> 1 if the raid has been done
 //
 int ModFryhtan::raid_town(Town* townPtr, int nationRecno)
 {
-	if( !can_see_raid(townPtr, nationRecno) || raid_days_left(townPtr) )
+	if( !can_see_raid(townPtr, nationRecno) || raid_days_left(townPtr) || is_raid_weakened(townPtr, nationRecno) )
 		return 0;
 
 	int lairRecno = raid_lair(townPtr, nationRecno);
@@ -1672,30 +1707,33 @@ int ModFryhtan::raid_town(Town* townPtr, int nationRecno)
 	nationPtr->add_income( INCOME_TREASURE, (float) loot );
 	nationPtr->add_food( (float) loot );
 
-	//------- villagers killed, by the size of the town -------//
+	//------- villagers killed, by the size of the town (off for now) -------//
 
-	int killCount;
+	int killCount = 0;
 
-	if( population < 20 )
-		killCount = misc.random(4)==0 ? 1 : 0;		// small: unlikely
-	else if( population < 40 )
-		killCount = 1;										// medium
-	else
-		killCount = 1 + misc.random(2);				// large: 1 or 2
+	if( RAID_KILL_VILLAGERS )
+	{
+		if( population < 20 )
+			killCount = misc.random(4)==0 ? 1 : 0;		// small: unlikely
+		else if( population < 40 )
+			killCount = 1;										// medium
+		else
+			killCount = 1 + misc.random(2);				// large: 1 or 2
 
-	killCount = MIN( killCount, population-1 );		// the raid never empties the town
+		killCount = MIN( killCount, population-1 );		// the raid never empties the town
 
-	for( int i=0 ; i<killCount ; i++ )
-		townPtr->kill_town_people(0, nationRecno);
+		for( int i=0 ; i<killCount ; i++ )
+			townPtr->kill_town_people(0, nationRecno);
 
-	if( town_array.is_deleted(townRecno) )
-		return 1;
+		if( town_array.is_deleted(townRecno) )
+			return 1;
+	}
 
 	//------- the defenders come out and attack the lair -------//
 
 	townPtr->set_hostile_nation(nationRecno);
 
-	int maxDefender = MAX( 1, townPtr->population / RAID_PEOPLE_PER_DEFENDER );
+	int maxDefender = raid_max_defender(townPtr, nationRecno);
 	int defenderCount = 0;
 
 	while( defenderCount < maxDefender )
@@ -1705,37 +1743,39 @@ int ModFryhtan::raid_town(Town* townPtr, int nationRecno)
 		if( !unitRecno )
 			break;
 
-		unit_array[unitRecno]->attack_firm( lairPtr->loc_x1, lairPtr->loc_y1 );
+		Unit* unitPtr = unit_array[unitRecno];
+
+		//--- the first one is the leader of the defense: stronger, and it carries twice the resistance ---//
+
+		if( defenderCount == 0 )
+		{
+			unitPtr->set_combat_level( MIN( 100, unitPtr->skill.combat_level + RAID_LEADER_COMBAT_BONUS ) );
+			unitPtr->hit_points = (float) unitPtr->max_hit_points;
+
+			int carried = unitPtr->skill.skill_level;		// the resistance it took away (Town::mobilize_defender())
+
+			for( int i=0 ; i<MAX_NATION ; i++ )
+			{
+				float& resistance = townPtr->race_resistance_array[unitPtr->race_id-1][i];
+				resistance = MAX( (float) 0, resistance - carried );
+			}
+
+			unitPtr->skill.skill_level = (char) MIN( 100, carried*2 );
+		}
+
+		unitPtr->attack_firm( lairPtr->loc_x1, lairPtr->loc_y1 );
 		defenderCount++;
 	}
 
-	//------- no defenders: the raid lowers the resistance directly -------//
+	//------- every raid lowers the resistance a bit -------//
 
-	if( defenderCount == 0 )
+	for( int i=0 ; i<MAX_RACE ; i++ )
 	{
-		int resistanceDec = RAID_MIN_RESISTANCE_DEC + misc.random(RAID_MAX_RESISTANCE_DEC - RAID_MIN_RESISTANCE_DEC + 1);
-		int allZero = 1;
+		if( townPtr->race_pop_array[i] == 0 )
+			continue;
 
-		for( int i=0 ; i<MAX_RACE ; i++ )
-		{
-			if( townPtr->race_pop_array[i] == 0 )
-				continue;
-
-			float& resistance = townPtr->race_resistance_array[i][nationRecno-1];
-
-			resistance = MAX( (float) 0, resistance - resistanceDec );
-
-			if( resistance >= (float) 1 )
-				allZero = 0;
-		}
-
-		if( nationRecno == nation_array.player_recno )
-			news_array.town_raided(townRecno, townNameId, loot, killCount, 0);
-
-		if( allZero )
-			townPtr->surrender(nationRecno);		// enslaved (it's linked to a lair)
-
-		return 1;
+		float& resistance = townPtr->race_resistance_array[i][nationRecno-1];
+		resistance = MAX( (float) 0, resistance - RAID_RESISTANCE_DEC );
 	}
 
 	if( nationRecno == nation_array.player_recno )

@@ -26,7 +26,7 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
     usan letra suavizada (TeX Gyre Pagella, tipo Palatino), prerenderizada con
     `7kmod/tools/make_smooth_text.py`.
   - El reino empieza con su rey, un All High de la especie con combate 60 y
-    liderazgo 60.
+    liderazgo 100.
   - Se llama "<nombre> <especie> Horde", también en las noticias.
   - **Sin reputación** (queda en 0) y sus Fryhtans **sin lealtad**.
   - **Sin edificios humanos:** sus unidades no tienen menú de construcción.
@@ -105,16 +105,19 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
   rebelión, los rebeldes salen a atacar la guarida más cercana.
 - **Saqueo de pueblos:** al atacar un pueblo, cada aldeano que muere da $2 y 5 de comida,
   como matar a un aldeano.
-- **Botón Raid** en un pueblo independiente enlazado a una guarida con general y
-  soldados (en el lugar de Grant), una vez al mes por pueblo, con barra de espera:
-  - Roba $1 y 1 de comida por persona (hasta 30) y mata aldeanos según el tamaño del
-    pueblo (chico: 25% de matar 1; mediano: 1; grande: 1 o 2).
-  - Salen hasta 1 defensor por cada 10 personas y atacan la guarida del mejor general;
-    cada uno que muere baja la resistencia del pueblo, y los que regresan la devuelven.
-  - Si ya no salen defensores (resistencia menor de 30), baja la resistencia de 5 a 10;
-    en 0, el pueblo queda esclavizado.
-  - Noticia con lo robado, los muertos y los defensores; la ayuda del botón dice qué
-    esperar.
+- **Raid de pueblos independientes:** un panel en el pueblo enlazado a una guarida con
+  general (como el de capturar guaridas salvajes), con el botón **Raid village**, una vez
+  cada 2 meses por pueblo y con barra de espera:
+  - Roba $1 y 1 de comida por persona (hasta 30) y baja la resistencia 5.
+  - Salen hasta 1 defensor por cada 10 personas, más 1 (y +1 con resistencia mayor de
+    50, +2 mayor de 80), y atacan la guarida del mejor general. El primero es el líder:
+    combate +20 y se lleva el doble de resistencia. Cada defensor que muere baja la
+    resistencia del pueblo; los que regresan la devuelven.
+  - Con resistencia de 30 o menos no se puede: "This village is weakened and ready to
+    be attacked directly."
+  - Por ahora no mata aldeanos.
+  - Noticia con lo robado y los defensores.
+- El **All High del inicio** tiene liderazgo **100** (antes 60).
 - **Pueblos esclavizados sin guarida:** un pueblo esclavizado que se queda sin ninguna
   guarida enlazada sigue siendo del reino **3 meses** (sin tributo y sin rebelarse); si
   en ese tiempo vuelve a tener una guarida enlazada, sigue esclavizado. Al terminar se

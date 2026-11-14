@@ -845,6 +845,33 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
   del botón (sí funcionó al dar clic enseguida). Revisar si pasa también al jugar, y si
   pasa con otros botones.
 
+#### Ajustes al Raid (después de probarlo)
+
+- [x] **All High del inicio con liderazgo 100** (antes 60; combate 60 igual). Un Ordo que
+      lo sucede conserva el suyo.
+- [x] **Raid cada 2 meses** (`RAID_INTERVAL_DAYS` 60).
+- [x] **Más defensores:** hasta 1 por cada 10 personas, más 1, más 1 si la resistencia
+      pasa de 50 o más 2 si pasa de 80 (`ModFryhtan::raid_max_defender`), con la regla
+      normal del juego.
+- [x] **El primero es el líder de la defensa:** combate del pueblo + 20 (con su vida), y
+      se lleva el doble de resistencia (si muere baja el doble; si regresa, devuelve el
+      doble).
+- [x] **Baja base de 5** por Raid (`RAID_RESISTANCE_DEC`), después de que salen los
+      defensores, en todas las razas.
+- [x] **Solo con resistencia mayor de 30:** en 30 o menos el botón queda oscurecido y su
+      ayuda dice "This village is weakened and ready to be attacked directly." (se quitó
+      la baja directa de 5 a 10 sin defensores).
+- [x] **Por ahora no mata aldeanos** (`RAID_KILL_VILLAGERS` 0; la regla por tamaño queda
+      en el código).
+- [x] **Panel como el de capturar guaridas salvajes** (`Town::disp_raid_panel`), en el
+      lugar de los botones del pueblo: "Raid <pueblo>? You will obtain $X and X food and
+      lower its resistance by 5. N defenders will attack your lair." / "Combat: A-B
+      (leader: C)" y el botón de texto **Raid village**, con la barra de espera abajo. La
+      ayuda normal explica qué hace y que es cada 2 meses; también dice si falta esperar
+      o si la guarida necesita soldados.
+- **Ejemplo** de la prueba: pueblo de 16 con resistencia 86 → 4 defensores (1 + 1 + 2),
+  resistencia a 55 al salir (el líder se lleva el doble, más la baja base de 5).
+
 - [x] **Gracia de 3 meses al perder la guarida de un pueblo esclavizado.** Hoy, en cuanto
       un pueblo esclavizado se queda sin guarida enlazada (`ModFryhtan::next_day_town`),
       se vuelve independiente ese mismo día. Con el cambio:

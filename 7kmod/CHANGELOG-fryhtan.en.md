@@ -27,7 +27,7 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
     anti-aliased text (TeX Gyre Pagella, a Palatino clone), pre-rendered with
     `7kmod/tools/make_smooth_text.py`.
   - The kingdom starts with its king, an All High of the species with combat
-    60 and leadership 60.
+    60 and leadership 100.
   - It's called "<name> <species> Horde", also in the news.
   - **No reputation** (it stays at 0) and its Fryhtans have **no loyalty**.
   - **No human buildings:** its units have no build menu.
@@ -104,17 +104,19 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   point, the rebels go out to attack the nearest lair.
 - **Looting towns:** when attacking a town, each villager that dies gives $2 and 5 food,
   like killing a villager.
-- **Raid button** on an independent town linked to a lair with a general and soldiers
-  (where Grant is), once a month per town, with a waiting bar:
-  - It steals $1 and 1 food per person (up to 30) and kills villagers by the size of the
-    town (small: 25% chance of 1; medium: 1; large: 1 or 2).
-  - Up to 1 defender per 10 people comes out and attacks the lair of the best general;
-    each one killed lowers the resistance of the town, and the ones that go back return
-    it.
-  - When no defenders come out any more (resistance under 30), the resistance drops by
-    5 to 10; at 0, the town is enslaved.
-  - A news message with the loot, the dead and the defenders; the button's help says
-    what to expect.
+- **Raiding independent towns:** a panel on a town linked to a lair with a general
+  (like the one for capturing wild lairs), with the **Raid village** button, once every
+  2 months per town, with a waiting bar:
+  - It steals $1 and 1 food per person (up to 30) and lowers the resistance by 5.
+  - Up to 1 defender per 10 people plus 1 comes out (+1 with a resistance over 50, +2
+    over 80) and attacks the lair of the best general. The first one is the leader:
+    combat +20, and it carries twice the resistance. Each defender killed lowers the
+    resistance of the town; the ones that go back return it.
+  - With a resistance of 30 or less it can't be done: "This village is weakened and
+    ready to be attacked directly."
+  - For now it doesn't kill villagers.
+  - A news message with the loot and the defenders.
+- The **starting All High** has leadership **100** (60 before).
 - **Enslaved towns without a lair:** an enslaved town left without any linked lair
   stays in the kingdom for **3 months** (no tribute, no rebellion); if it's linked to a
   lair again in that time, it stays enslaved. Then it becomes independent with the news
