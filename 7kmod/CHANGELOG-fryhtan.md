@@ -103,6 +103,18 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
 - **Pueblos esclavizados sin general:** si ninguna guarida enlazada tiene un Ordo o el
   rey adentro, el pueblo no paga tributo y su lealtad baja. Si llega al punto de
   rebelión, los rebeldes salen a atacar la guarida más cercana.
+- **Saqueo de pueblos:** al atacar un pueblo, cada aldeano que muere da $2 y 5 de comida,
+  como matar a un aldeano.
+- **Botón Raid** en un pueblo independiente enlazado a una guarida con general y
+  soldados (en el lugar de Grant), una vez al mes por pueblo, con barra de espera:
+  - Roba $1 y 1 de comida por persona (hasta 30) y mata aldeanos según el tamaño del
+    pueblo (chico: 25% de matar 1; mediano: 1; grande: 1 o 2).
+  - Salen hasta 1 defensor por cada 10 personas y atacan la guarida del mejor general;
+    cada uno que muere baja la resistencia del pueblo, y los que regresan la devuelven.
+  - Si ya no salen defensores (resistencia menor de 30), baja la resistencia de 5 a 10;
+    en 0, el pueblo queda esclavizado.
+  - Noticia con lo robado, los muertos y los defensores; la ayuda del botón dice qué
+    esperar.
 - **Pueblos esclavizados sin guarida:** un pueblo esclavizado que se queda sin ninguna
   guarida enlazada sigue siendo del reino **3 meses** (sin tributo y sin rebelarse); si
   en ese tiempo vuelve a tener una guarida enlazada, sigue esclavizado. Al terminar se

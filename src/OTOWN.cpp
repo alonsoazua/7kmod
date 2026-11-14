@@ -80,6 +80,8 @@ void Town::init(int nationRecno, int raceId, int xLoc, int yLoc)
 	nation_recno = nationRecno;
 	race_id		 = raceId;
 
+	mod_fryhtan.reset_town_dates(town_recno);		// 7kmod-fryhtan: no grace period or raid left from a deleted town with the same recno
+
 	err_when( raceId<1 || raceId>MAX_RACE );
 
 	//---- set the town section's absolute positions on the map ----//
@@ -827,7 +829,7 @@ void Town::set_nation(int newNationRecno)
 	if( mod_fryhtan.is_fryhtan(nation_recno) )
 		last_rebel_date = info.game_date - (3-1)*30;
 
-	mod_fryhtan.set_lost_lair_date(town_recno, 0);		// 7kmod-fryhtan: no grace period left from an older owner
+	mod_fryhtan.reset_town_dates(town_recno);		// 7kmod-fryhtan: no grace period or raid left from an older owner
 
 	//------- reset town_combat_level -------//
 
@@ -2863,6 +2865,8 @@ void Town::being_attacked(int attackerUnitRecno, float attackDamage)
 		int townRecno = town_recno;
 
 		kill_town_people(raceId, attackerNationRecno);		// kill a town people
+
+		mod_fryhtan.reward_town_villager(attackerNationRecno);		// 7kmod-fryhtan: looting a town attacked by a Fryhtan kingdom
 
 		if( town_array.is_deleted(townRecno) )		// the town may have been deleted when all pop are killed
 			return;

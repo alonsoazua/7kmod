@@ -827,6 +827,31 @@ void NewsArray::villager_joined(int unitRecno, int townNameId)
 //------- End of function NewsArray::villager_joined -----//
 
 
+//------ Begin of function NewsArray::town_raided -----//
+//
+// 7kmod-fryhtan: the player's Fryhtan kingdom raided an independent town.
+//
+void NewsArray::town_raided(int townRecno, int townNameId, int loot, int killCount, int defenderCount)
+{
+	News* newsPtr = add_news( NEWS_TOWN_RAIDED, NEWS_NORMAL, nation_array.player_recno );
+
+	if( !newsPtr )
+		return;
+
+	newsPtr->short_para1 = townNameId;
+	newsPtr->short_para2 = loot;
+	newsPtr->short_para3 = killCount;
+	newsPtr->short_para4 = defenderCount;
+
+	if( !town_array.is_deleted(townRecno) )
+	{
+		Town* townPtr = town_array[townRecno];
+		newsPtr->set_loc( townPtr->center_x, townPtr->center_y, NEWS_LOC_TOWN, townRecno );
+	}
+}
+//------- End of function NewsArray::town_raided -----//
+
+
 //------ Begin of function NewsArray::intel_report -----//
 //
 // 7kmod-gameplay: a spy of the player made an intelligence report.

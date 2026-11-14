@@ -768,7 +768,7 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
   partidas las especies salvajes activas no incluyeron a los Rokken; el sonido se
   llamó al salir el soldado (en la nube no hay audio para oírlo).
 
-- [ ] **Saqueo de pueblos.** Cuando los Fryhtans del reino atacan un pueblo (de otro
+- [x] **Saqueo de pueblos.** Cuando los Fryhtans del reino atacan un pueblo (de otro
       reino o independiente), **cada aldeano que muere da el mismo bono que matar a un
       aldeano**: $2 de oro y 5 de comida (`KILL_GOLD_UNIT` y `KILL_FOOD_UNIT`). Hoy ese
       bono solo se da al matar unidades (`ModFryhtan::reward_kill`); la gente que muere
@@ -779,7 +779,7 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       - Relación con la tecnología de los **Ick** ("Saqueadores", en
         `DISENO-fryhtan-oscuro.md`): podría duplicar este bono para esa especie.
 
-- [ ] **Saquear pueblos independientes (botón Raid).** Una forma de bajar la resistencia
+- [x] **Saquear pueblos independientes (botón Raid).** Una forma de bajar la resistencia
       de un pueblo independiente sin asaltarlo, provocando a sus defensores para pelear
       contra ellos en tu guarida.
       - **Botón "Raid"** en el panel de un pueblo independiente, en el lugar de Grant
@@ -817,6 +817,33 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         mensaje de red para multijugador, y la orden de atacar la guarida para los
         defensores, como la de los rebeldes de los pueblos esclavizados
         (`REBEL_ATTACK_FIRM`), sin quitarles la resistencia que se llevan.
+
+#### Cómo quedaron (saqueo y Raid)
+
+- **Saqueo al atacar:** `Town::being_attacked`, después de `kill_town_people`, llama a
+  `ModFryhtan::reward_town_villager` ($2 y 5 de comida). Los muertos del Raid no pasan
+  por ahí, así que no dan el bono.
+- **Raid:** `ModFryhtan::raid_town`; el botón (`Town::disp_raid_button`, con el ícono de
+  Collect Tax) y su ayuda están en `OTOWNIF.cpp`. Los defensores salen con
+  `Town::mobilize_defender` (así llevan su parte de la resistencia y, si regresan, la
+  devuelven) y reciben la orden `attack_firm` contra la guarida del mejor general. Con
+  la resistencia en 0, el pueblo se rinde y queda esclavizado.
+- **Noticia nueva** `NEWS_TOWN_RAIDED`: "Raided <pueblo>: $X and X food, N villagers
+  killed. N defenders are attacking your lair." o "... Its resistance has dropped."
+- **Fechas:** el día del último saqueo de cada pueblo se guarda al final de los datos de
+  `ModFryhtan`, como la gracia (las partidas anteriores se cargan sin ellas). Al crear
+  un pueblo o al cambiar de dueño se borran sus fechas (`reset_town_dates`).
+- La ayuda de los botones admite ahora 400 caracteres (antes 200, cortaba el texto).
+- **Multijugador:** sin mensaje de red, como el resto del reino Fryhtan (solo un
+  jugador).
+- **Probado** (con cambios temporales para la prueba): pueblo de 26 con resistencia 49
+  → $26 y 26 de comida, 1 muerto, 2 defensores que fueron a la guarida y los soldados
+  Rokken salieron a pelear; el botón quedó deshabilitado con la barra avanzando. Con
+  resistencia 8 → sin defensores, bajó a 0 y el pueblo se rindió (esclavizado, tributo
+  de $149). Atacando un pueblo con 8 soldados, cada aldeano muerto dio $2 y 5 de comida.
+- **Observado en la prueba:** el clic automático no funcionó cuando ya se veía la ayuda
+  del botón (sí funcionó al dar clic enseguida). Revisar si pasa también al jugar, y si
+  pasa con otros botones.
 
 - [x] **Gracia de 3 meses al perder la guarida de un pueblo esclavizado.** Hoy, en cuanto
       un pueblo esclavizado se queda sin guarida enlazada (`ModFryhtan::next_day_town`),

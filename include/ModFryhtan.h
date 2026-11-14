@@ -69,6 +69,15 @@ enum { KILL_GOLD_UNIT		= 2,					// gold for killing a human soldier, villager or
 		 KILL_FOOD_KING		= 100 };				// a human king
 
 enum { LOST_LAIR_GRACE_DAYS = 90 };			// an enslaved town without a linked lair becomes independent after this
+
+//--- raiding an independent town from a linked lair ---//
+
+enum { RAID_INTERVAL_DAYS = 30,				// a town can be raided once in this time
+		 RAID_MAX_LOOT = 30,						// at most this much gold and food ($1 and 1 food per person)
+		 RAID_PEOPLE_PER_DEFENDER = 10,			// one defender attacks the lair for each this many people
+		 RAID_MIN_RESISTANCE_DEC = 5,			// resistance decrease when no defenders come out
+		 RAID_MAX_RESISTANCE_DEC = 10,
+		 RAID_MIN_DEFEND_RESISTANCE = 30 };		// MIN_INDEPENDENT_DEFEND_LOYALTY: no defenders come out below this
 enum { ENSLAVE_MIN_RESISTANCE = 45,			// the lairs lower the resistance of an independent town down to this
 		 ENSLAVED_TOWN_LOYALTY  = 50,			// fixed loyalty of the people of an enslaved town with an Ordo or the king in a linked lair
 		 ENSLAVED_TOWN_NO_COMMANDER_LOYALTY = 0,	// its target loyalty when no Ordo or king commands a linked lair
@@ -216,6 +225,21 @@ public:
 	int32_t	lost_lair_date(int townRecno);
 	void		set_lost_lair_date(int townRecno, int32_t lostDate);
 
+	//------ raiding independent towns, and looting the towns attacked ------//
+
+	int32_t*	raid_date_array;		// the day each town was last raided (0: never), by town recno
+	int		raid_date_array_size;
+
+	int32_t	raid_date(int townRecno);
+	void		set_raid_date(int townRecno, int32_t raidDate);
+	void		reset_town_dates(int townRecno);		// a new town or a town with a new owner
+
+	int	raid_lair(Town* townPtr, int nationRecno);		// the linked lair with the best general, 0 if none
+	int	can_see_raid(Town* townPtr, int nationRecno);	// whether the Raid button is shown
+	int	raid_days_left(Town* townPtr);						// 0 if it can be raided now
+	int	raid_defender_count(Town* townPtr, int nationRecno);	// about how many defenders will come out
+	int	raid_town(Town* townPtr, int nationRecno);
+	void	reward_town_villager(int nationRecno);			// a villager killed in a town attacked by a Fryhtan kingdom
 	//------ economy (phase 3) ------//
 
 	void	reward_kill(int nationRecno, Unit* targetUnit);
@@ -248,7 +272,7 @@ public:
 	static int				menu_next_species(int monsterId, int dir);		// dir: 1 - next, -1 - previous, in alphabetical order
 	static int				is_valid_species(int monsterId)	{ return monsterId >= 1 && monsterId <= FRYHTAN_SPECIES_COUNT; }
 
-	ModFryhtan()		{ lair_array=NULL; lair_array_size=0; offer_array=NULL; offer_array_size=0; lost_lair_date_array=NULL; lost_lair_date_array_size=0; capturing_lair=0; reset(); }
+	ModFryhtan()		{ lair_array=NULL; lair_array_size=0; offer_array=NULL; offer_array_size=0; lost_lair_date_array=NULL; lost_lair_date_array_size=0; raid_date_array=NULL; raid_date_array_size=0; capturing_lair=0; reset(); }
 
 	int	write_file(File* filePtr);
 	int	read_file(File* filePtr);

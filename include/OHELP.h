@@ -71,7 +71,7 @@ class Help
 {
 public:
 	enum 			{ SCREEN_CODE_LEN=8 };
-	enum			{ CUSTOM_HELP_TITLE_LEN=80, CUSTOM_HELP_DETAIL_LEN=200 };
+	enum			{ CUSTOM_HELP_TITLE_LEN=80, CUSTOM_HELP_DETAIL_LEN=400 };
 
 	char			custom_help_title[CUSTOM_HELP_TITLE_LEN+1];
 	char			custom_help_detail[CUSTOM_HELP_DETAIL_LEN+1];

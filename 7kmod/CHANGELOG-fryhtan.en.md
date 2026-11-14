@@ -102,6 +102,19 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
 - **Enslaved towns without a general:** if no linked lair has an Ordo or the king
   inside, the town pays no tribute and its loyalty drops. If it reaches the rebellion
   point, the rebels go out to attack the nearest lair.
+- **Looting towns:** when attacking a town, each villager that dies gives $2 and 5 food,
+  like killing a villager.
+- **Raid button** on an independent town linked to a lair with a general and soldiers
+  (where Grant is), once a month per town, with a waiting bar:
+  - It steals $1 and 1 food per person (up to 30) and kills villagers by the size of the
+    town (small: 25% chance of 1; medium: 1; large: 1 or 2).
+  - Up to 1 defender per 10 people comes out and attacks the lair of the best general;
+    each one killed lowers the resistance of the town, and the ones that go back return
+    it.
+  - When no defenders come out any more (resistance under 30), the resistance drops by
+    5 to 10; at 0, the town is enslaved.
+  - A news message with the loot, the dead and the defenders; the button's help says
+    what to expect.
 - **Enslaved towns without a lair:** an enslaved town left without any linked lair
   stays in the kingdom for **3 months** (no tribute, no rebellion); if it's linked to a
   lair again in that time, it stays enslaved. Then it becomes independent with the news

@@ -42,6 +42,12 @@
 #include <ORACERES.h>
 #include <OINFO.h>
 #include <ONEWS.h>
+
+//------ the dates kept by town recno (grace period, raids) ------//
+
+static void set_town_date(int32_t*& dateArray, int& arraySize, int townRecno, int32_t newDate);
+static int  write_town_dates(File* filePtr, int32_t* dateArray, int arraySize);
+static int  read_town_dates(File* filePtr, int32_t*& dateArray, int& arraySize);
 #include <OTOWN.h>
 #include <ModFryhtan.h>
 #include "gettext.h"
@@ -62,6 +68,9 @@ void ModFryhtan::reset()
 
 	if( lost_lair_date_array )
 		memset( lost_lair_date_array, 0, sizeof(int32_t) * lost_lair_date_array_size );
+
+	if( raid_date_array )
+		memset( raid_date_array, 0, sizeof(int32_t) * raid_date_array_size );
 
 	capturing_lair = 0;
 }
@@ -994,25 +1003,13 @@ int ModFryhtan::write_file(File* filePtr)
 
 	//------- the enslaved towns waiting to become independent: town recno and the day they lost their lairs -------//
 
-	int lostCount = 0;
-
-	for( int i=0 ; i<lost_lair_date_array_size ; i++ )
-	{
-		if( lost_lair_date_array[i] )
-			lostCount++;
-	}
-
-	if( !filePtr->file_put_short( (int16_t) lostCount ) )
+	if( !write_town_dates( filePtr, lost_lair_date_array, lost_lair_date_array_size ) )
 		return 0;
 
-	for( int i=0 ; i<lost_lair_date_array_size ; i++ )
-	{
-		if( lost_lair_date_array[i] &&
-			 ( !filePtr->file_put_short( (int16_t) (i+1) ) || !filePtr->file_put_long( lost_lair_date_array[i] ) ) )
-		{
-			return 0;
-		}
-	}
+	//------- the day each town was last raided -------//
+
+	if( !write_town_dates( filePtr, raid_date_array, raid_date_array_size ) )
+		return 0;
 
 	return 1;
 }
@@ -1090,18 +1087,16 @@ int ModFryhtan::read_file(File* filePtr)
 	if( filePtr->file_pos() >= filePtr->file_size() )		// a saved game from before the grace period
 		return 1;
 
-	int lostCount = filePtr->file_get_short();
-
-	if( lostCount < 0 )
+	if( !read_town_dates( filePtr, lost_lair_date_array, lost_lair_date_array_size ) )
 		return 0;
 
-	for( int i=0 ; i<lostCount ; i++ )
-	{
-		int townRecno = filePtr->file_get_short();
-		int32_t lostDate = filePtr->file_get_long();
+	//------- the day each town was last raided -------//
 
-		set_lost_lair_date( townRecno, lostDate );
-	}
+	if( filePtr->file_pos() >= filePtr->file_size() )		// a saved game from before the raids
+		return 1;
+
+	if( !read_town_dates( filePtr, raid_date_array, raid_date_array_size ) )
+		return 0;
 
 	return 1;
 }
@@ -1436,28 +1431,337 @@ int32_t ModFryhtan::lost_lair_date(int townRecno)
 //----------- End of function ModFryhtan::lost_lair_date -----------//
 
 
-//--------- Begin of function ModFryhtan::set_lost_lair_date ---------//
+//--------- Begin of static function set_town_date ---------//
 //
-void ModFryhtan::set_lost_lair_date(int townRecno, int32_t lostDate)
+// Set a date in an array of dates by town recno, growing it if needed.
+//
+static void set_town_date(int32_t*& dateArray, int& arraySize, int townRecno, int32_t newDate)
 {
 	if( townRecno < 1 )
 		return;
 
-	if( townRecno > lost_lair_date_array_size )
+	if( townRecno > arraySize )
 	{
-		if( !lostDate )
+		if( !newDate )
 			return;
 
 		int newSize = townRecno + 20;
 
-		lost_lair_date_array = (int32_t*) mem_resize( lost_lair_date_array, sizeof(int32_t) * newSize );
-		memset( lost_lair_date_array + lost_lair_date_array_size, 0, sizeof(int32_t) * (newSize - lost_lair_date_array_size) );
-		lost_lair_date_array_size = newSize;
+		dateArray = (int32_t*) mem_resize( dateArray, sizeof(int32_t) * newSize );
+		memset( dateArray + arraySize, 0, sizeof(int32_t) * (newSize - arraySize) );
+		arraySize = newSize;
 	}
 
-	lost_lair_date_array[townRecno-1] = lostDate;
+	dateArray[townRecno-1] = newDate;
+}
+//----------- End of static function set_town_date -----------//
+
+
+//--------- Begin of static function write_town_dates ---------//
+//
+// Write the non-zero dates of an array by town recno: their count, then the
+// town recno and the date of each one.
+//
+static int write_town_dates(File* filePtr, int32_t* dateArray, int arraySize)
+{
+	int count = 0;
+
+	for( int i=0 ; i<arraySize ; i++ )
+	{
+		if( dateArray[i] )
+			count++;
+	}
+
+	if( !filePtr->file_put_short( (int16_t) count ) )
+		return 0;
+
+	for( int i=0 ; i<arraySize ; i++ )
+	{
+		if( dateArray[i] &&
+			 ( !filePtr->file_put_short( (int16_t) (i+1) ) || !filePtr->file_put_long( dateArray[i] ) ) )
+		{
+			return 0;
+		}
+	}
+
+	return 1;
+}
+//----------- End of static function write_town_dates -----------//
+
+
+//--------- Begin of static function read_town_dates ---------//
+//
+static int read_town_dates(File* filePtr, int32_t*& dateArray, int& arraySize)
+{
+	int count = filePtr->file_get_short();
+
+	if( count < 0 )
+		return 0;
+
+	for( int i=0 ; i<count ; i++ )
+	{
+		int townRecno = filePtr->file_get_short();
+		int32_t townDate = filePtr->file_get_long();
+
+		set_town_date( dateArray, arraySize, townRecno, townDate );
+	}
+
+	return 1;
+}
+//----------- End of static function read_town_dates -----------//
+
+
+//--------- Begin of function ModFryhtan::set_lost_lair_date ---------//
+//
+void ModFryhtan::set_lost_lair_date(int townRecno, int32_t lostDate)
+{
+	set_town_date( lost_lair_date_array, lost_lair_date_array_size, townRecno, lostDate );
 }
 //----------- End of function ModFryhtan::set_lost_lair_date -----------//
+
+
+//--------- Begin of function ModFryhtan::raid_date ---------//
+//
+int32_t ModFryhtan::raid_date(int townRecno)
+{
+	if( townRecno < 1 || townRecno > raid_date_array_size )
+		return 0;
+
+	return raid_date_array[townRecno-1];
+}
+//----------- End of function ModFryhtan::raid_date -----------//
+
+
+//--------- Begin of function ModFryhtan::set_raid_date ---------//
+//
+void ModFryhtan::set_raid_date(int townRecno, int32_t raidDate)
+{
+	set_town_date( raid_date_array, raid_date_array_size, townRecno, raidDate );
+}
+//----------- End of function ModFryhtan::set_raid_date -----------//
+
+
+//--------- Begin of function ModFryhtan::reset_town_dates ---------//
+//
+// A new town, or a town that has changed owner: no grace period or raid
+// left from before (the town recnos are reused).
+//
+void ModFryhtan::reset_town_dates(int townRecno)
+{
+	set_lost_lair_date(townRecno, 0);
+	set_raid_date(townRecno, 0);
+}
+//----------- End of function ModFryhtan::reset_town_dates -----------//
+
+
+//--------- Begin of function ModFryhtan::raid_lair ---------//
+//
+// return: <int> the firm recno of the lair of the kingdom linked to the town
+//               with the general of the highest leadership, 0 if there is
+//               no linked lair with a general
+//
+int ModFryhtan::raid_lair(Town* townPtr, int nationRecno)
+{
+	int bestRecno = 0, bestLeadership = -1;
+
+	for( int i=0 ; i<townPtr->linked_firm_count ; i++ )
+	{
+		Firm* firmPtr = firm_array[ townPtr->linked_firm_array[i] ];
+
+		if( firmPtr->nation_recno != nationRecno || !is_lair(firmPtr) || !firmPtr->overseer_recno )
+			continue;
+
+		int leadership = unit_array[firmPtr->overseer_recno]->skill.skill_level;
+
+		if( leadership > bestLeadership )
+		{
+			bestLeadership = leadership;
+			bestRecno = firmPtr->firm_recno;
+		}
+	}
+
+	return bestRecno;
+}
+//----------- End of function ModFryhtan::raid_lair -----------//
+
+
+//--------- Begin of function ModFryhtan::can_see_raid ---------//
+//
+// The Raid button is shown on an independent town linked to a lair of the
+// Fryhtan kingdom with a general.
+//
+int ModFryhtan::can_see_raid(Town* townPtr, int nationRecno)
+{
+	return nationRecno && is_fryhtan(nationRecno) && townPtr->nation_recno == 0 &&
+			 townPtr->population > 0 && raid_lair(townPtr, nationRecno);
+}
+//----------- End of function ModFryhtan::can_see_raid -----------//
+
+
+//--------- Begin of function ModFryhtan::raid_days_left ---------//
+//
+int ModFryhtan::raid_days_left(Town* townPtr)
+{
+	int32_t lastDate = raid_date(townPtr->town_recno);
+
+	if( !lastDate || info.game_date >= lastDate + RAID_INTERVAL_DAYS )
+		return 0;
+
+	return lastDate + RAID_INTERVAL_DAYS - info.game_date;
+}
+//----------- End of function ModFryhtan::raid_days_left -----------//
+
+
+//--------- Begin of function ModFryhtan::raid_defender_count ---------//
+//
+// About how many defenders come out to attack the lair: one for each
+// RAID_PEOPLE_PER_DEFENDER people, if the resistance toward the kingdom is
+// high enough (the rule of Town::mobilize_defender(), on the average).
+//
+int ModFryhtan::raid_defender_count(Town* townPtr, int nationRecno)
+{
+	int maxCount = MAX( 1, townPtr->population / RAID_PEOPLE_PER_DEFENDER );
+
+	float resistance = (float) townPtr->average_resistance(nationRecno);
+	int   count = 0;
+
+	while( count < maxCount && resistance >= RAID_MIN_DEFEND_RESISTANCE && resistance >= count*5 )
+	{
+		resistance -= resistance / MAX(1, townPtr->population - count);
+		count++;
+	}
+
+	return count;
+}
+//----------- End of function ModFryhtan::raid_defender_count -----------//
+
+
+//--------- Begin of function ModFryhtan::raid_town ---------//
+//
+// Raid an independent town from a linked lair: steal a little gold and
+// food, kill some villagers, and call out its defenders to attack the
+// lair. Killing them lowers the resistance of the town; the ones that go
+// back to the town give it back. When no defenders come out any more, the
+// raid lowers the resistance directly.
+//
+// return: <int> 1 if the raid has been done
+//
+int ModFryhtan::raid_town(Town* townPtr, int nationRecno)
+{
+	if( !can_see_raid(townPtr, nationRecno) || raid_days_left(townPtr) )
+		return 0;
+
+	int lairRecno = raid_lair(townPtr, nationRecno);
+	Firm* lairPtr = firm_array[lairRecno];
+
+	if( lairPtr->worker_count == 0 )		// it needs soldiers in the lair
+		return 0;
+
+	int townRecno = townPtr->town_recno;
+	int townNameId = townPtr->town_name_id;
+	int population = townPtr->population;
+
+	set_raid_date(townRecno, info.game_date);
+
+	//------- the loot -------//
+
+	Nation* nationPtr = nation_array[nationRecno];
+
+	int loot = MIN( population, (int) RAID_MAX_LOOT );
+
+	nationPtr->add_income( INCOME_TREASURE, (float) loot );
+	nationPtr->add_food( (float) loot );
+
+	//------- villagers killed, by the size of the town -------//
+
+	int killCount;
+
+	if( population < 20 )
+		killCount = misc.random(4)==0 ? 1 : 0;		// small: unlikely
+	else if( population < 40 )
+		killCount = 1;										// medium
+	else
+		killCount = 1 + misc.random(2);				// large: 1 or 2
+
+	killCount = MIN( killCount, population-1 );		// the raid never empties the town
+
+	for( int i=0 ; i<killCount ; i++ )
+		townPtr->kill_town_people(0, nationRecno);
+
+	if( town_array.is_deleted(townRecno) )
+		return 1;
+
+	//------- the defenders come out and attack the lair -------//
+
+	townPtr->set_hostile_nation(nationRecno);
+
+	int maxDefender = MAX( 1, townPtr->population / RAID_PEOPLE_PER_DEFENDER );
+	int defenderCount = 0;
+
+	while( defenderCount < maxDefender )
+	{
+		int unitRecno = townPtr->mobilize_defender(nationRecno);
+
+		if( !unitRecno )
+			break;
+
+		unit_array[unitRecno]->attack_firm( lairPtr->loc_x1, lairPtr->loc_y1 );
+		defenderCount++;
+	}
+
+	//------- no defenders: the raid lowers the resistance directly -------//
+
+	if( defenderCount == 0 )
+	{
+		int resistanceDec = RAID_MIN_RESISTANCE_DEC + misc.random(RAID_MAX_RESISTANCE_DEC - RAID_MIN_RESISTANCE_DEC + 1);
+		int allZero = 1;
+
+		for( int i=0 ; i<MAX_RACE ; i++ )
+		{
+			if( townPtr->race_pop_array[i] == 0 )
+				continue;
+
+			float& resistance = townPtr->race_resistance_array[i][nationRecno-1];
+
+			resistance = MAX( (float) 0, resistance - resistanceDec );
+
+			if( resistance >= (float) 1 )
+				allZero = 0;
+		}
+
+		if( nationRecno == nation_array.player_recno )
+			news_array.town_raided(townRecno, townNameId, loot, killCount, 0);
+
+		if( allZero )
+			townPtr->surrender(nationRecno);		// enslaved (it's linked to a lair)
+
+		return 1;
+	}
+
+	if( nationRecno == nation_array.player_recno )
+		news_array.town_raided(townRecno, townNameId, loot, killCount, defenderCount);
+
+	return 1;
+}
+//----------- End of function ModFryhtan::raid_town -----------//
+
+
+//--------- Begin of function ModFryhtan::reward_town_villager ---------//
+//
+// A villager killed in a town attacked by a Fryhtan kingdom gives the same
+// gold and food as killing a villager (not when the town is raided).
+//
+void ModFryhtan::reward_town_villager(int nationRecno)
+{
+	if( !nationRecno || !is_fryhtan(nationRecno) || nation_array.is_deleted(nationRecno) )
+		return;
+
+	Nation* nationPtr = nation_array[nationRecno];
+
+	nationPtr->add_income( INCOME_TREASURE, (float) KILL_GOLD_UNIT );
+	nationPtr->add_food( (float) KILL_FOOD_UNIT );
+}
+//----------- End of function ModFryhtan::reward_town_villager -----------//
 
 
 //--------- Begin of function ModFryhtan::nearest_lair ---------//

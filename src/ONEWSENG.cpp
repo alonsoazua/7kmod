@@ -103,6 +103,7 @@ static NewsInfo news_info_array[] =
 	{ &News::intel_report, 0 },
 	{ &News::counter_spy_caught, 0 },
 	{ &News::spy_confrontation, 0 },
+	{ &News::town_raided, 0 },				// 7kmod-fryhtan
 };
 
 //------- Define static variables --------//
@@ -1279,6 +1280,43 @@ void News::villager_joined()
 				_(race_res[short_para2]->adjective), town_res.get_name(short_para1) );
 }
 //------- End of function News::villager_joined -----//
+
+
+//------ Begin of function News::town_raided -----//
+//
+// 7kmod-fryhtan: the player's Fryhtan kingdom raided an independent town.
+//
+// short_para1 = the town name id
+// short_para2 = the gold and food stolen
+// short_para3 = the villagers killed
+// short_para4 = the defenders attacking the lair (0: none, the resistance dropped)
+//
+void News::town_raided()
+{
+	char killStr[60];
+
+	if( short_para3 == 0 )
+		snprintf(killStr, sizeof(killStr), "%s", _("nobody killed"));
+	else
+		// TRANSLATORS: <Number> villager(s) killed (in a raid)
+		snprintf(killStr, sizeof(killStr), ngettext("%d villager killed", "%d villagers killed", short_para3), short_para3);
+
+	if( short_para4 > 0 )
+	{
+		// TRANSLATORS: Raided <Town>: $<Gold> and <Food> food, <N villagers killed>. <Number> defenders are attacking your lair.
+		snprintf(str, MAX_STR_LEN+1,
+					ngettext("Raided %s: $%d and %d food, %s. %d defender is attacking your lair.",
+								"Raided %s: $%d and %d food, %s. %d defenders are attacking your lair.", short_para4),
+					town_res.get_name(short_para1), short_para2, short_para2, killStr, short_para4);
+	}
+	else
+	{
+		// TRANSLATORS: Raided <Town>: $<Gold> and <Food> food, <N villagers killed>. Its resistance has dropped.
+		snprintf(str, MAX_STR_LEN+1, _("Raided %s: $%d and %d food, %s. Its resistance has dropped."),
+					town_res.get_name(short_para1), short_para2, short_para2, killStr);
+	}
+}
+//------- End of function News::town_raided -----//
 
 
 //------ Begin of function News::intel_report -----//

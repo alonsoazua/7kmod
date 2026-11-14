@@ -90,6 +90,7 @@ enum { TOWN_MENU_MAIN,
 
 static VBrowseIF  browse_race, browse_spy;
 static Button3D   button_recruit, button_train, button_tax, button_grant;
+static Button3D   button_raid;		// 7kmod-fryhtan: raid an independent town from a linked lair
 static Button3D   button_spy, button_cancel, button_spy_mobilize,
 						button_spy_reward, button_spy_action, button_spy_view_secret;
 static Button3D	button_cancel_training;
@@ -568,6 +569,19 @@ void Town::disp_main_menu(int refreshFlag)
 		x += BUTTON_ACTION_WIDTH;
 	}
 
+	//------ 7kmod-fryhtan: raid an independent town from a linked lair ------//
+
+	else if( nation_array.player_recno &&
+				mod_fryhtan.can_see_raid(this, nation_array.player_recno) )
+	{
+		disp_raid_button(refreshFlag);
+		x += BUTTON_ACTION_WIDTH;
+	}
+	else if( refreshFlag == INFO_REPAINT )
+	{
+		button_raid.reset();
+	}
+
 	//---------- display the spy button ----------//
 
 	int spyFlag = spy_filter() > 0;
@@ -596,6 +610,98 @@ void Town::disp_main_menu(int refreshFlag)
 		disp_debug_resistance(refreshFlag);
 }
 //----------- End of function Town::disp_main_menu -----------//
+
+
+//--------- Begin of function Town::disp_raid_button ---------//
+//
+// 7kmod-fryhtan: the Raid button of an independent town linked to a lair of
+// the player's Fryhtan kingdom, with a bar for the time left until the next
+// raid.
+//
+void Town::disp_raid_button(int refreshFlag)
+{
+	int nationRecno = nation_array.player_recno;
+	int daysLeft    = mod_fryhtan.raid_days_left(this);
+	int lairRecno   = mod_fryhtan.raid_lair(this, nationRecno);
+	int hasSoldier  = lairRecno && firm_array[lairRecno]->worker_count > 0;
+	int canRaid     = !daysLeft && hasSoldier;
+
+	static int lastTownRecno = -1, lastDaysLeft = -1, lastCanRaid = -1;
+
+	if( refreshFlag == INFO_REPAINT || !button_raid.init_flag ||
+		 town_recno != lastTownRecno || daysLeft != lastDaysLeft || canRaid != lastCanRaid )
+	{
+		button_raid.paint( BUTTON_X1, BUTTON_Y1 + (rebel_recno ? 23 : 0), 'A', "COLLTAX" );
+		button_raid.set_help_code("");		// the custom help is set below
+
+		if( canRaid )
+			button_raid.enable();
+		else
+			button_raid.disable();
+
+		//--- the time until the next raid, a bar at the bottom of the button ---//
+
+		if( daysLeft )
+		{
+			vga_front.indicator( button_raid.x1+6, button_raid.y2-11, button_raid.x2-9, button_raid.y2-7,
+										(float) (RAID_INTERVAL_DAYS - daysLeft), (float) RAID_INTERVAL_DAYS, VGA_LIGHT_GREEN, V_BLACK );
+		}
+
+		lastTownRecno = town_recno;
+		lastDaysLeft  = daysLeft;
+		lastCanRaid   = canRaid;
+	}
+
+	//------- help: what the raid will do -------//
+
+	static char helpStr[400];
+
+	const char* killStr;
+
+	if( population < 20 )
+		killStr = _("maybe kill a villager");
+	else if( population < 40 )
+		killStr = _("kill a villager");
+	else
+		killStr = _("kill 1 or 2 villagers");
+
+	int loot = MIN( (int) population, (int) RAID_MAX_LOOT );
+	int defenderCount = mod_fryhtan.raid_defender_count(this, nationRecno);
+
+	char defendStr[200];
+
+	if( defenderCount > 0 )
+	{
+		snprintf( defendStr, sizeof(defendStr),
+					 ngettext("About %d defender (combat about %d) will come out to attack your lair: killing it lowers the resistance of the village.",
+								 "About %d defenders (combat about %d) will come out to attack your lair: killing them lowers the resistance of the village.", defenderCount),
+					 defenderCount, (int) town_combat_level );
+	}
+	else
+	{
+		snprintf( defendStr, sizeof(defendStr), _("No defenders will come out: its resistance will drop by %d to %d."),
+					 (int) RAID_MIN_RESISTANCE_DEC, (int) RAID_MAX_RESISTANCE_DEC );
+	}
+
+	if( !hasSoldier )
+	{
+		snprintf( helpStr, sizeof(helpStr), "%s", _("Your lair linked to this village needs soldiers to raid it.") );
+	}
+	else if( daysLeft )
+	{
+		snprintf( helpStr, sizeof(helpStr),
+					 ngettext("You can raid this village again in %d day.", "You can raid this village again in %d days.", daysLeft),
+					 daysLeft );
+	}
+	else
+	{
+		snprintf( helpStr, sizeof(helpStr), _("Raid this village: steal $%d and %d food and %s. %s It can be raided once a month."),
+					 loot, loot, killStr, defendStr );
+	}
+
+	help.set_custom_help( button_raid.x1, button_raid.y1, button_raid.x2, button_raid.y2, _("Raid"), helpStr );
+}
+//----------- End of function Town::disp_raid_button -----------//
 
 
 //------- Begin of function Town::open_fort_recruit -------//
@@ -929,6 +1035,21 @@ int Town::detect_main_menu()
 		disable_refresh = 1;    // static var for disp_info() only
 		info.disp();
 		disable_refresh = 0;
+		return 1;
+	}
+
+	//----- 7kmod-fryhtan: detect raiding an independent town ---//
+
+	if( nation_array.player_recno &&
+		 mod_fryhtan.can_see_raid(this, nation_array.player_recno) &&
+		 button_raid.init_flag && button_raid.detect() )
+	{
+		se_ctrl.immediate_sound("TURN_ON");
+
+		mod_fryhtan.raid_town(this, nation_array.player_recno);
+
+		if( !town_array.is_deleted(town_recno) )		// repaint the town panel (the town may have surrendered)
+			info.disp();
 		return 1;
 	}
 
