@@ -767,3 +767,10 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
   Deezboanz ... in 10 days ... uses 2 population" y que entrenó un Deezboanz; en dos
   partidas las especies salvajes activas no incluyeron a los Rokken; el sonido se
   llamó al salir el soldado (en la nube no hay audio para oírlo).
+
+## 8. Economía oscura (en diseño)
+
+El diseño en borrador está en `DISENO-fryhtan-oscuro.md`: el Enforcer de los pueblos
+esclavizados, el mercado negro, la torre oscura de ciencia, la fábrica de guerra oscura,
+los soldados oscuros y las tecnologías de la guarida. Cuando se apruebe, sus fases se
+pasan aquí.
