@@ -68,6 +68,7 @@ enum { KILL_GOLD_UNIT		= 2,					// gold for killing a human soldier, villager or
 		 KILL_FOOD_GENERAL	= 20,					// a human general
 		 KILL_FOOD_KING		= 100 };				// a human king
 
+enum { LOST_LAIR_GRACE_DAYS = 90 };			// an enslaved town without a linked lair becomes independent after this
 enum { ENSLAVE_MIN_RESISTANCE = 45,			// the lairs lower the resistance of an independent town down to this
 		 ENSLAVED_TOWN_LOYALTY  = 50,			// fixed loyalty of the people of an enslaved town with an Ordo or the king in a linked lair
 		 ENSLAVED_TOWN_NO_COMMANDER_LOYALTY = 0,	// its target loyalty when no Ordo or king commands a linked lair
@@ -205,6 +206,15 @@ public:
 	int	can_enslave_town(Town* townPtr, int nationRecno);
 	int	next_day_town(Town* townPtr);
 	int	town_tribute(Town* townPtr);
+	int	in_lair_grace(Town* townPtr);		// whether an enslaved town has lost its lairs and is waiting to become independent
+
+	//--- the day an enslaved town lost the link with all its lairs (0: linked), by town recno ---//
+
+	int32_t*	lost_lair_date_array;
+	int		lost_lair_date_array_size;
+
+	int32_t	lost_lair_date(int townRecno);
+	void		set_lost_lair_date(int townRecno, int32_t lostDate);
 
 	//------ economy (phase 3) ------//
 
@@ -238,7 +248,7 @@ public:
 	static int				menu_next_species(int monsterId, int dir);		// dir: 1 - next, -1 - previous, in alphabetical order
 	static int				is_valid_species(int monsterId)	{ return monsterId >= 1 && monsterId <= FRYHTAN_SPECIES_COUNT; }
 
-	ModFryhtan()		{ lair_array=NULL; lair_array_size=0; offer_array=NULL; offer_array_size=0; capturing_lair=0; reset(); }
+	ModFryhtan()		{ lair_array=NULL; lair_array_size=0; offer_array=NULL; offer_array_size=0; lost_lair_date_array=NULL; lost_lair_date_array_size=0; capturing_lair=0; reset(); }
 
 	int	write_file(File* filePtr);
 	int	read_file(File* filePtr);

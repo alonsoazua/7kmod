@@ -41,6 +41,7 @@
 #include <OSERES.h>
 #include <ORACERES.h>
 #include <OINFO.h>
+#include <ONEWS.h>
 #include <OTOWN.h>
 #include <ModFryhtan.h>
 #include "gettext.h"
@@ -58,6 +59,9 @@ void ModFryhtan::reset()
 
 	if( offer_array )
 		memset( offer_array, 0, sizeof(LairOffer) * offer_array_size );
+
+	if( lost_lair_date_array )
+		memset( lost_lair_date_array, 0, sizeof(int32_t) * lost_lair_date_array_size );
 
 	capturing_lair = 0;
 }
@@ -988,6 +992,28 @@ int ModFryhtan::write_file(File* filePtr)
 		return 0;
 	}
 
+	//------- the enslaved towns waiting to become independent: town recno and the day they lost their lairs -------//
+
+	int lostCount = 0;
+
+	for( int i=0 ; i<lost_lair_date_array_size ; i++ )
+	{
+		if( lost_lair_date_array[i] )
+			lostCount++;
+	}
+
+	if( !filePtr->file_put_short( (int16_t) lostCount ) )
+		return 0;
+
+	for( int i=0 ; i<lost_lair_date_array_size ; i++ )
+	{
+		if( lost_lair_date_array[i] &&
+			 ( !filePtr->file_put_short( (int16_t) (i+1) ) || !filePtr->file_put_long( lost_lair_date_array[i] ) ) )
+		{
+			return 0;
+		}
+	}
+
 	return 1;
 }
 //----------- End of function ModFryhtan::write_file -----------//
@@ -1057,6 +1083,24 @@ int ModFryhtan::read_file(File* filePtr)
 
 		if( !filePtr->file_get_short_array( (int16_t*) offer_array, offerCount * (sizeof(LairOffer)/sizeof(int16_t)) ) )
 			return 0;
+	}
+
+	//------- the enslaved towns waiting to become independent -------//
+
+	if( filePtr->file_pos() >= filePtr->file_size() )		// a saved game from before the grace period
+		return 1;
+
+	int lostCount = filePtr->file_get_short();
+
+	if( lostCount < 0 )
+		return 0;
+
+	for( int i=0 ; i<lostCount ; i++ )
+	{
+		int townRecno = filePtr->file_get_short();
+		int32_t lostDate = filePtr->file_get_long();
+
+		set_lost_lair_date( townRecno, lostDate );
 	}
 
 	return 1;
@@ -1245,16 +1289,40 @@ int ModFryhtan::next_day_town(Town* townPtr)
 {
 	int nationRecno = townPtr->nation_recno;
 
-	//---- if it has lost the link with all the lairs, it becomes independent ----//
+	//---- if it has lost the link with all the lairs, it becomes independent after a grace period ----//
 
 	if( !townPtr->has_linked_camp(nationRecno, 0) )
 	{
-		for( int i=0 ; i<MAX_RACE ; i++ )		// the kingdom has to fight it again to enslave it
-			townPtr->race_resistance_array[i][nationRecno-1] = (float) 100;
+		int32_t lostDate = lost_lair_date(townPtr->town_recno);
+
+		if( !lostDate )
+		{
+			set_lost_lair_date(townPtr->town_recno, info.game_date);
+			return 1;
+		}
+
+		if( info.game_date < lostDate + LOST_LAIR_GRACE_DAYS )
+			return 1;		// no tribute: no Ordo or king commands it
+
+		set_lost_lair_date(townPtr->town_recno, 0);
+
+		//--- the resistance of a new independent town toward all the kingdoms, so that it doesn't surrender at once to a kingdom with an old zero resistance ---//
+
+		for( int i=0 ; i<MAX_RACE ; i++ )
+		{
+			for( int j=0 ; j<MAX_NATION ; j++ )
+				townPtr->race_resistance_array[i][j] = (float) 60 + misc.random(40);
+
+			townPtr->race_resistance_array[i][nationRecno-1] = (float) 100;		// the kingdom has to fight it again to enslave it
+		}
+
+		news_array.town_rebel(townPtr->town_recno, 0);		// 0 rebels: "Your village of ... has declared independence."
 
 		townPtr->set_nation(0);
 		return 0;
 	}
+
+	set_lost_lair_date(townPtr->town_recno, 0);		// linked again: the grace period is over
 
 	//------- the tribute, at the start of each month (only with an Ordo or the king in a linked lair) -------//
 
@@ -1341,6 +1409,55 @@ int ModFryhtan::has_lair_commander(Town* townPtr)
 	return 0;
 }
 //----------- End of function ModFryhtan::has_lair_commander -----------//
+
+
+//--------- Begin of function ModFryhtan::in_lair_grace ---------//
+//
+// An enslaved town that has lost the link with all its lairs doesn't rebel
+// while it waits to become independent: the rebels would have no lair to
+// attack.
+//
+int ModFryhtan::in_lair_grace(Town* townPtr)
+{
+	return is_enslaved_town(townPtr) && !townPtr->has_linked_camp(townPtr->nation_recno, 0);
+}
+//----------- End of function ModFryhtan::in_lair_grace -----------//
+
+
+//--------- Begin of function ModFryhtan::lost_lair_date ---------//
+//
+int32_t ModFryhtan::lost_lair_date(int townRecno)
+{
+	if( townRecno < 1 || townRecno > lost_lair_date_array_size )
+		return 0;
+
+	return lost_lair_date_array[townRecno-1];
+}
+//----------- End of function ModFryhtan::lost_lair_date -----------//
+
+
+//--------- Begin of function ModFryhtan::set_lost_lair_date ---------//
+//
+void ModFryhtan::set_lost_lair_date(int townRecno, int32_t lostDate)
+{
+	if( townRecno < 1 )
+		return;
+
+	if( townRecno > lost_lair_date_array_size )
+	{
+		if( !lostDate )
+			return;
+
+		int newSize = townRecno + 20;
+
+		lost_lair_date_array = (int32_t*) mem_resize( lost_lair_date_array, sizeof(int32_t) * newSize );
+		memset( lost_lair_date_array + lost_lair_date_array_size, 0, sizeof(int32_t) * (newSize - lost_lair_date_array_size) );
+		lost_lair_date_array_size = newSize;
+	}
+
+	lost_lair_date_array[townRecno-1] = lostDate;
+}
+//----------- End of function ModFryhtan::set_lost_lair_date -----------//
 
 
 //--------- Begin of function ModFryhtan::nearest_lair ---------//

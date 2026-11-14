@@ -827,6 +827,8 @@ void Town::set_nation(int newNationRecno)
 	if( mod_fryhtan.is_fryhtan(nation_recno) )
 		last_rebel_date = info.game_date - (3-1)*30;
 
+	mod_fryhtan.set_lost_lair_date(town_recno, 0);		// 7kmod-fryhtan: no grace period left from an older owner
+
 	//------- reset town_combat_level -------//
 
 	town_combat_level = 0;
@@ -1941,6 +1943,9 @@ void Town::think_rebel()
 		return;
 
 	if( town_defender_count > 0 || info.game_date < last_being_attacked_date + 10 )		// don't rebel within ten days after being attacked by a hostile unit
+		return;
+
+	if( mod_fryhtan.in_lair_grace(this) )		// 7kmod-fryhtan: an enslaved town without lairs doesn't rebel, it waits to become independent
 		return;
 
 	//--- rebel if 2/3 of the population becomes discontented ---//

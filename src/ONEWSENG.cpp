@@ -180,6 +180,15 @@ void News::town_rebel()
 	//
 	//----------------------------------------------//
 
+	//--- 7kmod-fryhtan: 0 rebels - an enslaved town without lairs has become independent ---//
+
+	if( short_para2 == 0 )
+	{
+		// TRANSLATORS: Your village of <Town> has declared independence.
+		snprintf(str, MAX_STR_LEN+1, _("Your village of %s has declared independence."), town_res.get_name(short_para1));
+		return;
+	}
+
 	err_when( short_para2 < 1 );
 
 	snprintf(str,

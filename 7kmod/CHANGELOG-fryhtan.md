@@ -103,6 +103,14 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
 - **Pueblos esclavizados sin general:** si ninguna guarida enlazada tiene un Ordo o el
   rey adentro, el pueblo no paga tributo y su lealtad baja. Si llega al punto de
   rebelión, los rebeldes salen a atacar la guarida más cercana.
+- **Pueblos esclavizados sin guarida:** un pueblo esclavizado que se queda sin ninguna
+  guarida enlazada sigue siendo del reino **3 meses** (sin tributo y sin rebelarse); si
+  en ese tiempo vuelve a tener una guarida enlazada, sigue esclavizado. Al terminar se
+  independiza con la noticia "Your village of … has declared independence."
+- **Corregido:** el pueblo que se independizaba se rendía enseguida a otro reino, porque
+  conservaba resistencia 0 hacia él de antes. Ahora queda con la resistencia de un
+  pueblo independiente nuevo (60 a 100) hacia todos los reinos, y 100 hacia el reino
+  Fryhtan.
 - **Capturar guaridas salvajes** (fase 5):
   - Una guarida salvaje de cualquier especie a 8 casillas o menos de una guarida del
     reino muestra una **oferta**: un Ordo con el combate del mejor Ordo de la guarida y

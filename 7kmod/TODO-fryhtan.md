@@ -818,7 +818,7 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         defensores, como la de los rebeldes de los pueblos esclavizados
         (`REBEL_ATTACK_FIRM`), sin quitarles la resistencia que se llevan.
 
-- [ ] **Gracia de 3 meses al perder la guarida de un pueblo esclavizado.** Hoy, en cuanto
+- [x] **Gracia de 3 meses al perder la guarida de un pueblo esclavizado.** Hoy, en cuanto
       un pueblo esclavizado se queda sin guarida enlazada (`ModFryhtan::next_day_town`),
       se vuelve independiente ese mismo día. Con el cambio:
       - Al quedarse sin guarida enlazada, sigue siendo tuyo **3 meses**. Si en ese tiempo
@@ -834,7 +834,7 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       - Hay que guardar en la partida desde cuándo se quedó sin guarida (sube la versión
         de partida de Fryhtan).
 
-- [ ] **Bug: el pueblo que se independiza se rinde enseguida a otro reino.** En una
+- [x] **Bug: el pueblo que se independiza se rinde enseguida a otro reino.** En una
       partida, al eliminar la guarida, el pueblo esclavizado se volvió independiente un
       momento y luego se rindió a otro reino.
       - Causa probable (revisar): al independizarse solo se pone en 100 su resistencia
@@ -846,6 +846,26 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         como la de un pueblo independiente nuevo (60 a 100, `Town::init`), y 100 hacia el
         reino Fryhtan como hoy.
       - Revisar si pasa lo mismo cuando un pueblo esclavizado se rebela.
+
+#### Cómo quedaron (gracia y bug)
+
+- `ModFryhtan::next_day_town` guarda el día en que el pueblo se quedó sin guarida
+  (`lost_lair_date_array`, por número de pueblo; se borra al volver a tener guarida y en
+  `Town::set_nation`). A los 90 días (`LOST_LAIR_GRACE_DAYS`) se independiza.
+- `Town::think_rebel` no rebela a un pueblo esclavizado sin guarida enlazada
+  (`ModFryhtan::in_lair_grace`).
+- Noticia: `NEWS_TOWN_REBEL` con 0 rebeldes = "Your village of %s has declared
+  independence."
+- Al independizarse, resistencia de 60 a 100 hacia todos los reinos y 100 hacia el reino
+  Fryhtan.
+- Partida guardada: los días se guardan al final de los datos de `ModFryhtan` (las
+  partidas anteriores se cargan sin ellos), sin subir la versión de partida.
+- **Probado** (con cambios temporales para la prueba): sin la guarida y con resistencia 0
+  hacia todos los reinos, el pueblo se independizó a los 90 días exactos, salió la
+  noticia y no se rindió enseguida (un reino lo tomó meses después, de la forma
+  normal). Guardando a los 11 días y cargando, se independizó el mismo día. La parte de
+  no rebelarse durante la gracia no se probó en partida. El caso del pueblo que se
+  rebela queda por revisar.
 
 ## 8. Economía oscura (en diseño)
 

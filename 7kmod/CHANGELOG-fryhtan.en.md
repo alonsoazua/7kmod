@@ -102,6 +102,13 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
 - **Enslaved towns without a general:** if no linked lair has an Ordo or the king
   inside, the town pays no tribute and its loyalty drops. If it reaches the rebellion
   point, the rebels go out to attack the nearest lair.
+- **Enslaved towns without a lair:** an enslaved town left without any linked lair
+  stays in the kingdom for **3 months** (no tribute, no rebellion); if it's linked to a
+  lair again in that time, it stays enslaved. Then it becomes independent with the news
+  "Your village of … has declared independence."
+- **Fixed:** a town that became independent surrendered at once to another kingdom,
+  because it kept an old zero resistance toward it. Now it gets the resistance of a new
+  independent town (60 to 100) toward every kingdom, and 100 toward the Fryhtan kingdom.
 - **Capturing wild lairs** (phase 5):
   - A wild lair of any species within 8 tiles of a lair of the kingdom shows an
     **offer**: an Ordo with the combat of the lair's best Ordo and leadership 30–60, and
