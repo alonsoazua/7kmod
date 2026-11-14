@@ -37,7 +37,7 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
     works like a fort (one general and up to 8 soldiers). It costs **$500** and **$100
     a year**.
   - **Train** button in the lair: a Fryhtan of the lair's species for **20 food**, in
-    **20 days** (10 for a small species), with combat 20. Queue of up to 8; right click removes one and gives the
+    **15 days** (10 for a small species), with combat 20. Queue of up to 8; right click removes one and gives the
     food back. It can't go over the population cap.
   - **Fryhtan population:** each Fryhtan of the kingdom, king included, uses 2 (small)
     or 3 (large). The base cap is 20. It shows in the Train help and in the Kingdoms report
@@ -104,9 +104,11 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   point, the rebels go out to attack the nearest lair.
 - **Looting towns:** when attacking a town, each villager that dies gives $2 and 5 food,
   like killing a villager.
-- **Raiding independent towns:** a panel on a town linked to a lair with a general
-  (like the one for capturing wild lairs), with the **Raid village** button, once every
-  2 months per town, with a waiting bar:
+- **Raiding independent towns:** on a town linked to a lair with a general, the **Raid**
+  button (Collect Tax icon, with a waiting bar; dark and with the reason in its help when
+  it can't be done) opens a view with the main race, the population, the resistance,
+  what the raid gives and the defenders, with the **Raid village** and **Cancel**
+  buttons. Once every 2 months per town:
   - It steals $1 and 1 food per person (up to 30) and lowers the resistance by 5.
   - Up to 1 defender per 10 people plus 1 comes out (+1 with a resistance over 50, +2
     over 80) and attacks the lair of the best general. The first one is the leader:

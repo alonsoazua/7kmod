@@ -39,6 +39,7 @@
 #include <OIMGRES.h>
 #include <ORAWRES.h>
 #include <ORACERES.h>
+#include <OUNITRES.h>
 #include <OWORLD.h>
 #include <OUNIT.h>
 #include <OTOWN.h>
@@ -79,6 +80,7 @@ enum { TOWN_MENU_MAIN,
 		 TOWN_MENU_VIEW_SECRET,
 		 TOWN_MENU_SET_AUTO_COLLECT_TAX,
 		 TOWN_MENU_SET_AUTO_GRANT,
+		 TOWN_MENU_RAID,				// 7kmod-fryhtan: the details of a raid on an independent town
 	  };
 
 #define BUTTON_LOYALTY_COUNT	8
@@ -91,7 +93,8 @@ enum { TOWN_MENU_MAIN,
 
 static VBrowseIF  browse_race, browse_spy;
 static Button3D   button_recruit, button_train, button_tax, button_grant;
-static Button     button_raid;		// 7kmod-fryhtan: Raid village, in the Raid panel of an independent town linked to a lair
+static Button3D   button_raid;		// 7kmod-fryhtan: the Raid button of an independent town linked to a lair
+static Button     button_raid_village, button_raid_cancel;		// 7kmod-fryhtan: in the Raid menu
 static Button3D   button_spy, button_cancel, button_spy_mobilize,
 						button_spy_reward, button_spy_action, button_spy_view_secret;
 static Button3D	button_cancel_training;
@@ -221,6 +224,10 @@ void Town::disp_info(int refreshFlag)
 			if( refreshFlag == INFO_REPAINT )
 				disp_auto_menu(0);
 			break;
+
+		case TOWN_MENU_RAID:
+			disp_raid_menu(refreshFlag);		// 7kmod-fryhtan
+			break;
 	}
 }
 //----------- End of function Town::disp_info -----------//
@@ -265,6 +272,11 @@ void Town::detect_info()
 
 		case TOWN_MENU_SET_AUTO_GRANT:
 			if( detect_auto_menu(0) )
+				return;
+			break;
+
+		case TOWN_MENU_RAID:
+			if( detect_raid_menu() )		// 7kmod-fryhtan
 				return;
 			break;
 	}
@@ -575,7 +587,8 @@ void Town::disp_main_menu(int refreshFlag)
 	else if( nation_array.player_recno &&
 				mod_fryhtan.can_see_raid(this, nation_array.player_recno) )
 	{
-		disp_raid_panel(refreshFlag);		// it takes the place of the buttons
+		disp_raid_button(refreshFlag);
+		x += BUTTON_ACTION_WIDTH;
 	}
 	else if( refreshFlag == INFO_REPAINT )
 	{
@@ -612,14 +625,14 @@ void Town::disp_main_menu(int refreshFlag)
 //----------- End of function Town::disp_main_menu -----------//
 
 
-//--------- Begin of function Town::disp_raid_panel ---------//
+//--------- Begin of function Town::disp_raid_button ---------//
 //
-// 7kmod-fryhtan: the Raid panel of an independent town linked to a lair of
-// the player's Fryhtan kingdom with a general: what the raid gives, the
-// defenders that will attack the lair, and the Raid village button, with a
-// bar for the time left until the next raid.
+// 7kmod-fryhtan: the Raid button of an independent town linked to a lair of
+// the player's Fryhtan kingdom with a general. It's enabled when the town
+// can be raided, and it opens the Raid menu; otherwise its help says why,
+// with a bar for the time left until the next raid.
 //
-void Town::disp_raid_panel(int refreshFlag)
+void Town::disp_raid_button(int refreshFlag)
 {
 	int nationRecno = nation_array.player_recno;
 	int daysLeft    = mod_fryhtan.raid_days_left(this);
@@ -627,96 +640,198 @@ void Town::disp_raid_panel(int refreshFlag)
 	int hasSoldier  = lairRecno && firm_array[lairRecno]->worker_count > 0;
 	int weakened    = mod_fryhtan.is_raid_weakened(this, nationRecno);
 	int canRaid     = !daysLeft && hasSoldier && !weakened;
-	int defenderCount = weakened ? 0 : mod_fryhtan.raid_defender_count(this, nationRecno);
 
-	//--- repaint the whole panel when anything shown changes (once a day at most) ---//
+	static int lastTownRecno = -1, lastDaysLeft = -1, lastCanRaid = -1;
 
-	static int lastKey[6];
-	int key[6] = { town_recno, daysLeft, canRaid, (int) population, defenderCount, hasSoldier };
-
-	if( refreshFlag != INFO_REPAINT && memcmp(key, lastKey, sizeof(key)) != 0 )
+	if( refreshFlag == INFO_REPAINT || !button_raid.init_flag ||
+		 town_recno != lastTownRecno || daysLeft != lastDaysLeft || canRaid != lastCanRaid )
 	{
-		info.disp();		// repaint, which calls this function with INFO_REPAINT
-		return;
-	}
+		button_raid.paint( BUTTON_X1, BUTTON_Y1 + (rebel_recno ? 23 : 0), 'A', "COLLTAX" );
+		button_raid.set_help_code("");		// the custom help is set below
 
-	memcpy( lastKey, key, sizeof(key) );
-
-	int panelY1 = BUTTON_Y1 + (rebel_recno ? 23 : 0);
-	int panelY2 = INFO_Y2;
-
-	if( refreshFlag == INFO_REPAINT )
-	{
-		vga_util.d3_panel_up( INFO_X1, panelY1, INFO_X2, panelY2 );
-
-		int x=INFO_X1+6, y=panelY1+4;
-		int loot = MIN( (int) population, (int) RAID_MAX_LOOT );
-		char str[250];
-
-		char defendStr[100];
-
-		if( defenderCount > 0 )
-		{
-			snprintf( defendStr, sizeof(defendStr),
-						 ngettext("%d defender will attack your lair.", "%d defenders will attack your lair.", defenderCount),
-						 defenderCount );
-		}
+		if( canRaid )
+			button_raid.enable();
 		else
-		{
-			snprintf( defendStr, sizeof(defendStr), "%s", _("No defenders will come out.") );
-		}
-
-		// TRANSLATORS: Raid <Town>? You will obtain $<Gold> and <Food> food and lower its resistance by <Number>. <N defenders will attack your lair.>
-		snprintf( str, sizeof(str), _("Raid %s? You will obtain $%d and %d food and lower its resistance by %d. %s"),
-					 town_name(), loot, loot, (int) RAID_RESISTANCE_DEC, defendStr );
-		font_san.put_paragraph( x, y, INFO_X2-6, y+74, str, 0 );
-
-		if( defenderCount > 0 )
-		{
-			int minCombat = MAX( 10, town_combat_level-10 );
-			int maxCombat = MIN( 100, town_combat_level+10 );
-			int leaderCombat = MIN( 100, (int) town_combat_level + RAID_LEADER_COMBAT_BONUS );
-
-			// TRANSLATORS: Combat: <min>-<max> (leader: <combat>)
-			snprintf( str, sizeof(str), _("Combat: %d-%d (leader: %d)"), minCombat, maxCombat, leaderCombat );
-			font_san.put( x, y+76, str, 0, INFO_X2-6 );
-		}
-
-		//------- the Raid village button -------//
-
-		button_raid.paint_text( INFO_X1+40, panelY2-23, INFO_X2-40, panelY2-3, _("Raid village") );
-
-		if( !canRaid )
 			button_raid.disable();
 
 		//--- the time until the next raid, a bar at the bottom of the button ---//
 
 		if( daysLeft )
 		{
-			vga_front.indicator( button_raid.x1+4, button_raid.y2-6, button_raid.x2-4, button_raid.y2-3,
+			vga_front.indicator( button_raid.x1+6, button_raid.y2-11, button_raid.x2-9, button_raid.y2-7,
 										(float) (RAID_INTERVAL_DAYS - daysLeft), (float) RAID_INTERVAL_DAYS, VGA_LIGHT_GREEN, V_BLACK );
 		}
+
+		lastTownRecno = town_recno;
+		lastDaysLeft  = daysLeft;
+		lastCanRaid   = canRaid;
 	}
 
-	//------- help of the button -------//
+	//------- help: why it can't be raided, or what a raid does -------//
 
 	static char helpStr[300];
 
 	if( weakened )
 		snprintf( helpStr, sizeof(helpStr), "%s", _("This village is weakened and ready to be attacked directly.") );
-	else if( !hasSoldier )
-		snprintf( helpStr, sizeof(helpStr), "%s", _("Your lair needs soldiers to raid this village.") );
 	else if( daysLeft )
 		snprintf( helpStr, sizeof(helpStr),
 					 ngettext("You can raid this village again in %d day.", "You can raid this village again in %d days.", daysLeft),
 					 daysLeft );
+	else if( !hasSoldier )
+		snprintf( helpStr, sizeof(helpStr), "%s", _("Your lair needs soldiers to raid this village.") );
 	else
 		snprintf( helpStr, sizeof(helpStr), "%s",
 					 _("Raid this village: steal gold and food and call out its defenders to attack your lair. Killing them weakens the village. A village can be raided once every two months.") );
 
-	help.set_custom_help( button_raid.x1, button_raid.y1, button_raid.x2, button_raid.y2, _("Raid village"), helpStr );
+	help.set_custom_help( button_raid.x1, button_raid.y1, button_raid.x2, button_raid.y2, _("Raid"), helpStr );
 }
-//----------- End of function Town::disp_raid_panel -----------//
+//----------- End of function Town::disp_raid_button -----------//
+
+
+//--------- Begin of function Town::disp_raid_menu ---------//
+//
+// 7kmod-fryhtan: the details of a raid on an independent town, in place of
+// the list of races: the town (its main race, population and resistance),
+// what the raid gives, the defenders that will attack the lair, and the
+// Raid village and Cancel buttons.
+//
+void Town::disp_raid_menu(int refreshFlag)
+{
+	int nationRecno = nation_array.player_recno;
+
+	//--- back to the main menu if the town can't be raided any more ---//
+
+	if( !mod_fryhtan.can_see_raid(this, nationRecno) || mod_fryhtan.raid_days_left(this) ||
+		 mod_fryhtan.is_raid_weakened(this, nationRecno) )
+	{
+		town_menu_mode = TOWN_MENU_MAIN;
+		info.disp();
+		return;
+	}
+
+	disp_basic_info(refreshFlag);
+
+	//--- repaint when the town changes (once a day at most) ---//
+
+	int defenderCount = mod_fryhtan.raid_defender_count(this, nationRecno);
+	int resistance    = average_resistance(nationRecno);
+
+	static int lastKey[4];
+	int key[4] = { town_recno, (int) population, resistance, defenderCount };
+
+	if( refreshFlag != INFO_REPAINT )
+	{
+		if( memcmp(key, lastKey, sizeof(key)) != 0 )
+		{
+			disable_refresh = 1;    // keep the Raid menu
+			info.disp();
+			disable_refresh = 0;
+		}
+		return;
+	}
+
+	memcpy( lastKey, key, sizeof(key) );
+
+	//------- the town: its main race, population and resistance -------//
+
+	int y = RACE_BROWSE_Y1-23;
+
+	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+56 );
+
+	int raceId = majority_race();
+
+	if( raceId )
+	{
+		UnitInfo* unitInfo = unit_res[ race_res[raceId]->basic_unit_id ];
+		vga_front.put_bitmap( INFO_X1+6, y+4, unitInfo->get_large_icon_ptr(RANK_SOLDIER) );
+	}
+
+	int x1 = INFO_X1+6+UNIT_LARGE_ICON_WIDTH+10;
+	char str[300];
+
+	snprintf( str, sizeof(str), _("Population: %d"), (int) population );
+	font_san.put( x1, y+10, str, 0, INFO_X2-4 );
+
+	snprintf( str, sizeof(str), _("Resistance: %d"), resistance );
+	font_san.put( x1, y+28, str, 0, INFO_X2-4 );
+
+	//------- the raid -------//
+
+	y += 60;
+
+	int panelY2 = INFO_Y2;
+
+	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, panelY2 );
+
+	int x = INFO_X1+6;
+	int loot = MIN( (int) population, (int) RAID_MAX_LOOT );
+
+	// TRANSLATORS: Raid <Town>?
+	snprintf( str, sizeof(str), _("Raid %s?"), town_name() );
+	font_san.center_put( INFO_X1, y+4, INFO_X2, y+20, str );
+
+	// TRANSLATORS: You will obtain $<Gold> and <Food> food and lower its resistance by <Number>.
+	snprintf( str, sizeof(str), _("You will obtain $%d and %d food and lower its resistance by %d."),
+				 loot, loot, (int) RAID_RESISTANCE_DEC );
+	font_san.put_paragraph( x, y+26, INFO_X2-6, y+72, str, 0 );
+
+	int y2 = y+78;
+
+	snprintf( str, sizeof(str),
+				 ngettext("%d defender will attack your lair.", "%d defenders will attack your lair.", defenderCount),
+				 defenderCount );
+	font_san.put_paragraph( x, y2, INFO_X2-6, y2+30, str, 0 );
+
+	int minCombat = MAX( 10, town_combat_level-10 );
+	int maxCombat = MIN( 100, town_combat_level+10 );
+	int leaderCombat = MIN( 100, (int) town_combat_level + RAID_LEADER_COMBAT_BONUS );
+
+	// TRANSLATORS: Combat: <min>-<max> (leader: <combat>)
+	snprintf( str, sizeof(str), _("Combat: %d-%d (leader: %d)"), minCombat, maxCombat, leaderCombat );
+	font_san.put( x, y2+34, str, 0, INFO_X2-6 );
+
+	//------- the buttons -------//
+
+	int buttonY = panelY2-30;
+
+	button_raid_village.paint_text( INFO_X1+8, buttonY, INFO_X1+110, buttonY+24, _("Raid village") );
+	button_raid_cancel.paint_text( INFO_X1+118, buttonY, INFO_X2-8, buttonY+24, _("Cancel") );
+}
+//----------- End of function Town::disp_raid_menu -----------//
+
+
+//--------- Begin of function Town::detect_raid_menu ---------//
+//
+int Town::detect_raid_menu()
+{
+	if( button_raid_village.detect() )
+	{
+		se_ctrl.immediate_sound("TURN_ON");
+
+		int townRecno = town_recno;
+
+		mod_fryhtan.raid_town(this, nation_array.player_recno);
+
+		if( !town_array.is_deleted(townRecno) )
+		{
+			town_menu_mode = TOWN_MENU_MAIN;
+			info.disp();
+		}
+		return 1;
+	}
+
+	if( button_raid_cancel.detect() )
+	{
+		se_ctrl.immediate_sound("TURN_OFF");
+
+		town_menu_mode = TOWN_MENU_MAIN;
+		info.disp();
+		return 1;
+	}
+
+	return 0;
+}
+//----------- End of function Town::detect_raid_menu -----------//
 
 
 //------- Begin of function Town::open_fort_recruit -------//
@@ -1061,10 +1176,10 @@ int Town::detect_main_menu()
 	{
 		se_ctrl.immediate_sound("TURN_ON");
 
-		mod_fryhtan.raid_town(this, nation_array.player_recno);
-
-		if( !town_array.is_deleted(town_recno) )		// repaint the town panel (the town may have surrendered)
-			info.disp();
+		town_menu_mode  = TOWN_MENU_RAID;		// show the details of the raid
+		disable_refresh = 1;    // static var for disp_info() only
+		info.disp();
+		disable_refresh = 0;
 		return 1;
 	}
 

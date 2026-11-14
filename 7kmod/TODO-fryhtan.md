@@ -863,12 +863,17 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       la baja directa de 5 a 10 sin defensores).
 - [x] **Por ahora no mata aldeanos** (`RAID_KILL_VILLAGERS` 0; la regla por tamaño queda
       en el código).
-- [x] **Panel como el de capturar guaridas salvajes** (`Town::disp_raid_panel`), en el
-      lugar de los botones del pueblo: "Raid <pueblo>? You will obtain $X and X food and
-      lower its resistance by 5. N defenders will attack your lair." / "Combat: A-B
-      (leader: C)" y el botón de texto **Raid village**, con la barra de espera abajo. La
-      ayuda normal explica qué hace y que es cada 2 meses; también dice si falta esperar
-      o si la guarida necesita soldados.
+- [x] **Botón Raid y vista de Raid** (cambiado del panel fijo): en el panel normal del
+      pueblo, el botón pequeño con el ícono de Collect Tax (`Town::disp_raid_button`). Solo
+      se puede presionar con resistencia mayor de 30, guarida con soldados y sin espera;
+      si no, se ve oscurecido y su ayuda dice por qué ("This village is weakened and ready
+      to be attacked directly.", "You can raid this village again in N days." con la
+      barra de espera, o "Your lair needs soldiers..."); si se puede, su ayuda explica qué
+      hace y que es cada 2 meses. Al presionarlo se abre la **vista de Raid**
+      (`TOWN_MENU_RAID`, `Town::disp_raid_menu`) en el lugar de la lista de razas: ícono de
+      la raza principal, "Population" y "Resistance"; "Raid <pueblo>?", lo que se obtiene,
+      cuántos defensores atacarán la guarida y su combate; y los botones **Raid village**
+      (saquea y regresa) y **Cancel**.
 - **Ejemplo** de la prueba: pueblo de 16 con resistencia 86 → 4 defensores (1 + 1 + 2),
   resistencia a 55 al salir (el líder se lleva el doble, más la baja base de 5).
 
@@ -921,11 +926,10 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
   no rebelarse durante la gracia no se probó en partida. El caso del pueblo que se
   rebela queda por revisar.
 
-- [ ] **Entrenar soldados Fryhtan un 25% más rápido.** Hoy un soldado tarda 20 días
-      (especie grande) o 10 (pequeña); con el cambio, **15** y **8** días (`LAIR_TRAIN_DAYS`
-      20 → 15; la mitad para las pequeñas, redondeada hacia arriba). La barra de progreso
-      y la ayuda de Train muestran los días nuevos. El Ordo (40 / 20 días) queda igual, a
-      menos que se decida bajarlo también.
+- [x] **Entrenar soldados Fryhtan más rápido.** Un soldado de especie grande tarda **15**
+      días (antes 20; `LAIR_TRAIN_DAYS`) y uno de especie pequeña sigue en **10**
+      (`LAIR_SMALL_TRAIN_DAYS`). El Ordo queda igual (40 / 20 días). La barra de progreso y
+      la ayuda de Train muestran los días nuevos (probado: "Train a Rokken ... in 15 days").
 
 ## 8. Economía oscura (en diseño)
 

@@ -36,7 +36,7 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
     que funciona como un fuerte (un general y hasta 8 soldados). Cuesta **$500** y
     **$100 al año**.
   - Botón **Train** en la guarida: un Fryhtan de la especie de la guarida por **20 de
-    comida**, en **20 días** (10 si la especie es pequeña), con combate 20. Cola de hasta 8; clic derecho quita uno y
+    comida**, en **15 días** (10 si la especie es pequeña), con combate 20. Cola de hasta 8; clic derecho quita uno y
     devuelve la comida. No se puede pasar del tope de población.
   - **Población Fryhtan:** cada Fryhtan del reino, rey incluido, usa 2 (pequeño) o 3
     (grande). El tope base es 20. Se ve en la ayuda de Train y en el reporte de reinos
@@ -105,9 +105,11 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
   rebelión, los rebeldes salen a atacar la guarida más cercana.
 - **Saqueo de pueblos:** al atacar un pueblo, cada aldeano que muere da $2 y 5 de comida,
   como matar a un aldeano.
-- **Raid de pueblos independientes:** un panel en el pueblo enlazado a una guarida con
-  general (como el de capturar guaridas salvajes), con el botón **Raid village**, una vez
-  cada 2 meses por pueblo y con barra de espera:
+- **Raid de pueblos independientes:** en un pueblo enlazado a una guarida con general,
+  el botón **Raid** (ícono de Collect Tax, con barra de espera; oscurecido y con la razón
+  en su ayuda si no se puede) abre una vista con la raza principal, la población, la
+  resistencia, lo que da el Raid y los defensores, con los botones **Raid village** y
+  **Cancel**. Una vez cada 2 meses por pueblo:
   - Roba $1 y 1 de comida por persona (hasta 30) y baja la resistencia 5.
   - Salen hasta 1 defensor por cada 10 personas, más 1 (y +1 con resistencia mayor de
     50, +2 mayor de 80), y atacan la guarida del mejor general. El primero es el líder:

@@ -46,7 +46,8 @@ enum { LAIR_SETUP_COST = 500,						// cost of building a lair
 		 LAIR_YEAR_COST  = 100 };					// yearly upkeep of a lair
 
 enum { LAIR_TRAIN_FOOD = 20,						// food used for training a Fryhtan in a lair
-		 LAIR_TRAIN_DAYS = 20,						// days needed for training it
+		 LAIR_TRAIN_DAYS = 15,						// days needed for training it (a large one)
+		 LAIR_SMALL_TRAIN_DAYS = 10,				// days needed for training a small one
 		 LAIR_TRAIN_COMBAT = 20,					// combat level of a trained Fryhtan
 		 LAIR_MAX_TRAIN_QUEUE = 8 };
 
@@ -172,10 +173,10 @@ public:
 	int	add_lair_soldier(Firm* firmPtr, int monsterId, int combatLevel=LAIR_TRAIN_COMBAT);
 	int	add_lair_ordo(Firm* firmPtr, int monsterId);
 	static int	train_food(int trainType)	{ return trainType==LAIR_TRAIN_ORDO ? LAIR_ORDO_FOOD : LAIR_TRAIN_FOOD; }
-	// days needed for training; small Fryhtans take half the time
+	// days needed for training: a small Fryhtan soldier takes LAIR_SMALL_TRAIN_DAYS, a small Ordo half the time
 	static int	train_days(int trainType, int monsterId)
-					{ int days = trainType==LAIR_TRAIN_ORDO ? LAIR_ORDO_DAYS : LAIR_TRAIN_DAYS;
-					  return is_large_monster(monsterId) ? days : days/2; }
+					{ if( trainType==LAIR_TRAIN_ORDO ) return is_large_monster(monsterId) ? LAIR_ORDO_DAYS : LAIR_ORDO_DAYS/2;
+					  return is_large_monster(monsterId) ? LAIR_TRAIN_DAYS : LAIR_SMALL_TRAIN_DAYS; }
 
 	//------ names of the Ordos ------//
 

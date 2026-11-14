@@ -163,7 +163,9 @@ public:
 	int	average_loyalty();
 	int	average_target_loyalty();
 	int	average_resistance(int nationRecno);
-	void	disp_raid_panel(int refreshFlag);		// 7kmod-fryhtan
+	void	disp_raid_button(int refreshFlag);		// 7kmod-fryhtan
+	void	disp_raid_menu(int refreshFlag);
+	int	detect_raid_menu();
 	int	average_target_resistance(int nationRecno);
 
 	short	town_defender_count;			// no. of units currently defending this town
