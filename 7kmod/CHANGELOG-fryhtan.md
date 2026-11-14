@@ -162,9 +162,12 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
   - Una **línea de enlace** une tus guaridas con las guaridas salvajes enlazadas.
   - Cada guarida capturada entrena su propia especie.
 - **Economía** (fase 3):
-  - **Botín:** matar una unidad humana da **$2 y 5 de comida** (soldado, aldeano o
-    defensor de un pueblo), **$10 y 20** (general) o **$100 y 100** (rey). En el reporte
-    de economía aparece como "Spoils of War and Treasure".
+  - **Botín:** matar una unidad humana da oro según su **nivel de combate**: un soldado
+    $2 con combate 10 hasta **$45** con combate 100 (en línea recta); un defensor de
+    pueblo la mitad; un general ×3 ($135 con combate 100); un rey ×22 (**$990** con
+    combate 100), y los siguientes reyes del mismo reino la mitad. Un aldeano da $2. La
+    comida es fija: 5 (soldado, aldeano o defensor), 20 (general) o 100 (rey). En el
+    reporte de economía aparece como "Spoils of War and Treasure".
   - Los **edificios humanos** que pasen al reino Fryhtan (por ejemplo, si un reino se le
     rinde) se **destruyen**, con quien esté adentro.
 

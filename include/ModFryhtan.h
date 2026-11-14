@@ -66,9 +66,13 @@ enum { ORDO_NAME_ID_BASE = 60000 };
 
 enum { FRYHTAN_HEADER_MARK = 0x7F };				// mark of the species in the header of a saved game				// Unit::name_id of an Ordo with a name: ORDO_NAME_ID_BASE + the name index (1-based)
 
-enum { KILL_GOLD_UNIT		= 2,					// gold for killing a human soldier, villager or town defender
-		 KILL_GOLD_GENERAL	= 10,					// a human general
-		 KILL_GOLD_KING		= 100,				// a human king
+enum { KILL_GOLD_UNIT		= 2,					// gold for killing a human villager (a soldier: ModFryhtan::kill_gold())
+		 KILL_GOLD_MIN_COMBAT	= 10,				// a soldier gives KILL_GOLD_UNIT with this combat level...
+		 KILL_GOLD_MAX			= 45,				// ...and this with combat 100, in a straight line between them
+		 KILL_GOLD_DEFENDER_PERCENT = 50,		// a town defender gives this % of a soldier of its combat
+		 KILL_GOLD_GENERAL_MULTIPLY = 3,		// a general gives this many times a soldier of its combat
+		 KILL_GOLD_KING_MULTIPLY = 22,			// a king, this many times (about $1000 with combat 100)...
+		 KILL_GOLD_NEXT_KING_PERCENT = 50,		// ...and this % for the next kings of the same kingdom
 		 KILL_FOOD_UNIT		= 5,					// food for killing a human soldier, villager or town defender
 		 KILL_FOOD_GENERAL	= 20,					// a human general
 		 KILL_FOOD_KING		= 100 };				// a human king
@@ -244,6 +248,10 @@ public:
 	int32_t*	raid_date_array;		// the day each town was last raided (0: never), by town recno
 	int		raid_date_array_size;
 
+	char		king_kill_array[MAX_NATION][MAX_NATION];		// the kings each Fryhtan kingdom killed of each kingdom: [killer-1][kingdom-1]
+
+	void		reset_king_kills(int nationRecno);		// a new kingdom
+
 	int32_t	raid_date(int townRecno);
 	void		set_raid_date(int townRecno, int32_t raidDate);
 	void		reset_town_dates(int townRecno);		// a new town or a town with a new owner
@@ -260,6 +268,7 @@ public:
 	//------ economy (phase 3) ------//
 
 	void	reward_kill(int nationRecno, Unit* targetUnit);
+	static int	kill_gold(int combatLevel, int percent);		// the gold of a soldier of the combat level, x percent / 100
 	int	should_destroy_firm(Firm* firmPtr);
 	void	destroy_firm(Firm* firmPtr);
 

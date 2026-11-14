@@ -158,9 +158,12 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   - A **link line** joins your lairs with the linked wild lairs.
   - Each captured lair trains its own species.
 - **Economy** (phase 3):
-  - **Spoils:** killing a human unit gives **$2 and 5 food** (soldier, villager or town
-    defender), **$10 and 20** (general) or **$100 and 100** (king). In the Economy
-    report it shows as "Spoils of War and Treasure".
+  - **Spoils:** killing a human unit gives gold by its **combat level**: a soldier $2
+    with combat 10 up to **$45** with combat 100 (in a straight line); a town defender
+    half; a general ×3 ($135 with combat 100); a king ×22 (**$990** with combat 100), and
+    the next kings of the same kingdom half. A villager gives $2. The food is fixed: 5
+    (soldier, villager or defender), 20 (general) or 100 (king). In the Economy report it
+    shows as "Spoils of War and Treasure".
   - **Human buildings** that pass to the Fryhtan kingdom (for example, if a kingdom
     surrenders to it) are **destroyed**, with whoever is inside.
 

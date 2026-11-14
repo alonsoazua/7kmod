@@ -72,6 +72,8 @@ void ModFryhtan::reset()
 	if( raid_date_array )
 		memset( raid_date_array, 0, sizeof(int32_t) * raid_date_array_size );
 
+	memset( king_kill_array, 0, sizeof(king_kill_array) );
+
 	capturing_lair = 0;
 }
 //----------- End of function ModFryhtan::reset -----------//
@@ -1017,6 +1019,11 @@ int ModFryhtan::write_file(File* filePtr)
 	if( !write_town_dates( filePtr, raid_date_array, raid_date_array_size ) )
 		return 0;
 
+	//------- the kings killed of each kingdom -------//
+
+	if( !filePtr->file_write( king_kill_array, sizeof(king_kill_array) ) )
+		return 0;
+
 	return 1;
 }
 //----------- End of function ModFryhtan::write_file -----------//
@@ -1104,6 +1111,14 @@ int ModFryhtan::read_file(File* filePtr)
 	if( !read_town_dates( filePtr, raid_date_array, raid_date_array_size ) )
 		return 0;
 
+	//------- the kings killed of each kingdom -------//
+
+	if( filePtr->file_pos() >= filePtr->file_size() )		// a saved game from before the gold by combat level
+		return 1;
+
+	if( !filePtr->file_read( king_kill_array, sizeof(king_kill_array) ) )
+		return 0;
+
 	return 1;
 }
 //----------- End of function ModFryhtan::read_file -----------//
@@ -1112,7 +1127,10 @@ int ModFryhtan::read_file(File* filePtr)
 //--------- Begin of function ModFryhtan::reward_kill ---------//
 //
 // 7kmod-fryhtan: a Fryhtan kingdom gets gold and food for each human unit
-// it kills: a soldier or a villager, a general or a king.
+// it kills. The gold goes by the combat level (ModFryhtan::kill_gold()): a
+// villager $2; a soldier $2 with combat 10 to $45 with combat 100; a town
+// defender half that; a general x3; a king x22 (about $1000 with combat 100),
+// and half for the next kings of the same kingdom. The food is fixed.
 //
 // <int>   nationRecno - the nation of the attacker
 // <Unit*> targetUnit  - the unit killed
@@ -1125,17 +1143,44 @@ void ModFryhtan::reward_kill(int nationRecno, Unit* targetUnit)
 	if( !targetUnit->race_id || targetUnit->nation_recno == nationRecno )		// only human units of other nations
 		return;
 
-	int gold = KILL_GOLD_UNIT, food = KILL_FOOD_UNIT;
+	int combatLevel = targetUnit->skill.combat_level;
+	int gold, food = KILL_FOOD_UNIT;
 
 	if( targetUnit->rank_id == RANK_KING )
 	{
-		gold = KILL_GOLD_KING;
+		int percent = 100 * KILL_GOLD_KING_MULTIPLY;
+		int targetNationRecno = targetUnit->nation_recno;
+
+		if( targetNationRecno >= 1 && targetNationRecno <= MAX_NATION )
+		{
+			char& killCount = king_kill_array[nationRecno-1][targetNationRecno-1];
+
+			if( killCount > 0 )		// the next kings of the same kingdom give less
+				percent = percent * KILL_GOLD_NEXT_KING_PERCENT / 100;
+
+			if( killCount < 100 )
+				killCount++;
+		}
+
+		gold = kill_gold(combatLevel, percent);
 		food = KILL_FOOD_KING;
 	}
 	else if( targetUnit->rank_id == RANK_GENERAL )
 	{
-		gold = KILL_GOLD_GENERAL;
+		gold = kill_gold(combatLevel, 100 * KILL_GOLD_GENERAL_MULTIPLY);
 		food = KILL_FOOD_GENERAL;
+	}
+	else if( targetUnit->unit_mode == UNIT_MODE_DEFEND_TOWN )		// a town defender
+	{
+		gold = kill_gold(combatLevel, KILL_GOLD_DEFENDER_PERCENT);
+	}
+	else if( targetUnit->is_civilian() && combatLevel < 20 )		// a villager (as in Unit::hit_target())
+	{
+		gold = KILL_GOLD_UNIT;
+	}
+	else
+	{
+		gold = kill_gold(combatLevel, 100);
 	}
 
 	Nation* nationPtr = nation_array[nationRecno];
@@ -1144,6 +1189,42 @@ void ModFryhtan::reward_kill(int nationRecno, Unit* targetUnit)
 	nationPtr->add_food( (float) food );
 }
 //----------- End of function ModFryhtan::reward_kill -----------//
+
+
+//--------- Begin of function ModFryhtan::kill_gold ---------//
+//
+// The gold for killing a soldier of the combat level: KILL_GOLD_UNIT with
+// KILL_GOLD_MIN_COMBAT, KILL_GOLD_MAX with 100, in a straight line; x percent
+// / 100, rounded, at least 1.
+//
+int ModFryhtan::kill_gold(int combatLevel, int percent)
+{
+	combatLevel = MAX( (int) KILL_GOLD_MIN_COMBAT, MIN(100, combatLevel) );
+
+	float gold = (float) KILL_GOLD_UNIT + (float) (combatLevel - KILL_GOLD_MIN_COMBAT) *
+					 (KILL_GOLD_MAX - KILL_GOLD_UNIT) / (100 - KILL_GOLD_MIN_COMBAT);
+
+	return MAX( 1, (int) (gold * percent / 100 + 0.5f) );
+}
+//----------- End of function ModFryhtan::kill_gold -----------//
+
+
+//--------- Begin of function ModFryhtan::reset_king_kills ---------//
+//
+// A new kingdom in the nation recno: no kings of it have been killed.
+//
+void ModFryhtan::reset_king_kills(int nationRecno)
+{
+	if( nationRecno < 1 || nationRecno > MAX_NATION )
+		return;
+
+	for( int i=0 ; i<MAX_NATION ; i++ )
+	{
+		king_kill_array[i][nationRecno-1] = 0;
+		king_kill_array[nationRecno-1][i] = 0;
+	}
+}
+//----------- End of function ModFryhtan::reset_king_kills -----------//
 
 
 //--------- Begin of function ModFryhtan::should_destroy_firm ---------//

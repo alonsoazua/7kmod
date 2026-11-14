@@ -1035,6 +1035,22 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       - Solo para las construcciones de reinos Fryhtan; las guaridas salvajes no cambian.
       - **Cómo quedó:** en `Firm::next_day`, con `FRYHTAN_REPAIR_DAYS` 5, sin constructor
         y fuera de construcción. Probado: una guarida a 180/200 subió 1 punto cada 5 días.
+- [x] **Botín por nivel de combate.** Antes matar una unidad humana daba $2 (soldado,
+      aldeano o defensor), $10 (general) o $100 (rey), sin importar su combate.
+      - **Soldado:** $2 con combate 10 hasta **$45** con combate 100, en línea recta
+        (2 + (combate − 10) × 43 / 90, redondeado).
+      - **Defensor de pueblo:** la mitad de un soldado de su combate.
+      - **Aldeano:** fijo en $2 (también los que mueren al atacar un pueblo).
+      - **General:** ×3 ($135 con combate 100).
+      - **Rey:** ×22 (**$990** con combate 100, $44 con combate 10). El primer rey que
+        matas de cada reino da el 100%; los siguientes de ese reino, el 50%.
+      - **Comida:** fija como antes (5 / 20 / 100).
+      - **Cómo quedó:** `ModFryhtan::reward_kill` y `ModFryhtan::kill_gold`, con las
+        constantes `KILL_GOLD_*` en `ModFryhtan.h`. Los reyes matados de cada reino se
+        guardan en `king_kill_array` al final de los datos Fryhtan de la partida (las
+        partidas anteriores cargan con la cuenta en 0); se reinicia cuando aparece un reino
+        nuevo (`NationBase::init`). Probado: los reyes de combate 100 de los dos reinos de
+        la IA dieron $990 la primera vez y $495 la segunda.
 
 ## 8. Economía oscura (en diseño)
 

@@ -125,6 +125,8 @@ void NationBase::init(int nationType, int raceId, int colorSchemeId, uint32_t pl
 
 	last_war_date   = info.game_date;
 
+	mod_fryhtan.reset_king_kills(nation_recno);		// 7kmod-fryhtan: a new kingdom
+
 	//------- if this is the local player's nation -------//
 
 	if( nation_type==NATION_OWN )
