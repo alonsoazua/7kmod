@@ -825,8 +825,9 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         vuelve a tener una guarida enlazada (construyes otra o recuperas el enlace), la
         cuenta se cancela.
       - Mientras tanto no paga tributo (no hay general al mando) y su lealtad baja, como
-        hoy sin general. Hay que revisar qué pasa si se rebela en ese tiempo: los
-        rebeldes atacan la guarida más cercana, y puede no haber ninguna.
+        hoy sin general.
+      - **Si no hay ninguna guarida cercana, no se rebela** (los rebeldes no tendrían a
+        qué guarida atacar); solo espera a que terminen los 3 meses.
       - Al terminar los 3 meses se declara independiente, con una **noticia**: "Your
         village %s has declared independence." (o el texto que se use para los pueblos
         humanos que se independizan).
