@@ -971,6 +971,16 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         Fryhtan captura un edificio humano, la gente de adentro no se une (se va o se
         vuelve independiente).
 
+- [ ] **Las construcciones Fryhtan se regeneran solas.** Hoy un edificio solo se repara
+      si tiene un constructor adentro, y los Fryhtans no tienen constructores. La idea es
+      que las construcciones del reino Fryhtan (guaridas) recuperen vida solas, como si
+      tuvieran un constructor de skill 20.
+      - Con las reglas del constructor normal (`Firm::process_repair`), skill 20 es
+        **1 punto de vida cada 5 días**.
+      - Igual que con un constructor: no se repara mientras el edificio está bajo ataque
+        (hasta un día después del último golpe), ni si el reino tiene el oro en negativo.
+      - Solo para las construcciones de reinos Fryhtan; las guaridas salvajes no cambian.
+
 ## 8. Economía oscura (en diseño)
 
 El diseño en borrador está en `DISENO-fryhtan-oscuro.md`: el Enforcer de los pueblos
