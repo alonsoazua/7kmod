@@ -123,6 +123,47 @@ Ninguno usa trabajadores: solo su Enforcer.
 - ❓ ¿Cómo se investiga en la guarida? ¿La investiga el general (su liderazgo como
   "skill") o cuesta comida?
 
+### 4.1 Tecnologías de la guarida: una por especie
+
+Más simple que la economía oscura; se puede hacer antes y por separado.
+
+| | |
+|---|---|
+| ✅ Idea | Cada especie Fryhtan tiene **una tecnología especial**, que se investiga en una guarida de esa especie. |
+| ✅ Costo | **Oro y comida**. 💡 Por ejemplo $1000 y 200 de comida. |
+| 💡 Dónde y cómo | Botón "Research" en la guarida, con un general adentro. Unos 60 días, menos mientras más liderazgo tenga el general. Mientras investiga, la guarida no entrena. |
+| 💡 A quién aplica | A todos los Fryhtans de esa especie del reino, también a los que ya existen. Los Fryhtans salvajes no cambian. |
+| 💡 Varias especies | Con guaridas de varias especies (por ejemplo, por capturas), se puede investigar la tecnología de cada una. |
+
+| Especie | Tecnología | Qué hace | Estado |
+|---|---|---|---|
+| **Karrotten** | Ataque especial | Un segundo ataque, automático como el de las otras especies (se carga con el poder al pelear), con el **anillo morado del Greater Being japonés** al dispararse. Usa la animación de su golpe normal. 💡 15 de daño, se activa con 50 de poder y gasta 40. | ✅ |
+| **Broosken** | Cuerpo de púas | Quien golpea **cuerpo a cuerpo** a un Broosken recibe **el 25% del daño** que hizo; los ataques a distancia no. ❓ ¿Puede matar al atacante o lo deja en 1 de vida? 💡 Aplica contra todos (humanos, Fryhtans y Greater Beings). | ✅ |
+| **Rokken** | Lanzar rocas | Ataque a distancia con la piedra de la catapulta. | 💡 |
+| **Wyrm** | Bola de fuego | Ataque a distancia con fuego (de la catapulta o del dragón), con daño en área. | 💡 |
+| **Doink** | Lluvia de dardos | Ya ataca a distancia: más alcance y ataque más rápido. | 💡 |
+| **Deezboanz** | No-muertos | No comen. | 💡 |
+| **Sauroid** | Regeneración | Recuperan vida solos, más rápido. | 💡 |
+| **Rattus** | Enjambre | Cuestan 1 de población en lugar de 2. | 💡 |
+| **Holgh** | Terror | Las unidades humanas cercanas pierden lealtad poco a poco. | 💡 |
+| **Droog** | Manada | Más combate con otros Droog cerca. | 💡 |
+| **Ick** | Saqueadores | Roban oro al atacar edificios y pueblos. | 💡 |
+| **Pfith** | ❓ | Por definir (se descartó el golpe tipo vikingo). | ❓ |
+| **Haubudam** | ❓ | Por definir (se descartó el golpe tipo vikingo). | ❓ |
+
+Notas:
+
+- El ataque especial del vikingo **no se usa**: su chispa está dibujada dentro de la
+  animación del vikingo y no es un efecto aparte.
+- Efectos sueltos del juego que se pueden poner sobre una unidad: HITSPARK y HITSPAR2
+  (chispas de golpe), y las estrellas de los Greater Beings persa (destellos verdes),
+  japonés (anillo morado), egipcio (destellos blancos), indio (nube morada) y zulú
+  (anillos). Se vieron en partida sobre un Rokken (`efectos_carga_fryhtan.png`, no está
+  en el repositorio).
+- Varias especies ya tienen un ataque especial automático (Rokken, Wyrm, Droog, Ick,
+  Holgh y Pfith: 8 a 15 de daño, con 50 de poder); Haubudam alterna dos ataques
+  normales; Doink ya ataca a distancia.
+
 ---
 
 ## 5. Notas técnicas
@@ -147,4 +188,5 @@ Ninguno usa trabajadores: solo su Enforcer.
 2. **Mercado negro:** compra de esclavos, enlace a un pueblo y precio creciente.
 3. **Torre oscura de ciencia:** investigar, con la tecnología de soldados oscuros.
 4. **Fábrica de guerra oscura:** fabricar soldados oscuros.
-5. **Tecnologías de la guarida:** cuando esté definida la lista.
+5. **Tecnologías de la guarida** (sección 4.1): se puede adelantar, porque no depende
+   de lo demás. Empezar por Karrotten y Broosken, que ya están definidos.
