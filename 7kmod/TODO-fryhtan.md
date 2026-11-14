@@ -921,6 +921,12 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
   no rebelarse durante la gracia no se probó en partida. El caso del pueblo que se
   rebela queda por revisar.
 
+- [ ] **Entrenar soldados Fryhtan un 25% más rápido.** Hoy un soldado tarda 20 días
+      (especie grande) o 10 (pequeña); con el cambio, **15** y **8** días (`LAIR_TRAIN_DAYS`
+      20 → 15; la mitad para las pequeñas, redondeada hacia arriba). La barra de progreso
+      y la ayuda de Train muestran los días nuevos. El Ordo (40 / 20 días) queda igual, a
+      menos que se decida bajarlo también.
+
 ## 8. Economía oscura (en diseño)
 
 El diseño en borrador está en `DISENO-fryhtan-oscuro.md`: el Enforcer de los pueblos
