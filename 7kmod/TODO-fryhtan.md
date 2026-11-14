@@ -944,7 +944,15 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
 - [ ] **Bug: unidades humanas que se unen al reino Fryhtan a mitad de partida.** En
       pruebas se unieron unidades humanas al reino Fryhtan; un reino Fryhtan no debe
       tener unidades humanas (fuera de las del diseño de la economía oscura).
-      - Caminos posibles a revisar:
+      - **Caso visto:** salió el mensaje de que se unió una unidad, que venía saliendo de
+        un pueblo, y era un espía. Es casi seguro **un espía enemigo disfrazado de tu
+        reino** (por ejemplo, uno que estaba en un pueblo que esclavizaste: al cambiar de
+        dueño, los espías de adentro quedan disfrazados del nuevo dueño). Cuando la
+        lealtad de un espía a su reino baja mucho, deja de ser espía y se vuelve una unidad
+        normal del reino del que está disfrazado (`Spy::think_betray` →
+        `drop_spy_identity`). Con el reino Fryhtan (reputación 0) pasa cuando su lealtad
+        llega a 0.
+      - Otros caminos a revisar:
         1. **Traición** (`Unit::think_betray`): una unidad humana con lealtad baja se
            pasa al reino con mejor puntaje que tenga un pueblo base en su región; los
            pueblos esclavizados podrían contar como pueblo base del reino Fryhtan.
@@ -953,9 +961,15 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
            captura.
         3. Otros cambios de reino de unidades (`Unit::change_nation`) que lleguen a un
            reino Fryhtan.
-      - Arreglo propuesto: ninguna unidad humana puede pasarse a un reino Fryhtan
-        (saltar los reinos Fryhtan al elegir a quién traicionar); si captura un edificio
-        humano, la gente de adentro no se une (se va o se vuelve independiente).
+      - **Unidades independientes:** según el código no se pueden unir: la traición solo
+        aplica a unidades de un reino, y los rebeldes que se quedan sin líder se unen al
+        reino con la mejor reputación positiva (la del reino Fryhtan es 0).
+      - Arreglo propuesto: ninguna unidad humana puede pasarse a un reino Fryhtan. Un
+        espía disfrazado de un reino Fryhtan que deja de ser espía no se une: se vuelve
+        independiente (o, si está dentro de un pueblo esclavizado, se queda como
+        aldeano). Al elegir a quién traicionar se saltan los reinos Fryhtan, y si el reino
+        Fryhtan captura un edificio humano, la gente de adentro no se une (se va o se
+        vuelve independiente).
 
 ## 8. Economía oscura (en diseño)
 
