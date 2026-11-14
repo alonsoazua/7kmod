@@ -768,6 +768,21 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
   partidas las especies salvajes activas no incluyeron a los Rokken; el sonido se
   llamó al salir el soldado (en la nube no hay audio para oírlo).
 
+- [ ] **Saqueo.** Cuando los Fryhtans del reino atacan un edificio o un pueblo de otro
+      reino, roban oro y comida mientras lo dañan, no solo al matar unidades. Así
+      atacar se vuelve la economía principal de la horda.
+      - Cada golpe a un edificio o a un pueblo roba oro y comida en proporción al daño.
+      - **De dónde sale:** en el juego el oro y la comida son del reino, no de cada
+        edificio, así que lo robado se le quita a la reserva del reino dueño (hasta lo
+        que tenga) y pasa al reino Fryhtan. Un pueblo independiente no tiene reserva:
+        ahí solo se gana.
+      - Se ve con un número flotante o en el reporte, para que el jugador note el saqueo.
+      - Por definir: cuánto por punto de daño (por ejemplo, $1 y 1 de comida por cada
+        10 de daño) y un tope por golpe, para que no sea la única fuente de ingresos.
+      - Relación con la tecnología de los **Ick** ("Saqueadores", en
+        `DISENO-fryhtan-oscuro.md`): con el saqueo general, la de los Ick podría
+        duplicarlo para esa especie.
+
 ## 8. Economía oscura (en diseño)
 
 El diseño en borrador está en `DISENO-fryhtan-oscuro.md`: el Enforcer de los pueblos
