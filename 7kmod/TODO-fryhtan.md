@@ -779,6 +779,45 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       - Relación con la tecnología de los **Ick** ("Saqueadores", en
         `DISENO-fryhtan-oscuro.md`): podría duplicar este bono para esa especie.
 
+- [ ] **Saquear pueblos independientes (botón Raid).** Una forma de bajar la resistencia
+      de un pueblo independiente sin asaltarlo, provocando a sus defensores para pelear
+      contra ellos en tu guarida.
+      - **Botón "Raid"** en el panel de un pueblo independiente, en el lugar de Grant
+        (que los Fryhtans no tienen). Aparece si hay una guarida enlazada con general y al
+        menos un soldado.
+      - **Espera de 1 mes por pueblo**, que empieza al presionarlo: el botón muestra una
+        **barra de progreso** (como la de Train en la guarida) y no se puede usar hasta que
+        se llena. Varias guaridas enlazadas no permiten saquear más seguido.
+      - **Ayuda del botón**, con lo que se espera: "Raid this village: steal about $20
+        and 20 food. About 3 defenders (combat ~25) will attack your lair."
+      - **Al saquear:**
+        1. **Botín:** $1 y 1 de comida por persona del pueblo, con tope de $30 y 30 de
+           comida. Los aldeanos que mata no dan además el bono de saqueo de pueblos.
+        2. **Aldeanos muertos** según el tamaño: pueblo chico (menos de 20) 25% de
+           probabilidad de 1; mediano (20 a 39) 1; grande (40 o más) 1 o 2.
+        3. **Contraataque:** salen hasta **1 defensor por cada 10 personas** (con la regla
+           normal del juego: resistencia de 30 o más y al menos 5 × los defensores afuera)
+           y atacan la guarida enlazada con el mejor general. Cada defensor se lleva su
+           parte de la resistencia (resistencia / personas de su raza, `Town::mobilize_defender`):
+           si la guarida lo mata, la resistencia baja para siempre; si sobrevive y regresa
+           al pueblo, la devuelve. Su combate es el del pueblo ± 10 (depende de la opción
+           "Independent Town Resistance" de New Game, no de la resistencia).
+        4. **Con resistencia menor de 30** (ya no salen defensores): baja la resistencia
+           de 5 a 10 directamente.
+        5. **Mensaje:** por ejemplo, "Raided Tikal: $20 and 20 food, 1 villager killed.
+           3 defenders are attacking your lair."
+      - **No cambia:** la guarida sigue bajando la resistencia sola hasta 45; atacar el
+        pueblo sigue siendo la vía rápida; al llegar a 0 queda esclavizado.
+      - **Ritmo de ejemplo:** pueblo de 30 con resistencia 80, matando a los 3 defensores
+        cada vez: unos 6 meses para llegar a 30 y 8 a 9 meses para esclavizarlo, con
+        unas 9 personas al final. Si la guarida no puede con los defensores, no baja y
+        se pierden soldados.
+      - **Técnico:** guardar en la partida el día del último saqueo de cada pueblo (sube
+        la versión de partida de Fryhtan; las partidas anteriores se siguen cargando), un
+        mensaje de red para multijugador, y la orden de atacar la guarida para los
+        defensores, como la de los rebeldes de los pueblos esclavizados
+        (`REBEL_ATTACK_FIRM`), sin quitarles la resistencia que se llevan.
+
 ## 8. Economía oscura (en diseño)
 
 El diseño en borrador está en `DISENO-fryhtan-oscuro.md`: el Enforcer de los pueblos
