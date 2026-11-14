@@ -720,13 +720,13 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
   (con el liderazgo 60 del rey) y la ayuda de Train dice "uses 3 population. Fryhtan
   population: 15/40". La gracia no se probó en partida.
 
-- [ ] **Los Ordos construyen guaridas de su especie.** Hoy toda guarida que construye el
+- [x] **Los Ordos construyen guaridas de su especie.** Hoy toda guarida que construye el
       reino es de la especie principal (`Firm::init` le pone la especie del reino), sin
       importar quién la construye. Un reino puede tener Ordos de otras especies (por
       ejemplo, el de una guarida salvaje capturada); con el cambio, la guarida que
       construye un Ordo es de la especie de ese Ordo (y la del rey, de la especie del
       rey). Hay que tomar la especie del constructor al empezar la construcción.
-- [ ] **Train entrena la especie de la guarida.** El soldado y el Ordo que se entrenan
+- [x] **Train entrena la especie de la guarida.** El soldado y el Ordo que se entrenan
       en una guarida deben ser de la especie de esa guarida (su ícono, su nombre en la
       ayuda de Train, su costo de población y su tiempo de entrenamiento).
       - Según el código, Train ya usa la especie guardada en la guarida, y una guarida
@@ -735,7 +735,7 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         entrena la principal); se arregla con el punto anterior. Hay que revisar también
         las guaridas capturadas al probarlo.
 
-- [ ] **Sin guaridas salvajes de la especie del jugador** (balance). Si el jugador elige,
+- [x] **Sin guaridas salvajes de la especie del jugador** (balance). Si el jugador elige,
       por ejemplo, Rattus, en el mapa no aparecen guaridas salvajes de Rattus.
       - Las guaridas salvajes del inicio salen de las especies "activas" de la partida
         (`MonsterRes::generate`, que escoge de `active_monster_array`); la especie del
@@ -743,10 +743,27 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       - Con eso tampoco aparecen después: las guaridas salvajes nuevas salen de otras
         guaridas salvajes de su misma especie (`OF_MONS.cpp`).
 
-- [ ] **Sonido "ready" al terminar de entrenar** un soldado o un Ordo en la guarida, como
+- [x] **Sonido "ready" al terminar de entrenar** un soldado o un Ordo en la guarida, como
       cuando un pueblo humano termina de entrenar una unidad.
       - Los Fryhtans no tienen sonido "RDY" propio en `RESOURCE/STD.SET` (solo ataque y
         muerte), pero todas las razas humanas usan el mismo archivo `READY`, que también
         suena cuando la fábrica de guerra termina un arma. Se usa ese mismo sonido, solo
         para las guaridas del jugador y si la guarida está a la vista, como en el
         original (`se_res.far_sound`).
+
+#### Cómo quedaron (guaridas por especie, guaridas salvajes y sonido)
+
+- **Guarida del constructor:** `Firm::init` toma la especie del Fryhtan que la construye
+  (`ModFryhtan::unit_monster_id`); sin constructor (guarida inicial) usa la del reino. La
+  guarida capturada sigue tomando la especie salvaje.
+- **Train:** ya usaba la especie de la guarida; con el punto anterior, una guarida
+  construida por un Ordo de otra especie entrena esa especie.
+- **Guaridas salvajes:** `MonsterRes::init_active_monster` salta la especie del reino
+  Fryhtan del jugador.
+- **Sonido:** `ModFryhtan::next_day_lair` toca el sonido "FINS" de la fábrica de guerra
+  (el archivo `READY`) cuando sale un Fryhtan de una guarida del jugador.
+- **Probado** (con cambios temporales para la prueba): con un reino Rokken, un Ordo
+  Deezboanz construyó una guarida Deezboanz, cuya ayuda de Train dice "Train a
+  Deezboanz ... in 10 days ... uses 2 population" y que entrenó un Deezboanz; en dos
+  partidas las especies salvajes activas no incluyeron a los Rokken; el sonido se
+  llamó al salir el soldado (en la nube no hay audio para oírlo).

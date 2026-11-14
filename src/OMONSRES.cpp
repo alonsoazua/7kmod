@@ -31,6 +31,8 @@
 #include <OFIRM.h>
 #include <OF_MONS.h>
 #include <OMONSRES.h>
+#include <ONATION.h>
+#include <ModFryhtan.h>
 #include "gettext.h"
 
 //---------- #define constant ------------//
@@ -147,6 +149,11 @@ void MonsterRes::init_active_monster()
 		err_when( ++loopCount > 1000 );
 
 		monsterId = misc.random(monster_count)+1;
+
+		//--- 7kmod-fryhtan: no wild lairs of the species of the player's Fryhtan kingdom ---//
+
+		if( monsterId == mod_fryhtan.monster_id(nation_array.player_recno) )
+			continue;
 
 		//--- check if this monster id. is already in the active monster array ---//
 

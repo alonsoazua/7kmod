@@ -49,6 +49,10 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   - Fryhtans train their combat in the lair with the general and gain experience when
     fighting.
   - The lair has no Reward or Recruit; its Fryhtans show loyalty "N/A".
+- **Lairs by species:** the lair an Ordo builds is of that Ordo's species (for example,
+  the one of a captured wild lair), and Train trains the lair's species.
+- There are **no wild lairs of the player's species** on the map.
+- When a Fryhtan finishes training, the **"ready"** sound of the human units plays.
 - **Start:** the kingdom starts with the king as general of an already built lair and 4
   soldiers of its species, and with an **enslaved town of 20 people** of a random race,
   linked to the lair (where a human kingdom has its starting town). With the king in

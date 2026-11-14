@@ -48,6 +48,11 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
   - Los Fryhtans entrenan su combate en la guarida con el general y ganan experiencia
     al pelear.
   - La guarida no tiene Reward ni Recruit; sus Fryhtans muestran lealtad "N/A".
+- **Guaridas por especie:** la guarida que construye un Ordo es de la especie de ese
+  Ordo (por ejemplo, el de una guarida salvaje capturada), y Train entrena la especie de
+  la guarida.
+- En el mapa **no hay guaridas salvajes de la especie del jugador**.
+- Al terminar de entrenar un Fryhtan suena el **"ready"** de las unidades humanas.
 - **Inicio:** el reino empieza con el rey como general de una guarida ya construida y
   4 soldados de su especie, y con un **pueblo esclavizado de 20 personas** de una raza
   al azar, enlazado a la guarida (donde un reino humano tiene su pueblo inicial). Con

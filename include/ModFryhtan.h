@@ -218,6 +218,7 @@ public:
 	int	nation_population_cap(int nationRecno);
 
 	static int	is_large_monster(int monsterId);
+	static int	unit_monster_id(int unitId);		// the Fryhtan species of a unit type, 0 if it isn't a Fryhtan
 	static int	monster_population(int monsterId);		// FRYHTAN_SMALL_POPULATION or FRYHTAN_LARGE_POPULATION
 	static int	unit_population(int unitId);
 

@@ -224,10 +224,22 @@ void Firm::init(int xLoc, int yLoc, int nationRecno, int firmId, const char* bui
    hit_points     = (float) 0;
    max_hit_points = firmInfo->max_hit_points;
 
-	//--- 7kmod-fryhtan: the Forts of a Fryhtan kingdom are its lairs, of the species of the kingdom ---//
+	//--- 7kmod-fryhtan: the Forts of a Fryhtan kingdom are its lairs, of the species of the Fryhtan that builds it (the kingdom's species if there is no builder) ---//
 
 	if( firm_id == FIRM_CAMP && mod_fryhtan.is_fryhtan(nation_recno) )
-		mod_fryhtan.set_lair( firm_recno, mod_fryhtan.monster_id(nation_recno) );
+	{
+		int monsterId = mod_fryhtan.monster_id(nation_recno);
+
+		if( builderRecno && !unit_array.is_deleted(builderRecno) )
+		{
+			int builderMonsterId = ModFryhtan::unit_monster_id( unit_array[builderRecno]->unit_id );
+
+			if( builderMonsterId )
+				monsterId = builderMonsterId;
+		}
+
+		mod_fryhtan.set_lair( firm_recno, monsterId );
+	}
 
 	//------ set construction and builder -------//
 

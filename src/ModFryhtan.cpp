@@ -251,6 +251,24 @@ FryhtanLair* ModFryhtan::get_lair(int firmRecno)
 //----------- End of function ModFryhtan::get_lair -----------//
 
 
+//--------- Begin of function ModFryhtan::unit_monster_id ---------//
+//
+// return: <int> the Fryhtan species of the given unit type, 0 if it isn't a
+//               Fryhtan of a species
+//
+int ModFryhtan::unit_monster_id(int unitId)
+{
+	for( int monsterId=1 ; monsterId<=monster_res.monster_count ; monsterId++ )
+	{
+		if( monster_res[monsterId]->unit_id == unitId )
+			return monsterId;
+	}
+
+	return 0;
+}
+//----------- End of function ModFryhtan::unit_monster_id -----------//
+
+
 //--------- Begin of function ModFryhtan::lair_monster_id ---------//
 //
 int ModFryhtan::lair_monster_id(int firmRecno)
@@ -427,6 +445,11 @@ void ModFryhtan::next_day_lair(int firmRecno)
 		if( !add_lair_soldier(firmPtr, lairPtr->monster_id) )
 			return;
 	}
+
+	//--- the "ready" sound of the human units (the Fryhtans don't have one), also played when a war factory finishes a weapon ---//
+
+	if( firmPtr->nation_recno == nation_array.player_recno )
+		se_res.far_sound( firmPtr->center_x, firmPtr->center_y, 1, 'F', FIRM_WAR_FACTORY, "FINS" );
 
 	lairPtr->train_days = 0;
 	lairPtr->train_count--;
