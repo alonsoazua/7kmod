@@ -818,6 +818,34 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         defensores, como la de los rebeldes de los pueblos esclavizados
         (`REBEL_ATTACK_FIRM`), sin quitarles la resistencia que se llevan.
 
+- [ ] **Gracia de 3 meses al perder la guarida de un pueblo esclavizado.** Hoy, en cuanto
+      un pueblo esclavizado se queda sin guarida enlazada (`ModFryhtan::next_day_town`),
+      se vuelve independiente ese mismo día. Con el cambio:
+      - Al quedarse sin guarida enlazada, sigue siendo tuyo **3 meses**. Si en ese tiempo
+        vuelve a tener una guarida enlazada (construyes otra o recuperas el enlace), la
+        cuenta se cancela.
+      - Mientras tanto no paga tributo (no hay general al mando) y su lealtad baja, como
+        hoy sin general. Hay que revisar qué pasa si se rebela en ese tiempo: los
+        rebeldes atacan la guarida más cercana, y puede no haber ninguna.
+      - Al terminar los 3 meses se declara independiente, con una **noticia**: "Your
+        village %s has declared independence." (o el texto que se use para los pueblos
+        humanos que se independizan).
+      - Hay que guardar en la partida desde cuándo se quedó sin guarida (sube la versión
+        de partida de Fryhtan).
+
+- [ ] **Bug: el pueblo que se independiza se rinde enseguida a otro reino.** En una
+      partida, al eliminar la guarida, el pueblo esclavizado se volvió independiente un
+      momento y luego se rindió a otro reino.
+      - Causa probable (revisar): al independizarse solo se pone en 100 su resistencia
+        hacia el reino Fryhtan. Hacia los demás reinos se queda con los valores que tenía
+        guardados de antes (por ejemplo 0, si antes era de un reino humano o nunca se
+        calcularon), y `Town::update_resistance` hace que un pueblo independiente con
+        resistencia 0 hacia un reino se rinda a ese reino.
+      - Arreglo propuesto: al independizarse, poner su resistencia hacia todos los reinos
+        como la de un pueblo independiente nuevo (60 a 100, `Town::init`), y 100 hacia el
+        reino Fryhtan como hoy.
+      - Revisar si pasa lo mismo cuando un pueblo esclavizado se rebela.
+
 ## 8. Economía oscura (en diseño)
 
 El diseño en borrador está en `DISENO-fryhtan-oscuro.md`: el Enforcer de los pueblos
