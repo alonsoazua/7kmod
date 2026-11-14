@@ -877,6 +877,20 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
 - **Ejemplo** de la prueba: pueblo de 16 con resistencia 86 → 4 defensores (1 + 1 + 2),
   resistencia a 55 al salir (el líder se lleva el doble, más la baja base de 5).
 
+- [ ] **Ajuste de tributo y Raid.**
+      - **Tributo de los pueblos esclavizados:** baja de $5 a **$3 por persona** al mes
+        (`TRIBUTE_PER_PERSON`). El liderazgo del general (o el rey) de la guarida enlazada
+        lo sigue subiendo como hoy: x2 con liderazgo 100.
+      - **Raid:** sube de $1 y 1 de comida a **$2 y 2 de comida por persona**.
+      - **El liderazgo mejora el Raid:** lo que se obtiene se multiplica por
+        (100 + liderazgo) / 100, con el liderazgo del general de la guarida que hace el
+        Raid (`raid_lair`): **x2 con liderazgo 100**, igual que el tributo.
+      - 💡 Tope (`RAID_MAX_LOOT`, hoy 30): pasa a 60 antes del liderazgo, para que siga
+        contando hasta 30 personas. Con liderazgo 100, como mucho $120 y 120 de comida.
+      - Actualizar el texto de la vista de Raid (lo que se obtiene) y la noticia.
+      - Ejemplo: pueblo de 16 y general con liderazgo 60 → 16 × 2 × 1.6 = **$51 y 51 de
+        comida** (hoy $16 y 16).
+
 - [x] **Gracia de 3 meses al perder la guarida de un pueblo esclavizado.** Hoy, en cuanto
       un pueblo esclavizado se queda sin guarida enlazada (`ModFryhtan::next_day_town`),
       se vuelve independiente ese mismo día. Con el cambio:
