@@ -885,8 +885,8 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       - **El liderazgo mejora el Raid:** lo que se obtiene se multiplica por
         (100 + liderazgo) / 100, con el liderazgo del general de la guarida que hace el
         Raid (`raid_lair`): **x2 con liderazgo 100**, igual que el tributo.
-      - 💡 Tope (`RAID_MAX_LOOT`, hoy 30): pasa a 60 antes del liderazgo, para que siga
-        contando hasta 30 personas. Con liderazgo 100, como mucho $120 y 120 de comida.
+      - Tope (`RAID_MAX_LOOT`, hoy 30): pasa a 60 antes del liderazgo, para que siga
+        contando hasta 30 personas (confirmado). Con liderazgo 100, como mucho $120 y 120 de comida.
       - Actualizar el texto de la vista de Raid (lo que se obtiene) y la noticia.
       - Ejemplo: pueblo de 16 y general con liderazgo 60 → 16 × 2 × 1.6 = **$51 y 51 de
         comida** (hoy $16 y 16).
@@ -984,6 +984,18 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         aldeano). Al elegir a quién traicionar se saltan los reinos Fryhtan, y si el reino
         Fryhtan captura un edificio humano, la gente de adentro no se une (se va o se
         vuelve independiente).
+
+- [ ] **Bug: texto basura en la noticia cuando muere un general Fryhtan.** La noticia
+      "Your general, <nombre>, has been slain." (`News::general_die`) saca el nombre de la
+      tabla de nombres de la raza (`race_res[race_id]`), pero los Fryhtans no tienen raza
+      (`race_id` 0), así que lee memoria que no es suya y sale basura.
+      - Arreglo propuesto: con un general Fryhtan, guardar en la noticia su tipo de unidad
+        y usar el mismo nombre que se ve en el juego (`Unit::unit_name`, por ejemplo
+        "Rokken 12"): "Your Ordo, Rokken 12, has been slain." (o "Your general", según
+        cómo se llame en el resto del juego).
+      - Revisar las demás noticias que usan el nombre de la raza con unidades que
+        podrían ser Fryhtans: general asesinado por un espía (`News::unit_assassinated`),
+        general que te traiciona o se independiza, y el general que pide honores.
 
 - [ ] **Las construcciones Fryhtan se regeneran solas.** Hoy un edificio solo se repara
       si tiene un constructor adentro, y los Fryhtans no tienen constructores. La idea es
