@@ -1,0 +1,89 @@
+NEW ADVERSARIES 0.3.0
+Un mod de Seven Kingdoms: Ancient Adversaries
+==============================================
+
+New Adversaries es un mod del juego de estrategia Seven Kingdoms: Ancient
+Adversaries, basado en la versión de código abierto 7kaa 2.15.7 de 7kfans
+(https://7kfans.com/). No es un producto oficial: Seven Kingdoms es marca de
+Enlight Software.
+
+Este instalador trae el juego completo; no hace falta tener instalado el juego
+original.
+
+
+QUÉ EJECUTABLE USAR
+-------------------
+
+New Adversaries (7k-newAdversaries.exe)
+    El mod completo. Incluye todo lo de Classic más cambios de reglas:
+    - Juega como un reino Fryhtan (pestaña "Fryhtans" en New Game).
+    - Invoca Fryhtans desde la Sede de Poder; la IA también los usa.
+    - Greater Beings con poderes nuevos, espionaje ampliado (propaganda,
+      accidentes, reportes de inteligencia), comercio de materias primas en el
+      puerto, Train Captain en los pueblos, tecnologías nuevas y balance de
+      las razas.
+    Es el que recomendamos para jugar.
+
+New Adversaries Classic (7k-newAdversaries-Classic.exe)
+    Las reglas del juego original, con mejoras de interfaz y comodidad:
+    - Editor de escenarios dentro del juego.
+    - Reclutar y entrenar desde el fuerte, las minas, las fábricas y las
+      torres de ciencia, con botón para el reclutamiento automático.
+    - Lista de unidades seleccionadas, selección con recuadro que prefiere a
+      los militares, atajos de teclado nuevos y correcciones.
+    Para quien quiere el juego de siempre, pero más cómodo.
+
+Las partidas de uno no se pueden abrir en el otro.
+
+
+PARTIDAS GUARDADAS Y CONFIGURACIÓN
+----------------------------------
+
+Cada ejecutable guarda sus partidas y su configuración en su propia carpeta:
+
+    New Adversaries:          %APPDATA%\7kfans.com\7k-newAdversaries\
+    New Adversaries Classic:  %APPDATA%\7kfans.com\7k-newAdversaries-Classic\
+
+(Escribe %APPDATA%\7kfans.com en la barra de direcciones del Explorador para
+abrirla.) No chocan con el juego original si también lo tienes instalado.
+Desinstalar el mod no borra estas carpetas.
+
+
+DOCUMENTACIÓN
+-------------
+
+En la carpeta del juego:
+
+    Changelog\   Lista de cambios de cada versión (7kmod = Classic,
+                 gameplay = New Adversaries, fryhtan = el reino Fryhtan).
+    Docs\        Atajos de teclado (KEYBINDINGS), Greater Beings, espionaje
+                 (SPYING), armas de asedio (SIEGE_WEAPONS) y opciones
+                 avanzadas de config.txt (ADVANCED_CONFIG).
+    7kaa-manual.pdf   El manual del juego original.
+
+Los archivos terminados en .en.txt son la versión en inglés.
+
+
+CÓDIGO FUENTE Y LICENCIAS
+-------------------------
+
+Código fuente: https://github.com/alonsoazua/7kmod
+(rama 7kmod-gameplay para New Adversaries y rama 7kmod para Classic).
+
+El juego y el mod se distribuyen bajo la licencia GPL (ver
+Licencias\COPYING.txt). La música es de Bjorn Lynne y Enlight Software y
+tiene su propia licencia, que permite distribuirla con el juego (ver
+Licencias\COPYING-Music.txt y Licencias\README-Music.txt).
+
+Gracias a Enlight Software por liberar el juego y a 7kfans por mantenerlo.
+
+Este mod se desarrolla con ayuda de inteligencia artificial (Claude, de
+Anthropic), con revisión y pruebas del autor.
+
+
+AVISO DE WINDOWS
+----------------
+
+El instalador no tiene firma digital, así que Windows puede mostrar "Windows
+protegió su equipo". Para continuar: "Más información" y luego "Ejecutar de
+todas formas".
