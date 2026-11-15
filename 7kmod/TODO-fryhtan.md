@@ -1168,7 +1168,9 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         - Chicas a **$100**: Ick, Broosken, Doink.
         - Chicas a **$150**: Deezboanz, Rattus, Pfith.
         - Grandes a **$200**: Haubudam, Rokken, Wyrm, Droog, Sauroid, Karrotten, Holgh.
-      - El texto de New Game muestra el precio de cada especie ("Small: $100 per unit").
+      - **New Game sin precio ni tamaño:** el texto queda solo "Fryhtan kingdom: New Rokken
+        Horde" (hoy "… (Large: $200 per unit)"), así que ya no hace falta cambiar la tabla
+        de New Game por Pfith.
       - **Train Ordo vuelve a verse** en la guarida (`LAIR_SHOW_TRAIN_ORDO` 1), junto a
         Promote / Demote.
 
