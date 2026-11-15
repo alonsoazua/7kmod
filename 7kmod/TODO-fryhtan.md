@@ -1051,6 +1051,27 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         partidas anteriores cargan con la cuenta en 0); se reinicia cuando aparece un reino
         nuevo (`NationBase::init`). Probado: los reyes de combate 100 de los dos reinos de
         la IA dieron $990 la primera vez y $495 la segunda.
+- [ ] **Comida de los Fryhtans a la mitad.** Lo que come cada Fryhtan del reino al año
+      baja a la mitad (hoy `invoked_fryhtan_food_year` en `OF_BASE.cpp`, igual para
+      soldado, Ordo y All High, afuera o dentro de la guarida):
+
+      | Especie | Hoy | Nuevo |
+      |---|---|---|
+      | Rokken | 50 | 25 |
+      | Sauroid | 45 | 23 |
+      | Wyrm, Haubudam | 40 | 20 |
+      | Holgh | 35 | 18 |
+      | Rattus, Karrotten, Pfith, Droog, Ick | 30 | 15 |
+      | Deezboanz, Broosken | 25 | 13 |
+      | Doink | 20 | 10 |
+
+      - Ejemplo: una guarida de Rokken llena (1 Ordo y 8 soldados) pasa de 450 a 225 al
+        año.
+      - 💡 Solo para los reinos Fryhtan; los Fryhtans invocados desde la Sede de Poder de
+        un reino humano (gameplay) siguen comiendo lo de hoy.
+      - La comida de entrenar (20 el soldado, 40 el Ordo) no cambia.
+      - La tabla redondea los impares; en el código se usa el valor exacto (por ejemplo
+        22.5), porque se come un poco cada día.
 
 ## 8. Economía oscura (en diseño)
 
