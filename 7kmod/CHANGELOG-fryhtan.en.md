@@ -136,8 +136,8 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
     Fryhtan kingdom, and the villagers of an enslaved town don't hand it a human
     building (capture by workers).
 - **Ordo inside an enslaved town:** right clicking an enslaved town sends an Ordo into
-  it (one per town). The town's "Ordo <name>: <action>" button opens its view, with
-  three actions:
+  it (one per town). The town's spy button (the eye) opens its view, where the **Role**
+  row with the **>** button switches between three actions:
   - **Subjugate:** the loyalty doesn't drop below the Ordo's leadership (50 at most).
   - **Kidnap:** a new villager of a race of the town arrives, on average every 4 months
     with leadership 30 and every 2 with 100 (never over 6 months), with a news message.

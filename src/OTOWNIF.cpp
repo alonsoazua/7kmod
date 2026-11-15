@@ -96,8 +96,8 @@ static VBrowseIF  browse_race, browse_spy;
 static Button3D   button_recruit, button_train, button_tax, button_grant;
 static Button3D   button_raid;		// 7kmod-fryhtan: the Raid button of an independent town linked to a lair
 static Button     button_raid_village, button_raid_cancel;		// 7kmod-fryhtan: in the Raid menu
-static Button     button_ordo;			// 7kmod-fryhtan: the Ordo inside an enslaved town, opens the Ordo menu
-static Button     button_ordo_action[3], button_ordo_leave, button_ordo_back;		// 7kmod-fryhtan: in the Ordo menu
+static Button3D   button_ordo;			// 7kmod-fryhtan: the Ordo inside an enslaved town (the spy button), opens the Ordo menu
+static Button     button_ordo_next, button_ordo_leave, button_ordo_back;		// 7kmod-fryhtan: in the Ordo menu
 static Button3D   button_spy, button_cancel, button_spy_mobilize,
 						button_spy_reward, button_spy_action, button_spy_view_secret;
 static Button3D	button_cancel_training;
@@ -133,6 +133,7 @@ short  Town::fort_recruit_town_recno = 0;
 static int  race_filter(int recNo=0);
 static const char* ordo_menu_name(TownOrdo* ordoPtr);		// 7kmod-fryhtan
 static const char* ordo_action_name(int action);
+extern const char* monster_name_general[];		// OU_MONS.cpp: "<species> Ordo"
 static int  spy_filter(int recNo=0);
 static int  ceilf_int(float f);
 static void put_race_rec(int recNo, int x, int y, int refreshFlag);
@@ -452,7 +453,7 @@ void Town::disp_main_menu(int refreshFlag)
 
 		y += 55;
 
-		//--- the Ordo inside the town: its button opens the Ordo menu ---//
+		//--- the Ordo inside the town: the spy button opens the Ordo menu ---//
 
 		static int lastOrdoKey = -1;
 		TownOrdo* ordoPtr = mod_fryhtan.town_ordo(town_recno);
@@ -464,10 +465,8 @@ void Town::disp_main_menu(int refreshFlag)
 
 			if( ordoPtr )
 			{
-				char str[100];
-				// TRANSLATORS: Ordo <Name>: <Subjugate|Kidnap|Taskmaster>
-				snprintf( str, sizeof(str), _("Ordo %s: %s"), ordo_menu_name(ordoPtr), ordo_action_name(ordoPtr->action) );
-				button_ordo.paint_text( BUTTON_X1, y, BUTTON_X2, y+24, str );
+				button_ordo.paint( BUTTON_X1, y, 'A', "SPYMENU" );
+				button_ordo.set_help_code("");		// the custom help is set below
 			}
 			else if( button_ordo.init_flag )
 			{
@@ -479,6 +478,15 @@ void Town::disp_main_menu(int refreshFlag)
 					return;
 				}
 			}
+		}
+
+		if( ordoPtr && button_ordo.init_flag )
+		{
+			static char helpStr[100];
+
+			// TRANSLATORS: <Name>: <Subjugate|Kidnap|Taskmaster>
+			snprintf( helpStr, sizeof(helpStr), _("%s: %s"), ordo_menu_name(ordoPtr), ordo_action_name(ordoPtr->action) );
+			help.set_custom_help( button_ordo.x1, button_ordo.y1, button_ordo.x2, button_ordo.y2, _("Ordo"), helpStr );
 		}
 	}
 
@@ -906,9 +914,10 @@ static const char* ordo_action_name(int action)
 
 //--------- Begin of function Town::disp_ordo_menu ---------//
 //
-// 7kmod-fryhtan: the Ordo inside an enslaved town of the player: its
-// leadership and combat, the three actions (the current one pushed) with
-// their effect, and the buttons to take it out of the town and to go back.
+// 7kmod-fryhtan: the Ordo inside an enslaved town of the player: its icon,
+// name, species and leadership; its role (action) with a button to change it
+// and what it does; its loyalty (none), leadership, combat and hit points;
+// and the buttons to take it out of the town and to go back.
 //
 void Town::disp_ordo_menu(int refreshFlag)
 {
@@ -926,7 +935,7 @@ void Town::disp_ordo_menu(int refreshFlag)
 	//--- repaint when the town or the Ordo change ---//
 
 	static int lastKey[4];
-	int key[4] = { town_recno, (int) population, ordoPtr->action, ordoPtr->leadership };
+	int key[4] = { town_recno, ordoPtr->action, ordoPtr->leadership, ordoPtr->hit_points };
 
 	if( refreshFlag != INFO_REPAINT )
 	{
@@ -941,69 +950,97 @@ void Town::disp_ordo_menu(int refreshFlag)
 
 	memcpy( lastKey, key, sizeof(key) );
 
-	//------- the Ordo -------//
+	char str[300];
+	int  leadership = ordoPtr->leadership;
+	UnitInfo* unitInfo = unit_res[ordoPtr->unit_id];
+
+	//------- the Ordo: icon, name, species and leadership -------//
 
 	int y = RACE_BROWSE_Y1-23;
-	char str[300];
 
 	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+56 );
 
-	UnitInfo* unitInfo = unit_res[ordoPtr->unit_id];
 	vga_front.put_bitmap( INFO_X1+6, y+4, unitInfo->get_large_icon_ptr(RANK_GENERAL) );
 
 	int x1 = INFO_X1+6+UNIT_LARGE_ICON_WIDTH+10;
 
-	font_san.put( x1, y+6, ordo_menu_name(ordoPtr), 0, INFO_X2-4 );
+	font_san.put( x1, y+4, ordo_menu_name(ordoPtr), 0, INFO_X2-4 );
+	int monsterId = ModFryhtan::unit_monster_id(ordoPtr->unit_id);
 
-	snprintf( str, sizeof(str), _("Leadership: %d"), (int) ordoPtr->leadership );
-	font_san.put( x1, y+22, str, 0, INFO_X2-4 );
+	if( monsterId >= 1 && monsterId <= FRYHTAN_SPECIES_COUNT )
+		font_san.put( x1, y+20, _(monster_name_general[monsterId-1]), 0, INFO_X2-4 );		// "<species> Ordo"
+	else
+		font_san.put( x1, y+20, _(unitInfo->name), 0, INFO_X2-4 );
 
-	snprintf( str, sizeof(str), _("Combat: %d"), (int) ordoPtr->combat_level );
-	font_san.put( x1, y+38, str, 0, INFO_X2-4 );
+	snprintf( str, sizeof(str), _("Leadership: %d"), leadership );
+	font_san.put( x1, y+36, str, 0, INFO_X2-4 );
 
-	//------- the actions -------//
+	//------- the role, and the button to change it -------//
 
 	y += 60;
 
-	int leadership = ordoPtr->leadership;
-	int kidnapDays = ModFryhtan::kidnap_days(leadership);
-	int taskGold   = ModFryhtan::taskmaster_gold(leadership);
+	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+24 );
+	font_san.put( INFO_X1+6, y+5, _("Role"), 0, INFO_X1+60 );
+	font_san.put( INFO_X1+66, y+5, "|" );
+	font_san.put( INFO_X1+76, y+5, ordo_action_name(ordoPtr->action), 0, INFO_X2-30 );
 
-	for( int i=0 ; i<3 ; i++ )
+	button_ordo_next.paint_text( INFO_X2-26, y+2, INFO_X2-4, y+22, ">" );
+
+	//------- what the role does -------//
+
+	y += 28;
+
+	switch( ordoPtr->action )
 	{
-		int action = ORDO_ACTION_SUBJUGATE + i;
-
-		button_ordo_action[i].paint_text( INFO_X1+4, y, INFO_X2-4, y+22, ordo_action_name(action) );
-
-		if( ordoPtr->action == action )		// the current action, framed in yellow
-			vga_front.rect( INFO_X1+2, y-2, INFO_X2-2, y+24, 2, V_YELLOW );
-
-		switch( action )
+		case ORDO_ACTION_KIDNAP:
 		{
-			case ORDO_ACTION_SUBJUGATE:
-				// TRANSLATORS: The loyalty of the village doesn't drop below <Number>.
-				snprintf( str, sizeof(str), _("The loyalty of the village doesn't drop below %d."),
-							 MIN( leadership, (int) SUBJUGATE_MAX_LOYALTY ) );
-				break;
+			int kidnapDays = ModFryhtan::kidnap_days(leadership);
 
-			case ORDO_ACTION_KIDNAP:
-				// TRANSLATORS: A new villager every <Days> to <Days> days.
-				snprintf( str, sizeof(str), _("A new villager every %d to %d days."),
-							 kidnapDays/2, kidnapDays - kidnapDays/2 + kidnapDays );
-				break;
-
-			default:
-				// TRANSLATORS: +$<Gold> a month and +<Food> food a year per villager.
-				snprintf( str, sizeof(str), _("+$%d.%02d a month and +%d food a year per villager."),
-							 taskGold/100, taskGold%100, ModFryhtan::taskmaster_food(leadership) );
-				break;
+			// TRANSLATORS: A new villager every <Days> to <Days> days.
+			snprintf( str, sizeof(str), _("A new villager every %d to %d days."),
+						 kidnapDays/2, kidnapDays/2 + kidnapDays );
+			break;
 		}
 
-		vga_util.d3_panel_up( INFO_X1, y+24, INFO_X2, y+56 );
-		font_san.put_paragraph( INFO_X1+6, y+26, INFO_X2-6, y+56, str, 0 );
+		case ORDO_ACTION_TASKMASTER:
+		{
+			int taskGold = ModFryhtan::taskmaster_gold(leadership);
 
-		y += 60;
+			// TRANSLATORS: +$<Gold> a month and +<Food> food a year per villager.
+			snprintf( str, sizeof(str), _("+$%d.%02d a month and +%d food a year per villager."),
+						 taskGold/100, taskGold%100, ModFryhtan::taskmaster_food(leadership) );
+			break;
+		}
+
+		default:
+			// TRANSLATORS: The loyalty of the village doesn't drop below <Number>.
+			snprintf( str, sizeof(str), _("The loyalty of the village doesn't drop below %d."),
+						 MIN( leadership, (int) SUBJUGATE_MAX_LOYALTY ) );
+			break;
 	}
+
+	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+36 );
+	font_san.put_paragraph( INFO_X1+6, y+3, INFO_X2-6, y+35, str, 0 );
+
+	//------- loyalty, leadership, combat and hit points -------//
+
+	y += 40;
+
+	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+4+16*4+2 );
+
+	int x = INFO_X1+4;
+	y += 4;
+
+	font_san.field( x, y, _("Loyalty"), x+92, _("N/A"), INFO_X2-2, refreshFlag );
+	y += 16;
+	font_san.field( x, y, _("Leadership"), x+92, leadership, 1, INFO_X2-2, refreshFlag );
+	y += 16;
+	font_san.field( x, y, _("Combat"), x+92, (int) ordoPtr->combat_level, 1, INFO_X2-2, refreshFlag );
+	y += 16;
+
+	int maxHitPoints = (int) unitInfo->hit_points * ordoPtr->combat_level / 100;		// as Unit::set_combat_level()
+	snprintf( str, sizeof(str), "%d/%d", (int) ordoPtr->hit_points, MAX( (int) ordoPtr->hit_points, maxHitPoints ) );
+	font_san.field( x, y, _("Hit Points"), x+92, str, INFO_X2-2, refreshFlag );
 
 	//------- the buttons -------//
 
@@ -1019,34 +1056,33 @@ void Town::disp_ordo_menu(int refreshFlag)
 //
 int Town::detect_ordo_menu()
 {
-	for( int i=0 ; i<3 ; i++ )
+	if( button_ordo_next.detect() )		// the next role: Subjugate, Kidnap, Taskmaster
 	{
-		if( button_ordo_action[i].detect() )
+		TownOrdo* ordoPtr = mod_fryhtan.town_ordo(town_recno);
+
+		if( ordoPtr )
 		{
 			se_ctrl.immediate_sound("TURN_ON");
 
-			mod_fryhtan.set_ordo_action(town_recno, ORDO_ACTION_SUBJUGATE + i);
+			int action = ordoPtr->action % ORDO_ACTION_TASKMASTER + 1;
+
+			mod_fryhtan.set_ordo_action(town_recno, action);
 
 			disable_refresh = 1;    // keep the Ordo menu
 			info.disp();
 			disable_refresh = 0;
-			return 1;
 		}
+		return 1;
 	}
 
 	if( button_ordo_leave.detect() )
 	{
-		int unitRecno = mod_fryhtan.ordo_leave_town(town_recno);
+		se_ctrl.immediate_sound("TURN_OFF");
 
-		if( unitRecno )
+		if( mod_fryhtan.ordo_leave_town(town_recno) )		// it stays if there is no room for it next to the town
 		{
-			se_ctrl.immediate_sound("TURN_OFF");
 			town_menu_mode = TOWN_MENU_MAIN;
 			info.disp();
-		}
-		else
-		{
-			se_ctrl.immediate_sound("TURN_OFF");		// no room for it next to the town
 		}
 		return 1;
 	}

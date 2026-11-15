@@ -139,8 +139,8 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
     no se pasan a un reino Fryhtan, y los aldeanos de un pueblo esclavizado no le
     entregan un edificio humano (captura por trabajadores).
 - **Ordo dentro de un pueblo esclavizado:** con clic derecho sobre un pueblo esclavizado,
-  un Ordo entra en él (uno por pueblo). El botón "Ordo <nombre>: <acción>" del pueblo
-  abre su vista, con tres acciones:
+  un Ordo entra en él (uno por pueblo). El botón de espionaje (el ojo) del pueblo abre su
+  vista, donde la fila **Role** con el botón **>** cambia entre tres acciones:
   - **Subjugate:** la lealtad no baja del liderazgo del Ordo (tope 50).
   - **Kidnap:** llega un aldeano nuevo de una raza del pueblo, en promedio cada 4 meses
     con liderazgo 30 y cada 2 con 100 (nunca más de 6 meses), con noticia.

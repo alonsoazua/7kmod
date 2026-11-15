@@ -1090,10 +1090,13 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         100**, aparte del tributo (y aunque no haya general en una guarida enlazada), y
         **+5 a +20 de comida al año**.
       - **Cómo quedó:**
-        - En el panel del pueblo, el botón "Ordo <nombre>: <acción>" abre la vista del
-          Ordo (`TOWN_MENU_ORDO`, `Town::disp_ordo_menu`): su ícono, nombre, liderazgo y
-          combate; los tres botones de acción con lo que hace cada uno con su liderazgo
-          (el actual con marco amarillo), y **Leave village** y **Back**.
+        - En el panel del pueblo, el **botón de espionaje** (el ojo) abre la vista del
+          Ordo; su ayuda dice "Ordo" y "<nombre>: <acción>". La vista (`TOWN_MENU_ORDO`,
+          `Town::disp_ordo_menu`), según el diseño del usuario: ícono, nombre,
+          "<especie> Ordo" y liderazgo; la fila **Role | <acción>** con el botón **>**
+          que pasa a la siguiente (Subjugate → Kidnap → Taskmaster); lo que hace la
+          acción con su liderazgo; la tabla Loyalty (N/A), Leadership, Combat y Hit
+          Points; y **Leave village** y **Back**.
         - El Ordo se guarda en `ModFryhtan::town_ordo_array` (por pueblo) y la unidad se
           borra del mapa; al salir se crea otra vez con su nombre, liderazgo, combate y
           vida (`ordo_enter_town`, `ordo_leave_town`). Adentro sigue comiendo y costando
