@@ -518,6 +518,8 @@ int ModFryhtan::add_lair_soldier(Firm* firmPtr, int monsterId, int combatLevel)
 	unitPtr->set_monster_id( monsterId );
 	unitPtr->set_combat_level( combatLevel );
 	unitPtr->hit_points = (float) unitPtr->max_hit_points;
+	unitPtr->skill.set_skill( SKILL_LEADING );		// it can be promoted to Ordo
+	unitPtr->skill.skill_level = LAIR_TRAIN_LEADERSHIP;
 
 	//------ it goes into the lair if there is room ------//
 
@@ -1064,6 +1066,9 @@ int ModFryhtan::write_file(File* filePtr)
 			ordoCount++;
 	}
 
+	if( !filePtr->file_put_short( -1 ) )		// -1: the records have the potential and the fractions of leadership and combat (not in the first version)
+		return 0;
+
 	if( !filePtr->file_put_short( (int16_t) ordoCount ) )
 		return 0;
 
@@ -1083,7 +1088,11 @@ int ModFryhtan::write_file(File* filePtr)
 		filePtr->file_put_char( (int8_t) ordoPtr->leadership );
 		filePtr->file_put_short( ordoPtr->hit_points );
 
-		if( !filePtr->file_put_long( ordoPtr->next_kidnap_date ) )
+		filePtr->file_put_long( ordoPtr->next_kidnap_date );
+		filePtr->file_put_char( (int8_t) ordoPtr->skill_potential );
+		filePtr->file_put_char( (int8_t) ordoPtr->leadership_minor );
+
+		if( !filePtr->file_put_char( (int8_t) ordoPtr->combat_minor ) )
 			return 0;
 	}
 
@@ -1188,6 +1197,13 @@ int ModFryhtan::read_file(File* filePtr)
 		return 1;
 
 	int ordoCount = filePtr->file_get_short();
+	int hasMinor  = 0;
+
+	if( ordoCount == -1 )		// the records have the potential and the fractions
+	{
+		hasMinor  = 1;
+		ordoCount = filePtr->file_get_short();
+	}
 
 	for( int i=0 ; i<ordoCount ; i++ )
 	{
@@ -1215,6 +1231,13 @@ int ModFryhtan::read_file(File* filePtr)
 		ordoPtr->leadership       = (uint8_t) filePtr->file_get_char();
 		ordoPtr->hit_points       = filePtr->file_get_short();
 		ordoPtr->next_kidnap_date = filePtr->file_get_long();
+
+		if( hasMinor )
+		{
+			ordoPtr->skill_potential  = (uint8_t) filePtr->file_get_char();
+			ordoPtr->leadership_minor = (uint8_t) filePtr->file_get_char();
+			ordoPtr->combat_minor     = (uint8_t) filePtr->file_get_char();
+		}
 	}
 
 	return 1;
@@ -1815,6 +1838,9 @@ void ModFryhtan::ordo_enter_town(Town* townPtr, Unit* unitPtr)
 	ordoPtr->combat_level = (uint8_t) unitPtr->skill.combat_level;
 	ordoPtr->leadership   = (uint8_t) unitPtr->skill.get_skill(SKILL_LEADING);
 	ordoPtr->hit_points   = (int16_t) MAX( 1, (int) unitPtr->hit_points );
+	ordoPtr->skill_potential  = unitPtr->skill.skill_potential;
+	ordoPtr->leadership_minor = unitPtr->skill.skill_level_minor;
+	ordoPtr->combat_minor     = unitPtr->skill.combat_level_minor;
 
 	//------- remove the unit from the map -------//
 
@@ -1888,6 +1914,9 @@ int ModFryhtan::ordo_leave_town(int townRecno, int forced)
 	unitPtr->set_combat_level( ordo.combat_level );
 	unitPtr->hit_points = (float) MAX( 1, MIN( (int) ordo.hit_points, (int) unitPtr->max_hit_points ) );
 	unitPtr->name_id = ordo.name_id;
+	unitPtr->skill.skill_potential    = ordo.skill_potential;
+	unitPtr->skill.skill_level_minor  = ordo.leadership_minor;
+	unitPtr->skill.combat_level_minor = ordo.combat_minor;
 
 	return unitRecno;
 }
@@ -1944,15 +1973,25 @@ void ModFryhtan::next_day_town_ordo(Town* townPtr)
 	if( nationPtr->cash > 0 )
 		nationPtr->add_expense( EXPENSE_MOBILE_UNIT, (float) unit_res[ordoPtr->unit_id]->year_cost / 365, 1 );
 
-	//------- Kidnap: a villager of a race of the town, by its people -------//
+	//------- its leadership and combat rise, as a general in a lair -------//
+
+	if( info.game_date%15 == townRecno%15 )
+		train_town_ordo(townPtr, ordoPtr);
+
+	//------- Kidnap: villagers of the races of the town, by its people -------//
 
 	if( ordoPtr->action == ORDO_ACTION_KIDNAP && info.game_date >= ordoPtr->next_kidnap_date )
 	{
 		int days = kidnap_days(leadership);
 		ordoPtr->next_kidnap_date = info.game_date + days/2 + misc.random(days+1);
 
-		if( townPtr->population > 0 && townPtr->population < MAX_TOWN_POPULATION )
+		int kidnapCount = 0;
+
+		for( int k=0 ; k<KIDNAP_VILLAGERS ; k++ )
 		{
+			if( townPtr->population <= 0 || townPtr->population >= MAX_TOWN_POPULATION )
+				break;
+
 			int pick = misc.random(townPtr->population);
 			int raceId = 0;
 
@@ -1967,14 +2006,15 @@ void ModFryhtan::next_day_town_ordo(Town* townPtr)
 				pick -= townPtr->race_pop_array[i];
 			}
 
-			if( raceId )
-			{
-				townPtr->inc_pop( raceId, 0, (int) townPtr->race_loyalty_array[raceId-1] );
+			if( !raceId )
+				break;
 
-				if( townPtr->nation_recno == nation_array.player_recno )
-					news_array.ordo_kidnap( townRecno, ordoPtr->name_id, raceId );
-			}
+			townPtr->inc_pop( raceId, 0, (int) townPtr->race_loyalty_array[raceId-1] );
+			kidnapCount++;
 		}
+
+		if( kidnapCount && townPtr->nation_recno == nation_array.player_recno )
+			news_array.ordo_kidnap( townRecno, ordoPtr->name_id, kidnapCount );
 	}
 
 	//------- Taskmaster: more food every day, more tribute every month -------//
@@ -1988,6 +2028,120 @@ void ModFryhtan::next_day_town_ordo(Town* townPtr)
 	}
 }
 //----------- End of function ModFryhtan::next_day_town_ordo -----------//
+
+
+//--------- Begin of function ModFryhtan::train_town_ordo ---------//
+//
+// Every 15 days, as FirmCamp::train_unit() for a general: the leadership of
+// the Ordo rises as with one soldier for each ORDO_TOWN_VILLAGERS_PER_SOLDIER
+// villagers (at most MAX_WORKER), ORDO_LEADERSHIP_PERCENT as fast as a human
+// general; its combat rises as a general's; and it recovers 1 hit point
+// (FirmCamp::recover_hit_point()).
+//
+void ModFryhtan::train_town_ordo(Town* townPtr, TownOrdo* ordoPtr)
+{
+	UnitInfo* unitInfo = unit_res[ordoPtr->unit_id];
+	int maxHitPoints = MAX( 1, (int) unitInfo->hit_points * ordoPtr->combat_level / 100 );		// as Unit::set_combat_level()
+	int hitPoints    = MIN( (int) ordoPtr->hit_points, maxHitPoints );
+	int potential    = 100 + ordoPtr->skill_potential*2;
+
+	//------- leadership -------//
+
+	int soldierCount = MIN( (int) MAX_WORKER, townPtr->population / ORDO_TOWN_VILLAGERS_PER_SOLDIER );
+
+	if( soldierCount > 0 && ordoPtr->leadership < 100 )
+	{
+		int incValue = 5 * soldierCount * hitPoints / maxHitPoints * potential / 100
+							* ORDO_LEADERSHIP_PERCENT / 100;
+		int levelMinor = ordoPtr->leadership_minor + incValue;
+
+		while( levelMinor >= 100 && ordoPtr->leadership < 100 )
+		{
+			levelMinor -= 100;
+			ordoPtr->leadership++;
+		}
+
+		ordoPtr->leadership_minor = (uint8_t) MIN( 99, levelMinor );
+	}
+
+	//------- combat -------//
+
+	if( ordoPtr->combat_level < 100 )
+	{
+		int incValue = 20 * hitPoints / maxHitPoints * potential / 100;
+		int levelMinor = ordoPtr->combat_minor + incValue;
+
+		while( levelMinor >= 100 && ordoPtr->combat_level < 100 )
+		{
+			levelMinor -= 100;
+			ordoPtr->combat_level++;
+		}
+
+		ordoPtr->combat_minor = (uint8_t) MIN( 99, levelMinor );
+	}
+
+	//------- hit points -------//
+
+	maxHitPoints = MAX( 1, (int) unitInfo->hit_points * ordoPtr->combat_level / 100 );
+
+	if( ordoPtr->hit_points < maxHitPoints )
+		ordoPtr->hit_points++;
+}
+//----------- End of function ModFryhtan::train_town_ordo -----------//
+
+
+//--------- Begin of function ModFryhtan::enslave_min_resistance ---------//
+//
+// How low the lairs lower the resistance of an independent town toward the
+// kingdom, by the leadership of the general of the lair: 60 with leadership
+// 30 or less, 45 with 100.
+//
+int ModFryhtan::enslave_min_resistance(int leadership)
+{
+	int level = ordo_task_level(leadership) - ORDO_TASK_MIN_LEADERSHIP;
+
+	return ENSLAVE_MIN_RESISTANCE_LOW - level * (ENSLAVE_MIN_RESISTANCE_LOW - ENSLAVE_MIN_RESISTANCE)
+			 / (ORDO_TASK_MAX_LEADERSHIP - ORDO_TASK_MIN_LEADERSHIP);
+}
+//----------- End of function ModFryhtan::enslave_min_resistance -----------//
+
+
+//--------- Begin of function ModFryhtan::promote_ordo ---------//
+//
+// A Fryhtan soldier of a Fryhtan kingdom becomes an Ordo, with a name of its
+// own. It keeps its combat and leadership.
+//
+void ModFryhtan::promote_ordo(Unit* unitPtr)
+{
+	if( unitPtr->skill.skill_id != SKILL_LEADING )		// a soldier from before the leadership of the soldiers
+	{
+		unitPtr->skill.set_skill( SKILL_LEADING );
+		unitPtr->skill.skill_level = LAIR_TRAIN_LEADERSHIP;
+	}
+
+	unitPtr->set_rank(RANK_GENERAL);
+	unitPtr->name_id = (uint16_t) new_ordo_name_id( unitPtr->nation_recno );
+
+	if( unit_array.selected_recno == unitPtr->sprite_recno )		// show its new name
+		info.disp();
+}
+
+
+//--------- Begin of function ModFryhtan::demote_ordo ---------//
+//
+// An Ordo becomes a soldier, with a series no. as name (Unit::init()).
+//
+void ModFryhtan::demote_ordo(Unit* unitPtr)
+{
+	unitPtr->set_rank(RANK_SOLDIER);
+
+	if( unitPtr->nation_recno )
+		unitPtr->name_id = ++nation_array[unitPtr->nation_recno]->last_unit_name_id_array[unitPtr->unit_id-1];
+
+	if( unit_array.selected_recno == unitPtr->sprite_recno )
+		info.disp();
+}
+//----------- End of function ModFryhtan::demote_ordo -----------//
 
 
 //--------- Begin of function ModFryhtan::subjugate_loyalty ---------//

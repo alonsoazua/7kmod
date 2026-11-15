@@ -422,7 +422,10 @@ void FirmCamp::put_info(int refreshFlag)
 
 				button_patrol.paint( INFO_X1, INFO_Y1+242, 'A', "PATROL" );
 				button_lair_train[LAIR_TRAIN_SOLDIER].paint( INFO_X1+BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', "TRAIN" );
-				button_lair_train[LAIR_TRAIN_ORDO].paint( INFO_X1+BUTTON_ACTION_WIDTH*2, INFO_Y1+242, 'A', "PROMOTE" );
+				if( LAIR_SHOW_TRAIN_ORDO )		// hidden: the soldiers are promoted to Ordo
+					button_lair_train[LAIR_TRAIN_ORDO].paint( INFO_X1+BUTTON_ACTION_WIDTH*2, INFO_Y1+242, 'A', "PROMOTE" );
+				else
+					button_lair_train[LAIR_TRAIN_ORDO].reset();
 
 				for( int t=0 ; t<LAIR_TRAIN_TYPE_COUNT ; t++ )
 				{
@@ -1531,6 +1534,9 @@ void FirmCamp::train_unit()
 		incValue = 5 * worker_count
 					  * (int) overseerUnit->hit_points / overseerUnit->max_hit_points
 					  * (100+overseerUnit->skill.skill_potential*2) / 100;
+
+		if( isLair && !overseerUnit->race_id )		// 7kmod-fryhtan: an Ordo learns leadership faster than a human general
+			incValue = incValue * ORDO_LEADERSHIP_PERCENT / 100;
 
 		overseerUnit->inc_minor_skill_level(incValue);
 	}

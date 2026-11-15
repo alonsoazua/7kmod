@@ -43,11 +43,14 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
     included, uses 2 (small) or 3 (large), and the Kingdoms report shows how many there
     are ("Fryhtan Population"). The cap (base 20 plus the enslaved people) is turned off
     in the code (`FRYHTAN_POPULATION_LIMIT`); instead, training costs gold.
-  - **Train Ordo:** a second button trains a general (Ordo) of the lair's species:
-    **$200** (**$150** for a small species) and **40 food**, **15 days** (10 for a small
-    species), the same as a soldier, leadership and combat **30**. It comes out next to the lair
-    with a **name of its own** (for example "Kzorr"). Soldiers can no longer be promoted
-    (there is no Promote or Demote).
+  - **Promote / Demote:** a Fryhtan soldier is promoted to **Ordo** (general) with
+    Promote and gets a **name of its own** (for example "Kzorr"); it keeps its combat and
+    leadership. Demote turns it back into a soldier. Soldiers start with **leadership 20**
+    (shown in their panel) and learn it in the lair as humans do (only those with
+    potential).
+  - An Ordo's leadership rises **×1.5** as fast as a human general's.
+  - The lair's **Train Ordo** button (an Ordo for $200 or $150 and 40 food, in 15 or 10
+    days) is hidden for now.
   - Fryhtans train their combat in the lair with the general and gain experience when
     fighting.
   - The lair has no Reward or Recruit; its Fryhtans show loyalty "N/A".
@@ -69,7 +72,8 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   the lair says "Outside of the lair".
 - **Enslaved towns** (phase 4):
   - A lair with a general linked to an independent town lowers its resistance down to
-    **45**; the general's leadership decides how fast. Taking it to 0 requires fighting.
+    a minimum that depends on the general's leadership: **60** with leadership 30 or less
+    down to **45** with 100 (the best lair counts). The leadership also decides how fast. Taking it to 0 requires fighting.
   - A town of a human kingdom is enslaved by fighting the loyalty of its people down to
     0.
   - In both cases a lair linked to the town is needed.
@@ -139,10 +143,13 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   it (one per town). The town's spy button (the eye) opens its view, where the **Role**
   row with the **>** button switches between three actions:
   - **Subjugate:** the loyalty doesn't drop below the Ordo's leadership (50 at most).
-  - **Kidnap:** a new villager of a race of the town arrives, on average every 4 months
-    with leadership 30 and every 2 with 100 (never over 6 months), with a news message.
+  - **Kidnap:** **2 new villagers** of the town's races arrive, on average every 8
+    months with leadership 30 and every 4 with 100 (never over 12 months), with the news
+    "Your Ordo … has kidnapped 2 villagers into your village of …".
   - **Taskmaster:** each villager gives +$0.5 to +$2 more a month and +5 to +20 more food
     a year, by the leadership.
+  - Inside, the Ordo **gains leadership and combat** as a general in its lair (every 5
+    villagers count as one soldier, up to 8) and recovers hit points.
   - **Leave village** takes it out. If the town changes owner, the Ordo comes out.
   - With an Ordo selected, the enter arrow shows over the town.
   - The town's name on the map and in the Villages report shows the role, for example

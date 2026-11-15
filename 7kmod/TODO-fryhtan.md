@@ -1132,6 +1132,31 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
 - [x] **Entrenar un Ordo tarda lo mismo que un soldado:** 15 días (especie grande) y
       10 (chica), antes 30 y 20 (`LAIR_ORDO_DAYS`, `LAIR_SMALL_ORDO_DAYS`). El oro y la
       comida no cambian.
+- [x] **Ajustes al Ordo, Kidnap, resistencia y Promote / Demote.**
+      - **Kidnap** al doble: **2 aldeanos** por vez, cada 240 días en promedio con
+        liderazgo 30 y 120 con 100 (entre la mitad y 1.5 veces: con liderazgo 30, de 120 a
+        360 días, máximo 12 meses). La noticia ya no dice la raza: "Your Ordo … has
+        kidnapped 2 villagers into your village of …" (o "a villager" si solo cabe uno).
+      - **Ordo dentro del pueblo:** cada 15 días gana liderazgo como un general con un
+        soldado por cada 5 aldeanos (hasta 8), ×1.5, y combate como un general; recupera
+        1 punto de vida (`ModFryhtan::train_town_ordo`). Las fracciones y el potencial se
+        guardan (la partida marca el formato nuevo con un -1 antes de la cuenta de Ordos;
+        las partidas del formato anterior siguen cargando).
+      - **Mínimo de resistencia según el liderazgo** del general de la guarida: 60 con
+        liderazgo 30 o menos hasta 45 con 100; cuenta la guarida con el mínimo más bajo
+        (`ModFryhtan::enslave_min_resistance`, `Town::update_target_resistance`).
+      - **Promote / Demote** de vuelta para los Fryhtans del reino, en el panel de la
+        unidad (`ModFryhtan::promote_ordo`, `demote_ordo`): al ascender recibe nombre de
+        Ordo; al bajar, un número de serie. El All High no se puede bajar.
+      - **Soldados con liderazgo 20** (`LAIR_TRAIN_LEADERSHIP`), visible en su panel y en
+        la guarida; lo aprenden en la guarida solo con potencial, como los humanos.
+      - **El liderazgo del Ordo sube ×1.5** (`ORDO_LEADERSHIP_PERCENT`) en la guarida y
+        en el pueblo.
+      - **Train Ordo oculto** (`LAIR_SHOW_TRAIN_ORDO` 0); el código se queda.
+      - Probado: soldado de la guarida con Loyalty N/A, Leadership 20; Demote y Promote de
+        un Ordo; el Ordo en un pueblo de 20 subió 0.30 de liderazgo y 0.20 de combate cada
+        15 días; Kidnap esperando 342 días con liderazgo 30. No se probó en partida el
+        mínimo de resistencia ni la noticia nueva de Kidnap.
 
 ## 8. Economía oscura (en diseño)
 

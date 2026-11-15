@@ -1326,13 +1326,22 @@ void News::villager_joined()
 //
 // short_para1 - name id. of the town
 // short_para2 - name id. of the Ordo (an Ordo name id., above 32767)
-// short_para3 - race id. of the villager
+// short_para3 - the villagers kidnapped
 //
 void News::ordo_kidnap()
 {
-	// TRANSLATORS: Your Ordo <Name> has kidnapped a <Race> villager into your village of <Town>.
-	snprintf(str, MAX_STR_LEN+1, _("Your Ordo %s has kidnapped a %s villager into your village of %s."),
-				news_unit_name(0, short_para2, 1), _(race_res[short_para3]->adjective), town_res.get_name(short_para1) );
+	if( short_para3 > 1 )
+	{
+		// TRANSLATORS: Your Ordo <Name> has kidnapped <Number> villagers into your village of <Town>.
+		snprintf(str, MAX_STR_LEN+1, _("Your Ordo %s has kidnapped %d villagers into your village of %s."),
+					news_unit_name(0, short_para2, 1), (int) short_para3, town_res.get_name(short_para1) );
+	}
+	else
+	{
+		// TRANSLATORS: Your Ordo <Name> has kidnapped a villager into your village of <Town>.
+		snprintf(str, MAX_STR_LEN+1, _("Your Ordo %s has kidnapped a villager into your village of %s."),
+					news_unit_name(0, short_para2, 1), town_res.get_name(short_para1) );
+	}
 }
 //------- End of function News::ordo_kidnap -----//
 

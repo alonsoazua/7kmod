@@ -43,11 +43,14 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
     incluido, usa 2 (pequeño) o 3 (grande), y el reporte de reinos muestra cuántos hay
     ("Fryhtan Population"). El tope (base 20 más la gente esclavizada) queda desactivado
     en el código (`FRYHTAN_POPULATION_LIMIT`); en su lugar, entrenar cuesta oro.
-  - **Train Ordo:** un segundo botón entrena un general (Ordo) de la especie de la
-    guarida: **$200** (**$150** si es pequeña) y **40 de comida**, **15 días** (10 si es
-    pequeña), lo mismo que un soldado, liderazgo y combate **30**. Sale junto a la
-    guarida con un **nombre propio** (por ejemplo "Kzorr"). Los soldados ya no se pueden
-    ascender (no hay Promote ni Demote).
+  - **Promote / Demote:** un soldado Fryhtan se asciende a **Ordo** (general) con
+    Promote y recibe un **nombre propio** (por ejemplo "Kzorr"); conserva su combate y
+    liderazgo. Demote lo regresa a soldado. Los soldados empiezan con **liderazgo 20** (se
+    ve en su panel) y lo aprenden en la guarida como los humanos (solo los que tienen
+    potencial).
+  - El liderazgo de un Ordo sube **×1.5** más rápido que el de un general humano.
+  - El botón **Train Ordo** de la guarida (un Ordo por $200 o $150 y 40 de comida, en 15
+    o 10 días) está oculto por ahora.
   - Los Fryhtans entrenan su combate en la guarida con el general y ganan experiencia
     al pelear.
   - La guarida no tiene Reward ni Recruit; sus Fryhtans muestran lealtad "N/A".
@@ -71,7 +74,9 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
   la guarida dice "Outside of the lair".
 - **Pueblos esclavizados** (fase 4):
   - Una guarida con general enlazada a un pueblo independiente baja su resistencia hasta
-    **45**; el liderazgo del general decide qué tan rápido. Para bajarla a 0 hay que
+    un mínimo que depende del liderazgo del general: **60** con liderazgo 30 o menos
+    hasta **45** con 100 (cuenta la mejor guarida). El liderazgo también decide qué tan
+    rápido. Para bajarla a 0 hay que
     pelear.
   - Un pueblo de un reino humano se esclaviza bajando la lealtad de su gente a 0
     peleando.
@@ -142,10 +147,13 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
   un Ordo entra en él (uno por pueblo). El botón de espionaje (el ojo) del pueblo abre su
   vista, donde la fila **Role** con el botón **>** cambia entre tres acciones:
   - **Subjugate:** la lealtad no baja del liderazgo del Ordo (tope 50).
-  - **Kidnap:** llega un aldeano nuevo de una raza del pueblo, en promedio cada 4 meses
-    con liderazgo 30 y cada 2 con 100 (nunca más de 6 meses), con noticia.
+  - **Kidnap:** llegan **2 aldeanos** nuevos de las razas del pueblo, en promedio cada 8
+    meses con liderazgo 30 y cada 4 con 100 (nunca más de 12 meses), con la noticia "Your
+    Ordo … has kidnapped 2 villagers into your village of …".
   - **Taskmaster:** cada aldeano da de +$0.5 a +$2 más al mes y de +5 a +20 de comida más
     al año, según el liderazgo.
+  - Adentro, el Ordo **gana liderazgo y combate** como un general en su guarida (cada 5
+    aldeanos cuentan como un soldado, hasta 8) y recupera vida.
   - **Leave village** lo saca. Si el pueblo cambia de dueño, el Ordo sale.
   - Con un Ordo seleccionado, sobre el pueblo se ve la flecha de entrar.
   - El nombre del pueblo en el mapa y en el reporte de pueblos muestra el rol, por

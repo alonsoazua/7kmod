@@ -277,7 +277,7 @@ public:
 	void  spy_accident(int firmRecno, int deathCount);
 	void  villager_joined(int unitRecno, int townNameId);
 	void  town_raided(int townRecno, int townNameId, int loot, int killCount, int defenderCount);		// 7kmod-fryhtan
-	void  ordo_kidnap(int townRecno, int ordoNameId, int raceId);		// 7kmod-fryhtan
+	void  ordo_kidnap(int townRecno, int ordoNameId, int villagerCount);		// 7kmod-fryhtan
 	void  intel_report(int targetNationRecno);
 	void  counter_spy_caught(int townNameId, int spyNationRecno);
 	void  spy_confrontation(int townNameId, int otherNationRecno, int playerWon);

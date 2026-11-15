@@ -1554,10 +1554,20 @@ void Town::update_target_resistance()
 
 		if( mod_fryhtan.is_lair(firmPtr) )
 		{
+			//--- the leadership of its general decides how low: 60 to 45; the best lair counts ---//
+
+			int minResistance = ModFryhtan::enslave_min_resistance(
+										 unit_array[firmPtr->overseer_recno]->skill.get_skill(SKILL_LEADING) );
+
 			for( j=0 ; j<MAX_RACE ; j++ )
 			{
 				if( race_pop_array[j] > 0 )
-					race_target_resistance_array[j][firmPtr->nation_recno-1] = ENSLAVE_MIN_RESISTANCE;
+				{
+					char& target = race_target_resistance_array[j][firmPtr->nation_recno-1];
+
+					if( target < 0 || minResistance < target )
+						target = (char) minResistance;
+				}
 			}
 
 			continue;

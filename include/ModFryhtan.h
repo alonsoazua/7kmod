@@ -52,6 +52,8 @@ enum { LAIR_TRAIN_FOOD = 20,						// food used for training a Fryhtan in a lair
 		 LAIR_SMALL_TRAIN_COST = 150,			// gold for training a small Fryhtan, soldier or Ordo
 		 LAIR_LARGE_TRAIN_COST = 200,			// gold for training a large one
 		 LAIR_TRAIN_COMBAT = 20,					// combat level of a trained Fryhtan
+		 LAIR_TRAIN_LEADERSHIP = 20,				// leadership of a trained Fryhtan (as a human soldier)
+		 LAIR_SHOW_TRAIN_ORDO = 0,				// 1: the lair has the Train Ordo button (hidden: the soldiers are promoted)
 		 LAIR_MAX_TRAIN_QUEUE = 8 };
 
 enum { LAIR_ORDO_FOOD = 40,						// food used for training an Ordo (general) in a lair
@@ -93,7 +95,8 @@ enum { RAID_INTERVAL_DAYS = 60,				// a town can be raided once in this time
 		 RAID_MIN_RESISTANCE = 30,				// MIN_INDEPENDENT_DEFEND_LOYALTY: no defenders come out below this, the town can't be raided
 		 RAID_LEADER_COMBAT_BONUS = 20,			// the leader of the defenders is stronger
 		 RAID_KILL_VILLAGERS = 0 };				// 1: a raid kills villagers by the size of the town (off for now)
-enum { ENSLAVE_MIN_RESISTANCE = 45,			// the lairs lower the resistance of an independent town down to this
+enum { ENSLAVE_MIN_RESISTANCE = 45,			// the lairs lower the resistance of an independent town down to this with a general of leadership 100...
+		 ENSLAVE_MIN_RESISTANCE_LOW = 60,		// ...and down to this with leadership 30 or less (ModFryhtan::enslave_min_resistance())
 		 ENSLAVED_TOWN_LOYALTY  = 50,			// fixed loyalty of the people of an enslaved town with an Ordo or the king in a linked lair
 		 ENSLAVED_TOWN_NO_COMMANDER_LOYALTY = 0,	// its target loyalty when no Ordo or king commands a linked lair
 		 TRIBUTE_PER_PERSON		= 3 };			// monthly tribute of an enslaved town for each person
@@ -157,8 +160,11 @@ enum { ORDO_ACTION_SUBJUGATE = 1,			// the loyalty of the town doesn't drop belo
 enum { ORDO_TASK_MIN_LEADERSHIP = 30,		// the leadership range of the effects of the actions...
 		 ORDO_TASK_MAX_LEADERSHIP = 100,		// ...(below and above it, as at the ends)
 		 SUBJUGATE_MAX_LOYALTY = 50,			// the highest loyalty Subjugate keeps (an upgrade could raise it)
-		 KIDNAP_DAYS_LOW = 120,					// the average days between kidnaps with the lowest leadership...
-		 KIDNAP_DAYS_HIGH = 60,					// ...and with the highest one; each one comes between 1/2 and 3/2 of it
+		 KIDNAP_DAYS_LOW = 240,					// the average days between kidnaps with the lowest leadership...
+		 KIDNAP_DAYS_HIGH = 120,					// ...and with the highest one; each one comes between 1/2 and 3/2 of it
+		 KIDNAP_VILLAGERS = 2,					// villagers brought by each kidnap
+		 ORDO_TOWN_VILLAGERS_PER_SOLDIER = 5,	// inside a town, these villagers count as one soldier for the leadership of the Ordo...
+		 ORDO_LEADERSHIP_PERCENT = 150,		// ...whose leadership rises faster than a human general's (also in a lair)
 		 TASKMASTER_GOLD_LOW = 50,				// extra tribute a month for each villager, in 1/100 $, with the lowest leadership...
 		 TASKMASTER_GOLD_HIGH = 200,			// ...and with the highest one
 		 TASKMASTER_FOOD_LOW = 5,				// extra food a year for each villager, with the lowest leadership...
@@ -174,6 +180,9 @@ struct TownOrdo
 	uint8_t	leadership;
 	int16_t	hit_points;
 	int32_t	next_kidnap_date;
+	uint8_t	skill_potential;
+	uint8_t	leadership_minor;	// the fractions of the leadership and the combat level (Skill)
+	uint8_t	combat_minor;
 };
 
 //------- Define class ModFryhtan -------//
@@ -304,6 +313,10 @@ public:
 	static int	taskmaster_gold(int leadership);		// extra tribute a month for each villager, in 1/100 $
 	static int	taskmaster_food(int leadership);		// extra food a year for each villager
 	int	taskmaster_town_gold(Town* townPtr);			// the extra tribute of the town this month, $
+	void	train_town_ordo(Town* townPtr, TownOrdo* ordoPtr);		// its leadership and combat rise, it recovers hit points
+	static int	enslave_min_resistance(int leadership);	// how low the lairs lower the resistance of an independent town
+	void	promote_ordo(Unit* unitPtr);			// a Fryhtan soldier of a Fryhtan kingdom becomes an Ordo
+	void	demote_ordo(Unit* unitPtr);			// an Ordo becomes a soldier
 	static const char*	ordo_action_name(int action);		// "Subjugate", "Kidnap" or "Taskmaster"
 	const char*	town_role_name(Town* townPtr);		// the action of the Ordo in a town of the player, NULL if none
 
