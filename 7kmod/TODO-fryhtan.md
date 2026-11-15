@@ -1118,6 +1118,12 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         `mod_fryhtan.can_ordo_enter_town(unidad, pueblo)`.
       - Solo con un Ordo seleccionado (igual que el clic derecho, que solo lo manda si
         está solo).
+- [ ] **Rol del Ordo junto al nombre del pueblo.** En la vista general del mapa, el
+      nombre de un pueblo esclavizado con un Ordo adentro muestra su rol entre
+      paréntesis, por ejemplo **Rouen (Subjugate)**, **Rouen (Kidnap)** o **Rouen
+      (Taskmaster)**.
+      - Solo en los pueblos del jugador (los demás no ven el rol).
+      - ❓ ¿También en el reporte de pueblos (Villages, `OR_TOWN.cpp`)?
 
 ## 8. Economía oscura (en diseño)
 
