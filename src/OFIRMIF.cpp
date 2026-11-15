@@ -763,12 +763,15 @@ void Firm::disp_worker_info(int dispY1, int refreshFlag)
 
 		String str;
 
-		if( workerPtr->race_id )
+		int showSkill = workerPtr->race_id ||
+							 (workerPtr->skill_id == SKILL_LEADING && unit_res[workerPtr->unit_id]->unit_class == UNIT_CLASS_MONSTER);		// 7kmod-fryhtan: the leadership of a Fryhtan soldier
+
+		if( showSkill )
 			str = misc.format(workerPtr->skill_level, 1);
 		else
 			str = _("N/A");
 
-		font_san.field( x, y, _(Skill::skill_str_array[workerPtr->skill_id-1]),
+		font_san.field( x, y, workerPtr->skill_id > 0 ? _(Skill::skill_str_array[workerPtr->skill_id-1]) : _("Leadership"),
 			x+100, str, INFO_X2-2, refreshFlag);
 
 		y+=16;

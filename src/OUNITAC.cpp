@@ -584,7 +584,8 @@ void Unit::assign(int assignXLoc, int assignYLoc, short curAssignUnitNum)
 	}
 	else if(locPtr->is_town())	// there is town
 	{
-		if(unit_res[unit_id]->unit_class != UNIT_CLASS_HUMAN)
+		if(unit_res[unit_id]->unit_class != UNIT_CLASS_HUMAN &&
+			!mod_fryhtan.can_ordo_enter_town(this, locPtr->town_recno()))		// 7kmod-fryhtan: an Ordo into an enslaved town
 			return;
 
 		//-------------------------------------------------------//

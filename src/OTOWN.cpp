@@ -80,6 +80,8 @@ void Town::init(int nationRecno, int raceId, int xLoc, int yLoc)
 	nation_recno = nationRecno;
 	race_id		 = raceId;
 
+	mod_fryhtan.reset_town_dates(town_recno);		// 7kmod-fryhtan: no grace period or raid left from a deleted town with the same recno
+
 	err_when( raceId<1 || raceId>MAX_RACE );
 
 	//---- set the town section's absolute positions on the map ----//
@@ -398,7 +400,14 @@ void Town::next_day()
 	//--- 7kmod-fryhtan: an enslaved town pays its tribute, and becomes independent without a lair ---//
 
 	if( mod_fryhtan.is_enslaved_town(this) )
+	{
+		mod_fryhtan.next_day_town_ordo(this);		// an Ordo inside the town
+
+		if( town_array.is_deleted(townRecno) )
+			return;
+
 		mod_fryhtan.next_day_town(this);
+	}
 
 	//------ update target loyalty/resistance -------//
 
@@ -739,6 +748,8 @@ void Town::set_nation(int newNationRecno)
 	if( nation_recno == newNationRecno )
 		return;
 
+	mod_fryhtan.ordo_leave_town(town_recno, 1);		// 7kmod-fryhtan: an Ordo inside the town comes out (or is lost)
+
 	//--------- update town network (pre-step) ---------//
 	town_network_array.town_pre_changing_nation(town_recno);
 
@@ -821,6 +832,13 @@ void Town::set_nation(int newNationRecno)
 				race_loyalty_array[i] = (float) 30;
 		}
 	}
+
+	//--- 7kmod-fryhtan: a town just enslaved can't rebel for a month (rebellions are at least REBEL_INTERVAL_MONTH apart) ---//
+
+	if( mod_fryhtan.is_fryhtan(nation_recno) )
+		last_rebel_date = info.game_date - (3-1)*30;
+
+	mod_fryhtan.reset_town_dates(town_recno);		// 7kmod-fryhtan: no grace period or raid left from an older owner
 
 	//------- reset town_combat_level -------//
 
@@ -1227,6 +1245,8 @@ void Town::update_target_loyalty()
 	{
 		int targetLoyalty = mod_fryhtan.has_lair_commander(this) ? ENSLAVED_TOWN_LOYALTY : ENSLAVED_TOWN_NO_COMMANDER_LOYALTY;
 
+		targetLoyalty = MAX( targetLoyalty, mod_fryhtan.subjugate_loyalty(this) );		// an Ordo doing Subjugate inside the town
+
 		for( int i=0 ; i<MAX_RACE ; i++ )
 			race_target_loyalty_array[i] = targetLoyalty;
 
@@ -1534,10 +1554,20 @@ void Town::update_target_resistance()
 
 		if( mod_fryhtan.is_lair(firmPtr) )
 		{
+			//--- the leadership of its general decides how low: 60 to 45; the best lair counts ---//
+
+			int minResistance = ModFryhtan::enslave_min_resistance(
+										 unit_array[firmPtr->overseer_recno]->skill.get_skill(SKILL_LEADING) );
+
 			for( j=0 ; j<MAX_RACE ; j++ )
 			{
 				if( race_pop_array[j] > 0 )
-					race_target_resistance_array[j][firmPtr->nation_recno-1] = ENSLAVE_MIN_RESISTANCE;
+				{
+					char& target = race_target_resistance_array[j][firmPtr->nation_recno-1];
+
+					if( target < 0 || minResistance < target )
+						target = (char) minResistance;
+				}
 			}
 
 			continue;
@@ -1938,6 +1968,9 @@ void Town::think_rebel()
 	if( town_defender_count > 0 || info.game_date < last_being_attacked_date + 10 )		// don't rebel within ten days after being attacked by a hostile unit
 		return;
 
+	if( mod_fryhtan.in_lair_grace(this) )		// 7kmod-fryhtan: an enslaved town without lairs doesn't rebel, it waits to become independent
+		return;
+
 	//--- rebel if 2/3 of the population becomes discontented ---//
 
 	int i, discontentedCount=0, rebelLeaderRaceId=0, largestRebelRace=0, trainRaceId=0;
@@ -2219,6 +2252,14 @@ void Town::assign_unit(int unitRecno)
 	//-----------------------------------------//
 
 	Unit* unitPtr = unit_array[unitRecno];
+
+	//--- 7kmod-fryhtan: an Ordo goes into an enslaved town of its kingdom ---//
+
+	if( !unitPtr->race_id )
+	{
+		mod_fryhtan.ordo_enter_town(this, unitPtr);		// it stops if it can't
+		return;
+	}
 
 	if( population >= MAX_TOWN_POPULATION || unitPtr->rank_id == RANK_KING )
 	{
@@ -2853,6 +2894,8 @@ void Town::being_attacked(int attackerUnitRecno, float attackDamage)
 		int townRecno = town_recno;
 
 		kill_town_people(raceId, attackerNationRecno);		// kill a town people
+
+		mod_fryhtan.reward_town_villager(attackerNationRecno);		// 7kmod-fryhtan: looting a town attacked by a Fryhtan kingdom
 
 		if( town_array.is_deleted(townRecno) )		// the town may have been deleted when all pop are killed
 			return;

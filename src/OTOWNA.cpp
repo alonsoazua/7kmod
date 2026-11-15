@@ -34,6 +34,7 @@
 #include <OGAME.h>
 #include <ConfigAdv.h>
 #include <OPOWER.h>
+#include <ModFryhtan.h>
 
 #ifdef DEBUG
 #include <OFONT.h>
@@ -145,6 +146,8 @@ int TownArray::add_town(int nationRecno, int raceId, int xLoc, int yLoc)
 void TownArray::del_town(int townRecno)
 {
 	Town* townPtr = operator[](townRecno);
+
+	mod_fryhtan.ordo_leave_town(townRecno, 1);		// 7kmod-fryhtan: an Ordo inside the town comes out (or is lost)
 
 	townPtr->deinit();
 	delete townPtr;

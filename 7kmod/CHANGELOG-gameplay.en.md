@@ -25,11 +25,17 @@ the game plays. This branch includes everything in the `7kmod` branch, documente
 ### Added
 - **Play as a Fryhtan kingdom** (brought from the experimental `7kmod-fryhtan`
   branch; single player games only). In New Game, the **Fryhtans** tab lets you pick
-  one of the 13 species. The kingdom starts with its All High and a lair with 4
-  soldiers, trains soldiers and Ordos in the lair with food, enslaves villages to
-  collect tribute, captures wild lairs, has no trade or alliance diplomacy, and wild
-  Fryhtans don't attack it. The details are in `CHANGELOG-fryhtan.en.md` and in
-  `TODO-fryhtan.md` (Spanish only).
+  one of the 13 species. The kingdom starts with its All High, a lair and an enslaved
+  village of 20; it trains soldiers and Ordos in the lair with gold and food (Promote
+  and Demote work too), enslaves villages to collect tribute, captures wild lairs, has
+  no trade or alliance diplomacy, and wild Fryhtans don't attack it. The details are in
+  `CHANGELOG-fryhtan.en.md` and in `TODO-fryhtan.md` (Spanish only).
+  - Also brought: **Raid** on independent villages, gold spoils by combat level for
+    killing humans, a 3-month grace when an enslaved village loses its lair,
+    regeneration of its buildings, the **Ordo inside an enslaved village** (Subjugate,
+    Kidnap and Taskmaster), the minimum resistance by leadership, the prices by species
+    and the fixes (human units joining the Fryhtan kingdom, garbage text in the news of
+    an Ordo's death).
 - In New Game, the species names, the Humans/Fryhtans tabs and the "Seats of Power
   Unlocked?" label use smooth anti-aliased text (TeX Gyre Pagella, a Palatino clone).
 

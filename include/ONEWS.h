@@ -100,6 +100,8 @@ enum { NEWS_DIPLOMACY=1,
 		 NEWS_INTEL_REPORT,			// 7kmod-gameplay: a spy of the player made an intelligence report
 		 NEWS_COUNTER_SPY_CAUGHT,	// 7kmod-gameplay: a counter-spy of the player caught a spy in an independent town
 		 NEWS_SPY_CONFRONTATION,	// 7kmod-gameplay: a confrontation between counter-spies in an independent town
+		 NEWS_TOWN_RAIDED,			// 7kmod-fryhtan: the player's Fryhtan kingdom raided an independent town
+		 NEWS_ORDO_KIDNAP,			// 7kmod-fryhtan: an Ordo of the player kidnapped a villager into an enslaved town
 	  };
 
 //------- Define struct News ---------//
@@ -196,6 +198,8 @@ public:
 	void  firm_accident();			// 7kmod-gameplay
 	void  spy_accident();
 	void  villager_joined();
+	void  town_raided();			// 7kmod-fryhtan
+	void  ordo_kidnap();			// 7kmod-fryhtan
 	void  intel_report();
 	void  counter_spy_caught();
 	void  spy_confrontation();
@@ -272,6 +276,8 @@ public:
 	void  firm_accident(int firmRecno, int deathCount);		// 7kmod-gameplay
 	void  spy_accident(int firmRecno, int deathCount);
 	void  villager_joined(int unitRecno, int townNameId);
+	void  town_raided(int townRecno, int townNameId, int loot, int killCount, int defenderCount);		// 7kmod-fryhtan
+	void  ordo_kidnap(int townRecno, int ordoNameId, int villagerCount);		// 7kmod-fryhtan
 	void  intel_report(int targetNationRecno);
 	void  counter_spy_caught(int townNameId, int spyNationRecno);
 	void  spy_confrontation(int townNameId, int otherNationRecno, int playerWon);

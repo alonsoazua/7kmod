@@ -46,6 +46,35 @@
 
 typedef void (News::*NewsFP)();
 
+//------ 7kmod-fryhtan: the name of a unit in a news message -------//
+//
+// <int> raceId     - the race id. of the unit; for a Fryhtan (no race), minus
+//                    its unit id. (0 in old saved games)
+// <int> nameId     - the name id. of the unit
+// [int] singleName - 1 for the first name only (default: 0)
+//
+// A Fryhtan has no race, and race_res[0] read garbage: an Ordo uses its Ordo
+// name, any other Fryhtan the name of its species.
+//
+static const char* news_unit_name(int raceId, int nameId, int singleName=0)
+{
+	if( raceId > 0 && raceId <= MAX_RACE )
+	{
+		return singleName ? race_res[raceId]->get_single_name( static_cast<uint16_t>(nameId) )
+								: race_res[raceId]->get_name( static_cast<uint16_t>(nameId) );
+	}
+
+	const char* ordoName = ModFryhtan::ordo_name_by_id( static_cast<uint16_t>(nameId) );		// the Ordo name ids are above 32767 and were stored in a short
+
+	if( ordoName )
+		return ordoName;
+
+	if( raceId < 0 && -raceId <= unit_res.unit_info_count )
+		return _(unit_res[-raceId]->name);
+
+	return _("Fryhtan");
+}
+
 //-------- Define struct NewsInfo -------//
 
 struct NewsInfo
@@ -103,6 +132,8 @@ static NewsInfo news_info_array[] =
 	{ &News::intel_report, 0 },
 	{ &News::counter_spy_caught, 0 },
 	{ &News::spy_confrontation, 0 },
+	{ &News::town_raided, 0 },				// 7kmod-fryhtan
+	{ &News::ordo_kidnap, 0 },				// 7kmod-fryhtan
 };
 
 //------- Define static variables --------//
@@ -179,6 +210,15 @@ void News::town_rebel()
 	// <nation name> is/are rebelling.
 	//
 	//----------------------------------------------//
+
+	//--- 7kmod-fryhtan: 0 rebels - an enslaved town without lairs has become independent ---//
+
+	if( short_para2 == 0 )
+	{
+		// TRANSLATORS: Your village of <Town> has declared independence.
+		snprintf(str, MAX_STR_LEN+1, _("Your village of %s has declared independence."), town_res.get_name(short_para1));
+		return;
+	}
 
 	err_when( short_para2 < 1 );
 
@@ -1091,7 +1131,7 @@ void News::unit_betray()
 	if( nation_name_id1 == 0 )		// independent unit joining your force
 	{
 		// TRANSLATORS: Independent unit <Name> has joined your force.
-		snprintf(str, MAX_STR_LEN+1, _("Independent unit %s has joined your force."), race_res[short_para1]->get_name(short_para2));
+		snprintf(str, MAX_STR_LEN+1, _("Independent unit %s has joined your force."), news_unit_name(short_para1, short_para2));
 
 		return;
 	}
@@ -1103,12 +1143,12 @@ void News::unit_betray()
 		if( short_para3==RANK_GENERAL )
 		{
 			// TRANSLATORS: General <Name> has renounced you and become independent.
-			snprintf(str, MAX_STR_LEN+1, _("General %s has renounced you and become independent."), race_res[short_para1]->get_name(short_para2));
+			snprintf(str, MAX_STR_LEN+1, _("General %s has renounced you and become independent."), news_unit_name(short_para1, short_para2));
 		}
 		else
 		{
 			// TRANSLATORS: <Name> has renounced you and become independent.
-			snprintf(str, MAX_STR_LEN+1, _("%s has renounced you and become independent."), race_res[short_para1]->get_name(short_para2));
+			snprintf(str, MAX_STR_LEN+1, _("%s has renounced you and become independent."), news_unit_name(short_para1, short_para2));
 		}
 	}
 	else
@@ -1118,12 +1158,12 @@ void News::unit_betray()
 			if( short_para3==RANK_GENERAL )
 			{
 				// TRANSLATORS: General <Name> has betrayed you and turned towards <King>'s Kingdom<Color>.
-				snprintf(str, MAX_STR_LEN+1, _("General %s has betrayed you and turned towards %s's Kingdom%s."), race_res[short_para1]->get_name(short_para2), king_name2(), nation_color_str2());
+				snprintf(str, MAX_STR_LEN+1, _("General %s has betrayed you and turned towards %s's Kingdom%s."), news_unit_name(short_para1, short_para2), king_name2(), nation_color_str2());
 			}
 			else
 			{
 				// TRANSLATORS: <Name> has betrayed you and turned towards <King>'s Kingdom<Color>.
-				snprintf(str, MAX_STR_LEN+1, _("%s has betrayed you and turned towards %s's Kingdom%s."), race_res[short_para1]->get_name(short_para2), king_name2(), nation_color_str2());
+				snprintf(str, MAX_STR_LEN+1, _("%s has betrayed you and turned towards %s's Kingdom%s."), news_unit_name(short_para1, short_para2), king_name2(), nation_color_str2());
 			}
 		}
 		else
@@ -1131,12 +1171,12 @@ void News::unit_betray()
 			if( short_para3==RANK_GENERAL )
 			{
 				// TRANSLATORS: General <Name> of <King>'s Kingdom<Color> has defected to your forces.
-				snprintf(str, MAX_STR_LEN+1, _("General %s of %s's Kingdom%s has defected to your forces."), race_res[short_para1]->get_name(short_para2), king_name1(), nation_color_str1());
+				snprintf(str, MAX_STR_LEN+1, _("General %s of %s's Kingdom%s has defected to your forces."), news_unit_name(short_para1, short_para2), king_name1(), nation_color_str1());
 			}
 			else
 			{
 				// TRANSLATORS: <Name> of <King>'s Kingdom<Color> has defected to your forces.
-				snprintf(str, MAX_STR_LEN+1, _("%s of %s's Kingdom%s has defected to your forces."), race_res[short_para1]->get_name(short_para2), king_name1(), nation_color_str1());
+				snprintf(str, MAX_STR_LEN+1, _("%s of %s's Kingdom%s has defected to your forces."), news_unit_name(short_para1, short_para2), king_name1(), nation_color_str1());
 			}
 		}
 	}
@@ -1157,8 +1197,15 @@ void News::general_die()
 	//
 	//----------------------------------------------//
 
+	if( short_para1 <= 0 )		// 7kmod-fryhtan: an Ordo
+	{
+		// TRANSLATORS: Your Ordo, <Name>, has been slain.
+		snprintf(str, MAX_STR_LEN+1, _("Your Ordo, %s, has been slain."), news_unit_name(short_para1, short_para2, 1));
+		return;
+	}
+
 	// TRANSLATORS: Your general, <Name>, has been slain.
-	snprintf(str, MAX_STR_LEN+1, _("Your general, %s, has been slain."), race_res[short_para1]->get_single_name( static_cast<uint16_t>(short_para2) ));
+	snprintf(str, MAX_STR_LEN+1, _("Your general, %s, has been slain."), news_unit_name(short_para1, short_para2, 1));
 }
 //------- End of function News::general_die -----//
 
@@ -1179,7 +1226,7 @@ void News::general_honors()
 	//
 	//----------------------------------------------//
 
-	const char* name = race_res[short_para3]->get_single_name( static_cast<uint16_t>(short_para2) );
+	const char* name = news_unit_name(short_para3, short_para2, 1);
 
 	if( !unit_array.is_deleted(short_para1) && unit_array[short_para1]->name_id == (uint16_t) short_para2 )
 	{
@@ -1272,6 +1319,70 @@ void News::villager_joined()
 //------- End of function News::villager_joined -----//
 
 
+//------ Begin of function News::ordo_kidnap -----//
+//
+// 7kmod-fryhtan: an Ordo of the player kidnapped a villager into an enslaved
+// town.
+//
+// short_para1 - name id. of the town
+// short_para2 - name id. of the Ordo (an Ordo name id., above 32767)
+// short_para3 - the villagers kidnapped
+//
+void News::ordo_kidnap()
+{
+	if( short_para3 > 1 )
+	{
+		// TRANSLATORS: Your Ordo <Name> has kidnapped <Number> villagers into your village of <Town>.
+		snprintf(str, MAX_STR_LEN+1, _("Your Ordo %s has kidnapped %d villagers into your village of %s."),
+					news_unit_name(0, short_para2, 1), (int) short_para3, town_res.get_name(short_para1) );
+	}
+	else
+	{
+		// TRANSLATORS: Your Ordo <Name> has kidnapped a villager into your village of <Town>.
+		snprintf(str, MAX_STR_LEN+1, _("Your Ordo %s has kidnapped a villager into your village of %s."),
+					news_unit_name(0, short_para2, 1), town_res.get_name(short_para1) );
+	}
+}
+//------- End of function News::ordo_kidnap -----//
+
+
+//------ Begin of function News::town_raided -----//
+//
+// 7kmod-fryhtan: the player's Fryhtan kingdom raided an independent town.
+//
+// short_para1 = the town name id
+// short_para2 = the gold and food stolen
+// short_para3 = the villagers killed
+// short_para4 = the defenders attacking the lair (0: none, the resistance dropped)
+//
+void News::town_raided()
+{
+	char killStr[60];
+
+	if( short_para3 == 0 )
+		killStr[0] = '\0';		// the raids don't kill villagers for now
+	else
+		// TRANSLATORS: , <Number> villager(s) killed (in a raid)
+		snprintf(killStr, sizeof(killStr), ngettext(", %d villager killed", ", %d villagers killed", short_para3), short_para3);
+
+	if( short_para4 > 0 )
+	{
+		// TRANSLATORS: Raided <Town>: $<Gold> and <Food> food<, N villagers killed>. <Number> defenders are attacking your lair.
+		snprintf(str, MAX_STR_LEN+1,
+					ngettext("Raided %s: $%d and %d food%s. %d defender is attacking your lair.",
+								"Raided %s: $%d and %d food%s. %d defenders are attacking your lair.", short_para4),
+					town_res.get_name(short_para1), short_para2, short_para2, killStr, short_para4);
+	}
+	else
+	{
+		// TRANSLATORS: Raided <Town>: $<Gold> and <Food> food<, N villagers killed>. Its resistance has dropped.
+		snprintf(str, MAX_STR_LEN+1, _("Raided %s: $%d and %d food%s. Its resistance has dropped."),
+					town_res.get_name(short_para1), short_para2, short_para2, killStr);
+	}
+}
+//------- End of function News::town_raided -----//
+
+
 //------ Begin of function News::intel_report -----//
 //
 // 7kmod-gameplay: a spy of the player made an intelligence report.
@@ -1338,15 +1449,25 @@ void News::unit_assassinated()
 	//
 	//----------------------------------------------//
 
-	if( short_para3 == RANK_KING )
+	if( short_para1 <= 0 )		// 7kmod-fryhtan: the All High or an Ordo
+	{
+		if( short_para3 == RANK_KING )
+			snprintf(str, MAX_STR_LEN+1, "%s", _("Your All High has been assassinated by an enemy spy."));
+		else
+		{
+			// TRANSLATORS: Your Ordo, <Name>, has been assassinated by an enemy spy.
+			snprintf(str, MAX_STR_LEN+1, _("Your Ordo, %s, has been assassinated by an enemy spy."), news_unit_name(short_para1, short_para2, 1));
+		}
+	}
+	else if( short_para3 == RANK_KING )
 	{
 		// TRANSLATORS: Your King, <Name>, has been assassinated by an enemy spy.
-		snprintf(str, MAX_STR_LEN+1, _("Your King, %s, has been assassinated by an enemy spy."), race_res[short_para1]->get_single_name( static_cast<uint16_t>(short_para2) ));
+		snprintf(str, MAX_STR_LEN+1, _("Your King, %s, has been assassinated by an enemy spy."), news_unit_name(short_para1, short_para2, 1));
 	}
 	else
 	{
 		// TRANSLATORS: Your general, <Name>, has been assassinated by an enemy spy.
-		snprintf(str, MAX_STR_LEN+1, _("Your general, %s, has been assassinated by an enemy spy."), race_res[short_para1]->get_single_name( static_cast<uint16_t>(short_para2) ));
+		snprintf(str, MAX_STR_LEN+1, _("Your general, %s, has been assassinated by an enemy spy."), news_unit_name(short_para1, short_para2, 1));
 	}
 
 	if( short_para4 )

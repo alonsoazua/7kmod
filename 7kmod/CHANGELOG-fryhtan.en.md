@@ -22,12 +22,12 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
     and **Fryhtans** (the 13 species in the same place, 10 per page, with ▲ ▼
     arrows to change the page); the chosen one is underlined. Below the
     name it shows how the kingdom will be called, for example "Fryhtan kingdom: Al
-    Rokken Horde (Large: 2 population)". The tab and the species are remembered.
+    Rokken Horde". The tab and the species are remembered.
   - The species names, the tabs and the "Seats of Power Unlocked?" label use smooth
     anti-aliased text (TeX Gyre Pagella, a Palatino clone), pre-rendered with
     `7kmod/tools/make_smooth_text.py`.
   - The kingdom starts with its king, an All High of the species with combat
-    60 and leadership 60.
+    60 and leadership 100.
   - It's called "<name> <species> Horde", also in the news.
   - **No reputation** (it stays at 0) and its Fryhtans have **no loyalty**.
   - **No human buildings:** its units have no build menu.
@@ -36,21 +36,35 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   - The Fryhtan king and generals have **Build → Lair**: a lair of their species that
     works like a fort (one general and up to 8 soldiers). It costs **$500** and **$100
     a year**.
-  - **Train** button in the lair: a Fryhtan of the lair's species for **20 food**, in
-    **20 days** (10 for a small species), with combat 20. Queue of up to 8; right click removes one and gives the
-    food back. It can't go over the population cap.
-  - **Fryhtan population:** each Fryhtan of the kingdom, king included, uses 1 (small)
-    or 2 (large). The cap is 18. It shows in the Train help and in the Kingdoms report
-    ("Fryhtan Population").
-  - **Train Ordo:** a second button trains a general (Ordo) of the lair's species: **40
-    food**, **40 days** (20 for a small species), leadership and combat **30**. It comes out next to the lair
-    with a **name of its own** (for example "Kzorr"). Soldiers can no longer be promoted
-    (there is no Promote or Demote).
+  - **Train** button in the lair: a Fryhtan of the lair's species for **$200** (**$150**
+    for a small species) and **20 food**, in **15 days** (10 for a small species), with
+    combat 20. Queue of up to 8; right click removes one and gives the gold and food back.
+  - **Fryhtan population** (being tested, **no limit**): each Fryhtan of the kingdom, king
+    included, uses 2 (small) or 3 (large), and the Kingdoms report shows how many there
+    are ("Fryhtan Population"). The cap (base 20 plus the enslaved people) is turned off
+    in the code (`FRYHTAN_POPULATION_LIMIT`); instead, training costs gold.
+  - **Promote / Demote:** a Fryhtan soldier is promoted to **Ordo** (general) with
+    Promote and gets a **name of its own** (for example "Kzorr"); it keeps its combat and
+    leadership. Demote turns it back into a soldier. Soldiers start with **leadership 20**
+    (shown in their panel) and learn it in the lair as humans do (only those with
+    potential).
+  - An Ordo's leadership rises **×1.5** as fast as a human general's.
+  - **Train Ordo** in the lair: an Ordo for the same gold as a soldier of its species and
+    40 food, in 15 or 10 days, with leadership and combat 30.
+  - **Price by species** (soldier and Ordo): **$100** Ick, Broosken and Doink; **$150**
+    Deezboanz, Rattus and Pfith (Pfith counts as small: population 2 and 10 days);
+    **$200** the large ones.
   - Fryhtans train their combat in the lair with the general and gain experience when
     fighting.
   - The lair has no Reward or Recruit; its Fryhtans show loyalty "N/A".
+- **Lairs by species:** the lair an Ordo builds is of that Ordo's species (for example,
+  the one of a captured wild lair), and Train trains the lair's species.
+- There are **no wild lairs of the player's species** on the map.
+- When a Fryhtan finishes training, the **"ready"** sound of the human units plays.
 - **Start:** the kingdom starts with the king as general of an already built lair and 4
-  soldiers of its species.
+  soldiers of its species, and with an **enslaved town of 20 people** of a random race,
+  linked to the lair (where a human kingdom has its starting town). With the king in
+  the lair, it pays tribute from the first month; the population cap starts at 40.
 - **The king** is called "<name> The All High" in his panel and in the lair's (for
   example "Al The All High"), over "All High <species>".
 - The king and the Ordos have the **king or general icon** over the unit.
@@ -61,15 +75,19 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   the lair says "Outside of the lair".
 - **Enslaved towns** (phase 4):
   - A lair with a general linked to an independent town lowers its resistance down to
-    **45**; the general's leadership decides how fast. Taking it to 0 requires fighting.
+    a minimum that depends on the general's leadership: **60** with leadership 30 or less
+    down to **45** with 100 (the best lair counts). The leadership also decides how fast. Taking it to 0 requires fighting.
   - A town of a human kingdom is enslaved by fighting the loyalty of its people down to
     0.
   - In both cases a lair linked to the town is needed.
-  - The enslaved town doesn't recruit, train or pay taxes: it pays a **tribute of $5 per
+  - The enslaved town doesn't recruit, train or pay taxes: it pays a **tribute of $3 per
     person a month** ("Tribute from Enslaved Towns"), which goes up with the leadership
     of the best general of the linked lairs (double with leadership 100). It produces food, grows, doesn't
     rebel and its people don't leave.
   - Each enslaved person raises the Fryhtan **population cap** by 1.
+  - **Grace period:** during the first month after it's enslaved, the town can't rebel,
+    so that the general has time to go back to the lair (the loyalty starts at 30 and
+    drops without a general).
   - If it loses the link with all the lairs, it becomes independent.
   - Destroying or selling a lair no longer shows a human Fort.
 - **Closing** (phase 7):
@@ -93,6 +111,62 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
 - **Enslaved towns without a general:** if no linked lair has an Ordo or the king
   inside, the town pays no tribute and its loyalty drops. If it reaches the rebellion
   point, the rebels go out to attack the nearest lair.
+- **Looting towns:** when attacking a town, each villager that dies gives $2 and 5 food,
+  like killing a villager.
+- **Raiding independent towns:** on a town linked to a lair with a general, the **Raid**
+  button (Collect Tax icon, with a waiting bar; dark and with the reason in its help when
+  it can't be done) opens a view with the main race, the population, the resistance,
+  what the raid gives and the defenders, with the **Raid village** and **Cancel**
+  buttons. Once every 2 months per town:
+  - It steals **$2 and 2 food per person** (up to 60, that is 30 people), times
+    (100 + leadership) / 100 of the general of the lair that raids: double with
+    leadership 100. It lowers the resistance by 5.
+  - Up to 1 defender per 10 people plus 1 comes out (+1 with a resistance over 50, +2
+    over 80) and attacks the lair of the best general. The first one is the leader:
+    combat +20, and it carries twice the resistance. Each defender killed lowers the
+    resistance of the town; the ones that go back return it.
+  - With a resistance of 30 or less it can't be done: "This village is weakened and
+    ready to be attacked directly."
+  - For now it doesn't kill villagers.
+  - A news message with the loot and the defenders.
+- The **starting All High** has leadership **100** (60 before).
+- **The kingdom's buildings repair themselves**, as if they had a construction worker
+  of skill 20: 1 hit point every 5 days, except while under attack or with negative
+  gold.
+- **No human unit joins the Fryhtan kingdom:**
+  - Human spies can't cloak as a Fryhtan kingdom (neither in their menu nor the AI's,
+    which doesn't send them to enslaved towns either). Before, an AI spy came out of a
+    town cloaked as your kingdom with the message that a unit had joined.
+  - An enemy spy who was in a town you enslaved leaves it as an independent unit, and if
+    he stops being a spy he stays as a villager.
+  - Betraying units, leaderless rebels and propaganda villagers don't go over to a
+    Fryhtan kingdom, and the villagers of an enslaved town don't hand it a human
+    building (capture by workers).
+- **Ordo inside an enslaved town:** right clicking an enslaved town sends an Ordo into
+  it (one per town). The town's spy button (the eye) opens its view, where the **Role**
+  row with the **>** button switches between three actions:
+  - **Subjugate:** the loyalty doesn't drop below the Ordo's leadership (50 at most).
+  - **Kidnap:** **2 new villagers** of the town's races arrive, on average every 8
+    months with leadership 30 and every 4 with 100 (never over 12 months), with the news
+    "Your Ordo … has kidnapped 2 villagers into your village of …".
+  - **Taskmaster:** each villager gives +$0.5 to +$2 more a month and +5 to +20 more food
+    a year, by the leadership.
+  - Inside, the Ordo **gains leadership and combat** as a general in its lair (every 5
+    villagers count as one soldier, up to 8) and recovers hit points.
+  - **Leave village** takes it out. If the town changes owner, the Ordo comes out.
+  - With an Ordo selected, the enter arrow shows over the town.
+  - The town's name on the map and in the Villages report shows the role, for example
+    "Rouen (Subjugate)".
+- **Fixed:** when an Ordo died, the news showed garbage text instead of the name. Now
+  it says "Your Ordo, <name>, has been slain."; the name in the assassination, betrayal
+  and honors news was fixed too.
+- **Enslaved towns without a lair:** an enslaved town left without any linked lair
+  stays in the kingdom for **3 months** (no tribute, no rebellion); if it's linked to a
+  lair again in that time, it stays enslaved. Then it becomes independent with the news
+  "Your village of … has declared independence."
+- **Fixed:** a town that became independent surrendered at once to another kingdom,
+  because it kept an old zero resistance toward it. Now it gets the resistance of a new
+  independent town (60 to 100) toward every kingdom, and 100 toward the Fryhtan kingdom.
 - **Capturing wild lairs** (phase 5):
   - A wild lair of any species within 8 tiles of a lair of the kingdom shows an
     **offer**: an Ordo with the combat of the lair's best Ordo and leadership 30–60, and
@@ -106,9 +180,12 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   - A **link line** joins your lairs with the linked wild lairs.
   - Each captured lair trains its own species.
 - **Economy** (phase 3):
-  - **Spoils:** killing a human unit gives **$2 and 5 food** (soldier, villager or town
-    defender), **$10 and 20** (general) or **$100 and 100** (king). In the Economy
-    report it shows as "Spoils of War and Treasure".
+  - **Spoils:** killing a human unit gives gold by its **combat level**: a soldier $2
+    with combat 10 up to **$45** with combat 100 (in a straight line); a town defender
+    half; a general ×3 ($135 with combat 100); a king ×22 (**$990** with combat 100), and
+    the next kings of the same kingdom half. A villager gives $2. The food is fixed: 5
+    (soldier, villager or defender), 20 (general) or 100 (king). In the Economy report it
+    shows as "Spoils of War and Treasure".
   - **Human buildings** that pass to the Fryhtan kingdom (for example, if a kingdom
     surrenders to it) are **destroyed**, with whoever is inside.
 

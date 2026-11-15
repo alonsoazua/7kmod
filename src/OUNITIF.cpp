@@ -596,7 +596,7 @@ void Unit::disp_button(int dispY1)
 		*/
 	}
 
-	//--- 7kmod-fryhtan: the Fryhtans of the player's Fryhtan kingdom: build a lair (the Ordos are trained in the lairs, no promote or demote) ---//
+	//--- 7kmod-fryhtan: the Fryhtans of the player's Fryhtan kingdom: build a lair, promote and demote ---//
 
 	else if( unit_res[unit_id]->unit_class == UNIT_CLASS_MONSTER &&
 				nation_recno && nation_recno == nation_array.player_recno && mod_fryhtan.is_fryhtan(nation_recno) )
@@ -605,6 +605,22 @@ void Unit::disp_button(int dispY1)
 		{
 			button_build.paint( x, dispY1, 'A', "BUILD" );
 			x += BUTTON_ACTION_WIDTH;
+		}
+
+		//--- promote a soldier to Ordo, demote an Ordo to soldier (not the All High) ---//
+
+		if( unit_array.selected_count==1 )
+		{
+			if( rank_id==RANK_SOLDIER )
+			{
+				button_promote.paint( x, dispY1, 'A', "PROMOTE" );
+				x += BUTTON_ACTION_WIDTH;
+			}
+			else if( rank_id==RANK_GENERAL )
+			{
+				button_demote.paint( x, dispY1, 'A', "DEMOTE" );
+				x += BUTTON_ACTION_WIDTH;
+			}
 		}
 
 		if( x+BUTTON_ACTION_WIDTH-5 > INFO_X2 )
@@ -732,7 +748,11 @@ void Unit::detect_button()
 	{
 		if( button_promote.detect() )
 		{
-			if(!remote.is_enable() )
+			if( !race_id && nation_recno && mod_fryhtan.is_fryhtan(nation_recno) )		// 7kmod-fryhtan: a Fryhtan soldier becomes an Ordo
+			{
+				mod_fryhtan.promote_ordo(this);
+			}
+			else if(!remote.is_enable() )
 			{
 				set_rank(RANK_GENERAL);
 			}
@@ -751,7 +771,11 @@ void Unit::detect_button()
 	{
 		if( button_demote.detect() )
 		{
-			if( !remote.is_enable() )
+			if( !race_id && nation_recno && mod_fryhtan.is_fryhtan(nation_recno) )		// 7kmod-fryhtan: an Ordo becomes a soldier
+			{
+				mod_fryhtan.demote_ordo(this);
+			}
+			else if( !remote.is_enable() )
 			{
 				set_rank(RANK_SOLDIER);
 			}
@@ -1897,6 +1921,9 @@ void Unit::disp_spy_menu(int dispY1, int refreshFlag)
 			{
 				if( nation_array.is_deleted(i) || !nationPtr->get_relation(i)->has_contact )
 					continue;
+
+				if( !can_spy_cloak_as(i) )		// 7kmod-fryhtan
+					continue;
 			}
 		}
 		else if( canChangeOwnCloak )
@@ -1940,6 +1967,20 @@ void Unit::disp_spy_menu(int dispY1, int refreshFlag)
 //----------- End of function Unit::disp_spy_menu -----------//
 
 
+//--------- Begin of function Unit::can_spy_cloak_as ---------//
+//
+// 7kmod-fryhtan: whether the cloak of the nation is shown in the spy menu. A
+// human spy can't pass as a unit of a Fryhtan kingdom (only the current cloak
+// and the true nation are always shown).
+//
+int Unit::can_spy_cloak_as(int nationRecno)
+{
+	return nationRecno == nation_recno || nationRecno == true_nation_recno() ||
+			 !mod_fryhtan.is_fryhtan(nationRecno);
+}
+//----------- End of function Unit::can_spy_cloak_as -----------//
+
+
 //--------- Begin of function Unit::spy_menu_height ---------//
 //
 // Return the height of the spy menu.
@@ -1957,7 +1998,7 @@ int Unit::spy_menu_height()
 		if( nation_array.is_deleted(i) )
 			continue;
 
-		if( i==nation_recno || nationPtr->get_relation(i)->has_contact )
+		if( i==nation_recno || (nationPtr->get_relation(i)->has_contact && can_spy_cloak_as(i)) )		// 7kmod-fryhtan: can_spy_cloak_as()
 			cloakCount++;
 	}
 
@@ -1998,6 +2039,9 @@ void Unit::detect_spy_menu(int dispY1)
 			if( canChangeAnyCloak )
 			{
 				if( nation_array.is_deleted(i) || !nationPtr->get_relation(i)->has_contact )
+					continue;
+
+				if( !can_spy_cloak_as(i) )		// 7kmod-fryhtan
 					continue;
 			}
 			else

@@ -663,3 +663,524 @@ rey usa el nombre completo; con nombres largos se corta en el panel.
 - Multijugador.
 - Reinos Fryhtan en el editor de escenarios.
 - Greater Beings, espías y tecnologías para un reino Fryhtan.
+
+---
+
+## 7. Actividades después de la versión 1
+
+Ajustes y cosas nuevas para el reino Fryhtan, ya con la versión 1 en `7kmod-gameplay`.
+Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
+
+- [x] **Periodo de gracia de 1 mes al esclavizar un pueblo.** Al esclavizar un pueblo,
+      su gente queda con lealtad 30 (`Town::set_nation`, como cualquier pueblo que cambia
+      de dueño). Pero el general suele estar afuera peleando, así que ninguna guarida
+      enlazada tiene un Ordo o el rey adentro y la lealtad objetivo es 0: en unos 5 días
+      baja a 29 (punto de rebelión) y, como el juego revisa la rebelión cada 15 días, el
+      pueblo se puede rebelar antes de que el general regrese a la guarida. Con el
+      cambio, durante el primer mes después de esclavizarlo el pueblo no se puede
+      rebelar, para darle tiempo al general de regresar (con general, la lealtad sube
+      hacia 50).
+      - Idea para implementarlo sin datos nuevos en la partida guardada: al esclavizar,
+        poner `last_rebel_date` 2 meses en el pasado; como el juego no deja rebelarse
+        dos veces en menos de 3 meses (`REBEL_INTERVAL_MONTH`), eso da exactamente un mes.
+
+- [x] **Empezar con un pueblo esclavizado de 20 personas.** Hoy el reino Fryhtan empieza
+      solo con su guarida (el All High y 4 soldados adentro). Con el cambio, también
+      empieza con un pueblo esclavizado de 20 personas, ya enlazado a la guarida inicial
+      (cerca de ella, a distancia de enlace), como lo haría un reino humano con su pueblo
+      inicial.
+      - Con el rey en la guarida hay general al mando, así que el pueblo paga tributo
+        desde el primer mes ($5 × 20 = $100) y su lealtad va hacia 50.
+      - El tope de población sube con la gente esclavizada (base + 20).
+      - La gente del pueblo es de **una raza al azar**.
+
+- [x] **Tope de población base de 20** (hoy 18). El tope sigue siendo la base + la gente
+      de los pueblos esclavizados; con el pueblo inicial, el reino empezaría con 40.
+
+- [x] **Los Fryhtans cuestan más población:** las especies grandes pasan de 2 a **3** y
+      las pequeñas de 1 a **2**.
+      - Cambia el texto de las especies en New Game ("Large: 2 population" → 3,
+        "Small: 1 population" → 2).
+      - Ojo: el entrenamiento a la mitad de tiempo de las especies pequeñas hoy revisa que
+        cuesten 1 de población; hay que cambiarlo para que revise que la especie sea
+        pequeña (si no, ninguna especie entrenaría más rápido).
+      - El rey y los 4 soldados del inicio ocupan 15 (grandes) o 10 (pequeñas) del tope.
+
+#### Cómo quedaron
+
+- **Gracia:** `Town::set_nation` pone `last_rebel_date` 2 meses en el pasado cuando el
+  nuevo dueño es un reino Fryhtan.
+- **Pueblo inicial:** `ModFryhtan::create_start_king` crea el pueblo (raza al azar, 20
+  personas, lealtad 50) donde un reino humano tendría su pueblo inicial, y la guarida 6
+  casillas a la derecha, como el fuerte inicial humano; quedan enlazados.
+- **Población:** `FRYHTAN_BASE_POPULATION` 20, `FRYHTAN_SMALL_POPULATION` 2 y
+  `FRYHTAN_LARGE_POPULATION` 3; el entrenamiento a mitad de tiempo usa
+  `is_large_monster()`.
+- **Probado** con un Rokken: pueblo maya de 20 enlazado a la guarida, tributo de $160
+  (con el liderazgo 60 del rey) y la ayuda de Train dice "uses 3 population. Fryhtan
+  population: 15/40". La gracia no se probó en partida.
+
+- [x] **Los Ordos construyen guaridas de su especie.** Hoy toda guarida que construye el
+      reino es de la especie principal (`Firm::init` le pone la especie del reino), sin
+      importar quién la construye. Un reino puede tener Ordos de otras especies (por
+      ejemplo, el de una guarida salvaje capturada); con el cambio, la guarida que
+      construye un Ordo es de la especie de ese Ordo (y la del rey, de la especie del
+      rey). Hay que tomar la especie del constructor al empezar la construcción.
+- [x] **Train entrena la especie de la guarida.** El soldado y el Ordo que se entrenan
+      en una guarida deben ser de la especie de esa guarida (su ícono, su nombre en la
+      ayuda de Train, su costo de población y su tiempo de entrenamiento).
+      - Según el código, Train ya usa la especie guardada en la guarida, y una guarida
+        capturada guarda la especie salvaje. El caso que hoy falla es el de una guarida
+        construida por un Ordo de otra especie (sale de la especie principal, así que
+        entrena la principal); se arregla con el punto anterior. Hay que revisar también
+        las guaridas capturadas al probarlo.
+
+- [x] **Sin guaridas salvajes de la especie del jugador** (balance). Si el jugador elige,
+      por ejemplo, Rattus, en el mapa no aparecen guaridas salvajes de Rattus.
+      - Las guaridas salvajes del inicio salen de las especies "activas" de la partida
+        (`MonsterRes::generate`, que escoge de `active_monster_array`); la especie del
+        reino Fryhtan del jugador se quita de esa lista al empezar.
+      - Con eso tampoco aparecen después: las guaridas salvajes nuevas salen de otras
+        guaridas salvajes de su misma especie (`OF_MONS.cpp`).
+
+- [x] **Sonido "ready" al terminar de entrenar** un soldado o un Ordo en la guarida, como
+      cuando un pueblo humano termina de entrenar una unidad.
+      - Los Fryhtans no tienen sonido "RDY" propio en `RESOURCE/STD.SET` (solo ataque y
+        muerte), pero todas las razas humanas usan el mismo archivo `READY`, que también
+        suena cuando la fábrica de guerra termina un arma. Se usa ese mismo sonido, solo
+        para las guaridas del jugador y si la guarida está a la vista, como en el
+        original (`se_res.far_sound`).
+
+#### Cómo quedaron (guaridas por especie, guaridas salvajes y sonido)
+
+- **Guarida del constructor:** `Firm::init` toma la especie del Fryhtan que la construye
+  (`ModFryhtan::unit_monster_id`); sin constructor (guarida inicial) usa la del reino. La
+  guarida capturada sigue tomando la especie salvaje.
+- **Train:** ya usaba la especie de la guarida; con el punto anterior, una guarida
+  construida por un Ordo de otra especie entrena esa especie.
+- **Guaridas salvajes:** `MonsterRes::init_active_monster` salta la especie del reino
+  Fryhtan del jugador.
+- **Sonido:** `ModFryhtan::next_day_lair` toca el sonido "FINS" de la fábrica de guerra
+  (el archivo `READY`) cuando sale un Fryhtan de una guarida del jugador.
+- **Probado** (con cambios temporales para la prueba): con un reino Rokken, un Ordo
+  Deezboanz construyó una guarida Deezboanz, cuya ayuda de Train dice "Train a
+  Deezboanz ... in 10 days ... uses 2 population" y que entrenó un Deezboanz; en dos
+  partidas las especies salvajes activas no incluyeron a los Rokken; el sonido se
+  llamó al salir el soldado (en la nube no hay audio para oírlo).
+
+- [x] **Saqueo de pueblos.** Cuando los Fryhtans del reino atacan un pueblo (de otro
+      reino o independiente), **cada aldeano que muere da el mismo bono que matar a un
+      aldeano**: $2 de oro y 5 de comida (`KILL_GOLD_UNIT` y `KILL_FOOD_UNIT`). Hoy ese
+      bono solo se da al matar unidades (`ModFryhtan::reward_kill`); la gente que muere
+      dentro del pueblo al atacarlo no da nada.
+      - **No afecta a los edificios:** atacarlos no da oro ni comida.
+      - El bono sale de la nada, como el de matar unidades: no se le quita al reino
+        dueño.
+      - Relación con la tecnología de los **Ick** ("Saqueadores", en
+        `DISENO-fryhtan-oscuro.md`): podría duplicar este bono para esa especie.
+
+- [x] **Saquear pueblos independientes (botón Raid).** Una forma de bajar la resistencia
+      de un pueblo independiente sin asaltarlo, provocando a sus defensores para pelear
+      contra ellos en tu guarida.
+      - **Botón "Raid"** en el panel de un pueblo independiente, en el lugar de Grant
+        (que los Fryhtans no tienen). Aparece si hay una guarida enlazada con general y al
+        menos un soldado.
+      - **Espera de 1 mes por pueblo**, que empieza al presionarlo: el botón muestra una
+        **barra de progreso** (como la de Train en la guarida) y no se puede usar hasta que
+        se llena. Varias guaridas enlazadas no permiten saquear más seguido.
+      - **Ayuda del botón**, con lo que se espera: "Raid this village: steal about $20
+        and 20 food. About 3 defenders (combat ~25) will attack your lair."
+      - **Al saquear:**
+        1. **Botín:** $1 y 1 de comida por persona del pueblo, con tope de $30 y 30 de
+           comida. Los aldeanos que mata no dan además el bono de saqueo de pueblos.
+        2. **Aldeanos muertos** según el tamaño: pueblo chico (menos de 20) 25% de
+           probabilidad de 1; mediano (20 a 39) 1; grande (40 o más) 1 o 2.
+        3. **Contraataque:** salen hasta **1 defensor por cada 10 personas** (con la regla
+           normal del juego: resistencia de 30 o más y al menos 5 × los defensores afuera)
+           y atacan la guarida enlazada con el mejor general. Cada defensor se lleva su
+           parte de la resistencia (resistencia / personas de su raza, `Town::mobilize_defender`):
+           si la guarida lo mata, la resistencia baja para siempre; si sobrevive y regresa
+           al pueblo, la devuelve. Su combate es el del pueblo ± 10 (depende de la opción
+           "Independent Town Resistance" de New Game, no de la resistencia).
+        4. **Con resistencia menor de 30** (ya no salen defensores): baja la resistencia
+           de 5 a 10 directamente.
+        5. **Mensaje:** por ejemplo, "Raided Tikal: $20 and 20 food, 1 villager killed.
+           3 defenders are attacking your lair."
+      - **No cambia:** la guarida sigue bajando la resistencia sola hasta 45; atacar el
+        pueblo sigue siendo la vía rápida; al llegar a 0 queda esclavizado.
+      - **Ritmo de ejemplo:** pueblo de 30 con resistencia 80, matando a los 3 defensores
+        cada vez: unos 6 meses para llegar a 30 y 8 a 9 meses para esclavizarlo, con
+        unas 9 personas al final. Si la guarida no puede con los defensores, no baja y
+        se pierden soldados.
+      - **Técnico:** guardar en la partida el día del último saqueo de cada pueblo (sube
+        la versión de partida de Fryhtan; las partidas anteriores se siguen cargando), un
+        mensaje de red para multijugador, y la orden de atacar la guarida para los
+        defensores, como la de los rebeldes de los pueblos esclavizados
+        (`REBEL_ATTACK_FIRM`), sin quitarles la resistencia que se llevan.
+
+#### Cómo quedaron (saqueo y Raid)
+
+- **Saqueo al atacar:** `Town::being_attacked`, después de `kill_town_people`, llama a
+  `ModFryhtan::reward_town_villager` ($2 y 5 de comida). Los muertos del Raid no pasan
+  por ahí, así que no dan el bono.
+- **Raid:** `ModFryhtan::raid_town`; el botón (`Town::disp_raid_button`, con el ícono de
+  Collect Tax) y su ayuda están en `OTOWNIF.cpp`. Los defensores salen con
+  `Town::mobilize_defender` (así llevan su parte de la resistencia y, si regresan, la
+  devuelven) y reciben la orden `attack_firm` contra la guarida del mejor general. Con
+  la resistencia en 0, el pueblo se rinde y queda esclavizado.
+- **Noticia nueva** `NEWS_TOWN_RAIDED`: "Raided <pueblo>: $X and X food, N villagers
+  killed. N defenders are attacking your lair." o "... Its resistance has dropped."
+- **Fechas:** el día del último saqueo de cada pueblo se guarda al final de los datos de
+  `ModFryhtan`, como la gracia (las partidas anteriores se cargan sin ellas). Al crear
+  un pueblo o al cambiar de dueño se borran sus fechas (`reset_town_dates`).
+- La ayuda de los botones admite ahora 400 caracteres (antes 200, cortaba el texto).
+- **Multijugador:** sin mensaje de red, como el resto del reino Fryhtan (solo un
+  jugador).
+- **Probado** (con cambios temporales para la prueba): pueblo de 26 con resistencia 49
+  → $26 y 26 de comida, 1 muerto, 2 defensores que fueron a la guarida y los soldados
+  Rokken salieron a pelear; el botón quedó deshabilitado con la barra avanzando. Con
+  resistencia 8 → sin defensores, bajó a 0 y el pueblo se rindió (esclavizado, tributo
+  de $149). Atacando un pueblo con 8 soldados, cada aldeano muerto dio $2 y 5 de comida.
+- **Observado en la prueba:** el clic automático no funcionó cuando ya se veía la ayuda
+  del botón (sí funcionó al dar clic enseguida). Revisar si pasa también al jugar, y si
+  pasa con otros botones.
+
+#### Ajustes al Raid (después de probarlo)
+
+- [x] **All High del inicio con liderazgo 100** (antes 60; combate 60 igual). Un Ordo que
+      lo sucede conserva el suyo.
+- [x] **Raid cada 2 meses** (`RAID_INTERVAL_DAYS` 60).
+- [x] **Más defensores:** hasta 1 por cada 10 personas, más 1, más 1 si la resistencia
+      pasa de 50 o más 2 si pasa de 80 (`ModFryhtan::raid_max_defender`), con la regla
+      normal del juego.
+- [x] **El primero es el líder de la defensa:** combate del pueblo + 20 (con su vida), y
+      se lleva el doble de resistencia (si muere baja el doble; si regresa, devuelve el
+      doble).
+- [x] **Baja base de 5** por Raid (`RAID_RESISTANCE_DEC`), después de que salen los
+      defensores, en todas las razas.
+- [x] **Solo con resistencia mayor de 30:** en 30 o menos el botón queda oscurecido y su
+      ayuda dice "This village is weakened and ready to be attacked directly." (se quitó
+      la baja directa de 5 a 10 sin defensores).
+- [x] **Por ahora no mata aldeanos** (`RAID_KILL_VILLAGERS` 0; la regla por tamaño queda
+      en el código).
+- [x] **Botón Raid y vista de Raid** (cambiado del panel fijo): en el panel normal del
+      pueblo, el botón pequeño con el ícono de Collect Tax (`Town::disp_raid_button`). Solo
+      se puede presionar con resistencia mayor de 30, guarida con soldados y sin espera;
+      si no, se ve oscurecido y su ayuda dice por qué ("This village is weakened and ready
+      to be attacked directly.", "You can raid this village again in N days." con la
+      barra de espera, o "Your lair needs soldiers..."); si se puede, su ayuda explica qué
+      hace y que es cada 2 meses. Al presionarlo se abre la **vista de Raid**
+      (`TOWN_MENU_RAID`, `Town::disp_raid_menu`) en el lugar de la lista de razas: ícono de
+      la raza principal, "Population" y "Resistance"; "Raid <pueblo>?", lo que se obtiene,
+      cuántos defensores atacarán la guarida y su combate; y los botones **Raid village**
+      (saquea y regresa) y **Cancel**.
+- **Ejemplo** de la prueba: pueblo de 16 con resistencia 86 → 4 defensores (1 + 1 + 2),
+  resistencia a 55 al salir (el líder se lleva el doble, más la baja base de 5).
+
+- [x] **Ajuste de tributo y Raid.**
+      - **Tributo de los pueblos esclavizados:** baja de $5 a **$3 por persona** al mes
+        (`TRIBUTE_PER_PERSON`). El liderazgo del general (o el rey) de la guarida enlazada
+        lo sigue subiendo como hoy: x2 con liderazgo 100.
+      - **Raid:** sube de $1 y 1 de comida a **$2 y 2 de comida por persona**.
+      - **El liderazgo mejora el Raid:** lo que se obtiene se multiplica por
+        (100 + liderazgo) / 100, con el liderazgo del general de la guarida que hace el
+        Raid (`raid_lair`): **x2 con liderazgo 100**, igual que el tributo.
+      - Tope (`RAID_MAX_LOOT`, hoy 30): pasa a 60 antes del liderazgo, para que siga
+        contando hasta 30 personas (confirmado). Con liderazgo 100, como mucho $120 y 120 de comida.
+      - Actualizar el texto de la vista de Raid (lo que se obtiene) y la noticia.
+      - Ejemplo: pueblo de 16 y general con liderazgo 60 → 16 × 2 × 1.6 = **$51 y 51 de
+        comida** (hoy $16 y 16).
+      - **Cómo quedó:** `TRIBUTE_PER_PERSON` 3; `RAID_LOOT_PER_PERSON` 2 y `RAID_MAX_LOOT`
+        60; `ModFryhtan::raid_loot` calcula lo robado (lo usan `raid_town` y la vista de
+        Raid); la noticia ya mostraba la cantidad robada.
+
+- [x] **Gracia de 3 meses al perder la guarida de un pueblo esclavizado.** Hoy, en cuanto
+      un pueblo esclavizado se queda sin guarida enlazada (`ModFryhtan::next_day_town`),
+      se vuelve independiente ese mismo día. Con el cambio:
+      - Al quedarse sin guarida enlazada, sigue siendo tuyo **3 meses**. Si en ese tiempo
+        vuelve a tener una guarida enlazada (construyes otra o recuperas el enlace), la
+        cuenta se cancela.
+      - Mientras tanto no paga tributo (no hay general al mando) y su lealtad baja, como
+        hoy sin general.
+      - **Si no hay ninguna guarida cercana, no se rebela** (los rebeldes no tendrían a
+        qué guarida atacar); solo espera a que terminen los 3 meses.
+      - Al terminar los 3 meses se declara independiente, con una **noticia**: "Your
+        village %s has declared independence." (o el texto que se use para los pueblos
+        humanos que se independizan).
+      - Hay que guardar en la partida desde cuándo se quedó sin guarida (sube la versión
+        de partida de Fryhtan).
+
+- [x] **Bug: el pueblo que se independiza se rinde enseguida a otro reino.** En una
+      partida, al eliminar la guarida, el pueblo esclavizado se volvió independiente un
+      momento y luego se rindió a otro reino.
+      - Causa probable (revisar): al independizarse solo se pone en 100 su resistencia
+        hacia el reino Fryhtan. Hacia los demás reinos se queda con los valores que tenía
+        guardados de antes (por ejemplo 0, si antes era de un reino humano o nunca se
+        calcularon), y `Town::update_resistance` hace que un pueblo independiente con
+        resistencia 0 hacia un reino se rinda a ese reino.
+      - Arreglo propuesto: al independizarse, poner su resistencia hacia todos los reinos
+        como la de un pueblo independiente nuevo (60 a 100, `Town::init`), y 100 hacia el
+        reino Fryhtan como hoy.
+      - Revisar si pasa lo mismo cuando un pueblo esclavizado se rebela.
+
+#### Cómo quedaron (gracia y bug)
+
+- `ModFryhtan::next_day_town` guarda el día en que el pueblo se quedó sin guarida
+  (`lost_lair_date_array`, por número de pueblo; se borra al volver a tener guarida y en
+  `Town::set_nation`). A los 90 días (`LOST_LAIR_GRACE_DAYS`) se independiza.
+- `Town::think_rebel` no rebela a un pueblo esclavizado sin guarida enlazada
+  (`ModFryhtan::in_lair_grace`).
+- Noticia: `NEWS_TOWN_REBEL` con 0 rebeldes = "Your village of %s has declared
+  independence."
+- Al independizarse, resistencia de 60 a 100 hacia todos los reinos y 100 hacia el reino
+  Fryhtan.
+- Partida guardada: los días se guardan al final de los datos de `ModFryhtan` (las
+  partidas anteriores se cargan sin ellos), sin subir la versión de partida.
+- **Probado** (con cambios temporales para la prueba): sin la guarida y con resistencia 0
+  hacia todos los reinos, el pueblo se independizó a los 90 días exactos, salió la
+  noticia y no se rindió enseguida (un reino lo tomó meses después, de la forma
+  normal). Guardando a los 11 días y cargando, se independizó el mismo día. La parte de
+  no rebelarse durante la gracia no se probó en partida. El caso del pueblo que se
+  rebela queda por revisar.
+
+- [x] **Entrenar soldados Fryhtan más rápido.** Un soldado de especie grande tarda **15**
+      días (antes 20; `LAIR_TRAIN_DAYS`) y uno de especie pequeña sigue en **10**
+      (`LAIR_SMALL_TRAIN_DAYS`). El Ordo queda igual (40 / 20 días). La barra de progreso y
+      la ayuda de Train muestran los días nuevos (probado: "Train a Rokken ... in 15 days").
+
+- [x] **Prueba: sin límite de población y entrenar cuesta oro.** El tope de población
+      Fryhtan queda desactivado (`FRYHTAN_POPULATION_LIMIT` 0; el cálculo sigue en el
+      código). Entrenar un soldado o un Ordo cuesta **$150** (especie pequeña) o **$200**
+      (grande), además de la comida de siempre (20 / 40); se cobra al ponerlo en la cola y
+      se devuelve con clic derecho. El Ordo tarda **20** (pequeño) o **30** días (grande),
+      antes 20 / 40. La ayuda de Train dice el oro y la comida; el reporte de reinos
+      muestra solo cuántos Fryhtans hay; New Game dice "Large: $200 per unit" / "Small:
+      $150 per unit". Probado: Train de Rokken cobró $200 y 20 de comida, y el clic
+      derecho los devolvió.
+
+- [x] **Bug: unidades humanas que se unen al reino Fryhtan a mitad de partida.** En
+      pruebas se unieron unidades humanas al reino Fryhtan; un reino Fryhtan no debe
+      tener unidades humanas (fuera de las del diseño de la economía oscura).
+      - **Caso visto:** salió el mensaje de que se unió una unidad, que venía saliendo de
+        un pueblo, y era un espía. Es casi seguro **un espía enemigo disfrazado de tu
+        reino** (por ejemplo, uno que estaba en un pueblo que esclavizaste: al cambiar de
+        dueño, los espías de adentro quedan disfrazados del nuevo dueño). Cuando la
+        lealtad de un espía a su reino baja mucho, deja de ser espía y se vuelve una unidad
+        normal del reino del que está disfrazado (`Spy::think_betray` →
+        `drop_spy_identity`). Con el reino Fryhtan (reputación 0) pasa cuando su lealtad
+        llega a 0.
+      - Otros caminos a revisar:
+        1. **Traición** (`Unit::think_betray`): una unidad humana con lealtad baja se
+           pasa al reino con mejor puntaje que tenga un pueblo base en su región; los
+           pueblos esclavizados podrían contar como pueblo base del reino Fryhtan.
+        2. **Captura de edificios** (`Firm::capture_firm` → `Unit::betray`): los
+           trabajadores o soldados de un edificio capturado cambian al reino que lo
+           captura.
+        3. Otros cambios de reino de unidades (`Unit::change_nation`) que lleguen a un
+           reino Fryhtan.
+      - **Unidades independientes:** según el código no se pueden unir: la traición solo
+        aplica a unidades de un reino, y los rebeldes que se quedan sin líder se unen al
+        reino con la mejor reputación positiva (la del reino Fryhtan es 0).
+      - Arreglo propuesto: ninguna unidad humana puede pasarse a un reino Fryhtan. Un
+        espía disfrazado de un reino Fryhtan que deja de ser espía no se une: se vuelve
+        independiente (o, si está dentro de un pueblo esclavizado, se queda como
+        aldeano). Al elegir a quién traicionar se saltan los reinos Fryhtan, y si el reino
+        Fryhtan captura un edificio humano, la gente de adentro no se une (se va o se
+        vuelve independiente).
+      - **Causa más probable del caso visto:** un espía de la IA en un pueblo independiente
+        sale de ahí y se **disfraza de tu reino** para meterse en un pueblo esclavizado
+        (`Nation::think_assign_spy_target_town`); al cambiar de disfraz sale la noticia
+        "Independent unit … has joined your force." (`Unit::spy_change_nation`).
+      - **Cómo quedó:**
+        - Ningún espía puede disfrazarse de un reino Fryhtan que no sea el suyo
+          (`Unit::spy_change_nation`); el menú de disfraz del espía no muestra los reinos
+          Fryhtan (`Unit::can_spy_cloak_as`), y la IA no manda espías a pueblos
+          esclavizados (`think_assign_spy_target_town`, `ai_assign_spy`).
+        - Un espía que sale de un pueblo esclavizado disfrazado del reino Fryhtan sale como
+          unidad independiente, sin noticia (`Spy::mobilize_town_spy`). Si deja de ser
+          espía estando en el pueblo, se queda como aldeano; fuera del pueblo no deja de
+          ser espía (`Spy::think_betray`).
+        - `Unit::think_betray` y `Rebel::process_leader_quit` saltan los reinos Fryhtan;
+          la propaganda no le da aldeanos (`ModSpy::add_villager`), y un reino Fryhtan no
+          puede capturar un edificio humano por sus trabajadores
+          (`Firm::can_worker_capture`).
+
+- [x] **Bug: texto basura en la noticia cuando muere un general Fryhtan.** La noticia
+      "Your general, <nombre>, has been slain." (`News::general_die`) saca el nombre de la
+      tabla de nombres de la raza (`race_res[race_id]`), pero los Fryhtans no tienen raza
+      (`race_id` 0), así que lee memoria que no es suya y sale basura.
+      - Arreglo propuesto: con un general Fryhtan, guardar en la noticia su tipo de unidad
+        y usar el mismo nombre que se ve en el juego (`Unit::unit_name`, por ejemplo
+        "Rokken 12"): "Your Ordo, Rokken 12, has been slain." (o "Your general", según
+        cómo se llame en el resto del juego).
+      - Revisar las demás noticias que usan el nombre de la raza con unidades que
+        podrían ser Fryhtans: general asesinado por un espía (`News::unit_assassinated`),
+        general que te traiciona o se independiza, y el general que pide honores.
+      - **Cómo quedó:** las noticias guardan, para un Fryhtan, menos su tipo de unidad en
+        lugar de la raza, y `news_unit_name` (`ONEWSENG.cpp`) usa el nombre del Ordo (por
+        ejemplo "Feskul") o el de la especie. La noticia dice "Your Ordo, Feskul, has been
+        slain."; el asesinato dice "Your Ordo, …" o "Your All High has been
+        assassinated by an enemy spy."; también traición y honores. Los nombres de Ordo
+        (desde 60000) no caben en un `short`, así que se leen como `uint16_t`. Probado:
+        un Ordo muerto da "Your Ordo, Feskul, has been slain."
+
+- [x] **Las construcciones Fryhtan se regeneran solas.** Hoy un edificio solo se repara
+      si tiene un constructor adentro, y los Fryhtans no tienen constructores. La idea es
+      que las construcciones del reino Fryhtan (guaridas) recuperen vida solas, como si
+      tuvieran un constructor de skill 20.
+      - Con las reglas del constructor normal (`Firm::process_repair`), skill 20 es
+        **1 punto de vida cada 5 días**.
+      - Igual que con un constructor: no se repara mientras el edificio está bajo ataque
+        (hasta un día después del último golpe), ni si el reino tiene el oro en negativo.
+      - Solo para las construcciones de reinos Fryhtan; las guaridas salvajes no cambian.
+      - **Cómo quedó:** en `Firm::next_day`, con `FRYHTAN_REPAIR_DAYS` 5, sin constructor
+        y fuera de construcción. Probado: una guarida a 180/200 subió 1 punto cada 5 días.
+- [x] **Botín por nivel de combate.** Antes matar una unidad humana daba $2 (soldado,
+      aldeano o defensor), $10 (general) o $100 (rey), sin importar su combate.
+      - **Soldado:** $2 con combate 10 hasta **$45** con combate 100, en línea recta
+        (2 + (combate − 10) × 43 / 90, redondeado).
+      - **Defensor de pueblo:** la mitad de un soldado de su combate.
+      - **Aldeano:** fijo en $2 (también los que mueren al atacar un pueblo).
+      - **General:** ×3 ($135 con combate 100).
+      - **Rey:** ×22 (**$990** con combate 100, $44 con combate 10). El primer rey que
+        matas de cada reino da el 100%; los siguientes de ese reino, el 50%.
+      - **Comida:** fija como antes (5 / 20 / 100).
+      - **Cómo quedó:** `ModFryhtan::reward_kill` y `ModFryhtan::kill_gold`, con las
+        constantes `KILL_GOLD_*` en `ModFryhtan.h`. Los reyes matados de cada reino se
+        guardan en `king_kill_array` al final de los datos Fryhtan de la partida (las
+        partidas anteriores cargan con la cuenta en 0); se reinicia cuando aparece un reino
+        nuevo (`NationBase::init`). Probado: los reyes de combate 100 de los dos reinos de
+        la IA dieron $990 la primera vez y $495 la segunda.
+- [ ] **Comida de los Fryhtans a la mitad.** Lo que come cada Fryhtan del reino al año
+      baja a la mitad (hoy `invoked_fryhtan_food_year` en `OF_BASE.cpp`, igual para
+      soldado, Ordo y All High, afuera o dentro de la guarida):
+
+      | Especie | Hoy | Nuevo |
+      |---|---|---|
+      | Rokken | 50 | 25 |
+      | Sauroid | 45 | 23 |
+      | Wyrm, Haubudam | 40 | 20 |
+      | Holgh | 35 | 18 |
+      | Rattus, Karrotten, Pfith, Droog, Ick | 30 | 15 |
+      | Deezboanz, Broosken | 25 | 13 |
+      | Doink | 20 | 10 |
+
+      - Ejemplo: una guarida de Rokken llena (1 Ordo y 8 soldados) pasa de 450 a 225 al
+        año.
+      - 💡 Solo para los reinos Fryhtan; los Fryhtans invocados desde la Sede de Poder de
+        un reino humano (gameplay) siguen comiendo lo de hoy.
+      - La comida de entrenar (20 el soldado, 40 el Ordo) no cambia.
+      - La tabla redondea los impares; en el código se usa el valor exacto (por ejemplo
+        22.5), porque se come un poco cada día.
+- [x] **Ordo dentro de un pueblo esclavizado.** Un Ordo se puede mandar a un pueblo
+      esclavizado del reino (clic derecho sobre el pueblo con el Ordo seleccionado) y
+      entra como un espía: deja de verse en el mapa. Hay 1 Ordo por pueblo y no corre
+      riesgo. Hace una acción a la vez:
+      - **Subjugate:** la lealtad del pueblo no baja del **liderazgo del Ordo**, con tope
+        de **50** (`SUBJUGATE_MAX_LOYALTY`, para subirlo con una mejora más adelante).
+        Sirve sobre todo cuando no hay general en una guarida enlazada o en los 3 meses de
+        gracia.
+      - **Kidnap:** llega un aldeano nuevo al pueblo, en promedio 1 cada **4 meses** con
+        liderazgo 30 y cada **2 meses** con 100 (en línea recta). Cada uno llega en un día
+        al azar entre la mitad y una vez y media del promedio (con liderazgo 30, entre 60
+        y 180 días, nunca más de 6 meses) y el contador vuelve a empezar. La raza sale al
+        azar según la gente del pueblo. Hasta 60 personas. Noticia: "Your Ordo Feskul has
+        kidnapped a Greek villager into your village of …".
+      - **Taskmaster:** cada aldeano da **+$0.5 al mes con liderazgo 30 hasta +$2 con
+        100**, aparte del tributo (y aunque no haya general en una guarida enlazada), y
+        **+5 a +20 de comida al año**.
+      - **Cómo quedó:**
+        - En el panel del pueblo, el **botón de espionaje** (el ojo) abre la vista del
+          Ordo; su ayuda dice "Ordo" y "<nombre>: <acción>". La vista (`TOWN_MENU_ORDO`,
+          `Town::disp_ordo_menu`), según el diseño del usuario: ícono, nombre,
+          "<especie> Ordo" y liderazgo; la fila **Role | <acción>** con el botón **>**
+          que pasa a la siguiente (Subjugate → Kidnap → Taskmaster); lo que hace la
+          acción con su liderazgo; la tabla Loyalty (N/A), Leadership, Combat y Hit
+          Points; y **Leave village** y **Back**.
+        - El Ordo se guarda en `ModFryhtan::town_ordo_array` (por pueblo) y la unidad se
+          borra del mapa; al salir se crea otra vez con su nombre, liderazgo, combate y
+          vida (`ordo_enter_town`, `ordo_leave_town`). Adentro sigue comiendo y costando
+          como afuera, y cuenta en la población Fryhtan.
+        - Si el pueblo cambia de dueño o desaparece, el Ordo sale a su lado (se pierde si
+          no hay lugar).
+        - Se guarda al final de los datos Fryhtan de la partida; las partidas anteriores
+          cargan sin Ordos en pueblos.
+        - Probado: entrar con clic derecho, Kidnap (llegó un aldeano zulú con su noticia),
+          Taskmaster (+$42 y la comida extra con 21 aldeanos y liderazgo 100), salir del
+          pueblo, y guardar y cargar con el Ordo adentro.
+- [x] **Cursor de entrar al mandar un Ordo a un pueblo.** Con un Ordo seleccionado, al
+      pasar el mouse sobre un pueblo esclavizado al que puede entrar, debe verse la
+      flecha de entrar (`CURSOR_ASSIGN`), como cuando un aldeano va a un pueblo propio.
+      Hoy se ve el cursor normal aunque el clic derecho sí lo manda.
+      - Dónde: `Power::choose_cursor` (`OPOWER.cpp`), en el caso
+        `SCREEN_OBJECT_FRIEND_TOWN` con una unidad propia seleccionada: hoy solo da
+        `CURSOR_ASSIGN` a aldeanos humanos sin oficio. Agregar
+        `mod_fryhtan.can_ordo_enter_town(unidad, pueblo)`.
+      - Solo con un Ordo seleccionado (igual que el clic derecho, que solo lo manda si
+        está solo).
+      - **Cómo quedó:** `Power::choose_cursor` da `CURSOR_ASSIGN` si
+        `mod_fryhtan.can_ordo_enter_town()`. Probado.
+- [x] **Rol del Ordo junto al nombre del pueblo.** En la vista general del mapa, el
+      nombre de un pueblo esclavizado con un Ordo adentro muestra su rol entre
+      paréntesis, por ejemplo **Rouen (Subjugate)**, **Rouen (Kidnap)** o **Rouen
+      (Taskmaster)**.
+      - Solo en los pueblos del jugador (los demás no ven el rol).
+      - También en el reporte de pueblos (Villages).
+      - **Cómo quedó:** `ModFryhtan::town_role_name`, usado en el nombre del mapa
+        (`OWORLD_Z.cpp`) y en el reporte (`OR_TOWN.cpp`). Probado: "Persepolis
+        (Subjugate)" en los dos.
+- [x] **Entrenar un Ordo tarda lo mismo que un soldado:** 15 días (especie grande) y
+      10 (chica), antes 30 y 20 (`LAIR_ORDO_DAYS`, `LAIR_SMALL_ORDO_DAYS`). El oro y la
+      comida no cambian.
+- [x] **Ajustes al Ordo, Kidnap, resistencia y Promote / Demote.**
+      - **Kidnap** al doble: **2 aldeanos** por vez, cada 240 días en promedio con
+        liderazgo 30 y 120 con 100 (entre la mitad y 1.5 veces: con liderazgo 30, de 120 a
+        360 días, máximo 12 meses). La noticia ya no dice la raza: "Your Ordo … has
+        kidnapped 2 villagers into your village of …" (o "a villager" si solo cabe uno).
+      - **Ordo dentro del pueblo:** cada 15 días gana liderazgo como un general con un
+        soldado por cada 5 aldeanos (hasta 8), ×1.5, y combate como un general; recupera
+        1 punto de vida (`ModFryhtan::train_town_ordo`). Las fracciones y el potencial se
+        guardan (la partida marca el formato nuevo con un -1 antes de la cuenta de Ordos;
+        las partidas del formato anterior siguen cargando).
+      - **Mínimo de resistencia según el liderazgo** del general de la guarida: 60 con
+        liderazgo 30 o menos hasta 45 con 100; cuenta la guarida con el mínimo más bajo
+        (`ModFryhtan::enslave_min_resistance`, `Town::update_target_resistance`).
+      - **Promote / Demote** de vuelta para los Fryhtans del reino, en el panel de la
+        unidad (`ModFryhtan::promote_ordo`, `demote_ordo`): al ascender recibe nombre de
+        Ordo; al bajar, un número de serie. El All High no se puede bajar.
+      - **Soldados con liderazgo 20** (`LAIR_TRAIN_LEADERSHIP`), visible en su panel y en
+        la guarida; lo aprenden en la guarida solo con potencial, como los humanos.
+      - **El liderazgo del Ordo sube ×1.5** (`ORDO_LEADERSHIP_PERCENT`) en la guarida y
+        en el pueblo.
+      - **Train Ordo oculto** (`LAIR_SHOW_TRAIN_ORDO` 0); el código se queda.
+      - Probado: soldado de la guarida con Loyalty N/A, Leadership 20; Demote y Promote de
+        un Ordo; el Ordo en un pueblo de 20 subió 0.30 de liderazgo y 0.20 de combate cada
+        15 días; Kidnap esperando 342 días con liderazgo 30. No se probó en partida el
+        mínimo de resistencia ni la noticia nueva de Kidnap.
+- [x] **Precios por especie, Pfith chica y Train Ordo de vuelta.**
+      - **Ick, Broosken y Doink cuestan $100** (soldado y Ordo); antes $150.
+      - **Pfith pasa a especie chica** (hoy es grande por su nivel 6): $150, población 2,
+        10 días de entrenamiento (soldado y Ordo). Va como excepción en
+        `ModFryhtan::is_large_monster` (y en la tabla de New Game,
+        `menu_species_level_array` / `menu_species_size_text`); sus datos de combate,
+        vida y ataque no cambian.
+      - Así quedan:
+        - Chicas a **$100**: Ick, Broosken, Doink.
+        - Chicas a **$150**: Deezboanz, Rattus, Pfith.
+        - Grandes a **$200**: Haubudam, Rokken, Wyrm, Droog, Sauroid, Karrotten, Holgh.
+      - **New Game sin precio ni tamaño:** el texto queda solo "Fryhtan kingdom: New Rokken
+        Horde" (hoy "… (Large: $200 per unit)"), así que ya no hace falta cambiar la tabla
+        de New Game por Pfith.
+      - **Cómo quedó:** `ModFryhtan::train_cost` (`LAIR_CHEAP_TRAIN_COST` 100) y la
+        excepción de Pfith en `is_large_monster` (`FRYHTAN_PFITH` y los demás ids. en
+        `ModFryhtan.h`); `LAIR_SHOW_TRAIN_ORDO` 1. Probado: los precios, tamaños y días de
+        las 13 especies, el texto de New Game y el botón Train Ordo en la guarida.
+      - **Train Ordo vuelve a verse** en la guarida (`LAIR_SHOW_TRAIN_ORDO` 1), junto a
+        Promote / Demote.
+
+## 8. Economía oscura (en diseño)
+
+El diseño en borrador está en `DISENO-fryhtan-oscuro.md`: el Enforcer de los pueblos
+esclavizados, el mercado negro, la torre oscura de ciencia, la fábrica de guerra oscura,
+los soldados oscuros y las tecnologías de la guarida. Cuando se apruebe, sus fases se
+pasan aquí.

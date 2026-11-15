@@ -613,7 +613,7 @@ void NewsArray::unit_betray(int unitRecno, int betrayToNationRecno)
 	if( !newsPtr )		// only news of nations that have contact with the player are added
 		return;
 
-	newsPtr->short_para1 = unitPtr->race_id;
+	newsPtr->short_para1 = unitPtr->race_id ? unitPtr->race_id : -unitPtr->unit_id;		// 7kmod-fryhtan: minus the unit id. for a Fryhtan
 	newsPtr->short_para2 = unitPtr->name_id;
 	newsPtr->short_para3 = unitPtr->rank_id;
 
@@ -648,7 +648,7 @@ void NewsArray::unit_assassinated(int unitRecno, int spyKilled)
 	if( !newsPtr )		// only news of nations that have contact with the player are added
 		return;
 
-	newsPtr->short_para1 = unitPtr->race_id;
+	newsPtr->short_para1 = unitPtr->race_id ? unitPtr->race_id : -unitPtr->unit_id;		// 7kmod-fryhtan: minus the unit id. for a Fryhtan
 	newsPtr->short_para2 = unitPtr->name_id;
 	newsPtr->short_para3 = unitPtr->rank_id;
 	newsPtr->short_para4 = spyKilled;
@@ -709,7 +709,7 @@ void NewsArray::general_die(int unitRecno)
 	if( !newsPtr )		// only news of nations that have contact with the player are added
 		return;
 
-	newsPtr->short_para1 = unitPtr->race_id;
+	newsPtr->short_para1 = unitPtr->race_id ? unitPtr->race_id : -unitPtr->unit_id;		// 7kmod-fryhtan: minus the unit id. for a Fryhtan
 	newsPtr->short_para2 = unitPtr->name_id;
 
 	//------- set location --------//
@@ -738,7 +738,7 @@ void NewsArray::general_honors(int unitRecno)
 
 	newsPtr->short_para1 = unitRecno;
 	newsPtr->short_para2 = unitPtr->name_id;
-	newsPtr->short_para3 = unitPtr->race_id;
+	newsPtr->short_para3 = unitPtr->race_id ? unitPtr->race_id : -unitPtr->unit_id;		// 7kmod-fryhtan: minus the unit id. for a Fryhtan
 
 	short xLoc, yLoc;
 
@@ -825,6 +825,54 @@ void NewsArray::villager_joined(int unitRecno, int townNameId)
 	newsPtr->set_loc( unitPtr->next_x_loc(), unitPtr->next_y_loc(), NEWS_LOC_UNIT, unitRecno, unitPtr->name_id );
 }
 //------- End of function NewsArray::villager_joined -----//
+
+
+//------ Begin of function NewsArray::town_raided -----//
+//
+// 7kmod-fryhtan: the player's Fryhtan kingdom raided an independent town.
+//
+void NewsArray::town_raided(int townRecno, int townNameId, int loot, int killCount, int defenderCount)
+{
+	News* newsPtr = add_news( NEWS_TOWN_RAIDED, NEWS_NORMAL, nation_array.player_recno );
+
+	if( !newsPtr )
+		return;
+
+	newsPtr->short_para1 = townNameId;
+	newsPtr->short_para2 = loot;
+	newsPtr->short_para3 = killCount;
+	newsPtr->short_para4 = defenderCount;
+
+	if( !town_array.is_deleted(townRecno) )
+	{
+		Town* townPtr = town_array[townRecno];
+		newsPtr->set_loc( townPtr->center_x, townPtr->center_y, NEWS_LOC_TOWN, townRecno );
+	}
+}
+//------- End of function NewsArray::town_raided -----//
+
+
+//------ Begin of function NewsArray::ordo_kidnap -----//
+//
+// 7kmod-fryhtan: an Ordo of the player kidnapped a villager into an enslaved
+// town.
+//
+void NewsArray::ordo_kidnap(int townRecno, int ordoNameId, int villagerCount)
+{
+	News* newsPtr = add_news( NEWS_ORDO_KIDNAP, NEWS_NORMAL, nation_array.player_recno );
+
+	if( !newsPtr )
+		return;
+
+	Town* townPtr = town_array[townRecno];
+
+	newsPtr->short_para1 = townPtr->town_name_id;
+	newsPtr->short_para2 = (short) ordoNameId;
+	newsPtr->short_para3 = villagerCount;
+
+	newsPtr->set_loc( townPtr->center_x, townPtr->center_y, NEWS_LOC_TOWN, townRecno );
+}
+//------- End of function NewsArray::ordo_kidnap -----//
 
 
 //------ Begin of function NewsArray::intel_report -----//

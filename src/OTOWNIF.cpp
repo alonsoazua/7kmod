@@ -35,9 +35,11 @@
 #include <OGAME.h>
 #include <ONATION.h>
 #include <OBUTT3D.h>
+#include <OBUTTON.h>
 #include <OIMGRES.h>
 #include <ORAWRES.h>
 #include <ORACERES.h>
+#include <OUNITRES.h>
 #include <OWORLD.h>
 #include <OUNIT.h>
 #include <OTOWN.h>
@@ -78,6 +80,8 @@ enum { TOWN_MENU_MAIN,
 		 TOWN_MENU_VIEW_SECRET,
 		 TOWN_MENU_SET_AUTO_COLLECT_TAX,
 		 TOWN_MENU_SET_AUTO_GRANT,
+		 TOWN_MENU_RAID,				// 7kmod-fryhtan: the details of a raid on an independent town
+		 TOWN_MENU_ORDO,				// 7kmod-fryhtan: the Ordo inside an enslaved town
 	  };
 
 #define BUTTON_LOYALTY_COUNT	8
@@ -90,6 +94,10 @@ enum { TOWN_MENU_MAIN,
 
 static VBrowseIF  browse_race, browse_spy;
 static Button3D   button_recruit, button_train, button_tax, button_grant;
+static Button3D   button_raid;		// 7kmod-fryhtan: the Raid button of an independent town linked to a lair
+static Button     button_raid_village, button_raid_cancel;		// 7kmod-fryhtan: in the Raid menu
+static Button3D   button_ordo;			// 7kmod-fryhtan: the Ordo inside an enslaved town (the spy button), opens the Ordo menu
+static Button     button_ordo_next, button_ordo_leave, button_ordo_back;		// 7kmod-fryhtan: in the Ordo menu
 static Button3D   button_spy, button_cancel, button_spy_mobilize,
 						button_spy_reward, button_spy_action, button_spy_view_secret;
 static Button3D	button_cancel_training;
@@ -123,6 +131,8 @@ short  Town::fort_recruit_town_recno = 0;
 //----------- Define static functions ----------//
 
 static int  race_filter(int recNo=0);
+static const char* ordo_menu_name(TownOrdo* ordoPtr);		// 7kmod-fryhtan
+extern const char* monster_name_general[];		// OU_MONS.cpp: "<species> Ordo"
 static int  spy_filter(int recNo=0);
 static int  ceilf_int(float f);
 static void put_race_rec(int recNo, int x, int y, int refreshFlag);
@@ -219,6 +229,14 @@ void Town::disp_info(int refreshFlag)
 			if( refreshFlag == INFO_REPAINT )
 				disp_auto_menu(0);
 			break;
+
+		case TOWN_MENU_RAID:
+			disp_raid_menu(refreshFlag);		// 7kmod-fryhtan
+			break;
+
+		case TOWN_MENU_ORDO:
+			disp_ordo_menu(refreshFlag);		// 7kmod-fryhtan
+			break;
 	}
 }
 //----------- End of function Town::disp_info -----------//
@@ -263,6 +281,16 @@ void Town::detect_info()
 
 		case TOWN_MENU_SET_AUTO_GRANT:
 			if( detect_auto_menu(0) )
+				return;
+			break;
+
+		case TOWN_MENU_RAID:
+			if( detect_raid_menu() )		// 7kmod-fryhtan
+				return;
+			break;
+
+		case TOWN_MENU_ORDO:
+			if( detect_ordo_menu() )		// 7kmod-fryhtan
 				return;
 			break;
 	}
@@ -423,6 +451,42 @@ void Town::disp_main_menu(int refreshFlag)
 		}
 
 		y += 55;
+
+		//--- the Ordo inside the town: the spy button opens the Ordo menu ---//
+
+		static int lastOrdoKey = -1;
+		TownOrdo* ordoPtr = mod_fryhtan.town_ordo(town_recno);
+		int ordoKey = ordoPtr ? ordoPtr->action : 0;
+
+		if( refreshFlag == INFO_REPAINT || ordoKey != lastOrdoKey )
+		{
+			lastOrdoKey = ordoKey;
+
+			if( ordoPtr )
+			{
+				button_ordo.paint( BUTTON_X1, y, 'A', "SPYMENU" );
+				button_ordo.set_help_code("");		// the custom help is set below
+			}
+			else if( button_ordo.init_flag )
+			{
+				button_ordo.reset();
+
+				if( refreshFlag != INFO_REPAINT )
+				{
+					info.disp();		// clear the button
+					return;
+				}
+			}
+		}
+
+		if( ordoPtr && button_ordo.init_flag )
+		{
+			static char helpStr[100];
+
+			// TRANSLATORS: <Name>: <Subjugate|Kidnap|Taskmaster>
+			snprintf( helpStr, sizeof(helpStr), _("%s: %s"), ordo_menu_name(ordoPtr), ModFryhtan::ordo_action_name(ordoPtr->action) );
+			help.set_custom_help( button_ordo.x1, button_ordo.y1, button_ordo.x2, button_ordo.y2, _("Ordo"), helpStr );
+		}
 	}
 
 	//----------- create the paint button ----------//
@@ -568,6 +632,19 @@ void Town::disp_main_menu(int refreshFlag)
 		x += BUTTON_ACTION_WIDTH;
 	}
 
+	//------ 7kmod-fryhtan: raid an independent town from a linked lair ------//
+
+	else if( nation_array.player_recno &&
+				mod_fryhtan.can_see_raid(this, nation_array.player_recno) )
+	{
+		disp_raid_button(refreshFlag);
+		x += BUTTON_ACTION_WIDTH;
+	}
+	else if( refreshFlag == INFO_REPAINT )
+	{
+		button_raid.reset();
+	}
+
 	//---------- display the spy button ----------//
 
 	int spyFlag = spy_filter() > 0;
@@ -596,6 +673,420 @@ void Town::disp_main_menu(int refreshFlag)
 		disp_debug_resistance(refreshFlag);
 }
 //----------- End of function Town::disp_main_menu -----------//
+
+
+//--------- Begin of function Town::disp_raid_button ---------//
+//
+// 7kmod-fryhtan: the Raid button of an independent town linked to a lair of
+// the player's Fryhtan kingdom with a general. It's enabled when the town
+// can be raided, and it opens the Raid menu; otherwise its help says why,
+// with a bar for the time left until the next raid.
+//
+void Town::disp_raid_button(int refreshFlag)
+{
+	int nationRecno = nation_array.player_recno;
+	int daysLeft    = mod_fryhtan.raid_days_left(this);
+	int lairRecno   = mod_fryhtan.raid_lair(this, nationRecno);
+	int hasSoldier  = lairRecno && firm_array[lairRecno]->worker_count > 0;
+	int weakened    = mod_fryhtan.is_raid_weakened(this, nationRecno);
+	int canRaid     = !daysLeft && hasSoldier && !weakened;
+
+	static int lastTownRecno = -1, lastDaysLeft = -1, lastCanRaid = -1;
+
+	if( refreshFlag == INFO_REPAINT || !button_raid.init_flag ||
+		 town_recno != lastTownRecno || daysLeft != lastDaysLeft || canRaid != lastCanRaid )
+	{
+		button_raid.paint( BUTTON_X1, BUTTON_Y1 + (rebel_recno ? 23 : 0), 'A', "COLLTAX" );
+		button_raid.set_help_code("");		// the custom help is set below
+
+		if( canRaid )
+			button_raid.enable();
+		else
+			button_raid.disable();
+
+		//--- the time until the next raid, a bar at the bottom of the button ---//
+
+		if( daysLeft )
+		{
+			vga_front.indicator( button_raid.x1+6, button_raid.y2-11, button_raid.x2-9, button_raid.y2-7,
+										(float) (RAID_INTERVAL_DAYS - daysLeft), (float) RAID_INTERVAL_DAYS, VGA_LIGHT_GREEN, V_BLACK );
+		}
+
+		lastTownRecno = town_recno;
+		lastDaysLeft  = daysLeft;
+		lastCanRaid   = canRaid;
+	}
+
+	//------- help: why it can't be raided, or what a raid does -------//
+
+	static char helpStr[300];
+
+	if( weakened )
+		snprintf( helpStr, sizeof(helpStr), "%s", _("This village is weakened and ready to be attacked directly.") );
+	else if( daysLeft )
+		snprintf( helpStr, sizeof(helpStr),
+					 ngettext("You can raid this village again in %d day.", "You can raid this village again in %d days.", daysLeft),
+					 daysLeft );
+	else if( !hasSoldier )
+		snprintf( helpStr, sizeof(helpStr), "%s", _("Your lair needs soldiers to raid this village.") );
+	else
+		snprintf( helpStr, sizeof(helpStr), "%s",
+					 _("Raid this village: steal gold and food and call out its defenders to attack your lair. Killing them weakens the village. A village can be raided once every two months.") );
+
+	help.set_custom_help( button_raid.x1, button_raid.y1, button_raid.x2, button_raid.y2, _("Raid"), helpStr );
+}
+//----------- End of function Town::disp_raid_button -----------//
+
+
+//--------- Begin of function Town::disp_raid_menu ---------//
+//
+// 7kmod-fryhtan: the details of a raid on an independent town, in place of
+// the list of races: the town (its main race, population and resistance),
+// what the raid gives, the defenders that will attack the lair, and the
+// Raid village and Cancel buttons.
+//
+void Town::disp_raid_menu(int refreshFlag)
+{
+	int nationRecno = nation_array.player_recno;
+
+	//--- back to the main menu if the town can't be raided any more ---//
+
+	if( !mod_fryhtan.can_see_raid(this, nationRecno) || mod_fryhtan.raid_days_left(this) ||
+		 mod_fryhtan.is_raid_weakened(this, nationRecno) )
+	{
+		town_menu_mode = TOWN_MENU_MAIN;
+		info.disp();
+		return;
+	}
+
+	disp_basic_info(refreshFlag);
+
+	//--- repaint when the town changes (once a day at most) ---//
+
+	int defenderCount = mod_fryhtan.raid_defender_count(this, nationRecno);
+	int resistance    = average_resistance(nationRecno);
+
+	static int lastKey[4];
+	int key[4] = { town_recno, (int) population, resistance, defenderCount };
+
+	if( refreshFlag != INFO_REPAINT )
+	{
+		if( memcmp(key, lastKey, sizeof(key)) != 0 )
+		{
+			disable_refresh = 1;    // keep the Raid menu
+			info.disp();
+			disable_refresh = 0;
+		}
+		return;
+	}
+
+	memcpy( lastKey, key, sizeof(key) );
+
+	//------- the town: its main race, population and resistance -------//
+
+	int y = RACE_BROWSE_Y1-23;
+
+	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+56 );
+
+	int raceId = majority_race();
+
+	if( raceId )
+	{
+		UnitInfo* unitInfo = unit_res[ race_res[raceId]->basic_unit_id ];
+		vga_front.put_bitmap( INFO_X1+6, y+4, unitInfo->get_large_icon_ptr(RANK_SOLDIER) );
+	}
+
+	int x1 = INFO_X1+6+UNIT_LARGE_ICON_WIDTH+10;
+	char str[300];
+
+	snprintf( str, sizeof(str), _("Population: %d"), (int) population );
+	font_san.put( x1, y+10, str, 0, INFO_X2-4 );
+
+	snprintf( str, sizeof(str), _("Resistance: %d"), resistance );
+	font_san.put( x1, y+28, str, 0, INFO_X2-4 );
+
+	//------- the raid -------//
+
+	y += 60;
+
+	int panelY2 = INFO_Y2;
+
+	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, panelY2 );
+
+	int x = INFO_X1+6;
+	int loot = mod_fryhtan.raid_loot(this, nation_array.player_recno);
+
+	// TRANSLATORS: Raid <Town>?
+	snprintf( str, sizeof(str), _("Raid %s?"), town_name() );
+	font_san.center_put( INFO_X1, y+4, INFO_X2, y+20, str );
+
+	// TRANSLATORS: You will obtain $<Gold> and <Food> food and lower its resistance by <Number>.
+	snprintf( str, sizeof(str), _("You will obtain $%d and %d food and lower its resistance by %d."),
+				 loot, loot, (int) RAID_RESISTANCE_DEC );
+	font_san.put_paragraph( x, y+26, INFO_X2-6, y+72, str, 0 );
+
+	int y2 = y+78;
+
+	snprintf( str, sizeof(str),
+				 ngettext("%d defender will attack your lair.", "%d defenders will attack your lair.", defenderCount),
+				 defenderCount );
+	font_san.put_paragraph( x, y2, INFO_X2-6, y2+30, str, 0 );
+
+	int minCombat = MAX( 10, town_combat_level-10 );
+	int maxCombat = MIN( 100, town_combat_level+10 );
+	int leaderCombat = MIN( 100, (int) town_combat_level + RAID_LEADER_COMBAT_BONUS );
+
+	// TRANSLATORS: Combat: <min>-<max> (leader: <combat>)
+	snprintf( str, sizeof(str), _("Combat: %d-%d (leader: %d)"), minCombat, maxCombat, leaderCombat );
+	font_san.put( x, y2+34, str, 0, INFO_X2-6 );
+
+	//------- the buttons -------//
+
+	int buttonY = panelY2-30;
+
+	button_raid_village.paint_text( INFO_X1+8, buttonY, INFO_X1+110, buttonY+24, _("Raid village") );
+	button_raid_cancel.paint_text( INFO_X1+118, buttonY, INFO_X2-8, buttonY+24, _("Cancel") );
+}
+//----------- End of function Town::disp_raid_menu -----------//
+
+
+//--------- Begin of function Town::detect_raid_menu ---------//
+//
+int Town::detect_raid_menu()
+{
+	if( button_raid_village.detect() )
+	{
+		se_ctrl.immediate_sound("TURN_ON");
+
+		int townRecno = town_recno;
+
+		mod_fryhtan.raid_town(this, nation_array.player_recno);
+
+		if( !town_array.is_deleted(townRecno) )
+		{
+			town_menu_mode = TOWN_MENU_MAIN;
+			info.disp();
+		}
+		return 1;
+	}
+
+	if( button_raid_cancel.detect() )
+	{
+		se_ctrl.immediate_sound("TURN_OFF");
+
+		town_menu_mode = TOWN_MENU_MAIN;
+		info.disp();
+		return 1;
+	}
+
+	return 0;
+}
+//----------- End of function Town::detect_raid_menu -----------//
+
+
+//--------- Begin of static function ordo_menu_name ---------//
+//
+// 7kmod-fryhtan: the name of the Ordo inside a town: its Ordo name, or
+// "<species> Ordo".
+//
+static const char* ordo_menu_name(TownOrdo* ordoPtr)
+{
+	const char* name = ModFryhtan::ordo_name_by_id(ordoPtr->name_id);
+
+	return name ? name : _(unit_res[ordoPtr->unit_id]->name);
+}
+
+
+
+
+
+//--------- Begin of function Town::disp_ordo_menu ---------//
+//
+// 7kmod-fryhtan: the Ordo inside an enslaved town of the player: its icon,
+// name, species and leadership; its role (action) with a button to change it
+// and what it does; its loyalty (none), leadership, combat and hit points;
+// and the buttons to take it out of the town and to go back.
+//
+void Town::disp_ordo_menu(int refreshFlag)
+{
+	TownOrdo* ordoPtr = mod_fryhtan.town_ordo(town_recno);
+
+	if( !ordoPtr || nation_recno != nation_array.player_recno )
+	{
+		town_menu_mode = TOWN_MENU_MAIN;
+		info.disp();
+		return;
+	}
+
+	disp_basic_info(refreshFlag);
+
+	//--- repaint when the town or the Ordo change ---//
+
+	static int lastKey[4];
+	int key[4] = { town_recno, ordoPtr->action, ordoPtr->leadership, ordoPtr->hit_points };
+
+	if( refreshFlag != INFO_REPAINT )
+	{
+		if( memcmp(key, lastKey, sizeof(key)) != 0 )
+		{
+			disable_refresh = 1;    // keep the Ordo menu
+			info.disp();
+			disable_refresh = 0;
+		}
+		return;
+	}
+
+	memcpy( lastKey, key, sizeof(key) );
+
+	char str[300];
+	int  leadership = ordoPtr->leadership;
+	UnitInfo* unitInfo = unit_res[ordoPtr->unit_id];
+
+	//------- the Ordo: icon, name, species and leadership -------//
+
+	int y = RACE_BROWSE_Y1-23;
+
+	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+56 );
+
+	vga_front.put_bitmap( INFO_X1+6, y+4, unitInfo->get_large_icon_ptr(RANK_GENERAL) );
+
+	int x1 = INFO_X1+6+UNIT_LARGE_ICON_WIDTH+10;
+
+	font_san.put( x1, y+4, ordo_menu_name(ordoPtr), 0, INFO_X2-4 );
+	int monsterId = ModFryhtan::unit_monster_id(ordoPtr->unit_id);
+
+	if( monsterId >= 1 && monsterId <= FRYHTAN_SPECIES_COUNT )
+		font_san.put( x1, y+20, _(monster_name_general[monsterId-1]), 0, INFO_X2-4 );		// "<species> Ordo"
+	else
+		font_san.put( x1, y+20, _(unitInfo->name), 0, INFO_X2-4 );
+
+	snprintf( str, sizeof(str), _("Leadership: %d"), leadership );
+	font_san.put( x1, y+36, str, 0, INFO_X2-4 );
+
+	//------- the role, and the button to change it -------//
+
+	y += 60;
+
+	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+24 );
+	font_san.put( INFO_X1+6, y+5, _("Role"), 0, INFO_X1+60 );
+	font_san.put( INFO_X1+66, y+5, "|" );
+	font_san.put( INFO_X1+76, y+5, ModFryhtan::ordo_action_name(ordoPtr->action), 0, INFO_X2-30 );
+
+	button_ordo_next.paint_text( INFO_X2-26, y+2, INFO_X2-4, y+22, ">" );
+
+	//------- what the role does -------//
+
+	y += 28;
+
+	switch( ordoPtr->action )
+	{
+		case ORDO_ACTION_KIDNAP:
+		{
+			int kidnapDays = ModFryhtan::kidnap_days(leadership);
+
+			// TRANSLATORS: A new villager every <Days> to <Days> days.
+			snprintf( str, sizeof(str), _("A new villager every %d to %d days."),
+						 kidnapDays/2, kidnapDays/2 + kidnapDays );
+			break;
+		}
+
+		case ORDO_ACTION_TASKMASTER:
+		{
+			int taskGold = ModFryhtan::taskmaster_gold(leadership);
+
+			// TRANSLATORS: +$<Gold> a month and +<Food> food a year per villager.
+			snprintf( str, sizeof(str), _("+$%d.%02d a month and +%d food a year per villager."),
+						 taskGold/100, taskGold%100, ModFryhtan::taskmaster_food(leadership) );
+			break;
+		}
+
+		default:
+			// TRANSLATORS: The loyalty of the village doesn't drop below <Number>.
+			snprintf( str, sizeof(str), _("The loyalty of the village doesn't drop below %d."),
+						 MIN( leadership, (int) SUBJUGATE_MAX_LOYALTY ) );
+			break;
+	}
+
+	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+36 );
+	font_san.put_paragraph( INFO_X1+6, y+3, INFO_X2-6, y+35, str, 0 );
+
+	//------- loyalty, leadership, combat and hit points -------//
+
+	y += 40;
+
+	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+4+16*4+2 );
+
+	int x = INFO_X1+4;
+	y += 4;
+
+	font_san.field( x, y, _("Loyalty"), x+92, _("N/A"), INFO_X2-2, refreshFlag );
+	y += 16;
+	font_san.field( x, y, _("Leadership"), x+92, leadership, 1, INFO_X2-2, refreshFlag );
+	y += 16;
+	font_san.field( x, y, _("Combat"), x+92, (int) ordoPtr->combat_level, 1, INFO_X2-2, refreshFlag );
+	y += 16;
+
+	int maxHitPoints = (int) unitInfo->hit_points * ordoPtr->combat_level / 100;		// as Unit::set_combat_level()
+	snprintf( str, sizeof(str), "%d/%d", (int) ordoPtr->hit_points, MAX( (int) ordoPtr->hit_points, maxHitPoints ) );
+	font_san.field( x, y, _("Hit Points"), x+92, str, INFO_X2-2, refreshFlag );
+
+	//------- the buttons -------//
+
+	int buttonY = INFO_Y2-30;
+
+	button_ordo_leave.paint_text( INFO_X1+8, buttonY, INFO_X1+110, buttonY+24, _("Leave village") );
+	button_ordo_back.paint_text( INFO_X1+118, buttonY, INFO_X2-8, buttonY+24, _("Back") );
+}
+//----------- End of function Town::disp_ordo_menu -----------//
+
+
+//--------- Begin of function Town::detect_ordo_menu ---------//
+//
+int Town::detect_ordo_menu()
+{
+	if( button_ordo_next.detect() )		// the next role: Subjugate, Kidnap, Taskmaster
+	{
+		TownOrdo* ordoPtr = mod_fryhtan.town_ordo(town_recno);
+
+		if( ordoPtr )
+		{
+			se_ctrl.immediate_sound("TURN_ON");
+
+			int action = ordoPtr->action % ORDO_ACTION_TASKMASTER + 1;
+
+			mod_fryhtan.set_ordo_action(town_recno, action);
+
+			disable_refresh = 1;    // keep the Ordo menu
+			info.disp();
+			disable_refresh = 0;
+		}
+		return 1;
+	}
+
+	if( button_ordo_leave.detect() )
+	{
+		se_ctrl.immediate_sound("TURN_OFF");
+
+		if( mod_fryhtan.ordo_leave_town(town_recno) )		// it stays if there is no room for it next to the town
+		{
+			town_menu_mode = TOWN_MENU_MAIN;
+			info.disp();
+		}
+		return 1;
+	}
+
+	if( button_ordo_back.detect() )
+	{
+		se_ctrl.immediate_sound("TURN_OFF");
+
+		town_menu_mode = TOWN_MENU_MAIN;
+		info.disp();
+		return 1;
+	}
+
+	return 0;
+}
+//----------- End of function Town::detect_ordo_menu -----------//
 
 
 //------- Begin of function Town::open_fort_recruit -------//
@@ -926,6 +1417,35 @@ int Town::detect_main_menu()
 	if( button_spy.detect() )	// switch to the spy menu
 	{
 		town_menu_mode  = TOWN_MENU_SPY;
+		disable_refresh = 1;    // static var for disp_info() only
+		info.disp();
+		disable_refresh = 0;
+		return 1;
+	}
+
+	//----- 7kmod-fryhtan: open the menu of the Ordo inside an enslaved town ---//
+
+	if( button_ordo.init_flag && mod_fryhtan.town_ordo(town_recno) &&
+		 nation_recno == nation_array.player_recno && button_ordo.detect() )
+	{
+		se_ctrl.immediate_sound("TURN_ON");
+
+		town_menu_mode  = TOWN_MENU_ORDO;
+		disable_refresh = 1;    // static var for disp_info() only
+		info.disp();
+		disable_refresh = 0;
+		return 1;
+	}
+
+	//----- 7kmod-fryhtan: detect raiding an independent town ---//
+
+	if( nation_array.player_recno &&
+		 mod_fryhtan.can_see_raid(this, nation_array.player_recno) &&
+		 button_raid.init_flag && button_raid.detect() )
+	{
+		se_ctrl.immediate_sound("TURN_ON");
+
+		town_menu_mode  = TOWN_MENU_RAID;		// show the details of the raid
 		disable_refresh = 1;    // static var for disp_info() only
 		info.disp();
 		disable_refresh = 0;

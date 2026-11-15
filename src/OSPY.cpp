@@ -41,6 +41,7 @@
 #include <OSE.h>
 // ###### end Gilbert 10/10 #######//
 #include "gettext.h"
+#include <ModFryhtan.h>
 
 
 //--------- Begin of function Spy::Spy ----------//
@@ -794,6 +795,11 @@ int Spy::think_betray()
 	if( cloaked_nation_recno == true_nation_recno || cloaked_nation_recno==0 )
 		return 0;
 
+	//--- 7kmod-fryhtan: a spy cloaked as a Fryhtan kingdom (in an enslaved town) only becomes a villager of the town, never a unit of the kingdom ---//
+
+	if( mod_fryhtan.is_fryhtan(cloaked_nation_recno) && spy_place != SPY_TOWN )
+		return 0;
+
 	//--- think whether the spy should turn towards the nation ---//
 
 	Nation* nationPtr = nation_array[cloaked_nation_recno];
@@ -1159,6 +1165,18 @@ int Spy::mobilize_town_spy(int decPop)
 	unitPtr->set_name(name_id);		// set the name id. of this unit
 
 	set_place(SPY_MOBILE, unitRecno);
+
+	//--- 7kmod-fryhtan: a spy leaving an enslaved town can't pass as a unit of the Fryhtan kingdom: he comes out as an independent unit, without news ---//
+
+	if( cloaked_nation_recno && cloaked_nation_recno != true_nation_recno &&
+		 mod_fryhtan.is_fryhtan(cloaked_nation_recno) )
+	{
+		char notifyFlag = notify_cloaked_nation_flag;
+
+		notify_cloaked_nation_flag = 0;
+		unitPtr->spy_change_nation(0, COMMAND_AUTO);
+		notify_cloaked_nation_flag = notifyFlag;
+	}
 
 	return unitRecno;
 }

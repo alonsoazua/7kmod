@@ -27,6 +27,7 @@
 #include <OUNIT.h>
 #include <ONATION.h>
 #include <OSPY.h>
+#include <ModFryhtan.h>
 
 //--------- Begin of function Nation::think_spy --------//
 
@@ -169,6 +170,9 @@ int Nation::ai_assign_spy(int targetXLoc, int targetYLoc, int spyRaceId, int mob
 		return 0;		// the original firm or town has been destroyed or sold
 	}
 
+	if( cloakedNationRecno && mod_fryhtan.is_fryhtan(cloakedNationRecno) )		// 7kmod-fryhtan: a spy can't pass as a unit of a Fryhtan kingdom
+		return 0;
+
 	//------- Add the assign spy action --------//
 
 	int actionRecno = add_action( targetXLoc, targetYLoc,
@@ -303,6 +307,9 @@ int Nation::ai_assign_spy(ActionNode* actionNode)
 	if( !spyUnit->spy_recno || spyUnit->true_nation_recno() != nation_recno )
 		return -1;
 
+	if( actionNode->action_para && mod_fryhtan.is_fryhtan(actionNode->action_para) )		// 7kmod-fryhtan: a spy can't pass as a unit of a Fryhtan kingdom
+		return -1;
+
 	//------ change the cloak of the spy ------//
 
 	int  newFlag;
@@ -424,6 +431,9 @@ int Nation::think_assign_spy_target_town(int raceId, int regionId)
 		townPtr = town_array[townRecno];
 
 		if( townPtr->nation_recno == nation_recno )		// don't assign to own firm
+			continue;
+
+		if( townPtr->nation_recno && mod_fryhtan.is_fryhtan(townPtr->nation_recno) )		// 7kmod-fryhtan: a spy can't pass as a unit of a Fryhtan kingdom to enter an enslaved town
 			continue;
 
 		if( townPtr->region_id != regionId )

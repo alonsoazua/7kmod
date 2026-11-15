@@ -24,11 +24,17 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 ### Agregado
 - **Jugar como reino Fryhtan** (traído de la rama experimental `7kmod-fryhtan`; solo
   partidas de un jugador). En New Game, la pestaña **Fryhtans** permite elegir una de
-  las 13 especies. El reino empieza con su All High y una guarida con 4 soldados,
-  entrena soldados y Ordos en la guarida con comida, esclaviza pueblos para cobrarles
-  tributo, captura guaridas salvajes, no tiene diplomacia de comercio ni alianzas y
-  los Fryhtans salvajes no lo atacan. El detalle está en `CHANGELOG-fryhtan.md` y en
-  `TODO-fryhtan.md`.
+  las 13 especies. El reino empieza con su All High, una guarida y un pueblo
+  esclavizado de 20; entrena soldados y Ordos en la guarida con oro y comida (Promote y
+  Demote también funcionan), esclaviza pueblos para cobrarles tributo, captura guaridas
+  salvajes, no tiene diplomacia de comercio ni alianzas y los Fryhtans salvajes no lo
+  atacan. El detalle está en `CHANGELOG-fryhtan.md` y en `TODO-fryhtan.md`.
+  - Traído también: **Raid** a pueblos independientes, botín de oro por nivel de combate
+    al matar humanos, gracia de 3 meses al perder la guarida de un pueblo esclavizado,
+    regeneración de sus construcciones, el **Ordo dentro de un pueblo esclavizado**
+    (Subjugate, Kidnap y Taskmaster), el mínimo de resistencia según el liderazgo, los
+    precios por especie y las correcciones (unidades humanas que se unían al reino
+    Fryhtan, texto basura en la noticia de muerte de un Ordo).
 - En New Game, los nombres de las especies, las pestañas Humans/Fryhtans y la etiqueta
   "Seats of Power Unlocked?" usan letra suavizada (TeX Gyre Pagella, tipo Palatino).
 

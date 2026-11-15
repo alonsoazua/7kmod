@@ -41,6 +41,7 @@
 #include <ONEWS.h>
 #include <ModTech.h>
 #include <ModSpy.h>
+#include <ModFryhtan.h>
 
 //------- Define the global object --------//
 
@@ -437,6 +438,9 @@ void ModSpy::process_counter_spy(Town* townPtr)
 //
 void ModSpy::add_villager(Town* townPtr, int nationRecno, int raceId, int totalSkill)
 {
+	if( mod_fryhtan.is_fryhtan(nationRecno) )		// 7kmod-fryhtan: no human villagers join a Fryhtan kingdom
+		return;
+
 	if( townPtr->recruitable_race_pop(raceId, 0) == 0 )		// 0-not spies
 		return;
 

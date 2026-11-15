@@ -652,7 +652,10 @@ static void disp_nation_info()
 
 		if( mod_fryhtan.is_fryhtan(nationRecno) )
 		{
-			snprintf( xstr, MAX_STR_LEN+1, "%d/%d", mod_fryhtan.nation_population(nationRecno), mod_fryhtan.nation_population_cap(nationRecno) );
+			if( FRYHTAN_POPULATION_LIMIT )
+				snprintf( xstr, MAX_STR_LEN+1, "%d/%d", mod_fryhtan.nation_population(nationRecno), mod_fryhtan.nation_population_cap(nationRecno) );
+			else
+				snprintf( xstr, MAX_STR_LEN+1, "%d", mod_fryhtan.nation_population(nationRecno) );
 			font_san.put_field( x1, y+=16, _("Fryhtan Population"), x2, xstr );
 		}
 	}

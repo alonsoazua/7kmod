@@ -43,6 +43,7 @@
 #include <OWALLRES.h>
 #include <OSERES.h>
 #include <OREMOTE.h>
+#include <ModFryhtan.h>
 
 //-------------- Define constant -----------------//
 
@@ -836,6 +837,11 @@ int Power::detect_action()
 			if( activeUnit->spy_recno && activeUnit->nation_recno == targetTown->nation_recno )
 			{
 				//------ if the player is sending a spy into the town ------//
+				unit_array.assign(targetTown->loc_x1, targetTown->loc_y1, 0, COMMAND_PLAYER, nationSelectedArray, nationSelectedCount);
+			}
+			else if( nationSelectedCount == 1 && mod_fryhtan.can_ordo_enter_town(activeUnit, targetTown->town_recno) )
+			{
+				//------ 7kmod-fryhtan: sending an Ordo into an enslaved town ------//
 				unit_array.assign(targetTown->loc_x1, targetTown->loc_y1, 0, COMMAND_PLAYER, nationSelectedArray, nationSelectedCount);
 			}
 			else if( isHuman && targetTown->nation_recno == nation_array.player_recno )			// assign to the firm
@@ -1900,6 +1906,8 @@ int Power::choose_cursor(int scrnX, int scrnY,
 						// ##### begin Gilbert 18/10 ######//
 						if( unitPtr->race_id && rankId == RANK_SOLDIER && !unitPtr->skill.skill_id)
 						// ##### end Gilbert 18/10 ######//
+							return CURSOR_ASSIGN;
+						else if( mod_fryhtan.can_ordo_enter_town(unitPtr, pointingObjectRecno) )		// 7kmod-fryhtan: an Ordo into an enslaved town
 							return CURSOR_ASSIGN;
 						else
 							return CURSOR_UNIT_C;
