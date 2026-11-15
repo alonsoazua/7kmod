@@ -14,7 +14,12 @@ together.
 
 ## [Unreleased]
 
-Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0).
+---
+
+## [0.1.0] - 2026-11-14
+
+Included in **New Adversaries 0.4.0** (gameplay 0.3.0, 7kmod 0.4.0). The
+`7kmod-fryhtan` branch goes on with the experimental adjustments of the Fryhtan kingdom.
 
 ### Added
 - **Fryhtan kingdom** (phase 1 of `TODO-fryhtan.md`; single player games only):

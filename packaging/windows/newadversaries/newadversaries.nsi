@@ -4,10 +4,10 @@
 ;
 ; Built by make_installer.sh, which prepares the files in a staging folder and
 ; runs makensis there:
-;   makensis -DVERSION=0.3.0 -DSTAGE=<staging folder> -DOUTFILE=<setup.exe> newadversaries.nsi
+;   makensis -DVERSION=0.4.0 -DSTAGE=<staging folder> -DOUTFILE=<setup.exe> newadversaries.nsi
 
 !ifndef VERSION
-  !define VERSION "0.3.0"
+  !define VERSION "0.4.0"
 !endif
 !ifndef STAGE
   !define STAGE "stage"
@@ -25,7 +25,7 @@ Unicode true
 
 Name "${APPNAME} ${VERSION}"
 OutFile "${OUTFILE}"
-InstallDir "$PROGRAMFILES\${APPNAME}"
+InstallDir "$PROGRAMFILES\7k New Adversaries"		; the folder of a previous installation is kept (InstallDirRegKey)
 InstallDirRegKey HKLM "${REGKEY}" "Install_Dir"
 RequestExecutionLevel admin
 SetCompressor /SOLID lzma

@@ -1,4 +1,4 @@
-NEW ADVERSARIES 0.3.0
+NEW ADVERSARIES 0.4.0
 Un mod de Seven Kingdoms: Ancient Adversaries
 ==============================================
 
@@ -16,7 +16,10 @@ QUÉ EJECUTABLE USAR
 
 New Adversaries (7k-newAdversaries.exe)
     El mod completo. Incluye todo lo de Classic más cambios de reglas:
-    - Juega como un reino Fryhtan (pestaña "Fryhtans" en New Game).
+    - Juega como un reino Fryhtan (pestaña "Fryhtans" en New Game): entrena
+      Fryhtans en tus guaridas, esclaviza pueblos y cóbrales tributo, saquéalos
+      con Raid y manda a tus Ordos a someterlos, secuestrar aldeanos o
+      explotarlos.
     - Invoca Fryhtans desde la Sede de Poder; la IA también los usa.
     - Greater Beings con poderes nuevos, espionaje ampliado (propaganda,
       accidentes, reportes de inteligencia), comercio de materias primas en el

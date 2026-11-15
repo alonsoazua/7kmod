@@ -22,30 +22,44 @@ the game plays. This branch includes everything in the `7kmod` branch, documente
 
 ## [Unreleased]
 
+---
+
+## [0.3.0] - 2026-11-14
+
+Released as **New Adversaries 0.4.0**, in the installer `NewAdversaries-0.4.0-setup.exe`.
+Based on **7kmod 0.4.0** (see `CHANGELOG.en.md`).
+
 ### Added
 - **Play as a Fryhtan kingdom** (brought from the experimental `7kmod-fryhtan`
   branch; single player games only). In New Game, the **Fryhtans** tab lets you pick
-  one of the 13 species. The kingdom starts with its All High and a lair with 4
-  soldiers, trains soldiers and Ordos in the lair with food, enslaves villages to
-  collect tribute, captures wild lairs, has no trade or alliance diplomacy, and wild
-  Fryhtans don't attack it. The details are in `CHANGELOG-fryhtan.en.md` and in
-  `TODO-fryhtan.md` (Spanish only).
+  one of the 13 species. The kingdom starts with its All High, a lair and an enslaved
+  village of 20; it trains soldiers and Ordos in the lair with gold and food (Promote
+  and Demote work too), enslaves villages to collect tribute, captures wild lairs, has
+  no trade or alliance diplomacy, and wild Fryhtans don't attack it. The details are in
+  `CHANGELOG-fryhtan.en.md` and in `TODO-fryhtan.md` (Spanish only).
+  - Also brought: **Raid** on independent villages, gold spoils by combat level for
+    killing humans, a 3-month grace when an enslaved village loses its lair,
+    regeneration of its buildings, the **Ordo inside an enslaved village** (Subjugate,
+    Kidnap and Taskmaster), the minimum resistance by leadership, the prices by species
+    and the fixes (human units joining the Fryhtan kingdom, garbage text in the news of
+    an Ordo's death).
 - In New Game, the species names, the Humans/Fryhtans tabs and the "Seats of Power
   Unlocked?" label use smooth anti-aliased text (TeX Gyre Pagella, a Palatino clone).
 
-- **Windows installer** `NewAdversaries-0.3.0-setup.exe` (NSIS, in
+- **Windows installer** `NewAdversaries-0.4.0-setup.exe` (NSIS, in
   `packaging/windows/newadversaries/`): installs the full game with
   `7k-newAdversaries.exe` and `7k-newAdversaries-Classic.exe`, `LEEME.txt` and
   `README.txt` (what each executable does, where the saved games go, source code and
   licenses), the `Changelog`, `Docs` and `Licencias` folders, the music as an optional
   component, Start menu shortcuts, an optional desktop shortcut and an uninstaller
   (which doesn't delete the saved games). In Spanish or English. Default folder:
-  `C:\Program Files (x86)\New Adversaries\`.
+  `C:\Program Files (x86)\7k New Adversaries\` (if it was already installed, it
+  suggests the previous folder).
 
 ### Changed
 - **Name: New Adversaries.** The mod is called **New Adversaries** and this branch is
   the full mod (executable `7k-newAdversaries.exe`); `7kmod` is **New Adversaries
-  Classic**. The main menu shows "New Adversaries 0.3.0" and the window has the same
+  Classic**. The main menu shows "New Adversaries 0.4.0" and the window has the same
   title. Players see a single public version (`MOD_PUBLIC_VERSION` in
   `include/ModVersion.h`); this changelog keeps the gameplay version.
 - **Own folder:** `%APPDATA%\7kfans.com\7k-newAdversaries\` (before `7kaa-mod`). It

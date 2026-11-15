@@ -1,4 +1,4 @@
-NEW ADVERSARIES 0.3.0
+NEW ADVERSARIES 0.4.0
 A mod of Seven Kingdoms: Ancient Adversaries
 ============================================
 
@@ -16,7 +16,10 @@ WHICH EXECUTABLE TO USE
 
 New Adversaries (7k-newAdversaries.exe)
     The full mod. It has everything in Classic plus rule changes:
-    - Play as a Fryhtan kingdom ("Fryhtans" tab in New Game).
+    - Play as a Fryhtan kingdom ("Fryhtans" tab in New Game): train Fryhtans
+      in your lairs, enslave villages and collect their tribute, plunder them
+      with Raid and send your Ordos to subjugate them, kidnap villagers or work
+      them harder.
     - Invoke Fryhtans from the Seat of Power; the AI uses them too.
     - Greater Beings with new powers, extended espionage (propaganda,
       accidents, intelligence reports), raw material trade at the harbor,
