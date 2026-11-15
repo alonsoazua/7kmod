@@ -24,6 +24,13 @@ escenarios (desde la 0.2.0) está descrito en `TODO-editor.md`.
 
 ## [Sin publicar]
 
+---
+
+## [0.4.0] - 2026-11-14
+
+Primera versión publicada como **New Adversaries Classic 0.4.0**, en el instalador
+`NewAdversaries-0.4.0-setup.exe`.
+
 ### Agregado
 - **Reclutar y entrenar desde los edificios de producción** (traído de `7kmod-gameplay`):
   minas, fábricas, torres de ciencia y fábricas de guerra tienen el botón **Recruit**
@@ -41,7 +48,7 @@ escenarios (desde la 0.2.0) está descrito en `TODO-editor.md`.
 ### Cambiado
 - **Nombre: New Adversaries Classic.** El mod se llama **New Adversaries**; esta rama es
   **New Adversaries Classic** (ejecutable `7k-newAdversaries-Classic.exe`). El menú
-  principal muestra "New Adversaries Classic 0.3.0" y la ventana se titula igual. Para
+  principal muestra "New Adversaries Classic 0.4.0" y la ventana se titula igual. Para
   los jugadores hay una sola versión, la de New Adversaries (`MOD_PUBLIC_VERSION` en
   `include/ModVersion.h`); este changelog sigue llevando la versión de `7kmod`.
 - **Carpeta propia:** `%APPDATA%\7kfans.com\7k-newAdversaries-Classic\` (antes

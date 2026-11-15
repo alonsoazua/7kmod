@@ -28,7 +28,7 @@
 
 //------- version of the 7kmod branch --------//
 
-#define MOD_7KMOD_VERSION		"0.3.0"
+#define MOD_7KMOD_VERSION		"0.4.0"
 
 
 //------- public version of New Adversaries --------//
@@ -37,7 +37,7 @@
 // New Adversaries Classic (7kmod). The branch versions above and below are
 // kept in the changelogs.
 
-#define MOD_PUBLIC_VERSION		"0.3.0"
+#define MOD_PUBLIC_VERSION		"0.4.0"
 
 
 //------- version of the 7kmod-gameplay branch --------//

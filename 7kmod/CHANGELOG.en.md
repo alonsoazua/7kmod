@@ -25,6 +25,13 @@ which includes everything in `7kmod` and documents its own changes in
 
 ## [Unreleased]
 
+---
+
+## [0.4.0] - 2026-11-14
+
+First version released as **New Adversaries Classic 0.4.0**, in the installer
+`NewAdversaries-0.4.0-setup.exe`.
+
 ### Added
 - **Recruit and train from the production buildings** (brought from `7kmod-gameplay`):
   mines, factories, towers of science and war factories have the **Recruit** button
@@ -42,7 +49,7 @@ which includes everything in `7kmod` and documents its own changes in
 ### Changed
 - **Name: New Adversaries Classic.** The mod is called **New Adversaries**; this branch
   is **New Adversaries Classic** (executable `7k-newAdversaries-Classic.exe`). The main
-  menu shows "New Adversaries Classic 0.3.0" and the window has the same title. Players
+  menu shows "New Adversaries Classic 0.4.0" and the window has the same title. Players
   see a single version, the New Adversaries one (`MOD_PUBLIC_VERSION` in
   `include/ModVersion.h`); this changelog keeps the `7kmod` version.
 - **Own folder:** `%APPDATA%\7kfans.com\7k-newAdversaries-Classic\` (before
