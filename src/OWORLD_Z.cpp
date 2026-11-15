@@ -62,6 +62,7 @@
 #include <OFIRMDIE.h>
 #include <OIMGRES.h>
 #include <ModEditor.h>
+#include <ModFryhtan.h>
 #include "gettext.h"
 
 //--------- Define static vars -----------//
@@ -991,6 +992,15 @@ void ZoomMatrix::disp_text()
 			if( config.disp_town_name )
 			{
 				String str(townPtr->town_name());
+
+				const char* roleName = mod_fryhtan.town_role_name(townPtr);		// 7kmod-fryhtan: the role of the Ordo inside the town
+
+				if( roleName )
+				{
+					str += " (";
+					str += roleName;
+					str += ")";
+				}
 
 				put_center_text( (townPtr->abs_x1+townPtr->abs_x2)/2,	y, str );
 

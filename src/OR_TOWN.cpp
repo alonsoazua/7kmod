@@ -22,6 +22,7 @@
 //Description : Town Report
 
 #include <OVGA.h>
+#include <OSTR.h>
 #include <OFONT.h>
 #include <OIMGRES.h>
 #include <OVBROWIF.h>
@@ -355,7 +356,18 @@ static void put_town_rec(int recNo, int x, int y, int refreshFlag)
 	x+=3;
 	y+=3;
 
-	font_san.put( x    , y, townPtr->town_name() );
+	const char* roleName = mod_fryhtan.town_role_name(townPtr);		// 7kmod-fryhtan: the role of the Ordo inside the town
+
+	if( roleName )
+	{
+		String str(townPtr->town_name());
+		str += " (";
+		str += roleName;
+		str += ")";
+		font_san.put( x, y, str, 0, x+170 );
+	}
+	else
+		font_san.put( x    , y, townPtr->town_name() );
 	font_san.put( x+175, y, townPtr->population );
 	font_san.put( x+241, y, townPtr->jobless_population );
 	font_san.put( x+309, y, townPtr->average_loyalty() );

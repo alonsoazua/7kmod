@@ -1907,6 +1907,8 @@ int Power::choose_cursor(int scrnX, int scrnY,
 						if( unitPtr->race_id && rankId == RANK_SOLDIER && !unitPtr->skill.skill_id)
 						// ##### end Gilbert 18/10 ######//
 							return CURSOR_ASSIGN;
+						else if( mod_fryhtan.can_ordo_enter_town(unitPtr, pointingObjectRecno) )		// 7kmod-fryhtan: an Ordo into an enslaved town
+							return CURSOR_ASSIGN;
 						else
 							return CURSOR_UNIT_C;
 					case SCREEN_OBJECT_FRIEND_FIRM:

@@ -132,7 +132,6 @@ short  Town::fort_recruit_town_recno = 0;
 
 static int  race_filter(int recNo=0);
 static const char* ordo_menu_name(TownOrdo* ordoPtr);		// 7kmod-fryhtan
-static const char* ordo_action_name(int action);
 extern const char* monster_name_general[];		// OU_MONS.cpp: "<species> Ordo"
 static int  spy_filter(int recNo=0);
 static int  ceilf_int(float f);
@@ -485,7 +484,7 @@ void Town::disp_main_menu(int refreshFlag)
 			static char helpStr[100];
 
 			// TRANSLATORS: <Name>: <Subjugate|Kidnap|Taskmaster>
-			snprintf( helpStr, sizeof(helpStr), _("%s: %s"), ordo_menu_name(ordoPtr), ordo_action_name(ordoPtr->action) );
+			snprintf( helpStr, sizeof(helpStr), _("%s: %s"), ordo_menu_name(ordoPtr), ModFryhtan::ordo_action_name(ordoPtr->action) );
 			help.set_custom_help( button_ordo.x1, button_ordo.y1, button_ordo.x2, button_ordo.y2, _("Ordo"), helpStr );
 		}
 	}
@@ -898,18 +897,7 @@ static const char* ordo_menu_name(TownOrdo* ordoPtr)
 }
 
 
-//--------- Begin of static function ordo_action_name ---------//
-//
-static const char* ordo_action_name(int action)
-{
-	switch( action )
-	{
-		case ORDO_ACTION_KIDNAP:		return _("Kidnap");
-		case ORDO_ACTION_TASKMASTER:	return _("Taskmaster");
-		default:								return _("Subjugate");
-	}
-}
-//----------- End of static function ordo_action_name -----------//
+
 
 
 //--------- Begin of function Town::disp_ordo_menu ---------//
@@ -982,7 +970,7 @@ void Town::disp_ordo_menu(int refreshFlag)
 	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+24 );
 	font_san.put( INFO_X1+6, y+5, _("Role"), 0, INFO_X1+60 );
 	font_san.put( INFO_X1+66, y+5, "|" );
-	font_san.put( INFO_X1+76, y+5, ordo_action_name(ordoPtr->action), 0, INFO_X2-30 );
+	font_san.put( INFO_X1+76, y+5, ModFryhtan::ordo_action_name(ordoPtr->action), 0, INFO_X2-30 );
 
 	button_ordo_next.paint_text( INFO_X2-26, y+2, INFO_X2-4, y+22, ">" );
 

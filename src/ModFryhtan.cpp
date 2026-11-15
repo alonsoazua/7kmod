@@ -2068,6 +2068,38 @@ int ModFryhtan::taskmaster_town_gold(Town* townPtr)
 //----------- End of function ModFryhtan::taskmaster_town_gold -----------//
 
 
+//--------- Begin of function ModFryhtan::ordo_action_name ---------//
+//
+const char* ModFryhtan::ordo_action_name(int action)
+{
+	switch( action )
+	{
+		case ORDO_ACTION_KIDNAP:		return _("Kidnap");
+		case ORDO_ACTION_TASKMASTER:	return _("Taskmaster");
+		default:								return _("Subjugate");
+	}
+}
+//----------- End of function ModFryhtan::ordo_action_name -----------//
+
+
+//--------- Begin of function ModFryhtan::town_role_name ---------//
+//
+// The action (role) of the Ordo inside a town of the player, shown next to
+// its name on the map and in the Villages report. NULL without an Ordo or
+// for the towns of other kingdoms.
+//
+const char* ModFryhtan::town_role_name(Town* townPtr)
+{
+	if( !nation_array.player_recno || townPtr->nation_recno != nation_array.player_recno )
+		return NULL;
+
+	TownOrdo* ordoPtr = town_ordo(townPtr->town_recno);
+
+	return ordoPtr ? ordo_action_name(ordoPtr->action) : NULL;
+}
+//----------- End of function ModFryhtan::town_role_name -----------//
+
+
 //--------- Begin of function ModFryhtan::raid_lair ---------//
 //
 // return: <int> the firm recno of the lair of the kingdom linked to the town

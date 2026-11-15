@@ -144,6 +144,9 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   - **Taskmaster:** each villager gives +$0.5 to +$2 more a month and +5 to +20 more food
     a year, by the leadership.
   - **Leave village** takes it out. If the town changes owner, the Ordo comes out.
+  - With an Ordo selected, the enter arrow shows over the town.
+  - The town's name on the map and in the Villages report shows the role, for example
+    "Rouen (Subjugate)".
 - **Fixed:** when an Ordo died, the news showed garbage text instead of the name. Now
   it says "Your Ordo, <name>, has been slain."; the name in the assassination, betrayal
   and honors news was fixed too.

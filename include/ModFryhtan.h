@@ -304,6 +304,8 @@ public:
 	static int	taskmaster_gold(int leadership);		// extra tribute a month for each villager, in 1/100 $
 	static int	taskmaster_food(int leadership);		// extra food a year for each villager
 	int	taskmaster_town_gold(Town* townPtr);			// the extra tribute of the town this month, $
+	static const char*	ordo_action_name(int action);		// "Subjugate", "Kidnap" or "Taskmaster"
+	const char*	town_role_name(Town* townPtr);		// the action of the Ordo in a town of the player, NULL if none
 
 	int	raid_lair(Town* townPtr, int nationRecno);		// the linked lair with the best general, 0 if none
 	int	can_see_raid(Town* townPtr, int nationRecno);	// whether the Raid panel is shown

@@ -147,6 +147,9 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
   - **Taskmaster:** cada aldeano da de +$0.5 a +$2 más al mes y de +5 a +20 de comida más
     al año, según el liderazgo.
   - **Leave village** lo saca. Si el pueblo cambia de dueño, el Ordo sale.
+  - Con un Ordo seleccionado, sobre el pueblo se ve la flecha de entrar.
+  - El nombre del pueblo en el mapa y en el reporte de pueblos muestra el rol, por
+    ejemplo "Rouen (Subjugate)".
 - **Corregido:** al morir un Ordo, la noticia mostraba texto basura en lugar del
   nombre. Ahora dice "Your Ordo, <nombre>, has been slain."; también se corrigió el
   nombre en las noticias de asesinato, traición y honores.

@@ -1108,7 +1108,7 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         - Probado: entrar con clic derecho, Kidnap (llegó un aldeano zulú con su noticia),
           Taskmaster (+$42 y la comida extra con 21 aldeanos y liderazgo 100), salir del
           pueblo, y guardar y cargar con el Ordo adentro.
-- [ ] **Cursor de entrar al mandar un Ordo a un pueblo.** Con un Ordo seleccionado, al
+- [x] **Cursor de entrar al mandar un Ordo a un pueblo.** Con un Ordo seleccionado, al
       pasar el mouse sobre un pueblo esclavizado al que puede entrar, debe verse la
       flecha de entrar (`CURSOR_ASSIGN`), como cuando un aldeano va a un pueblo propio.
       Hoy se ve el cursor normal aunque el clic derecho sí lo manda.
@@ -1118,12 +1118,17 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         `mod_fryhtan.can_ordo_enter_town(unidad, pueblo)`.
       - Solo con un Ordo seleccionado (igual que el clic derecho, que solo lo manda si
         está solo).
-- [ ] **Rol del Ordo junto al nombre del pueblo.** En la vista general del mapa, el
+      - **Cómo quedó:** `Power::choose_cursor` da `CURSOR_ASSIGN` si
+        `mod_fryhtan.can_ordo_enter_town()`. Probado.
+- [x] **Rol del Ordo junto al nombre del pueblo.** En la vista general del mapa, el
       nombre de un pueblo esclavizado con un Ordo adentro muestra su rol entre
       paréntesis, por ejemplo **Rouen (Subjugate)**, **Rouen (Kidnap)** o **Rouen
       (Taskmaster)**.
       - Solo en los pueblos del jugador (los demás no ven el rol).
-      - ❓ ¿También en el reporte de pueblos (Villages, `OR_TOWN.cpp`)?
+      - También en el reporte de pueblos (Villages).
+      - **Cómo quedó:** `ModFryhtan::town_role_name`, usado en el nombre del mapa
+        (`OWORLD_Z.cpp`) y en el reporte (`OR_TOWN.cpp`). Probado: "Persepolis
+        (Subjugate)" en los dos.
 
 ## 8. Economía oscura (en diseño)
 
