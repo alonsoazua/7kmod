@@ -1157,6 +1157,20 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         un Ordo; el Ordo en un pueblo de 20 subió 0.30 de liderazgo y 0.20 de combate cada
         15 días; Kidnap esperando 342 días con liderazgo 30. No se probó en partida el
         mínimo de resistencia ni la noticia nueva de Kidnap.
+- [ ] **Precios por especie, Pfith chica y Train Ordo de vuelta.**
+      - **Ick, Broosken y Doink cuestan $100** (soldado y Ordo); antes $150.
+      - **Pfith pasa a especie chica** (hoy es grande por su nivel 6): $150, población 2,
+        10 días de entrenamiento (soldado y Ordo). Va como excepción en
+        `ModFryhtan::is_large_monster` (y en la tabla de New Game,
+        `menu_species_level_array` / `menu_species_size_text`); sus datos de combate,
+        vida y ataque no cambian.
+      - Así quedan:
+        - Chicas a **$100**: Ick, Broosken, Doink.
+        - Chicas a **$150**: Deezboanz, Rattus, Pfith.
+        - Grandes a **$200**: Haubudam, Rokken, Wyrm, Droog, Sauroid, Karrotten, Holgh.
+      - El texto de New Game muestra el precio de cada especie ("Small: $100 per unit").
+      - **Train Ordo vuelve a verse** en la guarida (`LAIR_SHOW_TRAIN_ORDO` 1), junto a
+        Promote / Demote.
 
 ## 8. Economía oscura (en diseño)
 
