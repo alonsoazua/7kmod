@@ -1177,6 +1177,31 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         las 13 especies, el texto de New Game y el botón Train Ordo en la guarida.
       - **Train Ordo vuelve a verse** en la guarida (`LAIR_SHOW_TRAIN_ORDO` 1), junto a
         Promote / Demote.
+- [ ] **Sobrepoblación, Cull Population y muertes por Taskmaster.**
+      - **Sobrepoblación:** un pueblo esclavizado con **30 o más** habitantes empieza a
+        perder lealtad, y si sigue así termina rebelándose (la rebelión normal: con
+        lealtad de 29 o menos, `REBEL_LOYALTY`).
+        - 💡 La lealtad objetivo baja **2 por cada habitante desde 30**: con general en
+          la guarida (hoy 50), un pueblo de 30 queda en 48, uno de 35 en 38 y uno de 40
+          en 28 (ya se puede rebelar). Sin general baja hacia 0, como hoy.
+        - ❓ ¿Subjugate la sostiene igual (no baja de su liderazgo, tope 50) o la
+          sobrepoblación le gana?
+        - ❓ ¿Un aviso en el panel del pueblo ("Overpopulated: loyalty is dropping")?
+      - **Botón Cull Population** en el panel del pueblo esclavizado, con **icono de
+        espada**: mata a **3 o 4** aldeanos al azar (de las razas del pueblo, según su
+        gente) para bajar la población.
+        - ❓ ¿Da botín como los aldeanos que mueren al atacar un pueblo ($2 y 5 de comida
+          cada uno)?
+        - ❓ ¿Tiene tiempo de espera (por ejemplo 1 mes, con barra como el Raid) o se
+          puede usar seguido?
+        - ❓ ¿Baja la lealtad de los que quedan (miedo) o la sube?
+        - 💡 No se puede usar con menos de 5 habitantes, para no vaciar el pueblo.
+        - ❓ El icono: buscar uno de espada entre los botones del juego (por ejemplo el de
+          Demote).
+      - **Taskmaster mata aldeanos poco a poco:** el Ordo con Taskmaster, además del oro
+        y la comida extra, mata un aldeano de vez en cuando (por el trabajo forzado).
+        - 💡 1 aldeano cada **90 días** en promedio (al azar, entre 60 y 120); ❓ ¿con
+          noticia?, ❓ ¿depende del liderazgo (más liderazgo, menos muertes)?
 
 ## 8. Economía oscura (en diseño)
 
