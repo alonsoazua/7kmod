@@ -400,7 +400,14 @@ void Town::next_day()
 	//--- 7kmod-fryhtan: an enslaved town pays its tribute, and becomes independent without a lair ---//
 
 	if( mod_fryhtan.is_enslaved_town(this) )
+	{
+		mod_fryhtan.next_day_town_ordo(this);		// an Ordo inside the town
+
+		if( town_array.is_deleted(townRecno) )
+			return;
+
 		mod_fryhtan.next_day_town(this);
+	}
 
 	//------ update target loyalty/resistance -------//
 
@@ -740,6 +747,8 @@ void Town::set_nation(int newNationRecno)
 {
 	if( nation_recno == newNationRecno )
 		return;
+
+	mod_fryhtan.ordo_leave_town(town_recno, 1);		// 7kmod-fryhtan: an Ordo inside the town comes out (or is lost)
 
 	//--------- update town network (pre-step) ---------//
 	town_network_array.town_pre_changing_nation(town_recno);
@@ -1235,6 +1244,8 @@ void Town::update_target_loyalty()
 	if( mod_fryhtan.is_enslaved_town(this) )
 	{
 		int targetLoyalty = mod_fryhtan.has_lair_commander(this) ? ENSLAVED_TOWN_LOYALTY : ENSLAVED_TOWN_NO_COMMANDER_LOYALTY;
+
+		targetLoyalty = MAX( targetLoyalty, mod_fryhtan.subjugate_loyalty(this) );		// an Ordo doing Subjugate inside the town
 
 		for( int i=0 ; i<MAX_RACE ; i++ )
 			race_target_loyalty_array[i] = targetLoyalty;
@@ -2231,6 +2242,14 @@ void Town::assign_unit(int unitRecno)
 	//-----------------------------------------//
 
 	Unit* unitPtr = unit_array[unitRecno];
+
+	//--- 7kmod-fryhtan: an Ordo goes into an enslaved town of its kingdom ---//
+
+	if( !unitPtr->race_id )
+	{
+		mod_fryhtan.ordo_enter_town(this, unitPtr);		// it stops if it can't
+		return;
+	}
 
 	if( population >= MAX_TOWN_POPULATION || unitPtr->rank_id == RANK_KING )
 	{

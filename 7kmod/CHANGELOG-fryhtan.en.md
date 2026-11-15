@@ -135,6 +135,15 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
   - Betraying units, leaderless rebels and propaganda villagers don't go over to a
     Fryhtan kingdom, and the villagers of an enslaved town don't hand it a human
     building (capture by workers).
+- **Ordo inside an enslaved town:** right clicking an enslaved town sends an Ordo into
+  it (one per town). The town's "Ordo <name>: <action>" button opens its view, with
+  three actions:
+  - **Subjugate:** the loyalty doesn't drop below the Ordo's leadership (50 at most).
+  - **Kidnap:** a new villager of a race of the town arrives, on average every 4 months
+    with leadership 30 and every 2 with 100 (never over 6 months), with a news message.
+  - **Taskmaster:** each villager gives +$0.5 to +$2 more a month and +5 to +20 more food
+    a year, by the leadership.
+  - **Leave village** takes it out. If the town changes owner, the Ordo comes out.
 - **Fixed:** when an Ordo died, the news showed garbage text instead of the name. Now
   it says "Your Ordo, <name>, has been slain."; the name in the assassination, betrayal
   and honors news was fixed too.

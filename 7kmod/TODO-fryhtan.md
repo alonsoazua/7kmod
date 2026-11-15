@@ -1072,6 +1072,39 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       - La comida de entrenar (20 el soldado, 40 el Ordo) no cambia.
       - La tabla redondea los impares; en el código se usa el valor exacto (por ejemplo
         22.5), porque se come un poco cada día.
+- [x] **Ordo dentro de un pueblo esclavizado.** Un Ordo se puede mandar a un pueblo
+      esclavizado del reino (clic derecho sobre el pueblo con el Ordo seleccionado) y
+      entra como un espía: deja de verse en el mapa. Hay 1 Ordo por pueblo y no corre
+      riesgo. Hace una acción a la vez:
+      - **Subjugate:** la lealtad del pueblo no baja del **liderazgo del Ordo**, con tope
+        de **50** (`SUBJUGATE_MAX_LOYALTY`, para subirlo con una mejora más adelante).
+        Sirve sobre todo cuando no hay general en una guarida enlazada o en los 3 meses de
+        gracia.
+      - **Kidnap:** llega un aldeano nuevo al pueblo, en promedio 1 cada **4 meses** con
+        liderazgo 30 y cada **2 meses** con 100 (en línea recta). Cada uno llega en un día
+        al azar entre la mitad y una vez y media del promedio (con liderazgo 30, entre 60
+        y 180 días, nunca más de 6 meses) y el contador vuelve a empezar. La raza sale al
+        azar según la gente del pueblo. Hasta 60 personas. Noticia: "Your Ordo Feskul has
+        kidnapped a Greek villager into your village of …".
+      - **Taskmaster:** cada aldeano da **+$0.5 al mes con liderazgo 30 hasta +$2 con
+        100**, aparte del tributo (y aunque no haya general en una guarida enlazada), y
+        **+5 a +20 de comida al año**.
+      - **Cómo quedó:**
+        - En el panel del pueblo, el botón "Ordo <nombre>: <acción>" abre la vista del
+          Ordo (`TOWN_MENU_ORDO`, `Town::disp_ordo_menu`): su ícono, nombre, liderazgo y
+          combate; los tres botones de acción con lo que hace cada uno con su liderazgo
+          (el actual con marco amarillo), y **Leave village** y **Back**.
+        - El Ordo se guarda en `ModFryhtan::town_ordo_array` (por pueblo) y la unidad se
+          borra del mapa; al salir se crea otra vez con su nombre, liderazgo, combate y
+          vida (`ordo_enter_town`, `ordo_leave_town`). Adentro sigue comiendo y costando
+          como afuera, y cuenta en la población Fryhtan.
+        - Si el pueblo cambia de dueño o desaparece, el Ordo sale a su lado (se pierde si
+          no hay lugar).
+        - Se guarda al final de los datos Fryhtan de la partida; las partidas anteriores
+          cargan sin Ordos en pueblos.
+        - Probado: entrar con clic derecho, Kidnap (llegó un aldeano zulú con su noticia),
+          Taskmaster (+$42 y la comida extra con 21 aldeanos y liderazgo 100), salir del
+          pueblo, y guardar y cargar con el Ordo adentro.
 
 ## 8. Economía oscura (en diseño)
 

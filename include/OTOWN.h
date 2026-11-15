@@ -166,6 +166,8 @@ public:
 	void	disp_raid_button(int refreshFlag);		// 7kmod-fryhtan
 	void	disp_raid_menu(int refreshFlag);
 	int	detect_raid_menu();
+	void	disp_ordo_menu(int refreshFlag);		// 7kmod-fryhtan: the Ordo inside an enslaved town
+	int	detect_ordo_menu();
 	int	average_target_resistance(int nationRecno);
 
 	short	town_defender_count;			// no. of units currently defending this town

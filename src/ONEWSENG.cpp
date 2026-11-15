@@ -133,6 +133,7 @@ static NewsInfo news_info_array[] =
 	{ &News::counter_spy_caught, 0 },
 	{ &News::spy_confrontation, 0 },
 	{ &News::town_raided, 0 },				// 7kmod-fryhtan
+	{ &News::ordo_kidnap, 0 },				// 7kmod-fryhtan
 };
 
 //------- Define static variables --------//
@@ -1316,6 +1317,24 @@ void News::villager_joined()
 				_(race_res[short_para2]->adjective), town_res.get_name(short_para1) );
 }
 //------- End of function News::villager_joined -----//
+
+
+//------ Begin of function News::ordo_kidnap -----//
+//
+// 7kmod-fryhtan: an Ordo of the player kidnapped a villager into an enslaved
+// town.
+//
+// short_para1 - name id. of the town
+// short_para2 - name id. of the Ordo (an Ordo name id., above 32767)
+// short_para3 - race id. of the villager
+//
+void News::ordo_kidnap()
+{
+	// TRANSLATORS: Your Ordo <Name> has kidnapped a <Race> villager into your village of <Town>.
+	snprintf(str, MAX_STR_LEN+1, _("Your Ordo %s has kidnapped a %s villager into your village of %s."),
+				news_unit_name(0, short_para2, 1), _(race_res[short_para3]->adjective), town_res.get_name(short_para1) );
+}
+//------- End of function News::ordo_kidnap -----//
 
 
 //------ Begin of function News::town_raided -----//

@@ -852,6 +852,29 @@ void NewsArray::town_raided(int townRecno, int townNameId, int loot, int killCou
 //------- End of function NewsArray::town_raided -----//
 
 
+//------ Begin of function NewsArray::ordo_kidnap -----//
+//
+// 7kmod-fryhtan: an Ordo of the player kidnapped a villager into an enslaved
+// town.
+//
+void NewsArray::ordo_kidnap(int townRecno, int ordoNameId, int raceId)
+{
+	News* newsPtr = add_news( NEWS_ORDO_KIDNAP, NEWS_NORMAL, nation_array.player_recno );
+
+	if( !newsPtr )
+		return;
+
+	Town* townPtr = town_array[townRecno];
+
+	newsPtr->short_para1 = townPtr->town_name_id;
+	newsPtr->short_para2 = (short) ordoNameId;
+	newsPtr->short_para3 = raceId;
+
+	newsPtr->set_loc( townPtr->center_x, townPtr->center_y, NEWS_LOC_TOWN, townRecno );
+}
+//------- End of function NewsArray::ordo_kidnap -----//
+
+
 //------ Begin of function NewsArray::intel_report -----//
 //
 // 7kmod-gameplay: a spy of the player made an intelligence report.

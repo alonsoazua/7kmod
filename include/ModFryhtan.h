@@ -145,6 +145,37 @@ struct LairOffer
 
 class FirmMonster;
 
+//------- Define struct TownOrdo -------//
+//
+// An Ordo sent into an enslaved town. The unit is removed from the map and
+// kept here, indexed by town recno, until it leaves the town.
+
+enum { ORDO_ACTION_SUBJUGATE = 1,			// the loyalty of the town doesn't drop below the leadership of the Ordo
+		 ORDO_ACTION_KIDNAP,						// a villager is added to the town now and then
+		 ORDO_ACTION_TASKMASTER };				// more tribute and food from each villager
+
+enum { ORDO_TASK_MIN_LEADERSHIP = 30,		// the leadership range of the effects of the actions...
+		 ORDO_TASK_MAX_LEADERSHIP = 100,		// ...(below and above it, as at the ends)
+		 SUBJUGATE_MAX_LOYALTY = 50,			// the highest loyalty Subjugate keeps (an upgrade could raise it)
+		 KIDNAP_DAYS_LOW = 120,					// the average days between kidnaps with the lowest leadership...
+		 KIDNAP_DAYS_HIGH = 60,					// ...and with the highest one; each one comes between 1/2 and 3/2 of it
+		 TASKMASTER_GOLD_LOW = 50,				// extra tribute a month for each villager, in 1/100 $, with the lowest leadership...
+		 TASKMASTER_GOLD_HIGH = 200,			// ...and with the highest one
+		 TASKMASTER_FOOD_LOW = 5,				// extra food a year for each villager, with the lowest leadership...
+		 TASKMASTER_FOOD_HIGH = 20 };			// ...and with the highest one
+
+struct TownOrdo
+{
+	int16_t	unit_id;				// 0 if there is no Ordo in the town
+	uint16_t	name_id;
+	int8_t	nation_recno;
+	int8_t	action;				// ORDO_ACTION_???
+	uint8_t	combat_level;
+	uint8_t	leadership;
+	int16_t	hit_points;
+	int32_t	next_kidnap_date;
+};
+
 //------- Define class ModFryhtan -------//
 
 class ModFryhtan
@@ -256,6 +287,24 @@ public:
 	void		set_raid_date(int townRecno, int32_t raidDate);
 	void		reset_town_dates(int townRecno);		// a new town or a town with a new owner
 
+	//------ an Ordo inside an enslaved town ------//
+
+	TownOrdo*	town_ordo_array;		// by town recno
+	int			town_ordo_array_size;
+
+	TownOrdo*	town_ordo(int townRecno);			// NULL if there is no Ordo in the town
+	int	can_ordo_enter_town(Unit* unitPtr, int townRecno);
+	void	ordo_enter_town(Town* townPtr, Unit* unitPtr);
+	int	ordo_leave_town(int townRecno, int forced=0);		// return: the recno of the unit, 0 if it couldn't come out (forced: the Ordo is lost then)
+	void	set_ordo_action(int townRecno, int action);
+	void	next_day_town_ordo(Town* townPtr);
+	int	subjugate_loyalty(Town* townPtr);		// the lowest loyalty Subjugate keeps, 0 without it
+	static int	ordo_task_level(int leadership);		// the leadership in ORDO_TASK_MIN/MAX_LEADERSHIP
+	static int	kidnap_days(int leadership);			// the average days between kidnaps
+	static int	taskmaster_gold(int leadership);		// extra tribute a month for each villager, in 1/100 $
+	static int	taskmaster_food(int leadership);		// extra food a year for each villager
+	int	taskmaster_town_gold(Town* townPtr);			// the extra tribute of the town this month, $
+
 	int	raid_lair(Town* townPtr, int nationRecno);		// the linked lair with the best general, 0 if none
 	int	can_see_raid(Town* townPtr, int nationRecno);	// whether the Raid panel is shown
 	int	raid_days_left(Town* townPtr);						// 0 if it can be raided now
@@ -298,7 +347,7 @@ public:
 	static int				menu_next_species(int monsterId, int dir);		// dir: 1 - next, -1 - previous, in alphabetical order
 	static int				is_valid_species(int monsterId)	{ return monsterId >= 1 && monsterId <= FRYHTAN_SPECIES_COUNT; }
 
-	ModFryhtan()		{ lair_array=NULL; lair_array_size=0; offer_array=NULL; offer_array_size=0; lost_lair_date_array=NULL; lost_lair_date_array_size=0; raid_date_array=NULL; raid_date_array_size=0; capturing_lair=0; reset(); }
+	ModFryhtan()		{ lair_array=NULL; lair_array_size=0; offer_array=NULL; offer_array_size=0; lost_lair_date_array=NULL; lost_lair_date_array_size=0; raid_date_array=NULL; raid_date_array_size=0; town_ordo_array=NULL; town_ordo_array_size=0; capturing_lair=0; reset(); }
 
 	int	write_file(File* filePtr);
 	int	read_file(File* filePtr);

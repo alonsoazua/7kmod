@@ -42,6 +42,8 @@
 #include <ORACERES.h>
 #include <OINFO.h>
 #include <ONEWS.h>
+#include <OSYS.h>
+#include <OF_BASE.h>
 
 //------ the dates kept by town recno (grace period, raids) ------//
 
@@ -73,6 +75,9 @@ void ModFryhtan::reset()
 		memset( raid_date_array, 0, sizeof(int32_t) * raid_date_array_size );
 
 	memset( king_kill_array, 0, sizeof(king_kill_array) );
+
+	if( town_ordo_array )
+		memset( town_ordo_array, 0, sizeof(TownOrdo) * town_ordo_array_size );
 
 	capturing_lair = 0;
 }
@@ -663,6 +668,22 @@ int ModFryhtan::new_ordo_name_id(int nationRecno)
 		}
 	}
 
+	for( int t=1 ; t<=town_ordo_array_size ; t++ )		// the Ordos inside enslaved towns
+	{
+		TownOrdo* ordoPtr = town_ordo(t);
+
+		if( !ordoPtr || ordoPtr->nation_recno != nationRecno )
+			continue;
+
+		int nameIndex = ordoPtr->name_id - ORDO_NAME_ID_BASE;
+
+		if( nameIndex >= 1 && nameIndex <= ORDO_NAME_COUNT && !usedArray[nameIndex-1] )
+		{
+			usedArray[nameIndex-1] = 1;
+			usedCount++;
+		}
+	}
+
 	if( usedCount >= ORDO_NAME_COUNT )		// all in use
 		return ORDO_NAME_ID_BASE + 1 + misc.random(ORDO_NAME_COUNT);
 
@@ -798,6 +819,14 @@ int ModFryhtan::nation_population(int nationRecno)
 
 		if( lairPtr )
 			population += lairPtr->train_count * monster_population(lairPtr->monster_id);
+	}
+
+	for( i=1 ; i<=town_ordo_array_size ; i++ )		// the Ordos inside enslaved towns
+	{
+		TownOrdo* ordoPtr = town_ordo(i);
+
+		if( ordoPtr && ordoPtr->nation_recno == nationRecno )
+			population += unit_population(ordoPtr->unit_id);
 	}
 
 	return population;
@@ -1024,6 +1053,40 @@ int ModFryhtan::write_file(File* filePtr)
 	if( !filePtr->file_write( king_kill_array, sizeof(king_kill_array) ) )
 		return 0;
 
+	//------- the Ordos inside enslaved towns -------//
+
+	int ordoCount = 0;
+	int i;
+
+	for( i=1 ; i<=town_ordo_array_size ; i++ )
+	{
+		if( town_ordo(i) )
+			ordoCount++;
+	}
+
+	if( !filePtr->file_put_short( (int16_t) ordoCount ) )
+		return 0;
+
+	for( i=1 ; i<=town_ordo_array_size ; i++ )
+	{
+		TownOrdo* ordoPtr = town_ordo(i);
+
+		if( !ordoPtr )
+			continue;
+
+		filePtr->file_put_short( (int16_t) i );
+		filePtr->file_put_short( ordoPtr->unit_id );
+		filePtr->file_put_unsigned_short( ordoPtr->name_id );
+		filePtr->file_put_char( ordoPtr->nation_recno );
+		filePtr->file_put_char( ordoPtr->action );
+		filePtr->file_put_char( (int8_t) ordoPtr->combat_level );
+		filePtr->file_put_char( (int8_t) ordoPtr->leadership );
+		filePtr->file_put_short( ordoPtr->hit_points );
+
+		if( !filePtr->file_put_long( ordoPtr->next_kidnap_date ) )
+			return 0;
+	}
+
 	return 1;
 }
 //----------- End of function ModFryhtan::write_file -----------//
@@ -1118,6 +1181,41 @@ int ModFryhtan::read_file(File* filePtr)
 
 	if( !filePtr->file_read( king_kill_array, sizeof(king_kill_array) ) )
 		return 0;
+
+	//------- the Ordos inside enslaved towns -------//
+
+	if( filePtr->file_pos() >= filePtr->file_size() )		// a saved game from before the Ordos in towns
+		return 1;
+
+	int ordoCount = filePtr->file_get_short();
+
+	for( int i=0 ; i<ordoCount ; i++ )
+	{
+		int townRecno = filePtr->file_get_short();
+
+		if( townRecno < 1 || townRecno > 10000 )
+			return 0;
+
+		if( townRecno > town_ordo_array_size )
+		{
+			int newSize = townRecno + 20;
+
+			town_ordo_array = (TownOrdo*) mem_resize( town_ordo_array, sizeof(TownOrdo) * newSize );
+			memset( town_ordo_array + town_ordo_array_size, 0, sizeof(TownOrdo) * (newSize - town_ordo_array_size) );
+			town_ordo_array_size = newSize;
+		}
+
+		TownOrdo* ordoPtr = town_ordo_array + townRecno - 1;
+
+		ordoPtr->unit_id          = filePtr->file_get_short();
+		ordoPtr->name_id          = filePtr->file_get_unsigned_short();
+		ordoPtr->nation_recno     = filePtr->file_get_char();
+		ordoPtr->action           = filePtr->file_get_char();
+		ordoPtr->combat_level     = (uint8_t) filePtr->file_get_char();
+		ordoPtr->leadership       = (uint8_t) filePtr->file_get_char();
+		ordoPtr->hit_points       = filePtr->file_get_short();
+		ordoPtr->next_kidnap_date = filePtr->file_get_long();
+	}
 
 	return 1;
 }
@@ -1637,8 +1735,337 @@ void ModFryhtan::reset_town_dates(int townRecno)
 {
 	set_lost_lair_date(townRecno, 0);
 	set_raid_date(townRecno, 0);
+
+	if( townRecno >= 1 && townRecno <= town_ordo_array_size )		// no Ordo left from a deleted town (ModFryhtan::ordo_leave_town() takes it out before)
+		memset( town_ordo_array + townRecno - 1, 0, sizeof(TownOrdo) );
 }
 //----------- End of function ModFryhtan::reset_town_dates -----------//
+
+
+//--------- Begin of function ModFryhtan::town_ordo ---------//
+//
+// return: <TownOrdo*> the Ordo inside the town, NULL if there is none
+//
+TownOrdo* ModFryhtan::town_ordo(int townRecno)
+{
+	if( townRecno < 1 || townRecno > town_ordo_array_size || !town_ordo_array[townRecno-1].unit_id )
+		return NULL;
+
+	return town_ordo_array + townRecno - 1;
+}
+//----------- End of function ModFryhtan::town_ordo -----------//
+
+
+//--------- Begin of function ModFryhtan::can_ordo_enter_town ---------//
+//
+// An Ordo (a Fryhtan general, not the All High) can go into an enslaved town
+// of its kingdom without an Ordo.
+//
+int ModFryhtan::can_ordo_enter_town(Unit* unitPtr, int townRecno)
+{
+	if( unitPtr->race_id || unitPtr->rank_id != RANK_GENERAL || unitPtr->spy_recno ||
+		 unit_res[unitPtr->unit_id]->unit_class != UNIT_CLASS_MONSTER ||
+		 !unitPtr->nation_recno || !is_fryhtan(unitPtr->nation_recno) )
+	{
+		return 0;
+	}
+
+	if( town_array.is_deleted(townRecno) || town_array[townRecno]->nation_recno != unitPtr->nation_recno )
+		return 0;
+
+	return town_ordo(townRecno) == NULL;
+}
+//----------- End of function ModFryhtan::can_ordo_enter_town -----------//
+
+
+//--------- Begin of function ModFryhtan::ordo_enter_town ---------//
+//
+// The Ordo goes into the town (Town::assign_unit()): the unit is removed from
+// the map and kept in town_ordo_array. It starts with Subjugate.
+//
+void ModFryhtan::ordo_enter_town(Town* townPtr, Unit* unitPtr)
+{
+	int townRecno = townPtr->town_recno;
+
+	if( !can_ordo_enter_town(unitPtr, townRecno) )
+	{
+		unitPtr->stop2();
+		return;
+	}
+
+	//------- grow the array if needed -------//
+
+	if( townRecno > town_ordo_array_size )
+	{
+		int newSize = townRecno + 20;
+
+		town_ordo_array = (TownOrdo*) mem_resize( town_ordo_array, sizeof(TownOrdo) * newSize );
+		memset( town_ordo_array + town_ordo_array_size, 0, sizeof(TownOrdo) * (newSize - town_ordo_array_size) );
+		town_ordo_array_size = newSize;
+	}
+
+	TownOrdo* ordoPtr = town_ordo_array + townRecno - 1;
+
+	memset( ordoPtr, 0, sizeof(TownOrdo) );
+
+	ordoPtr->unit_id      = unitPtr->unit_id;
+	ordoPtr->name_id      = unitPtr->name_id;
+	ordoPtr->nation_recno = (int8_t) unitPtr->nation_recno;
+	ordoPtr->action       = ORDO_ACTION_SUBJUGATE;
+	ordoPtr->combat_level = (uint8_t) unitPtr->skill.combat_level;
+	ordoPtr->leadership   = (uint8_t) unitPtr->skill.get_skill(SKILL_LEADING);
+	ordoPtr->hit_points   = (int16_t) MAX( 1, (int) unitPtr->hit_points );
+
+	//------- remove the unit from the map -------//
+
+	unitPtr->set_rank(RANK_SOLDIER);		// not a general any more, so its death isn't reported (as Town::assign_unit() does)
+
+	unit_array.disappear_in_town(unitPtr->sprite_recno, townRecno);
+}
+//----------- End of function ModFryhtan::ordo_enter_town -----------//
+
+
+//--------- Begin of function ModFryhtan::ordo_leave_town ---------//
+//
+// The Ordo comes out of the town as an Ordo of its kingdom, next to the
+// town.
+//
+// <int> townRecno - the town
+// [int] forced    - 1 if the town is lost or destroyed: the Ordo is removed
+//                   from it even if it can't come out (default: 0)
+//
+// return: <int> the recno of the unit, 0 if it couldn't come out
+//
+int ModFryhtan::ordo_leave_town(int townRecno, int forced)
+{
+	TownOrdo* ordoPtr = town_ordo(townRecno);
+
+	if( !ordoPtr )
+		return 0;
+
+	TownOrdo ordo = *ordoPtr;
+
+	if( sys.signal_exit_flag || !ordo.nation_recno || nation_array.is_deleted(ordo.nation_recno) ||
+		 town_array.is_deleted(townRecno) )
+	{
+		memset( ordoPtr, 0, sizeof(TownOrdo) );
+		return 0;
+	}
+
+	//------- a place for it next to the town -------//
+
+	Town*		  townPtr = town_array[townRecno];
+	UnitInfo*	  unitInfo = unit_res[ordo.unit_id];
+	SpriteInfo* spriteInfo = sprite_res[unitInfo->sprite_id];
+
+	int xLoc=townPtr->loc_x1, yLoc=townPtr->loc_y1;
+	int unitRecno = 0;
+
+	if( world.locate_space( &xLoc, &yLoc, townPtr->loc_x2, townPtr->loc_y2,
+									spriteInfo->loc_width, spriteInfo->loc_height, unitInfo->mobile_type ) )
+	{
+		unitRecno = unit_array.add_unit( ordo.unit_id, ordo.nation_recno, RANK_SOLDIER, 100, xLoc, yLoc );
+	}
+
+	if( !unitRecno )
+	{
+		if( forced )
+			memset( ordoPtr, 0, sizeof(TownOrdo) );
+
+		return 0;
+	}
+
+	memset( ordoPtr, 0, sizeof(TownOrdo) );
+
+	//------- the Ordo as it went in -------//
+
+	Unit* unitPtr = unit_array[unitRecno];
+
+	unitPtr->set_monster_id( unit_monster_id(ordo.unit_id) );
+	unitPtr->set_rank( RANK_GENERAL );
+	unitPtr->skill.set_skill( SKILL_LEADING );
+	unitPtr->skill.skill_level = ordo.leadership;
+	unitPtr->set_combat_level( ordo.combat_level );
+	unitPtr->hit_points = (float) MAX( 1, MIN( (int) ordo.hit_points, (int) unitPtr->max_hit_points ) );
+	unitPtr->name_id = ordo.name_id;
+
+	return unitRecno;
+}
+//----------- End of function ModFryhtan::ordo_leave_town -----------//
+
+
+//--------- Begin of function ModFryhtan::set_ordo_action ---------//
+//
+void ModFryhtan::set_ordo_action(int townRecno, int action)
+{
+	TownOrdo* ordoPtr = town_ordo(townRecno);
+
+	if( !ordoPtr || ordoPtr->action == action )
+		return;
+
+	ordoPtr->action = (int8_t) action;
+
+	if( action == ORDO_ACTION_KIDNAP )		// the first kidnap comes a whole period later
+	{
+		int days = kidnap_days(ordoPtr->leadership);
+		ordoPtr->next_kidnap_date = info.game_date + days/2 + misc.random(days+1);
+	}
+}
+//----------- End of function ModFryhtan::set_ordo_action -----------//
+
+
+//--------- Begin of function ModFryhtan::next_day_town_ordo ---------//
+//
+// The Ordo inside an enslaved town: it eats and costs as outside, and does
+// its action.
+//
+void ModFryhtan::next_day_town_ordo(Town* townPtr)
+{
+	int townRecno = townPtr->town_recno;
+	TownOrdo* ordoPtr = town_ordo(townRecno);
+
+	if( !ordoPtr )
+		return;
+
+	if( ordoPtr->nation_recno != townPtr->nation_recno )		// shouldn't happen: Town::set_nation() takes it out
+	{
+		ordo_leave_town(townRecno, 1);
+		return;
+	}
+
+	Nation* nationPtr = nation_array[ordoPtr->nation_recno];
+	int leadership = ordoPtr->leadership;
+
+	//------- it eats and costs as outside (Unit::pay_expense()) -------//
+
+	if( nationPtr->food > 0 )
+		nationPtr->consume_food( (float) invoked_fryhtan_food_year(ordoPtr->unit_id) / 365 );
+
+	if( nationPtr->cash > 0 )
+		nationPtr->add_expense( EXPENSE_MOBILE_UNIT, (float) unit_res[ordoPtr->unit_id]->year_cost / 365, 1 );
+
+	//------- Kidnap: a villager of a race of the town, by its people -------//
+
+	if( ordoPtr->action == ORDO_ACTION_KIDNAP && info.game_date >= ordoPtr->next_kidnap_date )
+	{
+		int days = kidnap_days(leadership);
+		ordoPtr->next_kidnap_date = info.game_date + days/2 + misc.random(days+1);
+
+		if( townPtr->population > 0 && townPtr->population < MAX_TOWN_POPULATION )
+		{
+			int pick = misc.random(townPtr->population);
+			int raceId = 0;
+
+			for( int i=0 ; i<MAX_RACE ; i++ )
+			{
+				if( pick < townPtr->race_pop_array[i] )
+				{
+					raceId = i+1;
+					break;
+				}
+
+				pick -= townPtr->race_pop_array[i];
+			}
+
+			if( raceId )
+			{
+				townPtr->inc_pop( raceId, 0, (int) townPtr->race_loyalty_array[raceId-1] );
+
+				if( townPtr->nation_recno == nation_array.player_recno )
+					news_array.ordo_kidnap( townRecno, ordoPtr->name_id, raceId );
+			}
+		}
+	}
+
+	//------- Taskmaster: more food every day, more tribute every month -------//
+
+	else if( ordoPtr->action == ORDO_ACTION_TASKMASTER )
+	{
+		nationPtr->add_food( (float) townPtr->population * taskmaster_food(leadership) / 365 );
+
+		if( info.game_day == 1 )
+			nationPtr->add_income( INCOME_TAX, (float) taskmaster_town_gold(townPtr) );
+	}
+}
+//----------- End of function ModFryhtan::next_day_town_ordo -----------//
+
+
+//--------- Begin of function ModFryhtan::subjugate_loyalty ---------//
+//
+// The lowest loyalty Subjugate keeps in the town: the leadership of the Ordo,
+// at most SUBJUGATE_MAX_LOYALTY. 0 without an Ordo doing Subjugate.
+//
+int ModFryhtan::subjugate_loyalty(Town* townPtr)
+{
+	TownOrdo* ordoPtr = town_ordo(townPtr->town_recno);
+
+	if( !ordoPtr || ordoPtr->action != ORDO_ACTION_SUBJUGATE )
+		return 0;
+
+	return MIN( (int) ordoPtr->leadership, (int) SUBJUGATE_MAX_LOYALTY );
+}
+//----------- End of function ModFryhtan::subjugate_loyalty -----------//
+
+
+//--------- Begin of function ModFryhtan::ordo_task_level ---------//
+//
+int ModFryhtan::ordo_task_level(int leadership)
+{
+	return MAX( (int) ORDO_TASK_MIN_LEADERSHIP, MIN( (int) ORDO_TASK_MAX_LEADERSHIP, leadership ) );
+}
+
+
+//--------- Begin of function ModFryhtan::kidnap_days ---------//
+//
+// The average days between kidnaps: 120 with leadership 30, 60 with 100.
+//
+int ModFryhtan::kidnap_days(int leadership)
+{
+	int level = ordo_task_level(leadership) - ORDO_TASK_MIN_LEADERSHIP;
+
+	return KIDNAP_DAYS_LOW - level * (KIDNAP_DAYS_LOW - KIDNAP_DAYS_HIGH) / (ORDO_TASK_MAX_LEADERSHIP - ORDO_TASK_MIN_LEADERSHIP);
+}
+
+
+//--------- Begin of function ModFryhtan::taskmaster_gold ---------//
+//
+// Extra tribute a month for each villager, in 1/100 $: 50 ($0.5) with
+// leadership 30, 200 ($2) with 100.
+//
+int ModFryhtan::taskmaster_gold(int leadership)
+{
+	int level = ordo_task_level(leadership) - ORDO_TASK_MIN_LEADERSHIP;
+
+	return TASKMASTER_GOLD_LOW + level * (TASKMASTER_GOLD_HIGH - TASKMASTER_GOLD_LOW) / (ORDO_TASK_MAX_LEADERSHIP - ORDO_TASK_MIN_LEADERSHIP);
+}
+
+
+//--------- Begin of function ModFryhtan::taskmaster_food ---------//
+//
+// Extra food a year for each villager: 5 with leadership 30, 20 with 100.
+//
+int ModFryhtan::taskmaster_food(int leadership)
+{
+	int level = ordo_task_level(leadership) - ORDO_TASK_MIN_LEADERSHIP;
+
+	return TASKMASTER_FOOD_LOW + level * (TASKMASTER_FOOD_HIGH - TASKMASTER_FOOD_LOW) / (ORDO_TASK_MAX_LEADERSHIP - ORDO_TASK_MIN_LEADERSHIP);
+}
+
+
+//--------- Begin of function ModFryhtan::taskmaster_town_gold ---------//
+//
+// The extra tribute of the town this month with Taskmaster, in $.
+//
+int ModFryhtan::taskmaster_town_gold(Town* townPtr)
+{
+	TownOrdo* ordoPtr = town_ordo(townPtr->town_recno);
+
+	if( !ordoPtr || ordoPtr->action != ORDO_ACTION_TASKMASTER )
+		return 0;
+
+	return (townPtr->population * taskmaster_gold(ordoPtr->leadership) + 50) / 100;
+}
+//----------- End of function ModFryhtan::taskmaster_town_gold -----------//
 
 
 //--------- Begin of function ModFryhtan::raid_lair ---------//

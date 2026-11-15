@@ -138,6 +138,15 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
   - Las unidades que traicionan, los rebeldes sin líder y los aldeanos de la propaganda
     no se pasan a un reino Fryhtan, y los aldeanos de un pueblo esclavizado no le
     entregan un edificio humano (captura por trabajadores).
+- **Ordo dentro de un pueblo esclavizado:** con clic derecho sobre un pueblo esclavizado,
+  un Ordo entra en él (uno por pueblo). El botón "Ordo <nombre>: <acción>" del pueblo
+  abre su vista, con tres acciones:
+  - **Subjugate:** la lealtad no baja del liderazgo del Ordo (tope 50).
+  - **Kidnap:** llega un aldeano nuevo de una raza del pueblo, en promedio cada 4 meses
+    con liderazgo 30 y cada 2 con 100 (nunca más de 6 meses), con noticia.
+  - **Taskmaster:** cada aldeano da de +$0.5 a +$2 más al mes y de +5 a +20 de comida más
+    al año, según el liderazgo.
+  - **Leave village** lo saca. Si el pueblo cambia de dueño, el Ordo sale.
 - **Corregido:** al morir un Ordo, la noticia mostraba texto basura en lugar del
   nombre. Ahora dice "Your Ordo, <nombre>, has been slain."; también se corrigió el
   nombre en las noticias de asesinato, traición y honores.
