@@ -30,7 +30,8 @@ class File;
 
 //------- Define constant -------//
 
-enum { FRYHTAN_LARGE_MIN_LEVEL = 6 };		// monster level from which a Fryhtan is large (FRYHTAN_LARGE_POPULATION)
+enum { FRYHTAN_LARGE_MIN_LEVEL = 6 };
+enum { FRYHTAN_BROOSKEN = 3, FRYHTAN_PFITH = 5, FRYHTAN_DOINK = 7, FRYHTAN_ICK = 10 };		// monster ids. (MONSTER.DBF) with their own size or price: Pfith is small, the other three are cheaper		// monster level from which a Fryhtan is large (FRYHTAN_LARGE_POPULATION)
 enum { FRYHTAN_BASE_POPULATION = 20 };
 enum { FRYHTAN_POPULATION_LIMIT = 0 };		// 1: training is limited by the Fryhtan population cap (off for now)
 enum { FRYHTAN_SMALL_POPULATION = 2,		// population taken by a small Fryhtan of the kingdom
@@ -51,9 +52,10 @@ enum { LAIR_TRAIN_FOOD = 20,						// food used for training a Fryhtan in a lair
 		 LAIR_SMALL_TRAIN_DAYS = 10,				// days needed for training a small one
 		 LAIR_SMALL_TRAIN_COST = 150,			// gold for training a small Fryhtan, soldier or Ordo
 		 LAIR_LARGE_TRAIN_COST = 200,			// gold for training a large one
+		 LAIR_CHEAP_TRAIN_COST = 100,			// gold for training an Ick, a Broosken or a Doink
 		 LAIR_TRAIN_COMBAT = 20,					// combat level of a trained Fryhtan
 		 LAIR_TRAIN_LEADERSHIP = 20,				// leadership of a trained Fryhtan (as a human soldier)
-		 LAIR_SHOW_TRAIN_ORDO = 0,				// 1: the lair has the Train Ordo button (hidden: the soldiers are promoted)
+		 LAIR_SHOW_TRAIN_ORDO = 1,				// 1: the lair has the Train Ordo button (hidden: the soldiers are promoted)
 		 LAIR_MAX_TRAIN_QUEUE = 8 };
 
 enum { LAIR_ORDO_FOOD = 40,						// food used for training an Ordo (general) in a lair
@@ -230,7 +232,7 @@ public:
 					  return is_large_monster(monsterId) ? LAIR_TRAIN_DAYS : LAIR_SMALL_TRAIN_DAYS; }
 
 	// gold for training a soldier or an Ordo, by the size of the species
-	static int	train_cost(int monsterId)	{ return is_large_monster(monsterId) ? LAIR_LARGE_TRAIN_COST : LAIR_SMALL_TRAIN_COST; }
+	static int	train_cost(int monsterId);		// the gold for training a soldier or an Ordo of the species
 
 	//------ names of the Ordos ------//
 

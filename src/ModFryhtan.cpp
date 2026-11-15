@@ -867,9 +867,28 @@ int ModFryhtan::nation_population_cap(int nationRecno)
 //
 int ModFryhtan::is_large_monster(int monsterId)
 {
+	if( monsterId == FRYHTAN_PFITH )		// small, although its level is 6
+		return 0;
+
 	return monster_res[monsterId]->level >= FRYHTAN_LARGE_MIN_LEVEL;
 }
 //----------- End of function ModFryhtan::is_large_monster -----------//
+
+
+//--------- Begin of function ModFryhtan::train_cost ---------//
+//
+// The gold for training a soldier or an Ordo of the species: $100 for an Ick,
+// a Broosken or a Doink, $150 for the other small ones, $200 for the large
+// ones.
+//
+int ModFryhtan::train_cost(int monsterId)
+{
+	if( monsterId == FRYHTAN_ICK || monsterId == FRYHTAN_BROOSKEN || monsterId == FRYHTAN_DOINK )
+		return LAIR_CHEAP_TRAIN_COST;
+
+	return is_large_monster(monsterId) ? LAIR_LARGE_TRAIN_COST : LAIR_SMALL_TRAIN_COST;
+}
+//----------- End of function ModFryhtan::train_cost -----------//
 
 
 //--------- Begin of function ModFryhtan::monster_population ---------//
@@ -959,7 +978,7 @@ const char* ModFryhtan::menu_species_size_text(int monsterId)
 	if( !is_valid_species(monsterId) )
 		return "";
 
-	return menu_species_level_array[monsterId-1] >= FRYHTAN_LARGE_MIN_LEVEL ?
+	return menu_species_level_array[monsterId-1] >= FRYHTAN_LARGE_MIN_LEVEL && monsterId != FRYHTAN_PFITH ?
 			 _("Large: $200 per unit") : _("Small: $150 per unit");
 }
 //----------- End of function ModFryhtan::menu_species_size_text -----------//

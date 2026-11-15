@@ -22,7 +22,7 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
     and **Fryhtans** (the 13 species in the same place, 10 per page, with ▲ ▼
     arrows to change the page); the chosen one is underlined. Below the
     name it shows how the kingdom will be called, for example "Fryhtan kingdom: Al
-    Rokken Horde (Large: 3 population)". The tab and the species are remembered.
+    Rokken Horde". The tab and the species are remembered.
   - The species names, the tabs and the "Seats of Power Unlocked?" label use smooth
     anti-aliased text (TeX Gyre Pagella, a Palatino clone), pre-rendered with
     `7kmod/tools/make_smooth_text.py`.
@@ -49,8 +49,11 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
     (shown in their panel) and learn it in the lair as humans do (only those with
     potential).
   - An Ordo's leadership rises **×1.5** as fast as a human general's.
-  - The lair's **Train Ordo** button (an Ordo for $200 or $150 and 40 food, in 15 or 10
-    days) is hidden for now.
+  - **Train Ordo** in the lair: an Ordo for the same gold as a soldier of its species and
+    40 food, in 15 or 10 days, with leadership and combat 30.
+  - **Price by species** (soldier and Ordo): **$100** Ick, Broosken and Doink; **$150**
+    Deezboanz, Rattus and Pfith (Pfith counts as small: population 2 and 10 days);
+    **$200** the large ones.
   - Fryhtans train their combat in the lair with the general and gain experience when
     fighting.
   - The lair has no Reward or Recruit; its Fryhtans show loyalty "N/A".

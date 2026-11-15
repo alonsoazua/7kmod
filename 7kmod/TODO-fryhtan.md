@@ -1157,7 +1157,7 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         un Ordo; el Ordo en un pueblo de 20 subió 0.30 de liderazgo y 0.20 de combate cada
         15 días; Kidnap esperando 342 días con liderazgo 30. No se probó en partida el
         mínimo de resistencia ni la noticia nueva de Kidnap.
-- [ ] **Precios por especie, Pfith chica y Train Ordo de vuelta.**
+- [x] **Precios por especie, Pfith chica y Train Ordo de vuelta.**
       - **Ick, Broosken y Doink cuestan $100** (soldado y Ordo); antes $150.
       - **Pfith pasa a especie chica** (hoy es grande por su nivel 6): $150, población 2,
         10 días de entrenamiento (soldado y Ordo). Va como excepción en
@@ -1171,6 +1171,10 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       - **New Game sin precio ni tamaño:** el texto queda solo "Fryhtan kingdom: New Rokken
         Horde" (hoy "… (Large: $200 per unit)"), así que ya no hace falta cambiar la tabla
         de New Game por Pfith.
+      - **Cómo quedó:** `ModFryhtan::train_cost` (`LAIR_CHEAP_TRAIN_COST` 100) y la
+        excepción de Pfith en `is_large_monster` (`FRYHTAN_PFITH` y los demás ids. en
+        `ModFryhtan.h`); `LAIR_SHOW_TRAIN_ORDO` 1. Probado: los precios, tamaños y días de
+        las 13 especies, el texto de New Game y el botón Train Ordo en la guarida.
       - **Train Ordo vuelve a verse** en la guarida (`LAIR_SHOW_TRAIN_ORDO` 1), junto a
         Promote / Demote.
 

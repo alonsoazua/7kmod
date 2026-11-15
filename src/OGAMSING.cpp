@@ -1356,9 +1356,8 @@ static void disp_fryhtan_kingdom(Config& tempConfig, int lastMonsterId)
 
 		char lineStr[200];
 
-		// TRANSLATORS: Fryhtan kingdom: <Name> <Fryhtan species> Horde (Large: $200 per unit)
-		snprintf( lineStr, sizeof(lineStr), _("Fryhtan kingdom: %s %s Horde (%s)"), firstName,
-					 speciesName, ModFryhtan::menu_species_size_text(lastMonsterId) );
+		// TRANSLATORS: Fryhtan kingdom: <Name> <Fryhtan species> Horde
+		snprintf( lineStr, sizeof(lineStr), _("Fryhtan kingdom: %s %s Horde"), firstName, speciesName );
 
 		font_san.put( lineX1, lineY1, lineStr );
 	}

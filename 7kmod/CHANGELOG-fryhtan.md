@@ -21,7 +21,7 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
     (las 10 razas) y **Fryhtans** (las 13 especies en el mismo lugar, 10 por página, con
     flechas ▲ ▼ para cambiar de página); la elegida va subrayada. Debajo
     del nombre se ve cómo quedará el reino, por ejemplo "Fryhtan kingdom: Al Rokken
-    Horde (Large: 3 population)". La pestaña y la especie se recuerdan.
+    Horde". La pestaña y la especie se recuerdan.
   - Los nombres de las especies, las pestañas y la etiqueta "Seats of Power Unlocked?"
     usan letra suavizada (TeX Gyre Pagella, tipo Palatino), prerenderizada con
     `7kmod/tools/make_smooth_text.py`.
@@ -49,8 +49,11 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
     ve en su panel) y lo aprenden en la guarida como los humanos (solo los que tienen
     potencial).
   - El liderazgo de un Ordo sube **×1.5** más rápido que el de un general humano.
-  - El botón **Train Ordo** de la guarida (un Ordo por $200 o $150 y 40 de comida, en 15
-    o 10 días) está oculto por ahora.
+  - **Train Ordo** en la guarida: un Ordo por el mismo oro que un soldado de su especie y
+    40 de comida, en 15 o 10 días, con liderazgo y combate 30.
+  - **Precio por especie** (soldado y Ordo): **$100** Ick, Broosken y Doink; **$150**
+    Deezboanz, Rattus y Pfith (Pfith cuenta como chica: población 2 y 10 días); **$200**
+    las grandes.
   - Los Fryhtans entrenan su combate en la guarida con el general y ganan experiencia
     al pelear.
   - La guarida no tiene Reward ni Recruit; sus Fryhtans muestran lealtad "N/A".
