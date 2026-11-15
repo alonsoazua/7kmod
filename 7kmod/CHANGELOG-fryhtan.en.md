@@ -44,8 +44,8 @@ Version **0.1.0** in development, based on **7kmod-gameplay 0.2.0** (7kmod 0.3.0
     are ("Fryhtan Population"). The cap (base 20 plus the enslaved people) is turned off
     in the code (`FRYHTAN_POPULATION_LIMIT`); instead, training costs gold.
   - **Train Ordo:** a second button trains a general (Ordo) of the lair's species:
-    **$200** (**$150** for a small species) and **40 food**, **30 days** (20 for a small
-    species), leadership and combat **30**. It comes out next to the lair
+    **$200** (**$150** for a small species) and **40 food**, **15 days** (10 for a small
+    species), the same as a soldier, leadership and combat **30**. It comes out next to the lair
     with a **name of its own** (for example "Kzorr"). Soldiers can no longer be promoted
     (there is no Promote or Demote).
   - Fryhtans train their combat in the lair with the general and gain experience when

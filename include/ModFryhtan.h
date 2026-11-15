@@ -55,8 +55,8 @@ enum { LAIR_TRAIN_FOOD = 20,						// food used for training a Fryhtan in a lair
 		 LAIR_MAX_TRAIN_QUEUE = 8 };
 
 enum { LAIR_ORDO_FOOD = 40,						// food used for training an Ordo (general) in a lair
-		 LAIR_ORDO_DAYS = 30,						// days needed for training it (a large one)
-		 LAIR_SMALL_ORDO_DAYS = 20,				// days needed for training a small one
+		 LAIR_ORDO_DAYS = 15,						// days needed for training it (a large one), as a soldier
+		 LAIR_SMALL_ORDO_DAYS = 10,				// days needed for training a small one
 		 LAIR_ORDO_COMBAT = 30,						// combat level of a trained Ordo
 		 LAIR_ORDO_LEADERSHIP = 30 };				// leadership of a trained Ordo
 

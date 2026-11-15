@@ -44,8 +44,8 @@ Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.
     ("Fryhtan Population"). El tope (base 20 más la gente esclavizada) queda desactivado
     en el código (`FRYHTAN_POPULATION_LIMIT`); en su lugar, entrenar cuesta oro.
   - **Train Ordo:** un segundo botón entrena un general (Ordo) de la especie de la
-    guarida: **$200** (**$150** si es pequeña) y **40 de comida**, **30 días** (20 si es
-    pequeña), liderazgo y combate **30**. Sale junto a la
+    guarida: **$200** (**$150** si es pequeña) y **40 de comida**, **15 días** (10 si es
+    pequeña), lo mismo que un soldado, liderazgo y combate **30**. Sale junto a la
     guarida con un **nombre propio** (por ejemplo "Kzorr"). Los soldados ya no se pueden
     ascender (no hay Promote ni Demote).
   - Los Fryhtans entrenan su combate en la guarida con el general y ganan experiencia

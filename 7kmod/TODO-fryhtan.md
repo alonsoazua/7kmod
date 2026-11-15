@@ -1129,6 +1129,9 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       - **Cómo quedó:** `ModFryhtan::town_role_name`, usado en el nombre del mapa
         (`OWORLD_Z.cpp`) y en el reporte (`OR_TOWN.cpp`). Probado: "Persepolis
         (Subjugate)" en los dos.
+- [x] **Entrenar un Ordo tarda lo mismo que un soldado:** 15 días (especie grande) y
+      10 (chica), antes 30 y 20 (`LAIR_ORDO_DAYS`, `LAIR_SMALL_ORDO_DAYS`). El oro y la
+      comida no cambian.
 
 ## 8. Economía oscura (en diseño)
 
