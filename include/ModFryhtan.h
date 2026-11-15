@@ -170,7 +170,14 @@ enum { ORDO_TASK_MIN_LEADERSHIP = 30,		// the leadership range of the effects of
 		 TASKMASTER_GOLD_LOW = 50,				// extra tribute a month for each villager, in 1/100 $, with the lowest leadership...
 		 TASKMASTER_GOLD_HIGH = 200,			// ...and with the highest one
 		 TASKMASTER_FOOD_LOW = 5,				// extra food a year for each villager, with the lowest leadership...
-		 TASKMASTER_FOOD_HIGH = 20 };			// ...and with the highest one
+		 TASKMASTER_FOOD_HIGH = 20,				// ...and with the highest one
+		 TASKMASTER_DEATH_DAYS = 60,			// Taskmaster kills a villager every this many days...
+		 TASKMASTER_DEATH_DAYS_RANGE = 60,		// ...plus up to these at random (90 on average)
+		 OVERPOPULATED_TOWN_POPULATION = 30,	// an enslaved town with this many people loses loyalty...
+		 OVERPOPULATED_LOYALTY_DAYS = 5,		// ...1 point every this many days, and rebels in the end
+		 CULL_MIN_POPULATION = 5,				// Cull Population needs this many people in the town...
+		 CULL_MIN_KILL = 3,						// ...and kills 3 or 4 of them
+		 CULL_MAX_KILL = 4 };
 
 struct TownOrdo
 {
@@ -185,6 +192,7 @@ struct TownOrdo
 	uint8_t	skill_potential;
 	uint8_t	leadership_minor;	// the fractions of the leadership and the combat level (Skill)
 	uint8_t	combat_minor;
+	int32_t	next_death_date;	// Taskmaster: when it kills a villager next
 };
 
 //------- Define class ModFryhtan -------//
@@ -315,6 +323,10 @@ public:
 	static int	taskmaster_gold(int leadership);		// extra tribute a month for each villager, in 1/100 $
 	static int	taskmaster_food(int leadership);		// extra food a year for each villager
 	int	taskmaster_town_gold(Town* townPtr);			// the extra tribute of the town this month, $
+	static int	is_overpopulated(Town* townPtr);		// an enslaved town losing loyalty for its population
+	void	next_day_town_overpopulation(Town* townPtr);
+	int	can_cull_town(Town* townPtr);
+	int	cull_town(Town* townPtr);					// Cull Population: kills 3 or 4 villagers, for the spoils; return: the villagers killed
 	void	train_town_ordo(Town* townPtr, TownOrdo* ordoPtr);		// its leadership and combat rise, it recovers hit points
 	static int	enslave_min_resistance(int leadership);	// how low the lairs lower the resistance of an independent town
 	void	promote_ordo(Unit* unitPtr);			// a Fryhtan soldier of a Fryhtan kingdom becomes an Ordo

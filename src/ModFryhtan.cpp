@@ -1085,7 +1085,7 @@ int ModFryhtan::write_file(File* filePtr)
 			ordoCount++;
 	}
 
-	if( !filePtr->file_put_short( -1 ) )		// -1: the records have the potential and the fractions of leadership and combat (not in the first version)
+	if( !filePtr->file_put_short( -2 ) )		// -2: the records have the potential, the fractions of leadership and combat (-1 up to here) and the Taskmaster death date
 		return 0;
 
 	if( !filePtr->file_put_short( (int16_t) ordoCount ) )
@@ -1111,7 +1111,9 @@ int ModFryhtan::write_file(File* filePtr)
 		filePtr->file_put_char( (int8_t) ordoPtr->skill_potential );
 		filePtr->file_put_char( (int8_t) ordoPtr->leadership_minor );
 
-		if( !filePtr->file_put_char( (int8_t) ordoPtr->combat_minor ) )
+		filePtr->file_put_char( (int8_t) ordoPtr->combat_minor );
+
+		if( !filePtr->file_put_long( ordoPtr->next_death_date ) )
 			return 0;
 	}
 
@@ -1217,10 +1219,12 @@ int ModFryhtan::read_file(File* filePtr)
 
 	int ordoCount = filePtr->file_get_short();
 	int hasMinor  = 0;
+	int hasDeath  = 0;
 
-	if( ordoCount == -1 )		// the records have the potential and the fractions
+	if( ordoCount == -1 || ordoCount == -2 )		// the records have the potential and the fractions (and the death date with -2)
 	{
 		hasMinor  = 1;
+		hasDeath  = ordoCount == -2;
 		ordoCount = filePtr->file_get_short();
 	}
 
@@ -1257,6 +1261,9 @@ int ModFryhtan::read_file(File* filePtr)
 			ordoPtr->leadership_minor = (uint8_t) filePtr->file_get_char();
 			ordoPtr->combat_minor     = (uint8_t) filePtr->file_get_char();
 		}
+
+		if( hasDeath )
+			ordoPtr->next_death_date = filePtr->file_get_long();
 	}
 
 	return 1;
@@ -1958,6 +1965,9 @@ void ModFryhtan::set_ordo_action(int townRecno, int action)
 		int days = kidnap_days(ordoPtr->leadership);
 		ordoPtr->next_kidnap_date = info.game_date + days/2 + misc.random(days+1);
 	}
+
+	if( action == ORDO_ACTION_TASKMASTER )	// the first death too
+		ordoPtr->next_death_date = info.game_date + TASKMASTER_DEATH_DAYS + misc.random(TASKMASTER_DEATH_DAYS_RANGE+1);
 }
 //----------- End of function ModFryhtan::set_ordo_action -----------//
 
@@ -2044,6 +2054,19 @@ void ModFryhtan::next_day_town_ordo(Town* townPtr)
 
 		if( info.game_day == 1 )
 			nationPtr->add_income( INCOME_TAX, (float) taskmaster_town_gold(townPtr) );
+
+		//--- the forced labor kills a villager now and then (no news) ---//
+
+		if( !ordoPtr->next_death_date )		// a saved game from before the deaths
+			ordoPtr->next_death_date = info.game_date + TASKMASTER_DEATH_DAYS + misc.random(TASKMASTER_DEATH_DAYS_RANGE+1);
+
+		if( info.game_date >= ordoPtr->next_death_date )
+		{
+			ordoPtr->next_death_date = info.game_date + TASKMASTER_DEATH_DAYS + misc.random(TASKMASTER_DEATH_DAYS_RANGE+1);
+
+			if( townPtr->population > 1 )		// never the last one
+				townPtr->kill_town_people(0, 0);
+		}
 	}
 }
 //----------- End of function ModFryhtan::next_day_town_ordo -----------//
@@ -2161,6 +2184,79 @@ void ModFryhtan::demote_ordo(Unit* unitPtr)
 		info.disp();
 }
 //----------- End of function ModFryhtan::demote_ordo -----------//
+
+
+//--------- Begin of function ModFryhtan::is_overpopulated ---------//
+//
+// An enslaved town with OVERPOPULATED_TOWN_POPULATION people or more loses
+// loyalty bit by bit (next_day_town_overpopulation()) and rebels in the end.
+//
+int ModFryhtan::is_overpopulated(Town* townPtr)
+{
+	return townPtr->population >= OVERPOPULATED_TOWN_POPULATION;
+}
+
+
+//--------- Begin of function ModFryhtan::next_day_town_overpopulation ---------//
+//
+// The loyalty of an overpopulated enslaved town drops 1 point every
+// OVERPOPULATED_LOYALTY_DAYS days (Town::update_target_loyalty() keeps it
+// from rising back meanwhile).
+//
+void ModFryhtan::next_day_town_overpopulation(Town* townPtr)
+{
+	if( !is_overpopulated(townPtr) || info.game_date % OVERPOPULATED_LOYALTY_DAYS != townPtr->town_recno % OVERPOPULATED_LOYALTY_DAYS )
+		return;
+
+	for( int i=0 ; i<MAX_RACE ; i++ )
+	{
+		if( townPtr->race_pop_array[i] > 0 )
+		{
+			townPtr->race_loyalty_array[i] = MAX( 0.0f, townPtr->race_loyalty_array[i] - 1 );
+
+			//--- the target goes down with it, so that Town::update_loyalty() doesn't raise it back ---//
+
+			townPtr->race_target_loyalty_array[i] = MIN( (int) townPtr->race_target_loyalty_array[i],
+																		(int) townPtr->race_loyalty_array[i] );
+		}
+	}
+}
+
+
+//--------- Begin of function ModFryhtan::can_cull_town ---------//
+//
+int ModFryhtan::can_cull_town(Town* townPtr)
+{
+	return is_enslaved_town(townPtr) && townPtr->population >= CULL_MIN_POPULATION;
+}
+
+
+//--------- Begin of function ModFryhtan::cull_town ---------//
+//
+// Cull Population: kills 3 or 4 villagers of the enslaved town (of its
+// races, by its people), with the spoils of a villager killed for each one
+// (reward_town_villager()). No effect on the loyalty of the others.
+//
+// return: <int> the villagers killed
+//
+int ModFryhtan::cull_town(Town* townPtr)
+{
+	if( !can_cull_town(townPtr) )
+		return 0;
+
+	int killCount = CULL_MIN_KILL + misc.random(CULL_MAX_KILL - CULL_MIN_KILL + 1);
+	int nationRecno = townPtr->nation_recno;
+	int i;
+
+	for( i=0 ; i<killCount && townPtr->population > 1 ; i++ )
+	{
+		townPtr->kill_town_people(0, 0);		// a random race, by its people; no attacker: no loyalty loss
+		reward_town_villager(nationRecno);
+	}
+
+	return i;
+}
+//----------- End of function ModFryhtan::cull_town -----------//
 
 
 //--------- Begin of function ModFryhtan::subjugate_loyalty ---------//

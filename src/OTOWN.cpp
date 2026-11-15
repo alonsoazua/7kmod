@@ -402,6 +402,7 @@ void Town::next_day()
 	if( mod_fryhtan.is_enslaved_town(this) )
 	{
 		mod_fryhtan.next_day_town_ordo(this);		// an Ordo inside the town
+		mod_fryhtan.next_day_town_overpopulation(this);		// 30 people or more: the loyalty drops
 
 		if( town_array.is_deleted(townRecno) )
 			return;
@@ -1248,7 +1249,12 @@ void Town::update_target_loyalty()
 		targetLoyalty = MAX( targetLoyalty, mod_fryhtan.subjugate_loyalty(this) );		// an Ordo doing Subjugate inside the town
 
 		for( int i=0 ; i<MAX_RACE ; i++ )
+		{
 			race_target_loyalty_array[i] = targetLoyalty;
+
+			if( ModFryhtan::is_overpopulated(this) )		// overpopulated: the loyalty doesn't rise back while it drops (ModFryhtan::next_day_town_overpopulation())
+				race_target_loyalty_array[i] = MIN( targetLoyalty, (int) race_loyalty_array[i] );
+		}
 
 		return;
 	}

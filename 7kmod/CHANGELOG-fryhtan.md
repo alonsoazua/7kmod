@@ -13,6 +13,13 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
 
 ## [Sin publicar]
 
+### Agregado
+- **Sobrepoblación:** un pueblo esclavizado con 30 o más habitantes pierde 1 de lealtad
+  cada 5 días y termina rebelándose si no baja de 30.
+- **Cull Population** (botón de espada en el pueblo esclavizado): mata 3 o 4 aldeanos y
+  da $2 y 5 de comida por cada uno; necesita al menos 5 habitantes.
+- Con **Taskmaster**, el trabajo forzado del Ordo mata un aldeano cada 60 a 120 días.
+
 ---
 
 ## [0.1.0] - 2026-11-14

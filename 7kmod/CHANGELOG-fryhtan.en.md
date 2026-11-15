@@ -14,6 +14,13 @@ together.
 
 ## [Unreleased]
 
+### Added
+- **Overpopulation:** an enslaved town with 30 people or more loses 1 loyalty every 5
+  days and rebels in the end unless it drops below 30.
+- **Cull Population** (sword button in the enslaved town): kills 3 or 4 villagers and
+  gives $2 and 5 food for each one; it needs at least 5 people.
+- With **Taskmaster**, the Ordo's forced labor kills a villager every 60 to 120 days.
+
 ---
 
 ## [0.1.0] - 2026-11-14
