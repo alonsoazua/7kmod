@@ -13,7 +13,12 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
 
 ## [Sin publicar]
 
-Versión **0.1.0** en desarrollo, basada en **7kmod-gameplay 0.2.0** (7kmod 0.3.0).
+---
+
+## [0.1.0] - 2026-11-14
+
+Incluida en **New Adversaries 0.4.0** (gameplay 0.3.0, 7kmod 0.4.0). La rama
+`7kmod-fryhtan` sigue con los ajustes experimentales del reino Fryhtan.
 
 ### Agregado
 - **Reino Fryhtan** (fase 1 de `TODO-fryhtan.md`; solo partidas de un jugador):

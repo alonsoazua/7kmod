@@ -21,6 +21,13 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 
 ## [Sin publicar]
 
+---
+
+## [0.3.0] - 2026-11-14
+
+Publicada como **New Adversaries 0.4.0**, en el instalador
+`NewAdversaries-0.4.0-setup.exe`. Basada en **7kmod 0.4.0** (ver `CHANGELOG.md`).
+
 ### Agregado
 - **Jugar como reino Fryhtan** (traído de la rama experimental `7kmod-fryhtan`; solo
   partidas de un jugador). En New Game, la pestaña **Fryhtans** permite elegir una de
@@ -38,19 +45,19 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 - En New Game, los nombres de las especies, las pestañas Humans/Fryhtans y la etiqueta
   "Seats of Power Unlocked?" usan letra suavizada (TeX Gyre Pagella, tipo Palatino).
 
-- **Instalador de Windows** `NewAdversaries-0.3.0-setup.exe` (NSIS, en
+- **Instalador de Windows** `NewAdversaries-0.4.0-setup.exe` (NSIS, en
   `packaging/windows/newadversaries/`): instala el juego completo con
   `7k-newAdversaries.exe` y `7k-newAdversaries-Classic.exe`, `LEEME.txt` y `README.txt`
   (qué hace cada ejecutable, dónde quedan las partidas, código fuente y licencias), las
   carpetas `Changelog`, `Docs` y `Licencias`, la música como componente opcional, accesos
   en el menú Inicio, acceso opcional en el escritorio y desinstalador (que no borra las
-  partidas). En español o inglés. Carpeta por defecto: `C:\Program Files (x86)\New
-  Adversaries\`.
+  partidas). En español o inglés. Carpeta por defecto: `C:\Program Files (x86)\7k New
+  Adversaries\` (si ya estaba instalado, propone la carpeta de antes).
 
 ### Cambiado
 - **Nombre: New Adversaries.** El mod se llama **New Adversaries** y esta rama es el mod
   completo (ejecutable `7k-newAdversaries.exe`); `7kmod` es **New Adversaries Classic**.
-  El menú principal muestra "New Adversaries 0.3.0" y la ventana se titula igual. Para
+  El menú principal muestra "New Adversaries 0.4.0" y la ventana se titula igual. Para
   los jugadores hay una sola versión pública (`MOD_PUBLIC_VERSION` en
   `include/ModVersion.h`); este changelog sigue llevando la versión de gameplay.
 - **Carpeta propia:** `%APPDATA%\7kfans.com\7k-newAdversaries\` (antes `7kaa-mod`). Se
