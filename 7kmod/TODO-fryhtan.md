@@ -1108,6 +1108,16 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         - Probado: entrar con clic derecho, Kidnap (llegó un aldeano zulú con su noticia),
           Taskmaster (+$42 y la comida extra con 21 aldeanos y liderazgo 100), salir del
           pueblo, y guardar y cargar con el Ordo adentro.
+- [ ] **Cursor de entrar al mandar un Ordo a un pueblo.** Con un Ordo seleccionado, al
+      pasar el mouse sobre un pueblo esclavizado al que puede entrar, debe verse la
+      flecha de entrar (`CURSOR_ASSIGN`), como cuando un aldeano va a un pueblo propio.
+      Hoy se ve el cursor normal aunque el clic derecho sí lo manda.
+      - Dónde: `Power::choose_cursor` (`OPOWER.cpp`), en el caso
+        `SCREEN_OBJECT_FRIEND_TOWN` con una unidad propia seleccionada: hoy solo da
+        `CURSOR_ASSIGN` a aldeanos humanos sin oficio. Agregar
+        `mod_fryhtan.can_ordo_enter_town(unidad, pueblo)`.
+      - Solo con un Ordo seleccionado (igual que el clic derecho, que solo lo manda si
+        está solo).
 
 ## 8. Economía oscura (en diseño)
 
