@@ -19,7 +19,7 @@
 //Filename    : ModSpy.h
 //Description : 7kmod-gameplay espionage: propaganda in independent towns,
 //              villagers joining through propaganda, accidents in firms and
-//              intelligence reports. See 7kmod/TODO-espionaje.md.
+//              intelligence reports.
 
 #ifndef __MODSPY_H
 #define __MODSPY_H

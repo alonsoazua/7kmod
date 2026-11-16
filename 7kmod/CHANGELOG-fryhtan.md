@@ -4,8 +4,7 @@
 
 Rama experimental para jugar como un **reino Fryhtan**. Está basada en `7kmod-gameplay`
 e incluye todo lo de esa rama y de `7kmod` (ver `CHANGELOG-gameplay.md` y
-`CHANGELOG.md`). Su ejecutable es `7kaa-fryhtan.exe`. El plan y el detalle de cada
-cambio están en `TODO-fryhtan.md`.
+`CHANGELOG.md`). Su ejecutable es `7kaa-fryhtan.exe`.
 
 La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actualizan juntos.
 
@@ -21,7 +20,7 @@ Incluida en **New Adversaries 0.4.0** (gameplay 0.3.0, 7kmod 0.4.0). La rama
 `7kmod-fryhtan` sigue con los ajustes experimentales del reino Fryhtan.
 
 ### Agregado
-- **Reino Fryhtan** (fase 1 de `TODO-fryhtan.md`; solo partidas de un jugador):
+- **Reino Fryhtan** (fase 1; solo partidas de un jugador):
   - En New Game, página básica, dos pestañas de texto encima de las razas: **Humans**
     (las 10 razas) y **Fryhtans** (las 13 especies en el mismo lugar, 10 por página, con
     flechas ▲ ▼ para cambiar de página); la elegida va subrayada. Debajo

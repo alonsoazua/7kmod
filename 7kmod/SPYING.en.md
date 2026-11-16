@@ -9,8 +9,7 @@ come from the code (`src/OSPY.cpp`, `src/OSPY2.cpp`, `src/OSPYA.cpp`,
 Everything in this document is from the original game, which is how it works in the
 `7kmod` branch. **The `7kmod-gameplay` branch (and `7kmod-pathing`) changes spying:**
 Propaganda in independent towns, villagers who join, accidents, bribe success percentage
-and intelligence reports instead of "Steal secrets". See `CHANGELOG-gameplay.en.md` and
-`TODO-espionaje.md` (Spanish only).
+and intelligence reports instead of "Steal secrets". See `CHANGELOG-gameplay.en.md`.
 
 ## 1. How to get a spy
 

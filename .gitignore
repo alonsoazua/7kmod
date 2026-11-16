@@ -99,3 +99,9 @@ doc/main.ind
 tools/bmpicn
 tools/genfont
 tools/icnpack
+
+# Development notes (TODO, drafts) live outside the repository
+/7kmod/TODO*.md
+/7kmod/DISENO*.md
+/7kmod/IDEAS.md
+/7kmod/POPULATION_PROPOSALS.md

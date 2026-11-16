@@ -8,8 +8,7 @@ Changes of the `7kmod` branch (executable `7kaa-mod.exe`) compared to the origin
 The `7kmod` branch has quality of life and interface improvements and a few balance
 adjustments. Changes that alter how the game plays are in the `7kmod-gameplay` branch,
 which includes everything in `7kmod` and documents its own changes in
-`CHANGELOG-gameplay.en.md`. The scenario editor (since 0.2.0) is described in
-`TODO-editor.md` (Spanish only).
+`CHANGELOG-gameplay.en.md`.
 
 ## How this file is used
 
@@ -73,14 +72,14 @@ More editor features (kingdoms, kings, spies, blank map) and fixes.
   AI kingdom without a king and **Remove Kingdom** removes one together with its towns,
   buildings and units; the color of a kingdom can also be changed. The king is placed
   with the **King** entry of the Units tab, and Delete now removes kings. Test and Save
-  warn if any kingdom has no king. Details in `TODO-editor.md`.
+  warn if any kingdom has no king.
 - **Editor: blank map.** **Base** option in the New Map window: Generated, **Land** or
   **Water** (the whole map is grass or water, with nothing on it and no kings).
 - **Editor: spies.** **Spy** entry in the Units tab, with the options Race, Spying and
   Cloak. Placed on a town or building (of any kingdom) it goes in as a spy; on the map it
   stays as a disguised unit. When selected, its true kingdom is shown and its skill and
   disguise can be changed; towns and buildings show how many spies they have, and towns
-  send them out with **Spies out**. Details in `TODO-editor.md`.
+  send them out with **Spies out**.
 
 ### Fixed
 - **Selection box over units of other kingdoms:** sometimes some units in the box were
@@ -107,8 +106,7 @@ More editor features (kingdoms, kings, spies, blank map) and fixes.
 
 ## [0.2.0] - 2026-10-28
 
-Adds the **scenario editor** (formerly in the `7kmod-editor` branch). Its design, phases
-and technical details are in `TODO-editor.md`.
+Adds the **scenario editor** (formerly in the `7kmod-editor` branch).
 
 ### Added
 - **Contribution and honors of generals:** a general becomes unhappy when his contribution (1 point for each hit on the enemy) is more than twice what he has been given in rewards; he loses up to 50 loyalty. The original game didn't show this anywhere. Now:
