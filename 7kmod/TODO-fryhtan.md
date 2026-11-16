@@ -1202,6 +1202,9 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       esclavizado. Sin Ordo, no hay Cull Population.
       - Sin Ordo, el botón **desaparece**.
       - El botón está con **cualquier rol** del Ordo.
+      - **Ayuda del botón** (al pasar el mouse): "Cull Population" / "Large villages tend
+        to rebel. Cull them when their population gets too big (30 or more)." Reemplaza
+        a "Kill 3 or 4 villagers. You get $2 and 5 food for each one."
       - **Extra de Subjugate:** cuando el pueblo llega a **30** habitantes, el Ordo con
         Subjugate hace un Cull solo (mata 3 o 4 aldeanos), así el pueblo no se
         sobrepobla. Esto resuelve lo pendiente de Subjugate contra la sobrepoblación.
