@@ -1246,6 +1246,13 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         quedan sin guarida enlazada se les quita la gracia. Igual que la gracia: nueva
         resistencia de 60 a 99 hacia todos los reinos y 100 hacia el reino Fryhtan.
       - Cuenta **cualquier rebelde**, no solo los de ese pueblo.
+      - **Los rebeldes regresan:** cuando el pueblo se independiza porque los rebeldes
+        destruyeron su guarida, los rebeldes cercanos vuelven al pueblo y se quedan como
+        aldeanos (como los defensores que regresan), y el pueblo queda **independiente
+        normal**, no "controlled by rebels" (así las guaridas le pueden volver a bajar la
+        resistencia). Hoy los rebeldes no vuelven nunca a su pueblo: fundan un pueblo
+        nuevo, se unen a otro pueblo rebelde, atacan pueblos o atacan edificios
+        (`Rebel::think_new_action`).
 
 ## 8. Economía oscura (en diseño)
 
