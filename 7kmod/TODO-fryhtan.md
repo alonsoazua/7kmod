@@ -1201,6 +1201,10 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       solo aparece (o solo se puede usar) cuando hay un Ordo dentro del pueblo
       esclavizado. Sin Ordo, no hay Cull Population.
       - Sin Ordo, el botón **desaparece**.
+      - **Cull es parte de Subjugate:** el botón solo aparece cuando el Ordo del pueblo
+        tiene el rol **Subjugate** (con Kidnap o Taskmaster tampoco aparece). La
+        descripción de Subjugate en la vista del Ordo lo menciona.
+        - ❓ Confirmar: ¿solo con Subjugate, o con cualquier rol?
       - Dónde: `ModFryhtan::can_cull_town` (agregar `town_ordo(town_recno)`) y el botón
         en `Town::disp_main_menu`.
 - [ ] **Taskmaster solo da comida, al doble.** Ya no da oro extra; la comida extra por
