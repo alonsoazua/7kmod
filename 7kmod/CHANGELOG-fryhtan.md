@@ -20,12 +20,17 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
   5 habitantes. Su ayuda: "Large villages tend to rebel. Cull them when their
   population gets too big (30 or more)."
 - **Subjugate** hace Cull solo cuando el pueblo llega a 30 habitantes, para evitar
-  rebeliones (con botín, sin aviso).
+  rebeliones (con botín, sin aviso). Lo revisa cada 5 días.
 - **Quién destruye la última guarida enlazada** de un pueblo esclavizado decide qué pasa:
   - **rebeldes:** el pueblo se independiza al momento y los rebeldes cercanos vuelven a
     él como aldeanos (queda independiente normal, no controlado por rebeldes);
   - **un reino enemigo:** el pueblo pasa al momento a ese reino;
   - **Fryhtans salvajes**, venta u otra causa: los 3 meses de gracia de siempre.
+- **Gracia sin rebelión:** un pueblo esclavizado que pasa a un reino humano no se puede
+  rebelar durante 3 meses.
+- **Nadie migra por su cuenta a un pueblo esclavizado**, ni aldeanos de otros pueblos ni
+  trabajadores de edificios. La migración que ordena el jugador entre sus pueblos sigue
+  igual.
 
 ### Cambiado
 - **IA más agresiva contra los reinos Fryhtan (prueba):** al elegir a quién declararle la

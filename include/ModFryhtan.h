@@ -179,7 +179,8 @@ enum { ORDO_TASK_MIN_LEADERSHIP = 30,		// the leadership range of the effects of
 		 OVERPOPULATED_LOYALTY_DAYS = 5,		// ...1 point every this many days, and rebels in the end
 		 CULL_MIN_POPULATION = 5,				// Cull Population needs this many people in the town...
 		 CULL_MIN_KILL = 3,						// ...and kills 3 or 4 of them
-		 CULL_MAX_KILL = 4 };
+		 CULL_MAX_KILL = 4,
+		 SUBJUGATE_CULL_DAYS = 5 };			// Subjugate checks every this many days if it has to cull the town
 
 struct TownOrdo
 {

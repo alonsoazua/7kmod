@@ -2168,7 +2168,8 @@ void ModFryhtan::next_day_town_ordo(Town* townPtr)
 
 	//------- Subjugate: it culls an overpopulated town, to prevent rebellions (no news) -------//
 
-	if( ordoPtr->action == ORDO_ACTION_SUBJUGATE && is_overpopulated(townPtr) )
+	if( ordoPtr->action == ORDO_ACTION_SUBJUGATE && info.game_date%SUBJUGATE_CULL_DAYS == townRecno%SUBJUGATE_CULL_DAYS &&
+		 is_overpopulated(townPtr) )
 		cull_town(townPtr);
 
 	//------- its leadership and combat rise, as a general in a lair -------//

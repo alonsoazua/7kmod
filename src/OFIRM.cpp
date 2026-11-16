@@ -2895,6 +2895,9 @@ void Firm::think_worker_migrate()
 		if(townPtr->population>=MAX_TOWN_POPULATION)
 			continue;
 
+		if( mod_fryhtan.is_enslaved_town(townPtr) )		// 7kmod-fryhtan: workers don't move to an enslaved town
+			continue;
+
 		//------ check if this town is linked to the current firm -----//
 
 		for( j=townPtr->linked_firm_count-1 ; j>=0 ; j-- )

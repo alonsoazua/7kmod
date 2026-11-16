@@ -21,13 +21,18 @@ together.
   people. Its help: "Large villages tend to rebel. Cull them when their population gets
   too big (30 or more)."
 - **Subjugate** culls on its own when the town reaches 30 people, to prevent rebellions
-  (with spoils, without news).
+  (with spoils, without news). It checks every 5 days.
 - **Who destroys the last linked lair** of an enslaved town decides what happens:
   - **rebels:** the town declares its independence at once and the rebels nearby go
     back into it as villagers (it stays a normal independent town, not one controlled
     by rebels);
   - **an enemy kingdom:** the town goes to that kingdom at once;
   - **wild Fryhtans**, selling it or anything else: the usual 3-month grace.
+- **Grace without rebellion:** an enslaved town that goes to a human kingdom can't rebel
+  for 3 months.
+- **Nobody migrates on their own to an enslaved town**, neither villagers of other towns
+  nor workers of buildings. The migration the player orders between their own towns is
+  unchanged.
 
 ### Changed
 - **More aggressive AI against Fryhtan kingdoms (test):** when picking whom to declare
