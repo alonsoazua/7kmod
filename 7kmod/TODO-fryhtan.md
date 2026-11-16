@@ -1200,10 +1200,18 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
 - [ ] **Cull Population solo con un Ordo en el pueblo.** El botón de Cull Population
       solo aparece (o solo se puede usar) cuando hay un Ordo dentro del pueblo
       esclavizado. Sin Ordo, no hay Cull Population.
-      - ❓ ¿El botón desaparece o se ve oscurecido con la ayuda "Needs an Ordo in the
-        village"?
+      - Sin Ordo, el botón **desaparece**.
       - Dónde: `ModFryhtan::can_cull_town` (agregar `town_ordo(town_recno)`) y el botón
         en `Town::disp_main_menu`.
+- [ ] **Taskmaster solo da comida, al doble.** Ya no da oro extra; la comida extra por
+      aldeano se duplica: **+10 al año con liderazgo 30 hasta +40 con 100** (antes +5 a
+      +20). Sigue matando un aldeano cada 60 a 120 días.
+      - La **descripción** de Taskmaster en la vista del Ordo (el panel bajo "Role", no
+        un tooltip) dice también que mata aldeanos:
+        "+40 food a year per villager. The forced labor kills a villager every 60 to 120
+        days." (con el número según el liderazgo).
+      - Quitar `TASKMASTER_GOLD_LOW/HIGH`, `taskmaster_gold` y `taskmaster_town_gold` (o
+        dejarlos en 0); `TASKMASTER_FOOD_LOW/HIGH` a 10 y 40.
 
 ## 8. Economía oscura (en diseño)
 
