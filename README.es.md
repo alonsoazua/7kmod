@@ -63,8 +63,6 @@ versión en inglés con el mismo nombre terminado en `.en.md`.
 - `KEYBINDINGS.md`: atajos de teclado.
 - `GREATER_BEINGS.md`, `SPYING.md`, `SIEGE_WEAPONS.md`: cómo funcionan los Greater
   Beings, el espionaje y las armas de asedio.
-- `TODO*.md` y los análisis (solo en español): pendientes, ideas y el detalle de cómo se
-  hizo cada cambio (`TODO-editor.md` describe el editor de escenarios).
 
 ## Compilar
 

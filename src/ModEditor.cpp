@@ -23,7 +23,7 @@
 // editor mode: the game is paused, the whole map is shown and the top bar and
 // the side panel show the editor interface. "Test" plays the scenario from a
 // saved copy; F12 or "Return to Editor" in the game menu load that copy
-// again in the editor mode. See 7kmod/TODO-editor.md.
+// again in the editor mode.
 
 #include <ModEditor.h>
 #include <OSYS.h>

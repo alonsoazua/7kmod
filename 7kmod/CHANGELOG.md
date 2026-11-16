@@ -7,8 +7,7 @@ Cambios de la rama `7kmod` (ejecutable `7kaa-mod.exe`) respecto a la versión or
 
 La rama `7kmod` tiene mejoras de comodidad e interfaz y algunos ajustes de balance.
 Los cambios que modifican el estilo de juego están en la rama `7kmod-gameplay`, que
-incluye todo lo de `7kmod` y documenta lo suyo en `CHANGELOG-gameplay.md`. El editor de
-escenarios (desde la 0.2.0) está descrito en `TODO-editor.md`.
+incluye todo lo de `7kmod` y documenta lo suyo en `CHANGELOG-gameplay.md`.
 
 ## Cómo se usa este archivo
 
@@ -73,14 +72,14 @@ Más funciones del editor (reinos, reyes, espías, mapa en limpio) y correccione
   reino de la IA sin rey y **Remove Kingdom** quita uno con sus pueblos, edificios y
   unidades; también se cambia el color de un reino. El rey se coloca con la entrada
   **King** de la pestaña Units, y Delete ya borra reyes. Test y Save avisan si a algún
-  reino le falta rey. Detalles en `TODO-editor.md`.
+  reino le falta rey.
 - **Editor: mapa en limpio.** Opción **Base** en la ventana New Map: Generated, **Land** o
   **Water** (todo el mapa de pasto o de agua, sin nada encima ni reyes).
 - **Editor: espías.** Entrada **Spy** en la pestaña Units, con opciones Race, Spying y
   Cloak. Sobre un pueblo o edificio (de cualquier reino) entra como espía; en el mapa
   queda como unidad disfrazada. Al seleccionarlo se ve su reino verdadero y se cambian
   su habilidad y su disfraz; los pueblos y edificios muestran cuántos espías tienen, y
-  los pueblos los sacan con **Spies out**. Detalles en `TODO-editor.md`.
+  los pueblos los sacan con **Spies out**.
 
 ### Corregido
 - **Recuadro sobre unidades de otros reinos:** a veces algunas unidades del recuadro no
@@ -108,8 +107,7 @@ Más funciones del editor (reinos, reyes, espías, mapa en limpio) y correccione
 
 ## [0.2.0] - 2026-10-28
 
-Agrega el **editor de escenarios** (antes en la rama `7kmod-editor`). Su diseño, fases y
-detalles técnicos están en `TODO-editor.md`.
+Agrega el **editor de escenarios** (antes en la rama `7kmod-editor`).
 
 ### Agregado
 - **Contribución y honores de los generales:** un general se vuelve infeliz cuando su contribución (1 punto por cada golpe al enemigo) es más del doble de lo que se le ha dado en recompensas; pierde hasta 50 de lealtad. El juego original no lo mostraba en ningún lado. Ahora:
