@@ -1197,6 +1197,13 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         Probado: con 32 habitantes la lealtad bajó de 50 a 45 en 25 días; Cull Population
         mató a 4 y dio $8 y 20 de comida; el botón con su ayuda. No se probó en partida la
         muerte por Taskmaster.
+- [ ] **Cull Population solo con un Ordo en el pueblo.** El botón de Cull Population
+      solo aparece (o solo se puede usar) cuando hay un Ordo dentro del pueblo
+      esclavizado. Sin Ordo, no hay Cull Population.
+      - ❓ ¿El botón desaparece o se ve oscurecido con la ayuda "Needs an Ordo in the
+        village"?
+      - Dónde: `ModFryhtan::can_cull_town` (agregar `town_ordo(town_recno)`) y el botón
+        en `Town::disp_main_menu`.
 
 ## 8. Economía oscura (en diseño)
 
