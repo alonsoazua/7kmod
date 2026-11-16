@@ -1224,6 +1224,22 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         days." (con la comida según el liderazgo).
       - Quitar `TASKMASTER_GOLD_LOW/HIGH`, `taskmaster_gold` y `taskmaster_town_gold` (o
         dejarlos en 0); `TASKMASTER_FOOD_LOW/HIGH` a 10 y 40.
+- [ ] **Si los rebeldes destruyen la guarida, el pueblo se independiza de inmediato.**
+      Hoy, cuando un pueblo esclavizado se queda sin guarida enlazada, tiene **3 meses de
+      gracia** antes de declararse independiente (`LOST_LAIR_GRACE_DAYS`,
+      `ModFryhtan::next_day_town`). Si la guarida la destruyeron **rebeldes** y el pueblo
+      no tiene **ninguna otra guarida enlazada** (cercana), se declara independiente al
+      momento, sin gracia, con la noticia "Your village of … has declared independence."
+      - Si le queda otra guarida enlazada, no pasa nada (sigue esclavizado).
+      - Si la guarida la destruye otro reino o se pierde de otra forma, sigue la gracia de
+        3 meses.
+      - Cómo: al destruirse una guarida de un reino Fryhtan, ver si el último golpe fue de
+        una unidad rebelde (`UNIT_MODE_REBEL`); si sí, a los pueblos esclavizados que
+        quedan sin guarida enlazada se les quita la gracia. Igual que la gracia: nueva
+        resistencia de 60 a 99 hacia todos los reinos y 100 hacia el reino Fryhtan.
+      - ❓ ¿Cuenta cualquier rebelde, o solo los que salieron de ese mismo pueblo? (Los
+        rebeldes no guardan de qué pueblo salieron; con "cualquier rebelde" es más
+        simple.)
 
 ## 8. Economía oscura (en diseño)
 
