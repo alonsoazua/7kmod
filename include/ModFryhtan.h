@@ -18,7 +18,7 @@
 
 //Filename    : ModFryhtan.h
 //Description : 7kmod-fryhtan: Fryhtan kingdoms. The player can play as a
-//              kingdom of Fryhtans. See 7kmod/TODO-fryhtan.md.
+//              kingdom of Fryhtans.
 
 #ifndef __MODFRYHTAN_H
 #define __MODFRYHTAN_H

@@ -11,7 +11,7 @@ Todo lo de este documento es del juego original, que es como funciona en la rama
 `7kmod`. **La rama `7kmod-gameplay` (y `7kmod-pathing`) cambia el espionaje:**
 Propaganda en pueblos independientes, aldeanos que se unen, accidentes, porcentaje
 de éxito del soborno y reportes de inteligencia en lugar de "Steal secrets". Ver
-`CHANGELOG-gameplay.md` y `TODO-espionaje.md`.
+`CHANGELOG-gameplay.md`.
 
 ## 1. Cómo se consigue un espía
 

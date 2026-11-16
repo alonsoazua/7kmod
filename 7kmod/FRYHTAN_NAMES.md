@@ -1,8 +1,8 @@
 # Nombres de Ordos
 
-Lista de nombres propios para los generales Fryhtan (Ordos) de un reino Fryhtan
-(ajuste anotado en `TODO-fryhtan.md`). Son inventados para el mod: sonidos guturales y
-cortos, para que se distingan de los nombres humanos de cada raza. Al ascender a un
+Lista de nombres propios para los generales Fryhtan (Ordos) de un reino Fryhtan. Son
+inventados para el mod: sonidos guturales y cortos, para que se distingan de los nombres
+humanos de cada raza. Al ascender a un
 Fryhtan, el juego tomaría uno al azar que no esté en uso en el reino.
 
 | | | | | |

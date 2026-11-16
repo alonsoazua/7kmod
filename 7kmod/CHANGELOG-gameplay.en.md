@@ -16,7 +16,7 @@ the game plays. This branch includes everything in the `7kmod` branch, documente
   changes, and the first stays at 0 while the mod is still being tested.
 - Sections of each version: **Added**, **Changed**, **Fixed**, **Compatibility**.
 - This file is the English translation of `CHANGELOG-gameplay.md`; both are updated
-  together. `COMBAT_ANALYSIS.md` and `TODO-espionaje.md` are in Spanish only.
+  together. `COMBAT_ANALYSIS.md` is in Spanish only.
 
 ---
 
@@ -36,7 +36,7 @@ Based on **7kmod 0.4.0** (see `CHANGELOG.en.md`).
   village of 20; it trains soldiers and Ordos in the lair with gold and food (Promote
   and Demote work too), enslaves villages to collect tribute, captures wild lairs, has
   no trade or alliance diplomacy, and wild Fryhtans don't attack it. The details are in
-  `CHANGELOG-fryhtan.en.md` and in `TODO-fryhtan.md` (Spanish only).
+  `CHANGELOG-fryhtan.en.md`.
   - Also brought: **Raid** on independent villages, gold spoils by combat level for
     killing humans, a 3-month grace when an enslaved village loses its lair,
     regeneration of its buildings, the **Ordo inside an enslaved village** (Subjugate,
@@ -76,8 +76,7 @@ Based on **7kmod 0.4.0** (see `CHANGELOG.en.md`).
 
 ## [0.2.0] - 2026-11-06
 
-Based on **7kmod 0.3.0**, which includes the scenario editor (see `CHANGELOG.en.md` and
-`TODO-editor.md`).
+Based on **7kmod 0.3.0**, which includes the scenario editor (see `CHANGELOG.en.md`).
 
 ### Added
 - **Greater Beings** (details in `GREATER_BEINGS.en.md`):
@@ -116,7 +115,7 @@ Based on **7kmod 0.3.0**, which includes the scenario editor (see `CHANGELOG.en.
   with the option to show all icons), but on the Fryhtans of every kingdom. Wild ones
   carry no icon (`Unit::draw_fryhtan_nation_icon`, `src/OUNITDRW.cpp`).
 - **Ranged shots are no longer blocked** by buildings, walls, mountains or other obstacles (`BulletArray::bullet_path_possible`). Before, if the straight shot (arrows, javelins, etc.) passed through a tile that can't be walked, the archer had to move to another tile to shoot, and sometimes ended up right next to the enemy. Now every shot goes over everything, as the curved projectiles of siege weapons already did. It applies to all ranged units of every kingdom. Side effect: units behind walls or on the other side of a mountain can be shot if they are within range.
-- **Spying: Propaganda in independent towns.** In an independent town the spy's "Sow Dissent" mode is called **"Propaganda"** and is much stronger (see `SPYING.en.md` and `TODO-espionaje.md`):
+- **Spying: Propaganda in independent towns.** In an independent town the spy's "Sow Dissent" mode is called **"Propaganda"** and is much stronger (see `SPYING.en.md`):
   - **Only each kingdom's most skilled spy counts** in the town (having more spies doesn't speed anything up): every 30 days the resistance toward your kingdom goes down by its skill ÷ 20, without dividing by the population (before, skill ÷ 5 ÷ population of its race). **Below 30 resistance the effect is halved.**
   - **Race matters:** full effect on the people of the spy's race and a quarter on the other races of the town (before, none). The idea is to hire a spy of the town's race at an Inn.
   - **Spies alone don't conquer:** without a fort of yours linked to the town and with a general, propaganda doesn't lower resistance below 30. An empty fort or one with the link turned off doesn't count.
@@ -227,9 +226,6 @@ far.
   - It costs $150 and 1 person, and takes 4 times as long as a normal soldier (20 days).
   - It only works in towns where the king's race is the majority.
   - Left click adds to the queue, right click removes one. The button shows how many are in training.
-
-#### Documentation
-- `TODO.md`: list of pending ideas and their status (Spanish only).
 
 ### Changed
 

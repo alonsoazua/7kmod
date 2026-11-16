@@ -35,7 +35,7 @@ Publicada como **New Adversaries 0.4.0**, en el instalador
   esclavizado de 20; entrena soldados y Ordos en la guarida con oro y comida (Promote y
   Demote también funcionan), esclaviza pueblos para cobrarles tributo, captura guaridas
   salvajes, no tiene diplomacia de comercio ni alianzas y los Fryhtans salvajes no lo
-  atacan. El detalle está en `CHANGELOG-fryhtan.md` y en `TODO-fryhtan.md`.
+  atacan. El detalle está en `CHANGELOG-fryhtan.md`.
   - Traído también: **Raid** a pueblos independientes, botín de oro por nivel de combate
     al matar humanos, gracia de 3 meses al perder la guarida de un pueblo esclavizado,
     regeneración de sus construcciones, el **Ordo dentro de un pueblo esclavizado**
@@ -75,8 +75,7 @@ Publicada como **New Adversaries 0.4.0**, en el instalador
 
 ## [0.2.0] - 2026-11-06
 
-Basada en **7kmod 0.3.0**, que incluye el editor de escenarios (ver `CHANGELOG.md` y
-`TODO-editor.md`).
+Basada en **7kmod 0.3.0**, que incluye el editor de escenarios (ver `CHANGELOG.md`).
 
 ### Agregado
 - **Greater Beings** (detalles en `GREATER_BEINGS.md`):
@@ -116,7 +115,7 @@ Basada en **7kmod 0.3.0**, que incluye el editor de escenarios (ver `CHANGELOG.m
   en los Fryhtans de todos los reinos. Los salvajes no llevan ícono
   (`Unit::draw_fryhtan_nation_icon`, `src/OUNITDRW.cpp`).
 - **Los disparos a distancia ya no se bloquean** por edificios, murallas, montañas ni otros obstáculos (`BulletArray::bullet_path_possible`). Antes, si el tiro recto (flechas, jabalinas, etc.) pasaba por una casilla no caminable, el arquero tenía que moverse a otra casilla para disparar, y a veces quedaba pegado al enemigo. Ahora todos los disparos pasan por encima de todo, como ya lo hacían los proyectiles curvos de las armas de asedio. Aplica a todas las unidades a distancia de todos los reinos. Efecto secundario: se puede disparar a unidades detrás de murallas o al otro lado de una montaña si están dentro del alcance.
-- **Espionaje: Propaganda en pueblos independientes.** En un pueblo independiente el modo "Sow Dissent" del espía se llama **"Propaganda"** y es mucho más potente (ver `SPYING.md` y `TODO-espionaje.md`):
+- **Espionaje: Propaganda en pueblos independientes.** En un pueblo independiente el modo "Sow Dissent" del espía se llama **"Propaganda"** y es mucho más potente (ver `SPYING.md`):
   - **Solo cuenta el espía de más habilidad de cada reino** en el pueblo (tener más espías no acelera nada): cada 30 días la resistencia hacia tu reino baja su habilidad ÷ 20, sin dividir entre la población (antes habilidad ÷ 5 ÷ población de su raza). **Debajo de 30 de resistencia el efecto se reduce a la mitad.**
   - **La raza importa:** efecto completo sobre la gente de la raza del espía y una cuarta parte sobre las otras razas del pueblo (antes, ninguno). Lo pensado es contratar en una Inn un espía de la raza del pueblo.
   - **Los espías solos no conquistan:** sin un fuerte tuyo enlazado al pueblo y con general, la propaganda no baja la resistencia de 30. Un fuerte vacío o con el enlace desactivado no cuenta.
@@ -227,9 +226,6 @@ hasta ahora.
   - Cuesta $150 y 1 habitante, y tarda 4 veces lo de un soldado normal (20 días).
   - Solo funciona en pueblos donde la raza del rey es la mayoría.
   - Clic izquierdo agrega a la cola, clic derecho quita uno. El botón muestra cuántos hay en entrenamiento.
-
-#### Documentación
-- `TODO.md`: lista de ideas pendientes y su estado.
 
 ### Cambiado
 

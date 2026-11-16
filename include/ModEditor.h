@@ -17,7 +17,7 @@
  */
 
 //Filename    : ModEditor.h
-//Description : 7kmod-editor: the scenario editor. See 7kmod/TODO-editor.md.
+//Description : 7kmod-editor: the scenario editor.
 
 #ifndef __MODEDITOR_H
 #define __MODEDITOR_H

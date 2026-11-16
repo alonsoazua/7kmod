@@ -77,8 +77,6 @@ version with the same name ending in `.en.md`:
 - `KEYBINDINGS.en.md`: keyboard shortcuts.
 - `GREATER_BEINGS.en.md`, `SPYING.en.md`, `SIEGE_WEAPONS.en.md`: how Greater Beings,
   spying and siege weapons work.
-- `TODO*.md` and the analysis documents (Spanish only): pending work, ideas and the
-  details of how each change was made (`TODO-editor.md` describes the scenario editor).
 
 ## Building
 

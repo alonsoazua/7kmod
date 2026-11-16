@@ -4,8 +4,7 @@
 
 Experimental branch to play as a **Fryhtan kingdom**. It's based on `7kmod-gameplay` and
 includes everything in that branch and in `7kmod` (see `CHANGELOG-gameplay.en.md` and
-`CHANGELOG.en.md`). Its executable is `7kaa-fryhtan.exe`. The plan and the details of
-each change are in `TODO-fryhtan.md` (Spanish only).
+`CHANGELOG.en.md`). Its executable is `7kaa-fryhtan.exe`.
 
 This file is the English translation of `CHANGELOG-fryhtan.md`; both are updated
 together.
@@ -29,7 +28,7 @@ Included in **New Adversaries 0.4.0** (gameplay 0.3.0, 7kmod 0.4.0). The
 `7kmod-fryhtan` branch goes on with the experimental adjustments of the Fryhtan kingdom.
 
 ### Added
-- **Fryhtan kingdom** (phase 1 of `TODO-fryhtan.md`; single player games only):
+- **Fryhtan kingdom** (phase 1; single player games only):
   - In New Game, basic page, two text tabs above the races: **Humans** (the 10 races)
     and **Fryhtans** (the 13 species in the same place, 10 per page, with ▲ ▼
     arrows to change the page); the chosen one is underlined. Below the

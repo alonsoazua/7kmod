@@ -17,7 +17,7 @@
  */
 
 //Filename    : ModFryhtan.cpp
-//Description : 7kmod-fryhtan: Fryhtan kingdoms. See 7kmod/TODO-fryhtan.md.
+//Description : 7kmod-fryhtan: Fryhtan kingdoms.
 
 #include <string.h>
 #include <ALL.h>
