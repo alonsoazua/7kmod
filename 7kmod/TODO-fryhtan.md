@@ -1209,7 +1209,7 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         - ❓ ¿Con noticia (por ejemplo "Your Ordo Feskul has culled 4 villagers in your
           village of Rouen.") o sin ella?
         - La descripción de Subjugate lo dice, corto: "The loyalty of the village doesn't
-          drop below 32. Culls at 30 people."
+          drop below 32. Culls population to prevent rebellions."
       - Dónde: `ModFryhtan::can_cull_town` (agregar `town_ordo(town_recno)`) y el botón
         en `Town::disp_main_menu`.
 - [ ] **Taskmaster solo da comida, al doble.** Ya no da oro extra; la comida extra por
