@@ -9,6 +9,24 @@ se marca como tal.
 
 ## Checklist
 
+- [ ] **Bug: Training desde la partida no carga el escenario de la lección.** Al elegir
+      otra lección con **Next Training**, o con **Training** del menú de la partida, el
+      juego solo cambia el texto de ayuda y deja el mapa de la lección (o partida) en la
+      que estabas. Parece que "carga el juego anterior".
+      - **Causa:** `Tutor::run(tutorId, inGameCall)` (`OTUTOR.cpp`) solo carga el
+        archivo `TUTORIAL\<código>.TUT` cuando se llama desde el menú principal; desde la
+        partida (`inGameCall` 1, llamado desde `Tutor::select_run_tutor(1)` en
+        `OTUTOR.cpp` y `OINGMENU.cpp`) se lo salta a propósito ("don't load pre-saved
+        game when selecting a new tutorial in the game"). Viene así del juego original
+        de 7kfans; el mod no lo cambió.
+      - **Probado** (Linux, rama Fryhtan): desde el menú principal, Military y Trade
+        cargan cada uno su mapa; desde Military, Next Training → Trade deja el mapa de
+        Military con el texto de Trade (1/45).
+      - **Arreglo propuesto:** no se puede cargar otro escenario en medio de la partida
+        que corre (`battle.run_loaded()`). Guardar la lección elegida, terminar la
+        partida actual y, al volver al menú principal, arrancar esa lección como lo hace
+        Training (`OGAMMAIN.cpp`, `tutor.select_run_tutor(0)` → `Tutor::run`).
+
 - [ ] **Pestaña de mantenimiento en el reporte militar.** Una tercera pestaña en el
       panel de abajo del reporte militar, junto a **Units** y **Contributions**, con lo
       que se espera que el ejército actual cueste al año en **oro** y en **comida**,
