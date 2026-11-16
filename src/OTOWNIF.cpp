@@ -482,17 +482,25 @@ void Town::disp_main_menu(int refreshFlag)
 
 		//--- Cull Population: kills 3 or 4 villagers, for the spoils ---//
 
-		static int lastCullEnable = -1;
+		static int lastCullEnable = -1, lastCullOrdo = -1;
 		int cullEnable = mod_fryhtan.can_cull_town(this);
 
-		if( refreshFlag == INFO_REPAINT )
+		if( refreshFlag == INFO_REPAINT || (ordoPtr != NULL) != lastCullOrdo )		// only with an Ordo inside the town
 		{
-			button_cull.paint( BUTTON_X1+BUTTON_ACTION_WIDTH, y, 'A', "DEMOTE" );
-			button_cull.set_help_code("");		// the custom help is set below
+			lastCullOrdo = ordoPtr != NULL;
+
+			if( ordoPtr )
+			{
+				button_cull.paint( BUTTON_X1+BUTTON_ACTION_WIDTH, y, 'A', "DEMOTE" );
+				button_cull.set_help_code("");		// the custom help is set below
+			}
+			else
+				button_cull.reset();
+
 			lastCullEnable = -1;
 		}
 
-		if( cullEnable != lastCullEnable )
+		if( button_cull.init_flag && cullEnable != lastCullEnable )
 		{
 			lastCullEnable = cullEnable;
 
@@ -508,9 +516,9 @@ void Town::disp_main_menu(int refreshFlag)
 
 			if( cullEnable )
 			{
-				// TRANSLATORS: Kill <Min> or <Max> villagers. You get $<Gold> and <Food> food for each one.
-				snprintf( cullHelpStr, sizeof(cullHelpStr), _("Kill %d or %d villagers. You get $%d and %d food for each one."),
-							 (int) CULL_MIN_KILL, (int) CULL_MAX_KILL, (int) KILL_GOLD_UNIT, (int) KILL_FOOD_UNIT );
+				// TRANSLATORS: Large villages tend to rebel. Cull them when their population gets too big (<Number> or more).
+				snprintf( cullHelpStr, sizeof(cullHelpStr), _("Large villages tend to rebel. Cull them when their population gets too big (%d or more)."),
+							 (int) OVERPOPULATED_TOWN_POPULATION );
 			}
 			else
 			{
@@ -1034,27 +1042,26 @@ void Town::disp_ordo_menu(int refreshFlag)
 
 		case ORDO_ACTION_TASKMASTER:
 		{
-			int taskGold = ModFryhtan::taskmaster_gold(leadership);
-
-			// TRANSLATORS: +$<Gold> a month and +<Food> food a year per villager.
-			snprintf( str, sizeof(str), _("+$%d.%02d a month and +%d food a year per villager."),
-						 taskGold/100, taskGold%100, ModFryhtan::taskmaster_food(leadership) );
+			// TRANSLATORS: +<Food> food a year per villager. The forced labor kills a villager every <Days> to <Days> days.
+			snprintf( str, sizeof(str), _("+%d food a year per villager. The forced labor kills a villager every %d to %d days."),
+						 ModFryhtan::taskmaster_food(leadership), (int) TASKMASTER_DEATH_DAYS,
+						 (int) (TASKMASTER_DEATH_DAYS + TASKMASTER_DEATH_DAYS_RANGE) );
 			break;
 		}
 
 		default:
-			// TRANSLATORS: The loyalty of the village doesn't drop below <Number>.
-			snprintf( str, sizeof(str), _("The loyalty of the village doesn't drop below %d."),
+			// TRANSLATORS: The loyalty of the village doesn't drop below <Number>. Culls overpopulation to prevent rebellions.
+			snprintf( str, sizeof(str), _("The loyalty of the village doesn't drop below %d. Culls overpopulation to prevent rebellions."),
 						 MIN( leadership, (int) SUBJUGATE_MAX_LOYALTY ) );
 			break;
 	}
 
-	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+36 );
-	font_san.put_paragraph( INFO_X1+6, y+3, INFO_X2-6, y+35, str, 0 );
+	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+66 );		// up to 4 lines
+	font_san.put_paragraph( INFO_X1+6, y+3, INFO_X2-6, y+65, str, 0 );
 
 	//------- loyalty, leadership, combat and hit points -------//
 
-	y += 40;
+	y += 70;
 
 	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+4+16*4+2 );
 

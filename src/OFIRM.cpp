@@ -1922,7 +1922,7 @@ void Firm::consume_food()
 	if( nation_array[nation_recno]->food > 0 )
 	{
 		int humanUnitCount=0;
-		int fryhtanFoodYear=0;		// 7kmod-gameplay: the Fryhtans in a fort also eat
+		float fryhtanFoodYear=0;		// 7kmod-gameplay: the Fryhtans in a fort also eat
 
 		for( int i=0 ; i<worker_count ; i++ )
 		{
@@ -1932,11 +1932,11 @@ void Firm::consume_food()
 			else if( worker_array[i].unit_id &&
 						unit_res[worker_array[i].unit_id]->unit_class == UNIT_CLASS_MONSTER )
 			{
-				fryhtanFoodYear += invoked_fryhtan_food_year(worker_array[i].unit_id);
+				fryhtanFoodYear += ModFryhtan::fryhtan_food_year(worker_array[i].unit_id, nation_recno);		// 7kmod-fryhtan: half in a Fryhtan kingdom
 			}
 		}
 
-		nation_array[nation_recno]->consume_food((float) (humanUnitCount * PERSON_FOOD_YEAR_CONSUMPTION + fryhtanFoodYear) / 365);
+		nation_array[nation_recno]->consume_food(((float) humanUnitCount * PERSON_FOOD_YEAR_CONSUMPTION + fryhtanFoodYear) / 365);
 	}
 	else	//--- decrease loyalty if the food has been run out ---//
 	{

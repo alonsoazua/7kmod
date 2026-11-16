@@ -25,6 +25,7 @@
 #include <OMONSRES.h>
 #include <OUNITRES.h>
 #include <OUNIT.h>
+#include <OREBEL.h>
 #include <OSPRTRES.h>
 #include <OSKILL.h>
 #include <OTOWN.h>
@@ -1535,19 +1536,7 @@ int ModFryhtan::next_day_town(Town* townPtr)
 
 		set_lost_lair_date(townPtr->town_recno, 0);
 
-		//--- the resistance of a new independent town toward all the kingdoms, so that it doesn't surrender at once to a kingdom with an old zero resistance ---//
-
-		for( int i=0 ; i<MAX_RACE ; i++ )
-		{
-			for( int j=0 ; j<MAX_NATION ; j++ )
-				townPtr->race_resistance_array[i][j] = (float) 60 + misc.random(40);
-
-			townPtr->race_resistance_array[i][nationRecno-1] = (float) 100;		// the kingdom has to fight it again to enslave it
-		}
-
-		news_array.town_rebel(townPtr->town_recno, 0);		// 0 rebels: "Your village of ... has declared independence."
-
-		townPtr->set_nation(0);
+		make_town_independent(townPtr);
 		return 0;
 	}
 
@@ -1651,6 +1640,181 @@ int ModFryhtan::in_lair_grace(Town* townPtr)
 	return is_enslaved_town(townPtr) && !townPtr->has_linked_camp(townPtr->nation_recno, 0);
 }
 //----------- End of function ModFryhtan::in_lair_grace -----------//
+
+
+//--------- Begin of function ModFryhtan::make_town_independent ---------//
+//
+// An enslaved town declares its independence: a new resistance toward all the
+// kingdoms (60 to 99), so that it doesn't surrender at once to a kingdom with
+// an old zero resistance, and 100 toward its old Fryhtan kingdom, which has to
+// fight it again to enslave it.
+//
+void ModFryhtan::make_town_independent(Town* townPtr)
+{
+	int nationRecno = townPtr->nation_recno;
+
+	for( int i=0 ; i<MAX_RACE ; i++ )
+	{
+		for( int j=0 ; j<MAX_NATION ; j++ )
+			townPtr->race_resistance_array[i][j] = (float) 60 + misc.random(40);
+
+		if( nationRecno )
+			townPtr->race_resistance_array[i][nationRecno-1] = (float) 100;
+	}
+
+	if( nationRecno == nation_array.player_recno )
+		news_array.town_rebel(townPtr->town_recno, 0);		// 0 rebels: "Your village of ... has declared independence."
+
+	townPtr->set_nation(0);
+}
+//----------- End of function ModFryhtan::make_town_independent -----------//
+
+
+//--------- Begin of function ModFryhtan::lair_orphan_towns ---------//
+//
+// The enslaved towns linked to the lair and to no other lair of its kingdom:
+// they lose their last lair when it is destroyed (Unit::hit_firm()).
+//
+// return: <int> the number of towns put in townRecnoArray (at most MAX_LINKED_FIRM_TOWN)
+//
+int ModFryhtan::lair_orphan_towns(Firm* firmPtr, short* townRecnoArray)
+{
+	if( !firmPtr->nation_recno || !is_fryhtan(firmPtr->nation_recno) || !is_lair(firmPtr) )
+		return 0;
+
+	int townCount = 0;
+
+	for( int i=0 ; i<firmPtr->linked_town_count ; i++ )
+	{
+		Town* townPtr = town_array[ firmPtr->linked_town_array[i] ];
+
+		if( townPtr->nation_recno != firmPtr->nation_recno )
+			continue;
+
+		//--- another lair of the kingdom linked to the town? ---//
+
+		int otherLair = 0;
+
+		for( int j=0 ; j<townPtr->linked_firm_count ; j++ )
+		{
+			Firm* otherFirm = firm_array[ townPtr->linked_firm_array[j] ];
+
+			if( otherFirm != firmPtr && otherFirm->nation_recno == firmPtr->nation_recno && is_lair(otherFirm) )
+			{
+				otherLair = 1;
+				break;
+			}
+		}
+
+		if( !otherLair )
+			townRecnoArray[townCount++] = (short) townPtr->town_recno;
+	}
+
+	return townCount;
+}
+//----------- End of function ModFryhtan::lair_orphan_towns -----------//
+
+
+//--------- Begin of function ModFryhtan::lair_destroyed ---------//
+//
+// A lair of a Fryhtan kingdom has been destroyed (after Unit::hit_firm()
+// deleted it). Its enslaved towns without another linked lair:
+//
+// - destroyed by rebels: the town declares its independence at once, and the
+//   rebels nearby go back into it as villagers;
+// - destroyed by an enemy kingdom: the town goes to that kingdom at once (a
+//   normal town of a human kingdom, an enslaved town of a Fryhtan one);
+// - destroyed by wild Fryhtans: the grace period of ModFryhtan::next_day_town()
+//   as with any other loss of the lair.
+//
+void ModFryhtan::lair_destroyed(short* townRecnoArray, int townCount, Unit* attackUnit, int attackNationRecno, int lairNationRecno)
+{
+	int byRebels = attackUnit && attackUnit->unit_mode == UNIT_MODE_REBEL;
+	int byEnemy  = !byRebels && attackNationRecno && attackNationRecno != lairNationRecno &&
+						!nation_array.is_deleted(attackNationRecno);
+
+	if( !byRebels && !byEnemy )
+		return;
+
+	for( int i=0 ; i<townCount ; i++ )
+	{
+		if( town_array.is_deleted(townRecnoArray[i]) )
+			continue;
+
+		Town* townPtr = town_array[ townRecnoArray[i] ];
+
+		if( townPtr->nation_recno != lairNationRecno || townPtr->has_linked_camp(lairNationRecno, 0) )
+			continue;
+
+		if( byRebels )
+		{
+			set_lost_lair_date(townPtr->town_recno, 0);
+			make_town_independent(townPtr);
+
+			if( !town_array.is_deleted(townRecnoArray[i]) )
+				rebels_return_to_town(townPtr);
+		}
+		else
+		{
+			set_lost_lair_date(townPtr->town_recno, 0);
+
+			if( townPtr->nation_recno == nation_array.player_recno || attackNationRecno == nation_array.player_recno )
+				news_array.town_surrendered(townPtr->town_recno, attackNationRecno);
+
+			townPtr->set_nation(attackNationRecno);
+		}
+	}
+}
+//----------- End of function ModFryhtan::lair_destroyed -----------//
+
+
+//--------- Begin of function ModFryhtan::rebels_return_to_town ---------//
+//
+// The rebels near a town that has won its independence by destroying its
+// lair go back into it as villagers (the town stays a normal independent
+// town, not one controlled by rebels). The leaders go last, so that a group
+// doesn't pick a new leader or join a kingdom halfway (Rebel::process_leader_quit()).
+//
+void ModFryhtan::rebels_return_to_town(Town* townPtr)
+{
+	for( int leaderPass=0 ; leaderPass<2 ; leaderPass++ )
+	{
+		for( int unitRecno=unit_array.size() ; unitRecno>0 ; unitRecno-- )
+		{
+			if( unit_array.is_deleted(unitRecno) )
+				continue;
+
+			Unit* unitPtr = unit_array[unitRecno];
+
+			if( unitPtr->unit_mode != UNIT_MODE_REBEL || !unitPtr->race_id || !unitPtr->is_visible() )
+				continue;
+
+			if( rebel_array.is_deleted(unitPtr->unit_mode_para) )
+				continue;
+
+			int isLeader = rebel_array[unitPtr->unit_mode_para]->leader_unit_recno == unitRecno;
+
+			if( isLeader != leaderPass )
+				continue;
+
+			if( misc.points_distance( unitPtr->next_x_loc(), unitPtr->next_y_loc(),
+											  townPtr->center_x, townPtr->center_y ) > REBELS_RETURN_DISTANCE )
+			{
+				continue;
+			}
+
+			if( townPtr->population >= MAX_TOWN_POPULATION )
+				return;
+
+			int raceId = unitPtr->race_id;
+
+			rebel_array.drop_rebel_identity(unitRecno);		// leaves the rebel group
+			townPtr->inc_pop(raceId, 0, 0);
+			unit_array.del(unitRecno);
+		}
+	}
+}
+//----------- End of function ModFryhtan::rebels_return_to_town -----------//
 
 
 //--------- Begin of function ModFryhtan::lost_lair_date ---------//
@@ -1997,10 +2161,15 @@ void ModFryhtan::next_day_town_ordo(Town* townPtr)
 	//------- it eats and costs as outside (Unit::pay_expense()) -------//
 
 	if( nationPtr->food > 0 )
-		nationPtr->consume_food( (float) invoked_fryhtan_food_year(ordoPtr->unit_id) / 365 );
+		nationPtr->consume_food( fryhtan_food_year(ordoPtr->unit_id, ordoPtr->nation_recno) / 365 );
 
 	if( nationPtr->cash > 0 )
 		nationPtr->add_expense( EXPENSE_MOBILE_UNIT, (float) unit_res[ordoPtr->unit_id]->year_cost / 365, 1 );
+
+	//------- Subjugate: it culls an overpopulated town, to prevent rebellions (no news) -------//
+
+	if( ordoPtr->action == ORDO_ACTION_SUBJUGATE && is_overpopulated(townPtr) )
+		cull_town(townPtr);
 
 	//------- its leadership and combat rise, as a general in a lair -------//
 
@@ -2051,9 +2220,6 @@ void ModFryhtan::next_day_town_ordo(Town* townPtr)
 	else if( ordoPtr->action == ORDO_ACTION_TASKMASTER )
 	{
 		nationPtr->add_food( (float) townPtr->population * taskmaster_food(leadership) / 365 );
-
-		if( info.game_day == 1 )
-			nationPtr->add_income( INCOME_TAX, (float) taskmaster_town_gold(townPtr) );
 
 		//--- the forced labor kills a villager now and then (no news) ---//
 
@@ -2227,7 +2393,8 @@ void ModFryhtan::next_day_town_overpopulation(Town* townPtr)
 //
 int ModFryhtan::can_cull_town(Town* townPtr)
 {
-	return is_enslaved_town(townPtr) && townPtr->population >= CULL_MIN_POPULATION;
+	return is_enslaved_town(townPtr) && town_ordo(townPtr->town_recno) &&		// only with an Ordo inside
+			 townPtr->population >= CULL_MIN_POPULATION;
 }
 
 
@@ -2296,19 +2463,6 @@ int ModFryhtan::kidnap_days(int leadership)
 }
 
 
-//--------- Begin of function ModFryhtan::taskmaster_gold ---------//
-//
-// Extra tribute a month for each villager, in 1/100 $: 50 ($0.5) with
-// leadership 30, 200 ($2) with 100.
-//
-int ModFryhtan::taskmaster_gold(int leadership)
-{
-	int level = ordo_task_level(leadership) - ORDO_TASK_MIN_LEADERSHIP;
-
-	return TASKMASTER_GOLD_LOW + level * (TASKMASTER_GOLD_HIGH - TASKMASTER_GOLD_LOW) / (ORDO_TASK_MAX_LEADERSHIP - ORDO_TASK_MIN_LEADERSHIP);
-}
-
-
 //--------- Begin of function ModFryhtan::taskmaster_food ---------//
 //
 // Extra food a year for each villager: 5 with leadership 30, 20 with 100.
@@ -2321,20 +2475,22 @@ int ModFryhtan::taskmaster_food(int leadership)
 }
 
 
-//--------- Begin of function ModFryhtan::taskmaster_town_gold ---------//
+//--------- Begin of function ModFryhtan::fryhtan_food_year ---------//
 //
-// The extra tribute of the town this month with Taskmaster, in $.
+// The food a Fryhtan of the nation eats a year: as an invoked one
+// (invoked_fryhtan_food_year()), FRYHTAN_KINGDOM_FOOD_PERCENT of it in a
+// Fryhtan kingdom.
 //
-int ModFryhtan::taskmaster_town_gold(Town* townPtr)
+float ModFryhtan::fryhtan_food_year(int unitId, int nationRecno)
 {
-	TownOrdo* ordoPtr = town_ordo(townPtr->town_recno);
+	float food = (float) invoked_fryhtan_food_year(unitId);
 
-	if( !ordoPtr || ordoPtr->action != ORDO_ACTION_TASKMASTER )
-		return 0;
+	if( nationRecno && mod_fryhtan.is_fryhtan(nationRecno) )
+		food = food * FRYHTAN_KINGDOM_FOOD_PERCENT / 100;
 
-	return (townPtr->population * taskmaster_gold(ordoPtr->leadership) + 50) / 100;
+	return food;
 }
-//----------- End of function ModFryhtan::taskmaster_town_gold -----------//
+//----------- End of function ModFryhtan::fryhtan_food_year -----------//
 
 
 //--------- Begin of function ModFryhtan::ordo_action_name ---------//

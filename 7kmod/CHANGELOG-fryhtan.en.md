@@ -16,9 +16,24 @@ together.
 ### Added
 - **Overpopulation:** an enslaved town with 30 people or more loses 1 loyalty every 5
   days and rebels in the end unless it drops below 30.
-- **Cull Population** (sword button in the enslaved town): kills 3 or 4 villagers and
-  gives $2 and 5 food for each one; it needs at least 5 people.
-- With **Taskmaster**, the Ordo's forced labor kills a villager every 60 to 120 days.
+- **Cull Population** (sword button in the enslaved town, only with an Ordo inside):
+  kills 3 or 4 villagers and gives $2 and 5 food for each one; it needs at least 5
+  people. Its help: "Large villages tend to rebel. Cull them when their population gets
+  too big (30 or more)."
+- **Subjugate** culls on its own when the town reaches 30 people, to prevent rebellions
+  (with spoils, without news).
+- **Who destroys the last linked lair** of an enslaved town decides what happens:
+  - **rebels:** the town declares its independence at once and the rebels nearby go
+    back into it as villagers (it stays a normal independent town, not one controlled
+    by rebels);
+  - **an enemy kingdom:** the town goes to that kingdom at once;
+  - **wild Fryhtans**, selling it or anything else: the usual 3-month grace.
+
+### Changed
+- **Taskmaster** no longer gives gold: only food, doubled (+10 to +40 a year per
+  villager by leadership). The forced labor kills a villager every 30 to 90 days.
+- The Fryhtans of a Fryhtan kingdom **eat half** of what invoked ones eat (for example,
+  a Rokken 25 a year instead of 50).
 
 ---
 

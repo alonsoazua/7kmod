@@ -671,7 +671,16 @@ void Unit::hit_firm(Unit* attackUnit, int targetXLoc, int targetYLoc, float atta
 			news_array.monster_firm_destroyed( ((FirmMonster*)targetFirm)->monster_id, targetFirm->center_x, targetFirm->center_y );
 		}
 
+		//--- 7kmod-fryhtan: the enslaved towns that lose their last lair (ModFryhtan::lair_destroyed()) ---//
+
+		short orphanTownArray[MAX_LINKED_FIRM_TOWN];
+		int   orphanTownCount = mod_fryhtan.lair_orphan_towns(targetFirm, orphanTownArray);
+		int   lairNationRecno = targetFirm->nation_recno;
+
 		firm_array.del_firm(targetFirm->firm_recno);
+
+		if( orphanTownCount )
+			mod_fryhtan.lair_destroyed(orphanTownArray, orphanTownCount, attackUnit, attackNationRecno, lairNationRecno);
 	}
 
 	//######## end trevor 25/8 ##########//

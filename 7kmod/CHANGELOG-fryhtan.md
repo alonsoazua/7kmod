@@ -15,9 +15,23 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
 ### Agregado
 - **Sobrepoblación:** un pueblo esclavizado con 30 o más habitantes pierde 1 de lealtad
   cada 5 días y termina rebelándose si no baja de 30.
-- **Cull Population** (botón de espada en el pueblo esclavizado): mata 3 o 4 aldeanos y
-  da $2 y 5 de comida por cada uno; necesita al menos 5 habitantes.
-- Con **Taskmaster**, el trabajo forzado del Ordo mata un aldeano cada 60 a 120 días.
+- **Cull Population** (botón de espada en el pueblo esclavizado, solo con un Ordo
+  adentro): mata 3 o 4 aldeanos y da $2 y 5 de comida por cada uno; necesita al menos
+  5 habitantes. Su ayuda: "Large villages tend to rebel. Cull them when their
+  population gets too big (30 or more)."
+- **Subjugate** hace Cull solo cuando el pueblo llega a 30 habitantes, para evitar
+  rebeliones (con botín, sin aviso).
+- **Quién destruye la última guarida enlazada** de un pueblo esclavizado decide qué pasa:
+  - **rebeldes:** el pueblo se independiza al momento y los rebeldes cercanos vuelven a
+    él como aldeanos (queda independiente normal, no controlado por rebeldes);
+  - **un reino enemigo:** el pueblo pasa al momento a ese reino;
+  - **Fryhtans salvajes**, venta u otra causa: los 3 meses de gracia de siempre.
+
+### Cambiado
+- **Taskmaster** ya no da oro: solo comida, el doble (de +10 a +40 al año por aldeano
+  según el liderazgo). El trabajo forzado mata un aldeano cada 30 a 90 días.
+- Los Fryhtans de un reino Fryhtan **comen la mitad** que los invocados (por ejemplo, un
+  Rokken 25 al año en lugar de 50).
 
 ---
 

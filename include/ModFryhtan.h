@@ -167,12 +167,12 @@ enum { ORDO_TASK_MIN_LEADERSHIP = 30,		// the leadership range of the effects of
 		 KIDNAP_VILLAGERS = 2,					// villagers brought by each kidnap
 		 ORDO_TOWN_VILLAGERS_PER_SOLDIER = 5,	// inside a town, these villagers count as one soldier for the leadership of the Ordo...
 		 ORDO_LEADERSHIP_PERCENT = 150,		// ...whose leadership rises faster than a human general's (also in a lair)
-		 TASKMASTER_GOLD_LOW = 50,				// extra tribute a month for each villager, in 1/100 $, with the lowest leadership...
-		 TASKMASTER_GOLD_HIGH = 200,			// ...and with the highest one
-		 TASKMASTER_FOOD_LOW = 5,				// extra food a year for each villager, with the lowest leadership...
-		 TASKMASTER_FOOD_HIGH = 20,				// ...and with the highest one
-		 TASKMASTER_DEATH_DAYS = 60,			// Taskmaster kills a villager every this many days...
-		 TASKMASTER_DEATH_DAYS_RANGE = 60,		// ...plus up to these at random (90 on average)
+		 TASKMASTER_FOOD_LOW = 10,				// extra food a year for each villager, with the lowest leadership...
+		 TASKMASTER_FOOD_HIGH = 40,				// ...and with the highest one (no extra gold)
+		 TASKMASTER_DEATH_DAYS = 30,			// Taskmaster kills a villager every this many days...
+		 TASKMASTER_DEATH_DAYS_RANGE = 60,		// ...plus up to these at random (60 on average)
+		 FRYHTAN_KINGDOM_FOOD_PERCENT = 50,	// the Fryhtans of a Fryhtan kingdom eat this % of what the invoked ones eat
+		 REBELS_RETURN_DISTANCE = 20,			// the rebels this near a town that won its independence go back into it
 		 OVERPOPULATED_TOWN_POPULATION = 30,	// an enslaved town with this many people loses loyalty...
 		 OVERPOPULATED_LOYALTY_DAYS = 5,		// ...1 point every this many days, and rebels in the end
 		 CULL_MIN_POPULATION = 5,				// Cull Population needs this many people in the town...
@@ -320,9 +320,12 @@ public:
 	int	subjugate_loyalty(Town* townPtr);		// the lowest loyalty Subjugate keeps, 0 without it
 	static int	ordo_task_level(int leadership);		// the leadership in ORDO_TASK_MIN/MAX_LEADERSHIP
 	static int	kidnap_days(int leadership);			// the average days between kidnaps
-	static int	taskmaster_gold(int leadership);		// extra tribute a month for each villager, in 1/100 $
 	static int	taskmaster_food(int leadership);		// extra food a year for each villager
-	int	taskmaster_town_gold(Town* townPtr);			// the extra tribute of the town this month, $
+	static float	fryhtan_food_year(int unitId, int nationRecno);		// the food a Fryhtan of the nation eats a year
+	int	lair_orphan_towns(Firm* firmPtr, short* townRecnoArray);		// the enslaved towns linked only to the lair
+	void	lair_destroyed(short* townRecnoArray, int townCount, Unit* attackUnit, int attackNationRecno, int lairNationRecno);
+	void	make_town_independent(Town* townPtr);
+	void	rebels_return_to_town(Town* townPtr);
 	static int	is_overpopulated(Town* townPtr);		// an enslaved town losing loyalty for its population
 	void	next_day_town_overpopulation(Town* townPtr);
 	int	can_cull_town(Town* townPtr);
