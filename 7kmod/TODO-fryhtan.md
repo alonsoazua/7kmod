@@ -1205,11 +1205,12 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
         en `Town::disp_main_menu`.
 - [ ] **Taskmaster solo da comida, al doble.** Ya no da oro extra; la comida extra por
       aldeano se duplica: **+10 al año con liderazgo 30 hasta +40 con 100** (antes +5 a
-      +20). Sigue matando un aldeano cada 60 a 120 días.
+      +20). Mata aldeanos **más seguido: 1 cada 30 a 90 días (60 en promedio)**, antes 60 a
+      120 (90 en promedio): `TASKMASTER_DEATH_DAYS` 30, `TASKMASTER_DEATH_DAYS_RANGE` 60.
       - La **descripción** de Taskmaster en la vista del Ordo (el panel bajo "Role", no
         un tooltip) dice también que mata aldeanos:
-        "+40 food a year per villager. The forced labor kills a villager every 60 to 120
-        days." (con el número según el liderazgo).
+        "+40 food a year per villager. The forced labor kills a villager every 30 to 90
+        days." (con la comida según el liderazgo).
       - Quitar `TASKMASTER_GOLD_LOW/HIGH`, `taskmaster_gold` y `taskmaster_town_gold` (o
         dejarlos en 0); `TASKMASTER_FOOD_LOW/HIGH` a 10 y 40.
 
