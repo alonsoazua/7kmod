@@ -9,6 +9,22 @@ se marca como tal.
 
 ## Checklist
 
+- [ ] **Bug: los pueblos rebeldes no se rinden aunque su resistencia llegue a 0.** En
+      la práctica son incapturables: al atacarlos, aun con resistencia 0, no se rinden y
+      aguantan hasta que matas a todos los aldeanos (lo probó el usuario).
+      - **Causa probable:** un pueblo "controlled by rebels" no se rinde mientras su
+        grupo tenga rebeldes afuera (`Town::surrender`: `mobile_rebel_count > 0`). Si un
+        rebelde se queda atorado lejos, o la cuenta no baja bien (rebeldes que murieron,
+        que se unieron a otro grupo, defensores que salieron), el pueblo nunca se rinde.
+        Además, las guaridas y los fuertes no le bajan la resistencia
+        (`Town::update_target_resistance`).
+      - **Revisar:** que `mobile_rebel_count` cuente solo rebeldes vivos y de verdad
+        afuera (`Town::mobilize_defender` lo sube, `Town::dec_pop`/regreso lo baja).
+      - **Arreglo propuesto:** que el pueblo se rinda con resistencia 0 si los rebeldes
+        de afuera están lejos (por ejemplo, ninguno a menos de cierta distancia del
+        pueblo) o si no hay ninguno vivo; o simplemente no esperar a los rebeldes de
+        afuera.
+
 - [ ] **Bug: Training desde la partida no carga el escenario de la lección.** Al elegir
       otra lección con **Next Training**, o con **Training** del menú de la partida, el
       juego solo cambia el texto de ayuda y deja el mapa de la lección (o partida) en la
