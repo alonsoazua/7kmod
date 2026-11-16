@@ -30,8 +30,6 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
 ### Cambiado
 - **Taskmaster** ya no da oro: solo comida, el doble (de +10 a +40 al año por aldeano
   según el liderazgo). El trabajo forzado mata un aldeano cada 30 a 90 días.
-- Los Fryhtans de un reino Fryhtan **comen la mitad** que los invocados (por ejemplo, un
-  Rokken 25 al año en lugar de 50).
 
 ---
 

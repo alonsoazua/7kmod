@@ -32,8 +32,6 @@ together.
 ### Changed
 - **Taskmaster** no longer gives gold: only food, doubled (+10 to +40 a year per
   villager by leadership). The forced labor kills a villager every 30 to 90 days.
-- The Fryhtans of a Fryhtan kingdom **eat half** of what invoked ones eat (for example,
-  a Rokken 25 a year instead of 50).
 
 ---
 
