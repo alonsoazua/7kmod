@@ -1205,11 +1205,10 @@ Se prueban aquí en `7kmod-fryhtan` y luego se hace merge en gameplay.
       - **Extra de Subjugate:** cuando el pueblo llega a **30** habitantes, el Ordo con
         Subjugate hace un Cull solo (mata 3 o 4 aldeanos), así el pueblo no se
         sobrepobla. Esto resuelve lo pendiente de Subjugate contra la sobrepoblación.
-        - 💡 Da el mismo botín que el botón ($2 y 5 de comida por aldeano).
-        - ❓ ¿Con noticia (por ejemplo "Your Ordo Feskul has culled 4 villagers in your
-          village of Rouen.") o sin ella?
+        - Da el mismo botín que el botón ($2 y 5 de comida por aldeano) y **no hay
+          aviso** (sin noticia).
         - La descripción de Subjugate lo dice, corto: "The loyalty of the village doesn't
-          drop below 32. Culls population to prevent rebellions."
+          drop below 32. Culls overpopulation to prevent rebellions."
       - Dónde: `ModFryhtan::can_cull_town` (agregar `town_ordo(town_recno)`) y el botón
         en `Town::disp_main_menu`.
 - [ ] **Taskmaster solo da comida, al doble.** Ya no da oro extra; la comida extra por
