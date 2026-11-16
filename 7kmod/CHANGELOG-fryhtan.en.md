@@ -30,6 +30,9 @@ together.
   - **wild Fryhtans**, selling it or anything else: the usual 3-month grace.
 
 ### Changed
+- **More aggressive AI against Fryhtan kingdoms (test):** when picking whom to declare
+  war on, a human AI sees a Fryhtan kingdom as if it had 70% of its strength, so it
+  prefers it as a target; not if the Fryhtan kingdom is over 1.5 times as strong as it.
 - **Taskmaster** no longer gives gold: only food, doubled (+10 to +40 a year per
   villager by leadership). The forced labor kills a villager every 30 to 90 days.
 

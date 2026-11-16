@@ -28,6 +28,9 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
   - **Fryhtans salvajes**, venta u otra causa: los 3 meses de gracia de siempre.
 
 ### Cambiado
+- **IA más agresiva contra los reinos Fryhtan (prueba):** al elegir a quién declararle la
+  guerra, una IA humana ve a un reino Fryhtan como si tuviera el 70% de su fuerza, así lo
+  prefiere como blanco; no si el reino Fryhtan es más de 1.5 veces más fuerte que ella.
 - **Taskmaster** ya no da oro: solo comida, el doble (de +10 a +40 al año por aldeano
   según el liderazgo). El trabajo forzado mata un aldeano cada 30 a 90 días.
 

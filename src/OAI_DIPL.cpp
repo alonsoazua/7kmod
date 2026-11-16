@@ -25,6 +25,7 @@
 #include <OCONFIG.h>
 #include <OTECHRES.h>
 #include <ONATION.h>
+#include <ModFryhtan.h>
 
 
 //----- Begin of function Nation::think_diplomacy -----//
@@ -677,6 +678,19 @@ int Nation::think_declare_war()
 		targetStrength = targetNation->military_rank_rating() +
 							  targetNation->population_rank_rating()/2 +
 							  targetNation->economic_rank_rating()/3;
+
+		//--- 7kmod-fryhtan: a human AI prefers a Fryhtan kingdom as its war target, as if it were weaker, unless it is much stronger than the AI ---//
+
+		if( mod_fryhtan.is_fryhtan(i) && !mod_fryhtan.is_fryhtan(nation_recno) )
+		{
+			int ourStrength = military_rank_rating() + population_rank_rating()/2 + economic_rank_rating()/3;
+
+			if( !AI_FRYHTAN_TARGET_MAX_STRENGTH ||
+				 targetStrength <= ourStrength * AI_FRYHTAN_TARGET_MAX_STRENGTH / 100 )
+			{
+				targetStrength = targetStrength * AI_FRYHTAN_TARGET_PERCENT / 100;
+			}
+		}
 
 		if( targetStrength < minStrength )
 		{
