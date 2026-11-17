@@ -58,6 +58,11 @@ together.
 
 ### Changed
 - **Rokken and Holgh** move at speed 4 (was 3), like the others.
+- **AI against Fryhtan kingdoms:** an AI at war with a Fryhtan kingdom that hasn't
+  attacked it for a while relaxes its conditions. After 6 months it asks half the
+  surplus of troops to go to war and goes with 110% of the lair's defense (was
+  125–150%); after a year it asks no surplus (its towns stay protected) and goes with
+  100%. Attacking starts the count again.
 - **More aggressive AI against Fryhtan kingdoms (test):** when picking whom to declare
   war on, a human AI sees a Fryhtan kingdom as if it had 70% of its strength, so it
   prefers it as a target; not if the Fryhtan kingdom is over 1.5 times as strong as it.

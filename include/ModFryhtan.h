@@ -118,6 +118,13 @@ enum { FRYHTAN_START_LIFE_POINTS = 300,		// a Fryhtan kingdom starts with these
 		 LIFE_POINTS_SHIP			= 5,			// killing a ship
 		 LIFE_POINTS_VILLAGER		= 1 };		// a villager killed in a town (attack, Cull or Taskmaster)
 
+//--- the AI at war with a Fryhtan kingdom, without attacking it for a while (Nation::ai_attack_target, Town::think_capture_enemy_town) ---//
+
+enum { AI_RELAX_DAYS_1				= 180,		// after 6 months: half the surplus protection, 110% of the target's defense
+		 AI_RELAX_DAYS_2				= 365,		// after 1 year: no surplus protection, 100% of the target's defense
+		 AI_RELAX_FORCE_PERCENT_1	= 110,
+		 AI_RELAX_FORCE_PERCENT_2	= 100 };
+
 class Firm;
 class Unit;
 class Town;
@@ -321,6 +328,14 @@ public:
 	//------ Life Points of each Fryhtan kingdom ------//
 
 	int32_t	life_points_array[MAX_NATION];
+
+	//------ the AI against Fryhtan kingdoms: it relaxes its conditions to attack when it waits too long ------//
+
+	int32_t	ai_last_attack_date[MAX_NATION][MAX_NATION];		// [AI nation-1][Fryhtan nation-1]: the last time the AI sent troops against the Fryhtan kingdom
+
+	int	ai_wait_relax_level(int aiNationRecno, int fryhtanNationRecno);		// 0, 1 (6 months without attacking) or 2 (1 year)
+	int	ai_relax_level(int aiNationRecno);		// the highest level against any Fryhtan kingdom it is at war with
+	void	ai_attack_sent(int aiNationRecno, int targetNationRecno);
 
 	//------ the start of a game with a Fryhtan kingdom ------//
 

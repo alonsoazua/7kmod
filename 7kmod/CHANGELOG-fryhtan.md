@@ -56,6 +56,11 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
 
 ### Cambiado
 - **Rokken y Holgh** se mueven a velocidad 4 (antes 3), como los demás.
+- **IA contra reinos Fryhtan:** si una IA lleva tiempo en guerra con un reino Fryhtan sin
+  atacarlo, relaja sus condiciones. A los 6 meses pide la mitad del sobrante de tropas
+  para salir a atacar y va con el 110% de la defensa de la guarida (antes 125–150%); al
+  año no pide sobrante (sus pueblos siguen protegidos) y va con el 100%. Al atacar, el
+  conteo vuelve a cero.
 - **IA más agresiva contra los reinos Fryhtan (prueba):** al elegir a quién declararle la
   guerra, una IA humana ve a un reino Fryhtan como si tuviera el 70% de su fuerza, así lo
   prefiere como blanco; no si el reino Fryhtan es más de 1.5 veces más fuerte que ella.

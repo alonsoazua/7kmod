@@ -36,6 +36,7 @@
 #include <OINFO.h>
 #include <OFIRMALL.h>
 #include <OLOG.h>
+#include <ModFryhtan.h>
 
 
 //--------- Begin of function Town::process_ai ----------//
@@ -1528,7 +1529,19 @@ int Town::think_capture_enemy_town()
 
 	//-- only attack enemy town if we have enough military protection surplus ---//
 
-	if( surplusProtection < 300 - nationPtr->pref_military_courage*2 )
+	int neededSurplus = 300 - nationPtr->pref_military_courage*2;
+
+	//--- 7kmod-fryhtan: at war with a Fryhtan kingdom without attacking it for a while: ---//
+	//--- half the surplus after 6 months, none after 1 year (the towns stay protected) ---//
+
+	int relaxLevel = mod_fryhtan.ai_relax_level(nation_recno);
+
+	if( relaxLevel == 2 )
+		neededSurplus = 0;
+	else if( relaxLevel == 1 )
+		neededSurplus /= 2;
+
+	if( surplusProtection < neededSurplus )
 		return 0;
 
 	return nationPtr->think_capture_new_enemy_town(this);

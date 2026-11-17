@@ -78,6 +78,7 @@ void ModFryhtan::reset()
 
 	memset( king_kill_array, 0, sizeof(king_kill_array) );
 	memset( life_points_array, 0, sizeof(life_points_array) );
+	memset( ai_last_attack_date, 0, sizeof(ai_last_attack_date) );
 	start_region_id = 0;
 	memset( cur_year_life_points_change, 0, sizeof(cur_year_life_points_change) );
 	memset( last_year_life_points_change, 0, sizeof(last_year_life_points_change) );
@@ -102,6 +103,12 @@ void ModFryhtan::init_nation(int nationRecno)
 		life_points_array[nationRecno-1] = 0;
 		cur_year_life_points_change[nationRecno-1] = 0;
 		last_year_life_points_change[nationRecno-1] = 0;
+
+		for( int i=0 ; i<MAX_NATION ; i++ )
+		{
+			ai_last_attack_date[nationRecno-1][i] = 0;
+			ai_last_attack_date[i][nationRecno-1] = 0;
+		}
 	}
 }
 //----------- End of function ModFryhtan::init_nation -----------//
@@ -1195,6 +1202,17 @@ int ModFryhtan::write_file(File* filePtr)
 		}
 	}
 
+	//------- the last attacks of the AI against Fryhtan kingdoms -------//
+
+	for( i=0 ; i<MAX_NATION ; i++ )
+	{
+		for( int j=0 ; j<MAX_NATION ; j++ )
+		{
+			if( !filePtr->file_put_long( ai_last_attack_date[i][j] ) )
+				return 0;
+		}
+	}
+
 	return 1;
 }
 //----------- End of function ModFryhtan::write_file -----------//
@@ -1368,6 +1386,17 @@ int ModFryhtan::read_file(File* filePtr)
 		last_year_life_points_change[n] = filePtr->file_get_long();
 	}
 
+	//------- the last attacks of the AI against Fryhtan kingdoms -------//
+
+	if( filePtr->file_pos() >= filePtr->file_size() )		// a saved game from before
+		return 1;
+
+	for( int n=0 ; n<MAX_NATION ; n++ )
+	{
+		for( int m=0 ; m<MAX_NATION ; m++ )
+			ai_last_attack_date[n][m] = filePtr->file_get_long();
+	}
+
 	return 1;
 }
 //----------- End of function ModFryhtan::read_file -----------//
@@ -1456,6 +1485,78 @@ int ModFryhtan::kill_gold(int combatLevel, int percent)
 	return MAX( 1, (int) (gold * percent / 100 + 0.5f) );
 }
 //----------- End of function ModFryhtan::kill_gold -----------//
+
+
+//--------- Begin of function ModFryhtan::ai_wait_relax_level ---------//
+//
+// How long an AI kingdom has been at war with a Fryhtan kingdom without
+// sending troops against it, since the war started or since its last
+// attack: 0 - less than 6 months, 1 - 6 months to 1 year, 2 - 1 year or
+// more. The AI then asks less to attack (see AI_RELAX_DAYS_1).
+//
+int ModFryhtan::ai_wait_relax_level(int aiNationRecno, int fryhtanNationRecno)
+{
+	if( aiNationRecno < 1 || aiNationRecno > MAX_NATION ||
+		 fryhtanNationRecno < 1 || fryhtanNationRecno > MAX_NATION ||
+		 aiNationRecno == fryhtanNationRecno ||
+		 nation_array.is_deleted(aiNationRecno) || nation_array.is_deleted(fryhtanNationRecno) ||
+		 !is_fryhtan(fryhtanNationRecno) )
+	{
+		return 0;
+	}
+
+	NationRelation* nationRelation = nation_array[aiNationRecno]->get_relation(fryhtanNationRecno);
+
+	if( nationRelation->status != NATION_HOSTILE )
+		return 0;
+
+	int sinceDate = MAX( nationRelation->last_change_status_date, (int) ai_last_attack_date[aiNationRecno-1][fryhtanNationRecno-1] );
+	int waitDays  = info.game_date - sinceDate;
+
+	if( waitDays >= AI_RELAX_DAYS_2 )
+		return 2;
+
+	if( waitDays >= AI_RELAX_DAYS_1 )
+		return 1;
+
+	return 0;
+}
+//----------- End of function ModFryhtan::ai_wait_relax_level -----------//
+
+
+//--------- Begin of function ModFryhtan::ai_relax_level ---------//
+//
+int ModFryhtan::ai_relax_level(int aiNationRecno)
+{
+	int relaxLevel = 0;
+
+	for( int i=nation_array.size() ; i>0 ; i-- )
+	{
+		if( !nation_array.is_deleted(i) && is_fryhtan(i) )
+			relaxLevel = MAX( relaxLevel, ai_wait_relax_level(aiNationRecno, i) );
+	}
+
+	return relaxLevel;
+}
+//----------- End of function ModFryhtan::ai_relax_level -----------//
+
+
+//--------- Begin of function ModFryhtan::ai_attack_sent ---------//
+//
+// An AI kingdom has just sent troops against a target of a nation.
+//
+void ModFryhtan::ai_attack_sent(int aiNationRecno, int targetNationRecno)
+{
+	if( aiNationRecno < 1 || aiNationRecno > MAX_NATION ||
+		 targetNationRecno < 1 || targetNationRecno > MAX_NATION ||
+		 !is_fryhtan(targetNationRecno) )
+	{
+		return;
+	}
+
+	ai_last_attack_date[aiNationRecno-1][targetNationRecno-1] = info.game_date;
+}
+//----------- End of function ModFryhtan::ai_attack_sent -----------//
 
 
 //--------- Begin of function ModFryhtan::largest_land_region_id ---------//
