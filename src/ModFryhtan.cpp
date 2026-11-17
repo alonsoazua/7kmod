@@ -31,6 +31,7 @@
 #include <OTOWN.h>
 #include <OF_MONS.h>
 #include <OWORLD.h>
+#include <OREGION.h>
 #include <ONATION.h>
 #include <OFIRM.h>
 #include <OFIRMA.h>
@@ -77,6 +78,7 @@ void ModFryhtan::reset()
 
 	memset( king_kill_array, 0, sizeof(king_kill_array) );
 	memset( life_points_array, 0, sizeof(life_points_array) );
+	start_region_id = 0;
 	memset( cur_year_life_points_change, 0, sizeof(cur_year_life_points_change) );
 	memset( last_year_life_points_change, 0, sizeof(last_year_life_points_change) );
 
@@ -371,7 +373,7 @@ int ModFryhtan::can_train_in_lair(int firmRecno, int trainType)
 	if( nation_array[firmPtr->nation_recno]->cash < train_cost(lairPtr->monster_id) )
 		return 0;
 
-	if( life_points(firmPtr->nation_recno) < train_life_points(trainType) )
+	if( life_points(firmPtr->nation_recno) < train_life_points(trainType, lairPtr->monster_id) )
 		return 0;
 
 	if( FRYHTAN_POPULATION_LIMIT &&
@@ -400,7 +402,7 @@ int ModFryhtan::add_lair_train(int firmRecno, int trainType)
 
 	nation_array[firmPtr->nation_recno]->consume_food( (float) train_food(trainType) );
 	nation_array[firmPtr->nation_recno]->add_expense( EXPENSE_TRAIN_UNIT, (float) train_cost(lairPtr->monster_id) );
-	add_life_points( firmPtr->nation_recno, -train_life_points(trainType) );
+	add_life_points( firmPtr->nation_recno, -train_life_points(trainType, lairPtr->monster_id) );
 
 	if( trainType == LAIR_TRAIN_ORDO )
 		lairPtr->ordo_mask |= (1 << lairPtr->train_count);
@@ -440,7 +442,7 @@ int ModFryhtan::cancel_lair_train(int firmRecno, int trainType)
 
 	nation_array[firmPtr->nation_recno]->add_food( (float) train_food(trainType) );
 	nation_array[firmPtr->nation_recno]->add_expense( EXPENSE_TRAIN_UNIT, (float) -train_cost(lairPtr->monster_id) );		// the gold back
-	add_life_points( firmPtr->nation_recno, train_life_points(trainType) );		// the Life Points back
+	add_life_points( firmPtr->nation_recno, train_life_points(trainType, lairPtr->monster_id) );		// the Life Points back
 
 	//------ remove it, the ones after it move one place forward ------//
 
@@ -908,6 +910,44 @@ int ModFryhtan::train_cost(int monsterId)
 	return is_large_monster(monsterId) ? LAIR_LARGE_TRAIN_COST : LAIR_SMALL_TRAIN_COST;
 }
 //----------- End of function ModFryhtan::train_cost -----------//
+
+
+//--------- Begin of function ModFryhtan::train_life_points ---------//
+//
+// The Life Points for training a Fryhtan in a lair, by species: 7 for Ick,
+// Doink and Broosken, 8 for Deezboanz, Rattus and Pfith, 9 for Karrotten,
+// Holgh and Droog, 10 for the others. An Ordo costs 5 more.
+//
+int ModFryhtan::train_life_points(int trainType, int monsterId)
+{
+	static const char speciesLifePoints[] =		// by monster id (MONSTER.DBF), 1 to 13
+	{
+		8,		// Deezboanz
+		8,		// Rattus
+		7,		// Broosken
+		10,	// Haubudam
+		8,		// Pfith
+		10,	// Rokken
+		7,		// Doink
+		10,	// Wyrm
+		9,		// Droog
+		7,		// Ick
+		10,	// Sauroid
+		9,		// Karrotten
+		9,		// Holgh
+	};
+
+	int lifePoints = LIFE_POINTS_SOLDIER;
+
+	if( monsterId >= 1 && monsterId <= (int) sizeof(speciesLifePoints) )
+		lifePoints = speciesLifePoints[monsterId-1];
+
+	if( trainType == LAIR_TRAIN_ORDO )
+		lifePoints += LIFE_POINTS_ORDO_EXTRA;
+
+	return lifePoints;
+}
+//----------- End of function ModFryhtan::train_life_points -----------//
 
 
 //--------- Begin of function ModFryhtan::monster_population ---------//
@@ -1416,6 +1456,25 @@ int ModFryhtan::kill_gold(int combatLevel, int percent)
 	return MAX( 1, (int) (gold * percent / 100 + 0.5f) );
 }
 //----------- End of function ModFryhtan::kill_gold -----------//
+
+
+//--------- Begin of function ModFryhtan::largest_land_region_id ---------//
+//
+// The region id of the largest land of the map, 0 if there is none.
+//
+int ModFryhtan::largest_land_region_id()
+{
+	for( int i=1 ; i<=region_array.region_info_count ; i++ )		// sorted by size, the largest first
+	{
+		RegionInfo* regionInfo = region_array.get_sorted_region(i);
+
+		if( regionInfo->region_type == REGION_LAND )
+			return regionInfo->region_id;
+	}
+
+	return 0;
+}
+//----------- End of function ModFryhtan::largest_land_region_id -----------//
 
 
 //--------- Begin of function ModFryhtan::life_points ---------//

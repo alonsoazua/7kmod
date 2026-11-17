@@ -106,8 +106,8 @@ enum { ENSLAVE_MIN_RESISTANCE = 45,			// the lairs lower the resistance of an in
 //--- Life Points: the currency of a Fryhtan kingdom, from the units it kills, spent on Fryhtans ---//
 
 enum { FRYHTAN_START_LIFE_POINTS = 300,		// a Fryhtan kingdom starts with these
-		 LIFE_POINTS_SOLDIER		= 10,			// training a Fryhtan soldier in a lair (with the gold and the food)
-		 LIFE_POINTS_ORDO			= 15,			// training an Ordo
+		 LIFE_POINTS_SOLDIER		= 10,			// training a Fryhtan soldier in a lair (with the gold and the food): 7 to 10 by species, see train_life_points()
+		 LIFE_POINTS_ORDO_EXTRA	= 5,			// an Ordo costs this more than a soldier of its species
 		 LIFE_POINTS_PROMOTE		= 5,			// promoting a Fryhtan soldier to Ordo (the difference)
 		 LIFE_POINTS_TRIBUTE_PEOPLE = 10,		// an enslaved town gives 1 a month for each this many people
 		 LIFE_POINTS_KILL_COMBAT	= 10,			// killing a soldier gives its combat level / this...
@@ -321,6 +321,12 @@ public:
 	//------ Life Points of each Fryhtan kingdom ------//
 
 	int32_t	life_points_array[MAX_NATION];
+
+	//------ the start of a game with a Fryhtan kingdom ------//
+
+	int	start_region_id;		// when not 0, the starting towns of the kingdoms are on this region (the largest land), see TownArray::think_town_loc(). Not saved.
+
+	static int	largest_land_region_id();
 	int32_t	cur_year_life_points_change[MAX_NATION];		// the net change this year and the last one, for the top bar "(+x)"
 	int32_t	last_year_life_points_change[MAX_NATION];
 
@@ -329,7 +335,7 @@ public:
 
 	int	life_points(int nationRecno);
 	void	add_life_points(int nationRecno, int points);		// points < 0: spent
-	static int	train_life_points(int trainType)	{ return trainType==LAIR_TRAIN_ORDO ? LIFE_POINTS_ORDO : LIFE_POINTS_SOLDIER; }
+	static int	train_life_points(int trainType, int monsterId);		// the Life Points for training a soldier or an Ordo of the species
 	static int	kill_life_points(Unit* targetUnit);		// the Life Points for killing the unit
 	void	reward_life_points(int nationRecno, Unit* targetUnit);		// a unit killed by a unit of the nation
 

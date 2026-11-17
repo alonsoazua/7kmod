@@ -1014,6 +1014,14 @@ static int select_option()
 			{
 				refreshFlag |= SGOPTION_NAME_FIELD;
 			}
+
+			//--- 7kmod-fryhtan: Fryhtans can't move by sea, so a Fryhtan kingdom needs a moderate or a large land mass ---//
+
+			if( tempConfig.fryhtan_monster_id && tempConfig.land_mass == OPTION_LOW )
+			{
+				tempConfig.land_mass = OPTION_MODERATE;
+				refreshFlag |= SGOPTION_LAND_MASS;
+			}
 		}
 
 		// -------- detect advanced option ---------//

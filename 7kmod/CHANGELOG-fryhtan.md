@@ -28,6 +28,13 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
     devuelven.
   - Junto al número se ve su cambio de los últimos 365 días, como en la comida y el oro:
     "302 (+12)".
+  - El costo de entrenar depende de la especie: 7 (Ick, Doink, Broosken), 8 (Deezboanz,
+    Rattus, Pfith), 9 (Karrotten, Holgh, Droog) o 10 (las demás). Un Ordo cuesta 5 más.
+- **Retrato de los Fryhtans con rango:** los generales, los Ordos y el rey tienen el
+  retrato del soldado de su especie volteado, para distinguirlos.
+- **Partidas con un reino Fryhtan:** todos los reinos empiezan en la masa de tierra más
+  grande, porque los Fryhtans no pueden moverse por mar. Land Mass debe ser al menos
+  mediano: al elegir Fryhtan en New Game, Small pasa a Medium.
 - **Sobrepoblación:** un pueblo esclavizado con 30 o más habitantes pierde 1 de lealtad
   cada 5 días y termina rebelándose si no baja de 30.
 - **Cull Population** (botón de espada en el pueblo esclavizado, solo con un Ordo
@@ -48,6 +55,7 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
   igual.
 
 ### Cambiado
+- **Rokken y Holgh** se mueven a velocidad 4 (antes 3), como los demás.
 - **IA más agresiva contra los reinos Fryhtan (prueba):** al elegir a quién declararle la
   guerra, una IA humana ve a un reino Fryhtan como si tuviera el 70% de su fuerza, así lo
   prefiere como blanco; no si el reino Fryhtan es más de 1.5 veces más fuerte que ella.

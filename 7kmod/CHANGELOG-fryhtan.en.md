@@ -28,6 +28,14 @@ together.
     Ordo 15, and promoting a soldier to Ordo 5. Cancelling a training gives them back.
   - Next to the number, their change over the last 365 days, as for food and cash:
     "302 (+12)".
+  - Training costs depend on the species: 7 (Ick, Doink, Broosken), 8 (Deezboanz,
+    Rattus, Pfith), 9 (Karrotten, Holgh, Droog) or 10 (the others). An Ordo costs 5
+    more.
+- **Portrait of ranked Fryhtans:** generals, Ordos and the king have the soldier
+  portrait of their species flipped, to tell them apart.
+- **Games with a Fryhtan kingdom:** all kingdoms start on the largest land, as Fryhtans
+  can't move by sea. Land Mass must be at least medium: choosing Fryhtans in New Game
+  moves Small to Medium.
 - **Overpopulation:** an enslaved town with 30 people or more loses 1 loyalty every 5
   days and rebels in the end unless it drops below 30.
 - **Cull Population** (sword button in the enslaved town, only with an Ordo inside):
@@ -49,6 +57,7 @@ together.
   unchanged.
 
 ### Changed
+- **Rokken and Holgh** move at speed 4 (was 3), like the others.
 - **More aggressive AI against Fryhtan kingdoms (test):** when picking whom to declare
   war on, a human AI sees a Fryhtan kingdom as if it had 70% of its strength, so it
   prefers it as a target; not if the Fryhtan kingdom is over 1.5 times as strong as it.

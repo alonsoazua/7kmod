@@ -467,6 +467,11 @@ int TownArray::think_town_loc(int maxTries, int& xLoc, int& yLoc)
 		if( !canBuildFlag )
 			continue;
 
+		//--- 7kmod-fryhtan: in a game with a Fryhtan kingdom, the kingdoms start on the largest land ---//
+
+		if( mod_fryhtan.start_region_id && world.get_region_id(xLoc, yLoc) != mod_fryhtan.start_region_id )
+			continue;
+
 		//-------- check if it's too close to other towns --------//
 
 		for( townRecno=town_array.size() ; townRecno>0 ; townRecno-- )
@@ -510,6 +515,21 @@ int TownArray::think_town_loc(int maxTries, int& xLoc, int& yLoc)
 		//----------------------------------------//
 
 		return 1;
+	}
+
+	//--- 7kmod-fryhtan: no place left on the largest land, then anywhere, as before ---//
+
+	if( mod_fryhtan.start_region_id )
+	{
+		int regionId = mod_fryhtan.start_region_id;
+
+		mod_fryhtan.start_region_id = 0;
+
+		int rc = think_town_loc(maxTries, xLoc, yLoc);
+
+		mod_fryhtan.start_region_id = regionId;
+
+		return rc;
 	}
 
 	return 0;
