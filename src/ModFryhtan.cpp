@@ -41,6 +41,10 @@
 #include <OFIRMRES.h>
 #include <OGAME.h>
 #include <OIMGRES.h>
+#include <OMOUSE.h>
+#include <OFONT.h>
+#include <COLCODE.h>
+#include <OVGA.h>
 #include <OWORLDMT.h>
 #include <OSERES.h>
 #include <ORACERES.h>
@@ -804,6 +808,309 @@ void ModFryhtan::draw_lair(Firm* firmPtr, int displayLayer)
 		firmBitmap->draw_at(absX, absY, colorRemapTable, displayLayer);
 }
 //----------- End of function ModFryhtan::draw_lair -----------//
+
+
+//--------- Begin of static function closest_color ---------//
+//
+// The color of the game palette closest to the given one (not the
+// transparent one), weighting green the most, as the eye does.
+//
+static int closest_color(int red, int green, int blue)
+{
+	int bestColor = 0, bestDistance = 0x7FFFFFFF;
+
+	for( int i=0 ; i<TRANSPARENT_CODE ; i++ )
+	{
+		int dr = vga.get_game_pal()[i].r - red;
+		int dg = vga.get_game_pal()[i].g - green;
+		int db = vga.get_game_pal()[i].b - blue;
+		int distance = dr*dr*3 + dg*dg*4 + db*db*2;
+
+		if( distance < bestDistance )
+		{
+			bestDistance = distance;
+			bestColor = i;
+		}
+	}
+
+	return bestColor;
+}
+//----------- End of static function closest_color -----------//
+
+
+//--------- Begin of function ModFryhtan::lair_icon ---------//
+//
+// The lair of a species as it is drawn on the map (its ground and its first
+// frame, in the colors of the nation), scaled down to fit in
+// LAIR_ICON_MAX_WIDTH x LAIR_ICON_MAX_HEIGHT, for the icons of the
+// interface. It is drawn once on the map area of the screen over a color
+// marked as transparent, read back and scaled; the map is drawn again on the
+// next frame. Kept for each species.
+//
+// return: <char*> a bitmap (<short> width, <short> height, pixels), 255 is
+//                 transparent; NULL if the species has no lair graphics
+//
+char* ModFryhtan::lair_icon(int monsterId, int nationRecno)
+{
+	enum { ICON_BUF_SIZE = 2*sizeof(short) + LAIR_ICON_MAX_WIDTH*LAIR_ICON_MAX_HEIGHT };
+
+	static char iconBufArray[FRYHTAN_SPECIES_COUNT][ICON_BUF_SIZE];
+	static char iconDoneArray[FRYHTAN_SPECIES_COUNT];
+
+	if( monsterId < 1 || monsterId > FRYHTAN_SPECIES_COUNT || monsterId > monster_res.monster_count )
+		return NULL;
+
+	char* iconBuf = iconBufArray[monsterId-1];
+
+	if( iconDoneArray[monsterId-1] )
+		return iconBuf;
+
+	//------ the bitmaps of the lair and the box around them ------//
+
+	MonsterInfo* monsterInfo = monster_res[monsterId];
+	FirmBuild*   firmBuild   = firm_res.get_build( firm_res[FIRM_MONSTER]->get_build_id(monsterInfo->firm_build_code) );
+
+	FirmBitmap* bitmapArray[20];
+	int bitmapCount = 0;
+
+	if( firmBuild->ground_bitmap_recno )
+		bitmapArray[bitmapCount++] = firm_res.get_bitmap(firmBuild->ground_bitmap_recno);
+
+	for( int i=0 ; i<firmBuild->bitmap_count_array[0] && bitmapCount<20 ; i++ )
+		bitmapArray[bitmapCount++] = firm_res.get_bitmap( firmBuild->first_bitmap(1) + i );
+
+	int minX=0x7FFF, minY=0x7FFF, maxX=-0x7FFF, maxY=-0x7FFF;
+
+	for( int i=0 ; i<bitmapCount ; i++ )
+	{
+		FirmBitmap* bitmapPtr = bitmapArray[i];
+
+		minX = MIN( minX, bitmapPtr->offset_x );
+		minY = MIN( minY, bitmapPtr->offset_y );
+		maxX = MAX( maxX, bitmapPtr->offset_x + bitmapPtr->width );
+		maxY = MAX( maxY, bitmapPtr->offset_y + bitmapPtr->height );
+	}
+
+	int width  = maxX - minX;
+	int height = maxY - minY;
+
+	if( bitmapCount==0 || width <= 0 || height <= 0 || width > ZOOM_WIDTH || height > ZOOM_HEIGHT )
+		return NULL;
+
+	//------ draw it on the map area over the transparent color and read it back ------//
+
+	int x1 = ZOOM_X1, y1 = ZOOM_Y1;
+	int x2 = x1+width-1, y2 = y1+height-1;
+
+	char* readBuf = mem_add( 2*sizeof(short) + width*height );
+	char* colorRemapTable = game.get_color_remap_table(nationRecno, 0);
+
+	mouse.hide_area( x1, y1, x2, y2 );
+
+	vga_front.bar( x1, y1, x2, y2, TRANSPARENT_CODE );
+
+	for( int i=0 ; i<bitmapCount ; i++ )
+	{
+		FirmBitmap* bitmapPtr = bitmapArray[i];
+
+		vga_front.put_bitmap_trans_remap_decompress( x1 + bitmapPtr->offset_x - minX, y1 + bitmapPtr->offset_y - minY,
+			bitmapPtr->bitmap_ptr, colorRemapTable );
+	}
+
+	vga_front.read_bitmap( x1, y1, x2, y2, readBuf );
+
+	mouse.show_area();
+
+	//------ scale it down to fit, keeping its proportions ------//
+
+	int iconWidth  = width, iconHeight = height;
+
+	if( iconWidth > LAIR_ICON_MAX_WIDTH || iconHeight > LAIR_ICON_MAX_HEIGHT )
+	{
+		if( width * LAIR_ICON_MAX_HEIGHT > height * LAIR_ICON_MAX_WIDTH )
+		{
+			iconWidth  = LAIR_ICON_MAX_WIDTH;
+			iconHeight = MAX( 1, height * LAIR_ICON_MAX_WIDTH / width );
+		}
+		else
+		{
+			iconHeight = LAIR_ICON_MAX_HEIGHT;
+			iconWidth  = MAX( 1, width * LAIR_ICON_MAX_HEIGHT / height );
+		}
+	}
+
+	*(short*) iconBuf = iconWidth;
+	*((short*) iconBuf + 1) = iconHeight;
+
+	//--- each pixel of the icon averages the colors of its block of the lair, so the edges stay solid; ---//
+	//--- the shadow is dithered (one pixel of SHADOW_CODE out of two), it is made a solid dark gray    ---//
+
+	unsigned char* srcPtr  = (unsigned char*) readBuf + 2*sizeof(short);
+	unsigned char* destPtr = (unsigned char*) iconBuf + 2*sizeof(short);
+
+	int shadowColor = closest_color(98, 95, 89);		// the stone of the buttons at half its brightness
+
+	for( int y=0 ; y<iconHeight ; y++ )
+	{
+		int srcY1 = y*height/iconHeight, srcY2 = MAX( srcY1+1, (y+1)*height/iconHeight );
+
+		for( int x=0 ; x<iconWidth ; x++ )
+		{
+			int srcX1 = x*width/iconWidth, srcX2 = MAX( srcX1+1, (x+1)*width/iconWidth );
+			int totalCount=0, colorCount=0, shadowCount=0, red=0, green=0, blue=0;
+
+			for( int sy=srcY1 ; sy<srcY2 ; sy++ )
+			{
+				for( int sx=srcX1 ; sx<srcX2 ; sx++ )
+				{
+					int pixel = srcPtr[sy*width + sx];
+
+					totalCount++;
+
+					if( pixel == TRANSPARENT_CODE )
+						continue;
+
+					if( pixel == SHADOW_CODE )
+					{
+						shadowCount++;
+						continue;
+					}
+
+					colorCount++;
+					red   += vga.get_game_pal()[pixel].r;
+					green += vga.get_game_pal()[pixel].g;
+					blue  += vga.get_game_pal()[pixel].b;
+				}
+			}
+
+			//--- covered: the colors, plus the shadow counted twice (it's dithered), at least half of the block ---//
+
+			int coverCount = colorCount + MIN( totalCount-colorCount, shadowCount*2 );
+			int pixel = TRANSPARENT_CODE;
+
+			if( coverCount*2 >= totalCount )
+			{
+				if( colorCount*2 >= coverCount )
+					pixel = closest_color( red/colorCount, green/colorCount, blue/colorCount );
+				else
+					pixel = shadowColor;
+			}
+
+			destPtr[y*iconWidth + x] = (unsigned char) pixel;
+		}
+	}
+
+	mem_del( readBuf );
+
+	iconDoneArray[monsterId-1] = 1;
+
+	return iconBuf;
+}
+//----------- End of function ModFryhtan::lair_icon -----------//
+
+
+//--------- Begin of function ModFryhtan::disp_lair_button ---------//
+//
+// A 99x60 button picture, as the build buttons: the frame of the Fort build
+// button, darkened, with the lair of the kingdom's species (lair_icon()) in
+// the middle, the label at the bottom and, with <withMine>, the Mine build
+// button at a third of its size in the top left corner (Alchemist Lair,
+// without a label).
+//
+void ModFryhtan::disp_lair_button(int x, int y, int nationRecno, const char* label, int withMine)
+{
+	enum { BUTTON_WIDTH = 99, BUTTON_HEIGHT = 60 };
+
+	static char mineBuf[2*sizeof(short) + BUTTON_WIDTH*BUTTON_HEIGHT];
+	static char smallMineBuf[2*sizeof(short) + (BUTTON_WIDTH/3)*(BUTTON_HEIGHT/3)];
+	static int  smallMineDone = 0;
+
+	char* remapTable = game.get_color_remap_table(nationRecno, 0);
+	String str;
+
+	//--- the Mine button at a third of its size, made once: drawn here, read back and scaled down ---//
+
+	if( withMine && !smallMineDone )
+	{
+		str  = "F-";
+		str += FIRM_MINE;
+
+		mouse.hide_area( x, y, x+BUTTON_WIDTH-1, y+BUTTON_HEIGHT-1 );
+		vga_front.put_bitmap_trans_remap_decompress( x, y, image_button.get_ptr(str), remapTable );
+		vga_front.read_bitmap( x, y, x+BUTTON_WIDTH-1, y+BUTTON_HEIGHT-1, mineBuf );
+		mouse.show_area();
+
+		int smallWidth = BUTTON_WIDTH/3, smallHeight = BUTTON_HEIGHT/3;
+
+		*(short*) smallMineBuf = smallWidth;
+		*((short*) smallMineBuf + 1) = smallHeight;
+
+		char* srcPtr  = mineBuf + 2*sizeof(short);
+		char* destPtr = smallMineBuf + 2*sizeof(short);
+
+		for( int j=0 ; j<smallHeight ; j++ )
+		{
+			for( int i=0 ; i<smallWidth ; i++ )
+				destPtr[j*smallWidth+i] = srcPtr[(j*3+1)*BUTTON_WIDTH + i*3+1];
+		}
+
+		smallMineDone = 1;
+	}
+
+	//--- the Fort button, its picture and its name covered with its plain stone ---//
+	//--- (a patch of its bottom right part, repeated over the inside)           ---//
+
+	str  = "F-";
+	str += FIRM_CAMP;
+
+	mouse.hide_area( x, y, x+BUTTON_WIDTH-1, y+BUTTON_HEIGHT-1 );
+
+	vga_front.put_bitmap_trans_remap_decompress( x, y, image_button.get_ptr(str), remapTable );
+
+	enum { PATCH_X = 69, PATCH_Y = 23, PATCH_SIZE = 24,		// a plain part of the Fort button
+			 INSIDE_X1 = 4, INSIDE_Y1 = 4, INSIDE_X2 = BUTTON_WIDTH-5, INSIDE_Y2 = BUTTON_HEIGHT-5 };
+
+	char patchBuf[2*sizeof(short) + PATCH_SIZE*PATCH_SIZE];
+
+	vga_front.read_bitmap( x+PATCH_X, y+PATCH_Y, x+PATCH_X+PATCH_SIZE-1, y+PATCH_Y+PATCH_SIZE-1, patchBuf );
+
+	for( int py=INSIDE_Y1 ; py<=INSIDE_Y2 ; py+=PATCH_SIZE )
+	{
+		for( int px=INSIDE_X1 ; px<=INSIDE_X2 ; px+=PATCH_SIZE )
+		{
+			int areaX2 = MIN( PATCH_SIZE-1, INSIDE_X2-px );
+			int areaY2 = MIN( PATCH_SIZE-1, INSIDE_Y2-py );
+
+			vga_front.put_bitmap_area( x+px, y+py, patchBuf, 0, 0, areaX2, areaY2 );
+		}
+	}
+
+	//--- the lair of the kingdom, in the middle ---//
+
+	char* lairIcon = lair_icon( mod_fryhtan.nation_monster_id[nationRecno-1], nationRecno );
+
+	if( lairIcon )
+	{
+		int iconWidth  = *(short*) lairIcon;
+		int iconHeight = *((short*) lairIcon + 1);
+
+		vga_front.put_bitmap_trans( x+(BUTTON_WIDTH-iconWidth)/2, y+(BUTTON_HEIGHT-iconHeight)/2, lairIcon );
+	}
+
+	//--- the Mine in small, in the top left corner, with a frame ---//
+
+	if( withMine )
+	{
+		vga_front.put_bitmap( x+4, y+4, smallMineBuf );
+		vga_front.rect( x+3, y+3, x+4+BUTTON_WIDTH/3, y+4+BUTTON_HEIGHT/3, 1, V_BLACK );
+	}
+
+	if( label && label[0] )
+		font_san.put( x+8, y+BUTTON_HEIGHT-20, label );
+
+	mouse.show_area();
+}
+//----------- End of function ModFryhtan::disp_lair_button -----------//
 
 
 //--------- Begin of function ModFryhtan::firm_setup_cost ---------//

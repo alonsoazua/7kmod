@@ -669,62 +669,12 @@ void FirmCamp::disp_lair_train_button(int trainType)
 //------- Begin of static function disp_lair_tech_icon ---------//
 //
 // 7kmod-fryhtan: the icon of a technology of the lairs, 99x60 as the build
-// buttons. Alchemist Lair: the Lair build button (the Fort darkened with the
-// Fryhtan of the kingdom) with the Mine button in small in a corner.
+// buttons. Alchemist Lair: the lair of the kingdom with the Mine in small in
+// a corner.
 //
 static void disp_lair_tech_icon(int x, int y, int nationRecno, int techId)
 {
-	static char mineIconBuf[2*sizeof(short) + LAIR_TECH_ICON_WIDTH*LAIR_TECH_ICON_HEIGHT];
-	static char smallMineBuf[2*sizeof(short) + (LAIR_TECH_ICON_WIDTH/2)*(LAIR_TECH_ICON_HEIGHT/2)];
-	static int  smallMineDone = 0;
-
-	char* remapTable = game.get_color_remap_table(nationRecno, 0);
-	int   unitId = mod_fryhtan.nation_unit_id(nationRecno);
-
-	String str;
-
-	//--- the Mine button at half size, made once: drawn here, read back and scaled down ---//
-
-	if( !smallMineDone )
-	{
-		str  = "F-";
-		str += FIRM_MINE;
-		vga_front.put_bitmap_trans_remap_decompress( x, y, image_button.get_ptr(str), remapTable );
-		vga_front.read_bitmap( x, y, x+LAIR_TECH_ICON_WIDTH-1, y+LAIR_TECH_ICON_HEIGHT-1, mineIconBuf );
-
-		int smallWidth = LAIR_TECH_ICON_WIDTH/2, smallHeight = LAIR_TECH_ICON_HEIGHT/2;
-
-		*(short*) smallMineBuf = smallWidth;
-		*((short*) smallMineBuf + 1) = smallHeight;
-
-		char* srcPtr  = mineIconBuf + 2*sizeof(short);
-		char* destPtr = smallMineBuf + 2*sizeof(short);
-
-		for( int j=0 ; j<smallHeight ; j++ )
-		{
-			for( int i=0 ; i<smallWidth ; i++ )
-				destPtr[j*smallWidth+i] = srcPtr[(j*2)*LAIR_TECH_ICON_WIDTH + i*2];
-		}
-
-		smallMineDone = 1;
-	}
-
-	//--- the Lair button: the Fort button darkened, with the Fryhtan over it ---//
-
-	str  = "F-";
-	str += FIRM_CAMP;
-	vga_front.put_bitmap_trans_remap_decompress( x, y, image_button.get_ptr(str), remapTable );
-	vga_front.adjust_brightness( x+3, y+3, x+LAIR_TECH_ICON_WIDTH-4, y+LAIR_TECH_ICON_HEIGHT-4, -4 );
-
-	if( unitId )
-		vga_front.put_bitmap( x+LAIR_TECH_ICON_WIDTH-UNIT_LARGE_ICON_WIDTH-6, y+7, unit_res[unitId]->get_large_icon_ptr(RANK_SOLDIER) );
-
-	//--- the Mine at half size, in the top left corner, with a frame ---//
-
-	vga_front.put_bitmap( x+4, y+4, smallMineBuf );
-	vga_front.rect( x+3, y+3, x+4+LAIR_TECH_ICON_WIDTH/2, y+4+LAIR_TECH_ICON_HEIGHT/2, 1, V_BLACK );
-
-	font_san.put( x+8, y+LAIR_TECH_ICON_HEIGHT-20, _("Alchemist") );
+	ModFryhtan::disp_lair_button( x, y, nationRecno, NULL, 1 );
 }
 //-------- End of static function disp_lair_tech_icon ---------//
 

@@ -69,6 +69,9 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
 ### Cambiado
 - **Rokken y Holgh** se mueven a velocidad 4 (antes 3), como los demás.
 - **Precio en oro:** todos los Fryhtans chicos cuestan $100 y todos los grandes $150.
+- **Botón de construir guarida:** muestra la guarida de tu especie sobre la piedra de los
+  botones de construcción (antes, el fuerte humano con el retrato del Fryhtan). El ícono
+  de Alchemist Lair es esa guarida con la mina en pequeño en una esquina.
 - **IA contra reinos Fryhtan:** si una IA lleva tiempo en guerra con un reino Fryhtan sin
   atacarlo, relaja sus condiciones. A los 6 meses pide la mitad del sobrante de tropas
   para salir a atacar y va con el 110% de la defensa de la guarida (antes 125–150%); al

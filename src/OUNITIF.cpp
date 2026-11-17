@@ -2311,16 +2311,12 @@ static void disp_firm_button(ButtonCustom *button, int)
 
 	vga_front.put_bitmap_trans_remap_decompress(button->x1, button->y1,	bitmap, (char*) button->custom_para.ptr);
 
-	//--- 7kmod-fryhtan: the lair of a Fryhtan kingdom, the Fort button with the Fryhtan over it ---//
+	//--- 7kmod-fryhtan: the lair of a Fryhtan kingdom: the lair of its species on the stone of the build buttons ---//
 
 	int unitId = (button->custom_para.value >> 16) & 0xffff;
 
-	if( firmId == FIRM_CAMP && unit_res[unitId]->unit_class == UNIT_CLASS_MONSTER )
-	{
-		vga_front.adjust_brightness( button->x1+3, button->y1+3, button->x2-3, button->y2-3, -4 );
-		vga_front.put_bitmap( button->x2-UNIT_LARGE_ICON_WIDTH-6, button->y1+7, unit_res[unitId]->get_large_icon_ptr(RANK_SOLDIER) );
-		font_san.put( button->x1+8, button->y2-20, _("Lair") );
-	}
+	if( firmId == FIRM_CAMP && unit_res[unitId]->unit_class == UNIT_CLASS_MONSTER && unit_array.selected_recno )
+		ModFryhtan::disp_lair_button( button->x1, button->y1, unit_array[unit_array.selected_recno]->nation_recno, _("Lair"), 0 );
 
 	if( button->pushed_flag )
 	{

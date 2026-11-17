@@ -71,6 +71,9 @@ together.
 ### Changed
 - **Rokken and Holgh** move at speed 4 (was 3), like the others.
 - **Gold price:** all small Fryhtans cost $100 and all large ones $150.
+- **Build lair button:** it shows the lair of your species on the stone of the build
+  buttons (was the human fort with the Fryhtan's portrait). The Alchemist Lair icon is
+  that lair with the mine in small in a corner.
 - **AI against Fryhtan kingdoms:** an AI at war with a Fryhtan kingdom that hasn't
   attacked it for a while relaxes its conditions. After 6 months it asks half the
   surplus of troops to go to war and goes with 110% of the lair's defense (was

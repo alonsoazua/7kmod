@@ -33,6 +33,8 @@ class File;
 enum { FRYHTAN_LARGE_MIN_LEVEL = 6 };		// monster level from which a Fryhtan is large (FRYHTAN_LARGE_POPULATION)
 enum { FRYHTAN_PFITH = 5 };		// monster id (MONSTER.DBF) with its own size: Pfith is small, although its level is 6
 
+enum { LAIR_ICON_MAX_WIDTH = 92, LAIR_ICON_MAX_HEIGHT = 54 };		// the lair drawn in an icon (ModFryhtan::lair_icon)
+
 enum { LAIR_PLACES_HIT_POINTS = 1600 };		// the places of a lair: this / the hit points of the species (as 8 humans of 200), at most MAX_WORKER
 
 //--- the technologies of a Fryhtan kingdom, researched in its lairs ---//
@@ -376,6 +378,9 @@ public:
 	int	nation_lair_count(int nationRecno);
 
 	//------ Alchemist Lair: a lair on a raw material site ------//
+
+	static char*	lair_icon(int monsterId, int nationRecno);
+	static void		disp_lair_button(int x, int y, int nationRecno, const char* label, int withMine);		// a 99x60 button with the lair of the kingdom (and a mine in small)		// the lair of the species as on the map, scaled down for icons (LAIR_ICON_MAX_WIDTH x LAIR_ICON_MAX_HEIGHT at most); 255 is transparent
 
 	int	alchemist_site_recno(Firm* firmPtr);		// the raw material site under the lair, 0 if none
 	int	can_build_lair_on_site(Location* locPtr, int builderUnitRecno);
