@@ -2474,7 +2474,7 @@ int Power::unit_can_assign_firm(int unitRecno, int firmRecno, int ownNationRecno
 		switch(rc)
 		{
 		case 1:				// assign as worker
-			if( firmPtr->worker_count == MAX_WORKER )
+			if( firmPtr->worker_count >= firmPtr->max_worker_count() )
 				return 0;
 			break;
 		case 2:				// assign as overseer

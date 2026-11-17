@@ -317,6 +317,9 @@ void Firm::deinit()
 
 	int isLair = mod_fryhtan.is_lair(this);		// 7kmod-fryhtan
 
+	if( isLair )
+		mod_fryhtan.release_alchemist_site(this);		// 7kmod-fryhtan: a mine can be built on its site again
+
 	mod_fryhtan.del_lair(firm_recno);		// 7kmod-fryhtan
 	mod_fryhtan.del_offer(firm_recno);		// 7kmod-fryhtan
 
@@ -921,14 +924,14 @@ void Firm::free_worker_room()
 
    //---- if there is space for one more worker, demote the overseer to worker ----//
 
-   if( worker_count < MAX_WORKER || worker_count==0 )
+   if( worker_count < max_worker_count() || worker_count==0 )
 		return;
 
 	//---- if all worker space are full, resign the worst worker to release one worker space for the overseer ----//
 
 	int worestWorkerId=0, minWorkerSkill=0x7FFF;
 
-   for( int i=0 ; i<MAX_WORKER ; i++ )
+   for( int i=0 ; i<worker_count ; i++ )
    {
       if( worker_array[i].skill_level < minWorkerSkill )
       {
@@ -958,7 +961,7 @@ void Firm::assign_worker(int workerUnitRecno)
 	Unit* unitPtr = unit_array[workerUnitRecno];
 
 	if( unitPtr->true_nation_recno() != nation_recno &&
-		 worker_count == MAX_WORKER )
+		 worker_count >= max_worker_count() )
 	{
 		return;
 	}
@@ -970,11 +973,11 @@ void Firm::assign_worker(int workerUnitRecno)
 
 	int unitXLoc= -1, unitYLoc;
 
-	if( worker_count == MAX_WORKER )
+	if( worker_count >= max_worker_count() )		// 7kmod-fryhtan: a lair may have fewer places
 	{
 		int worstWorkerId=0, minWorkerSkill=0x7FFF, workerSkill;
 
-		for(int i=0; i<MAX_WORKER; i++)
+		for(int i=0; i<worker_count; i++)
 		{
 			workerSkill = worker_array[i].skill_level;
 
@@ -2086,7 +2089,7 @@ void Firm::cancel_construction(char remoteAction)
 //
 void Firm::recruit_worker()
 {
-	if( MAX_WORKER==worker_count )
+	if( worker_count >= max_worker_count() )
       return;
 
 	//--- 7kmod-gameplay: the player's mines, factories and towers of science only recruit automatically when the auto recruit toggle is on ---//
@@ -2143,7 +2146,7 @@ void Firm::recruit_worker()
 //
 int Firm::pull_town_people(int townRecno, char remoteAction, int raceId, int forcePull)
 {
-	if( worker_count == MAX_WORKER )		// this can happen in a multiplayer game as Town::draw_detect_link_line() still have the old worker_count and thus allow this function being called.
+	if( worker_count >= max_worker_count() )		// this can happen in a multiplayer game as Town::draw_detect_link_line() still have the old worker_count and thus allow this function being called.
 		return 0;
 
 	err_when( worker_count > MAX_WORKER );
@@ -4062,9 +4065,26 @@ void Worker::change_hit_points(int changePoints)
 //
 int Firm::is_worker_full()
 {
-	return worker_count == MAX_WORKER;
+	return worker_count >= max_worker_count();
 }
 //----------- End of function Firm::is_worker_full ---------//
+
+
+//-------- Begin of function Firm::max_worker_count ------//
+//
+// 7kmod-fryhtan: the lair of a Fryhtan kingdom has fewer places for the
+// species with a lot of hit points (ModFryhtan::lair_max_soldiers).
+//
+int Firm::max_worker_count()
+{
+	FryhtanLair* lairPtr = mod_fryhtan.get_lair(firm_recno);
+
+	if( lairPtr && lairPtr->monster_id )
+		return ModFryhtan::lair_max_soldiers(lairPtr->monster_id);
+
+	return MAX_WORKER;
+}
+//----------- End of function Firm::max_worker_count ---------//
 
 
 //--------- Begin of function Firm::reward ---------//

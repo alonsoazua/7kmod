@@ -729,6 +729,8 @@ void NationBase::next_day()
 	is_at_war_yesterday = is_at_war_today;
 	is_at_war_today	  = 0;
 
+	mod_fryhtan.next_day_research(nation_recno);		// 7kmod-fryhtan: the research of the lairs
+
 	//--- if the king is dead, and now looking for a successor ---//
 
 	if( !king_unit_recno )

@@ -30,6 +30,18 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
     "302 (+12)".
   - El costo de entrenar depende de la especie: 7 (Ick, Doink, Broosken), 8 (Deezboanz,
     Rattus, Pfith), 9 (Karrotten, Holgh, Droog) o 10 (las demás). Un Ordo cuesta 5 más.
+  - Construir una guarida cuesta 30 (además de los $500); la guarida inicial no.
+  - El tributo de vida da 1 más si el pueblo tiene 15 aldeanos o más.
+- **Tecnologías de guarida:** el botón **Research** (segunda página de botones de la
+  guarida) abre la lista de tecnologías del reino. Al elegir una se pide confirmar, con
+  su costo en oro y life points; ya empezada no se cancela. El avance es del reino:
+  sigue mientras haya alguna guarida.
+  - **Alchemist Lair** ($1,000 y 30 life points, 6 meses): las guaridas se pueden
+    construir sobre un yacimiento de materiales. Con un Ordo o el rey, cada 15 días
+    convierten 50 materiales del yacimiento en 5 life points.
+- **Lugares de la guarida según la especie:** las especies con mucha vida caben menos:
+  Rokken 4; Wyrm, Droog, Haubudam y Sauroid 5; Holgh, Karrotten y Pfith 6; las demás 8.
+  Así una guarida llena tiene la vida de un fuerte humano lleno.
 - **Retrato de los Fryhtans con rango:** los generales, los Ordos y el rey tienen el
   retrato del soldado de su especie volteado, para distinguirlos.
 - **Partidas con un reino Fryhtan:** todos los reinos empiezan en la masa de tierra más
@@ -56,6 +68,7 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
 
 ### Cambiado
 - **Rokken y Holgh** se mueven a velocidad 4 (antes 3), como los demás.
+- **Precio en oro:** todos los Fryhtans chicos cuestan $100 y todos los grandes $150.
 - **IA contra reinos Fryhtan:** si una IA lleva tiempo en guerra con un reino Fryhtan sin
   atacarlo, relaja sus condiciones. A los 6 meses pide la mitad del sobrante de tropas
   para salir a atacar y va con el 110% de la defensa de la guarida (antes 125–150%); al

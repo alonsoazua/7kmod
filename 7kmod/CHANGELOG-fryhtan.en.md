@@ -31,6 +31,18 @@ together.
   - Training costs depend on the species: 7 (Ick, Doink, Broosken), 8 (Deezboanz,
     Rattus, Pfith), 9 (Karrotten, Holgh, Droog) or 10 (the others). An Ordo costs 5
     more.
+  - Building a lair costs 30 (besides the $500); the starting lair doesn't.
+  - The tribute of life gives 1 more if the village has 15 villagers or more.
+- **Lair technologies:** the **Research** button (second page of the lair's buttons)
+  opens the list of the kingdom's technologies. Choosing one asks to confirm, with its
+  cost in gold and Life Points; once started it can't be cancelled. The progress belongs
+  to the kingdom: it goes on while there is any lair.
+  - **Alchemist Lair** ($1,000 and 30 Life Points, 6 months): lairs can be built on raw
+    material sites. With an Ordo or the king, every 15 days they turn 50 of the site's
+    raw material into 5 Life Points.
+- **Lair places by species:** species with many hit points fit fewer: Rokken 4; Wyrm,
+  Droog, Haubudam and Sauroid 5; Holgh, Karrotten and Pfith 6; the others 8. A full lair
+  has the hit points of a full human fort.
 - **Portrait of ranked Fryhtans:** generals, Ordos and the king have the soldier
   portrait of their species flipped, to tell them apart.
 - **Games with a Fryhtan kingdom:** all kingdoms start on the largest land, as Fryhtans
@@ -58,6 +70,7 @@ together.
 
 ### Changed
 - **Rokken and Holgh** move at speed 4 (was 3), like the others.
+- **Gold price:** all small Fryhtans cost $100 and all large ones $150.
 - **AI against Fryhtan kingdoms:** an AI at war with a Fryhtan kingdom that hasn't
   attacked it for a while relaxes its conditions. After 6 months it asks half the
   surplus of troops to go to war and goes with 110% of the lair's defense (was

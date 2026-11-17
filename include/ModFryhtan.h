@@ -30,14 +30,31 @@ class File;
 
 //------- Define constant -------//
 
-enum { FRYHTAN_LARGE_MIN_LEVEL = 6 };
-enum { FRYHTAN_BROOSKEN = 3, FRYHTAN_PFITH = 5, FRYHTAN_DOINK = 7, FRYHTAN_ICK = 10 };		// monster ids. (MONSTER.DBF) with their own size or price: Pfith is small, the other three are cheaper		// monster level from which a Fryhtan is large (FRYHTAN_LARGE_POPULATION)
-enum { FRYHTAN_BASE_POPULATION = 20 };
+enum { FRYHTAN_LARGE_MIN_LEVEL = 6 };		// monster level from which a Fryhtan is large (FRYHTAN_LARGE_POPULATION)
+enum { FRYHTAN_PFITH = 5 };		// monster id (MONSTER.DBF) with its own size: Pfith is small, although its level is 6
+
+enum { LAIR_PLACES_HIT_POINTS = 1600 };		// the places of a lair: this / the hit points of the species (as 8 humans of 200), at most MAX_WORKER
+
+//--- the technologies of a Fryhtan kingdom, researched in its lairs ---//
+
+enum { FRYHTAN_TECH_ALCHEMIST_LAIR,			// a lair can be built on a raw material site and turns the raw material into Life Points
+		 FRYHTAN_TECH_COUNT };
+
+enum { FRYHTAN_TECH_NONE, FRYHTAN_TECH_RESEARCHING, FRYHTAN_TECH_DONE };		// the state of a technology for a kingdom
+
+enum { ALCHEMIST_TECH_COST			= 1000,		// gold for researching Alchemist Lair
+		 ALCHEMIST_TECH_LIFE_POINTS	= 30,			// and Life Points
+		 ALCHEMIST_TECH_DAYS			= 180,		// days of research
+		 ALCHEMIST_DAYS				= 15,			// an Alchemist Lair turns ALCHEMIST_RAW_QTY of its site...
+		 ALCHEMIST_RAW_QTY			= 50,			// ...into ALCHEMIST_LIFE_POINTS every ALCHEMIST_DAYS days,
+		 ALCHEMIST_LIFE_POINTS		= 5 };		// with an Ordo or the king as its leader
+
+enum { FRYHTAN_BASE_POPULATION = 20 };		// population of Fryhtans allowed at the start
 enum { FRYHTAN_POPULATION_LIMIT = 0 };		// 1: training is limited by the Fryhtan population cap (off for now)
 enum { FRYHTAN_SMALL_POPULATION = 2,		// population taken by a small Fryhtan of the kingdom
 		 FRYHTAN_LARGE_POPULATION = 3 };		// and by a large one
 enum { FRYHTAN_SPECIES_COUNT = 13 };			// no. of records in MONSTER.DBF
-enum { FRYHTAN_DEFAULT_MONSTER_ID = 6 };		// Rokken, the default choice in the new game screen		// population of Fryhtans allowed at the start
+enum { FRYHTAN_DEFAULT_MONSTER_ID = 6 };		// Rokken, the default choice in the new game screen
 enum { FRYHTAN_START_SOLDIER_COUNT = 4 };		// soldiers in the starting lair
 enum { FRYHTAN_START_TOWN_POPULATION = 20 };		// people of the starting enslaved town
 
@@ -50,9 +67,8 @@ enum { LAIR_SETUP_COST = 500,						// cost of building a lair
 enum { LAIR_TRAIN_FOOD = 20,						// food used for training a Fryhtan in a lair
 		 LAIR_TRAIN_DAYS = 15,						// days needed for training it (a large one)
 		 LAIR_SMALL_TRAIN_DAYS = 10,				// days needed for training a small one
-		 LAIR_SMALL_TRAIN_COST = 150,			// gold for training a small Fryhtan, soldier or Ordo
-		 LAIR_LARGE_TRAIN_COST = 200,			// gold for training a large one
-		 LAIR_CHEAP_TRAIN_COST = 100,			// gold for training an Ick, a Broosken or a Doink
+		 LAIR_SMALL_TRAIN_COST = 100,			// gold for training a small Fryhtan, soldier or Ordo
+		 LAIR_LARGE_TRAIN_COST = 150,			// gold for training a large one
 		 LAIR_TRAIN_COMBAT = 20,					// combat level of a trained Fryhtan
 		 LAIR_TRAIN_LEADERSHIP = 20,				// leadership of a trained Fryhtan (as a human soldier)
 		 LAIR_SHOW_TRAIN_ORDO = 1,				// 1: the lair has the Train Ordo button (hidden: the soldiers are promoted)
@@ -66,9 +82,9 @@ enum { LAIR_ORDO_FOOD = 40,						// food used for training an Ordo (general) in 
 
 enum { LAIR_TRAIN_SOLDIER, LAIR_TRAIN_ORDO, LAIR_TRAIN_TYPE_COUNT };		// what a lair trains
 
-enum { ORDO_NAME_ID_BASE = 60000 };
+enum { ORDO_NAME_ID_BASE = 60000 };				// Unit::name_id of an Ordo with a name: ORDO_NAME_ID_BASE + the name index (1-based)
 
-enum { FRYHTAN_HEADER_MARK = 0x7F };				// mark of the species in the header of a saved game				// Unit::name_id of an Ordo with a name: ORDO_NAME_ID_BASE + the name index (1-based)
+enum { FRYHTAN_HEADER_MARK = 0x7F };				// mark of the species in the header of a saved game
 
 enum { KILL_GOLD_UNIT		= 2,					// gold for killing a human villager (a soldier: ModFryhtan::kill_gold())
 		 KILL_GOLD_MIN_COMBAT	= 10,				// a soldier gives KILL_GOLD_UNIT with this combat level...
@@ -81,9 +97,9 @@ enum { KILL_GOLD_UNIT		= 2,					// gold for killing a human villager (a soldier:
 		 KILL_FOOD_GENERAL	= 20,					// a human general
 		 KILL_FOOD_KING		= 100 };				// a human king
 
-enum { LOST_LAIR_GRACE_DAYS = 90 };
+enum { LOST_LAIR_GRACE_DAYS = 90 };				// an enslaved town without a linked lair becomes independent after this
 
-enum { FRYHTAN_REPAIR_DAYS = 5 };				// the buildings of a Fryhtan kingdom recover 1 hit point in this time, like a construction worker of skill 20			// an enslaved town without a linked lair becomes independent after this
+enum { FRYHTAN_REPAIR_DAYS = 5 };				// the buildings of a Fryhtan kingdom recover 1 hit point in this time, like a construction worker of skill 20
 
 //--- raiding an independent town from a linked lair ---//
 
@@ -109,6 +125,8 @@ enum { FRYHTAN_START_LIFE_POINTS = 300,		// a Fryhtan kingdom starts with these
 		 LIFE_POINTS_SOLDIER		= 10,			// training a Fryhtan soldier in a lair (with the gold and the food): 7 to 10 by species, see train_life_points()
 		 LIFE_POINTS_ORDO_EXTRA	= 5,			// an Ordo costs this more than a soldier of its species
 		 LIFE_POINTS_PROMOTE		= 5,			// promoting a Fryhtan soldier to Ordo (the difference)
+		 LIFE_POINTS_LAIR			= 30,			// building a lair (with its gold), not the starting one
+		 LIFE_POINTS_TRIBUTE_EXTRA_PEOPLE = 15,	// an enslaved town with this many people gives 1 more a month
 		 LIFE_POINTS_TRIBUTE_PEOPLE = 10,		// an enslaved town gives 1 a month for each this many people
 		 LIFE_POINTS_KILL_COMBAT	= 10,			// killing a soldier gives its combat level / this...
 		 LIFE_POINTS_CIVILIAN_PERCENT = 50,		// ...a villager or town defender this %...
@@ -247,6 +265,7 @@ public:
 	void	set_lair(int firmRecno, int monsterId);
 	void	del_lair(int firmRecno);
 	FryhtanLair*	get_lair(int firmRecno);		// NULL if the firm is not a lair
+	static int	lair_max_soldiers(int monsterId);		// the places for soldiers in a lair of the species (4 to MAX_WORKER)
 	int	lair_monster_id(int firmRecno);
 	int	is_lair(Firm* firmPtr);
 
@@ -337,6 +356,33 @@ public:
 	int	ai_relax_level(int aiNationRecno);		// the highest level against any Fryhtan kingdom it is at war with
 	void	ai_attack_sent(int aiNationRecno, int targetNationRecno);
 
+	//------ the technologies of each Fryhtan kingdom, researched in its lairs ------//
+
+	char		tech_state_array[MAX_NATION][FRYHTAN_TECH_COUNT];		// FRYHTAN_TECH_NONE, _RESEARCHING or _DONE
+	int16_t	tech_days_array[MAX_NATION][FRYHTAN_TECH_COUNT];		// days researched
+
+	static const char*	tech_name(int techId);
+	static const char*	tech_desc(int techId);
+	static int	tech_cost(int techId)				{ return ALCHEMIST_TECH_COST; }
+	static int	tech_life_points(int techId)		{ return ALCHEMIST_TECH_LIFE_POINTS; }
+	static int	tech_total_days(int techId)		{ return ALCHEMIST_TECH_DAYS; }
+
+	int	tech_state(int nationRecno, int techId);
+	int	has_tech(int nationRecno, int techId)		{ return tech_state(nationRecno, techId) == FRYHTAN_TECH_DONE; }
+	int	tech_days(int nationRecno, int techId);
+	int	can_start_research(int nationRecno, int techId);		// available, and the kingdom has the gold and the Life Points
+	int	start_research(int nationRecno, int techId);				// pay and start; it can't be cancelled
+	void	next_day_research(int nationRecno);		// called by NationBase::next_day()
+	int	nation_lair_count(int nationRecno);
+
+	//------ Alchemist Lair: a lair on a raw material site ------//
+
+	int	alchemist_site_recno(Firm* firmPtr);		// the raw material site under the lair, 0 if none
+	int	can_build_lair_on_site(Location* locPtr, int builderUnitRecno);
+	int	is_alchemist_lair(Firm* firmPtr);			// a lair on a raw material site, with the technology
+	void	next_day_alchemist(Firm* firmPtr);
+	void	release_alchemist_site(Firm* firmPtr);		// the lair is deleted: the site is free again for a mine
+
 	//------ the start of a game with a Fryhtan kingdom ------//
 
 	int	start_region_id;		// when not 0, the starting towns of the kingdoms are on this region (the largest land), see TownArray::think_town_loc(). Not saved.
@@ -352,6 +398,8 @@ public:
 	void	add_life_points(int nationRecno, int points);		// points < 0: spent
 	static int	train_life_points(int trainType, int monsterId);		// the Life Points for training a soldier or an Ordo of the species
 	static int	kill_life_points(Unit* targetUnit);		// the Life Points for killing the unit
+	static int	firm_setup_life_points(int firmId, int nationRecno);		// the Life Points for building a firm: LIFE_POINTS_LAIR for a lair
+	static int	town_tribute_life_points(int population);
 	void	reward_life_points(int nationRecno, Unit* targetUnit);		// a unit killed by a unit of the nation
 
 	void		reset_king_kills(int nationRecno);		// a new kingdom

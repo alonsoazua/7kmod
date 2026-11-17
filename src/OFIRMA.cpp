@@ -136,7 +136,7 @@ void FirmArray::deinit()
 //
 int FirmArray::build_firm(int xLoc, int yLoc, int nationRecno, int firmId, char* buildCode, short builderRecno)
 {
-	if( !world.can_build_firm(xLoc, yLoc, firmId) )
+	if( !world.can_build_firm(xLoc, yLoc, firmId, builderRecno) )		// 7kmod-fryhtan: the builder, for a lair on a raw material site
 		return 0;
 
 	//--------- check if there is enough cash ----------//
@@ -149,6 +149,9 @@ int FirmArray::build_firm(int xLoc, int yLoc, int nationRecno, int firmId, char*
 		if( nationRecno )
 		{
 			if( nationPtr->cash < ModFryhtan::firm_setup_cost(firmId, nationRecno) )		// 7kmod-fryhtan: the cost of a lair
+				return 0;
+
+			if( mod_fryhtan.life_points(nationRecno) < ModFryhtan::firm_setup_life_points(firmId, nationRecno) )		// 7kmod-fryhtan: a lair also costs Life Points
 				return 0;
 		}
 	}
@@ -168,6 +171,7 @@ int FirmArray::build_firm(int xLoc, int yLoc, int nationRecno, int firmId, char*
 		Nation* nationPtr = nation_array[nationRecno];
 
 		nationPtr->add_expense( EXPENSE_FIRM, (float)ModFryhtan::firm_setup_cost(firmId, nationRecno));		// setup cost of the firm, 7kmod-fryhtan: the cost of a lair
+		mod_fryhtan.add_life_points( nationRecno, -ModFryhtan::firm_setup_life_points(firmId, nationRecno) );		// 7kmod-fryhtan: and its Life Points
 	}
 
 	return firmRecno;

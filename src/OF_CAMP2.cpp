@@ -415,12 +415,12 @@ void FirmCamp::think_recruit()
 //
 int FirmCamp::ai_recruit(int recruitCombatLevel)
 {
-	if( worker_count == MAX_WORKER || !overseer_recno )
+	if( worker_count >= max_worker_count() || !overseer_recno )
 		return 0;
 
 	int recruitCount = MAX( 1, recruitCombatLevel / 20 );
 
-	recruitCount = MIN( recruitCount, MAX_WORKER-worker_count );
+	recruitCount = MIN( recruitCount, max_worker_count()-worker_count );
 
 	//--- first try to recruit soldiers directly from a linked village ---//
 

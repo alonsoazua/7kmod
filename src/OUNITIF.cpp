@@ -1127,8 +1127,40 @@ void Unit::detect_build_menu()
 
 		if( button_build_flag[i] && firm_res[firmId]->can_build(sprite_recno) )
 		{
+			//--- 7kmod-fryhtan: the lair of a Fryhtan kingdom, with its cost in gold and Life Points ---//
+
+			int lairLifePoints = ModFryhtan::firm_setup_life_points(firmId, nation_recno);
+
+			if( lairLifePoints )
+			{
+				static char lairHelpStr[300];
+
+				if( mod_fryhtan.has_tech(nation_recno, FRYHTAN_TECH_ALCHEMIST_LAIR) )
+				{
+					// TRANSLATORS: Build a Lair for $<Number> and <Number> Life Points. ...
+					snprintf( lairHelpStr, sizeof(lairHelpStr), _("Build a Lair for $%d and %d Life Points. Built on a raw material site, it is an Alchemist Lair: with an Ordo or the king, it turns %d of the raw material into %d Life Points every %d days."),
+						ModFryhtan::firm_setup_cost(firmId, nation_recno), lairLifePoints,
+						(int) ALCHEMIST_RAW_QTY, (int) ALCHEMIST_LIFE_POINTS, (int) ALCHEMIST_DAYS );
+				}
+				else
+				{
+					// TRANSLATORS: Build a Lair for $<Number> and <Number> Life Points.
+					snprintf( lairHelpStr, sizeof(lairHelpStr), _("Build a Lair for $%d and %d Life Points."),
+						ModFryhtan::firm_setup_cost(firmId, nation_recno), lairLifePoints );
+				}
+
+				ButtonCustom& lairButton = button_build_array[i];
+				help.set_custom_help( lairButton.x1, lairButton.y1, lairButton.x2, lairButton.y2, _("Lair"), lairHelpStr );
+			}
+
 			if( button_build_array[i].detect(GETKEY(button_build_hotkey[i])) )
 			{
+				if( lairLifePoints && mod_fryhtan.life_points(nation_recno) < lairLifePoints )		// not enough Life Points for a lair
+				{
+					se_ctrl.immediate_sound("TURN_OFF");
+					break;
+				}
+
 				power.issue_command(COMMAND_BUILD_FIRM, sprite_recno, firmId);
 				rc = 1;
 				break;

@@ -24,6 +24,7 @@
 #include <OFILE.h>
 #include <OMONSRES.h>
 #include <OUNITRES.h>
+#include <OF_CAMP.h>
 #include <OUNIT.h>
 #include <OREBEL.h>
 #include <OSPRTRES.h>
@@ -31,6 +32,7 @@
 #include <OTOWN.h>
 #include <OF_MONS.h>
 #include <OWORLD.h>
+#include <OSITE.h>
 #include <OREGION.h>
 #include <ONATION.h>
 #include <OFIRM.h>
@@ -79,6 +81,8 @@ void ModFryhtan::reset()
 	memset( king_kill_array, 0, sizeof(king_kill_array) );
 	memset( life_points_array, 0, sizeof(life_points_array) );
 	memset( ai_last_attack_date, 0, sizeof(ai_last_attack_date) );
+	memset( tech_state_array, 0, sizeof(tech_state_array) );
+	memset( tech_days_array, 0, sizeof(tech_days_array) );
 	start_region_id = 0;
 	memset( cur_year_life_points_change, 0, sizeof(cur_year_life_points_change) );
 	memset( last_year_life_points_change, 0, sizeof(last_year_life_points_change) );
@@ -108,6 +112,12 @@ void ModFryhtan::init_nation(int nationRecno)
 		{
 			ai_last_attack_date[nationRecno-1][i] = 0;
 			ai_last_attack_date[i][nationRecno-1] = 0;
+		}
+
+		for( int t=0 ; t<FRYHTAN_TECH_COUNT ; t++ )
+		{
+			tech_state_array[nationRecno-1][t] = FRYHTAN_TECH_NONE;
+			tech_days_array[nationRecno-1][t]  = 0;
 		}
 	}
 }
@@ -374,6 +384,19 @@ int ModFryhtan::can_train_in_lair(int firmRecno, int trainType)
 	if( lairPtr->train_count >= LAIR_MAX_TRAIN_QUEUE )
 		return 0;
 
+	//--- a soldier must fit in the lair, with its soldiers (also those outside) and the ones queued ---//
+
+	if( trainType == LAIR_TRAIN_SOLDIER && firmPtr->firm_id == FIRM_CAMP )
+	{
+		FirmCamp* campPtr = firmPtr->cast_to_FirmCamp();
+
+		if( campPtr->worker_count + campPtr->patrol_unit_count + campPtr->coming_unit_count +
+			 lairPtr->type_count(LAIR_TRAIN_SOLDIER) >= campPtr->max_worker_count() )
+		{
+			return 0;
+		}
+	}
+
 	if( nation_array[firmPtr->nation_recno]->food < train_food(trainType) )
 		return 0;
 
@@ -476,10 +499,15 @@ void ModFryhtan::next_day_lair(int firmRecno)
 {
 	FryhtanLair* lairPtr = get_lair(firmRecno);
 
-	if( !lairPtr || lairPtr->train_count <= 0 )
+	if( !lairPtr )
 		return;
 
 	Firm* firmPtr = firm_array[firmRecno];
+
+	next_day_alchemist(firmPtr);		// a lair on a raw material site
+
+	if( lairPtr->train_count <= 0 )
+		return;
 
 	if( firmPtr->under_construction )
 		return;
@@ -551,7 +579,7 @@ int ModFryhtan::add_lair_soldier(Firm* firmPtr, int monsterId, int combatLevel)
 
 	//------ it goes into the lair if there is room ------//
 
-	if( firmPtr->worker_count < MAX_WORKER )
+	if( firmPtr->worker_count < firmPtr->max_worker_count() )
 		firmPtr->assign_unit(unitRecno);
 
 	return unitRecno;
@@ -903,17 +931,38 @@ int ModFryhtan::is_large_monster(int monsterId)
 //----------- End of function ModFryhtan::is_large_monster -----------//
 
 
+//--------- Begin of function ModFryhtan::lair_max_soldiers ---------//
+//
+// The places for soldiers in a lair, by the hit points of the species, so
+// that a full lair has about the hit points of a full fort of humans
+// (MAX_WORKER x 200): LAIR_PLACES_HIT_POINTS / hit points, rounded, at most
+// MAX_WORKER. Rokken (400) 4; Wyrm, Droog, Haubudam, Sauroid 5; Holgh,
+// Karrotten, Pfith 6; the others 8. The leader doesn't take a place.
+//
+int ModFryhtan::lair_max_soldiers(int monsterId)
+{
+	if( monsterId < 1 || monsterId > monster_res.monster_count )
+		return MAX_WORKER;
+
+	int hitPoints = unit_res[ monster_res[monsterId]->unit_id ]->hit_points;
+
+	if( hitPoints <= 0 )
+		return MAX_WORKER;
+
+	int places = (LAIR_PLACES_HIT_POINTS + hitPoints/2) / hitPoints;
+
+	return MAX( 1, MIN( (int) MAX_WORKER, places ) );
+}
+//----------- End of function ModFryhtan::lair_max_soldiers -----------//
+
+
 //--------- Begin of function ModFryhtan::train_cost ---------//
 //
-// The gold for training a soldier or an Ordo of the species: $100 for an Ick,
-// a Broosken or a Doink, $150 for the other small ones, $200 for the large
-// ones.
+// The gold for training a soldier or an Ordo of the species: $100 for the
+// small ones, $150 for the large ones.
 //
 int ModFryhtan::train_cost(int monsterId)
 {
-	if( monsterId == FRYHTAN_ICK || monsterId == FRYHTAN_BROOSKEN || monsterId == FRYHTAN_DOINK )
-		return LAIR_CHEAP_TRAIN_COST;
-
 	return is_large_monster(monsterId) ? LAIR_LARGE_TRAIN_COST : LAIR_SMALL_TRAIN_COST;
 }
 //----------- End of function ModFryhtan::train_cost -----------//
@@ -1213,6 +1262,23 @@ int ModFryhtan::write_file(File* filePtr)
 		}
 	}
 
+	//------- the technologies of each kingdom -------//
+
+	if( !filePtr->file_put_short( FRYHTAN_TECH_COUNT ) )
+		return 0;
+
+	for( i=0 ; i<MAX_NATION ; i++ )
+	{
+		for( int t=0 ; t<FRYHTAN_TECH_COUNT ; t++ )
+		{
+			if( !filePtr->file_put_short( tech_state_array[i][t] ) ||
+				 !filePtr->file_put_short( tech_days_array[i][t] ) )
+			{
+				return 0;
+			}
+		}
+	}
+
 	return 1;
 }
 //----------- End of function ModFryhtan::write_file -----------//
@@ -1397,6 +1463,28 @@ int ModFryhtan::read_file(File* filePtr)
 			ai_last_attack_date[n][m] = filePtr->file_get_long();
 	}
 
+	//------- the technologies of each kingdom -------//
+
+	if( filePtr->file_pos() >= filePtr->file_size() )		// a saved game from before
+		return 1;
+
+	int techCount = filePtr->file_get_short();		// saved, so that technologies can be added later
+
+	for( int n=0 ; n<MAX_NATION ; n++ )
+	{
+		for( int t=0 ; t<techCount ; t++ )
+		{
+			int techState = filePtr->file_get_short();
+			int techDays  = filePtr->file_get_short();
+
+			if( t < FRYHTAN_TECH_COUNT )
+			{
+				tech_state_array[n][t] = (char) techState;
+				tech_days_array[n][t]  = (int16_t) techDays;
+			}
+		}
+	}
+
 	return 1;
 }
 //----------- End of function ModFryhtan::read_file -----------//
@@ -1559,6 +1647,282 @@ void ModFryhtan::ai_attack_sent(int aiNationRecno, int targetNationRecno)
 //----------- End of function ModFryhtan::ai_attack_sent -----------//
 
 
+//--------- Begin of function ModFryhtan::tech_name ---------//
+//
+const char* ModFryhtan::tech_name(int techId)
+{
+	return _("Alchemist Lair");
+}
+//----------- End of function ModFryhtan::tech_name -----------//
+
+
+//--------- Begin of function ModFryhtan::tech_desc ---------//
+//
+const char* ModFryhtan::tech_desc(int techId)
+{
+	static char descStr[200];
+
+	// TRANSLATORS: Lairs can be built on raw material sites, where an Ordo or the king turns <Number> of the raw material into <Number> Life Points every <Number> days.
+	snprintf( descStr, sizeof(descStr), _("Lairs can be built on raw material sites, where an Ordo or the king turns %d of the raw material into %d Life Points every %d days."),
+		(int) ALCHEMIST_RAW_QTY, (int) ALCHEMIST_LIFE_POINTS, (int) ALCHEMIST_DAYS );
+
+	return descStr;
+}
+//----------- End of function ModFryhtan::tech_desc -----------//
+
+
+//--------- Begin of function ModFryhtan::tech_state ---------//
+//
+int ModFryhtan::tech_state(int nationRecno, int techId)
+{
+	if( nationRecno < 1 || nationRecno > MAX_NATION || techId < 0 || techId >= FRYHTAN_TECH_COUNT )
+		return FRYHTAN_TECH_NONE;
+
+	return tech_state_array[nationRecno-1][techId];
+}
+//----------- End of function ModFryhtan::tech_state -----------//
+
+
+//--------- Begin of function ModFryhtan::tech_days ---------//
+//
+int ModFryhtan::tech_days(int nationRecno, int techId)
+{
+	if( nationRecno < 1 || nationRecno > MAX_NATION || techId < 0 || techId >= FRYHTAN_TECH_COUNT )
+		return 0;
+
+	return tech_days_array[nationRecno-1][techId];
+}
+//----------- End of function ModFryhtan::tech_days -----------//
+
+
+//--------- Begin of function ModFryhtan::can_start_research ---------//
+//
+int ModFryhtan::can_start_research(int nationRecno, int techId)
+{
+	if( tech_state(nationRecno, techId) != FRYHTAN_TECH_NONE || !is_fryhtan(nationRecno) )
+		return 0;
+
+	Nation* nationPtr = nation_array[nationRecno];
+
+	return nationPtr->cash >= tech_cost(techId) &&
+			 life_points(nationRecno) >= tech_life_points(techId);
+}
+//----------- End of function ModFryhtan::can_start_research -----------//
+
+
+//--------- Begin of function ModFryhtan::start_research ---------//
+//
+// Pay the gold and the Life Points of the technology and start researching
+// it. The research belongs to the kingdom and can't be cancelled.
+//
+int ModFryhtan::start_research(int nationRecno, int techId)
+{
+	if( !can_start_research(nationRecno, techId) )
+		return 0;
+
+	nation_array[nationRecno]->add_expense( EXPENSE_FIRM, (float) tech_cost(techId) );		// the research of the lairs
+	add_life_points( nationRecno, -tech_life_points(techId) );
+
+	tech_state_array[nationRecno-1][techId] = FRYHTAN_TECH_RESEARCHING;
+	tech_days_array[nationRecno-1][techId]  = 0;
+
+	return 1;
+}
+//----------- End of function ModFryhtan::start_research -----------//
+
+
+//--------- Begin of function ModFryhtan::nation_lair_count ---------//
+//
+int ModFryhtan::nation_lair_count(int nationRecno)
+{
+	int lairCount = 0;
+
+	for( int i=firm_array.size() ; i>0 ; i-- )
+	{
+		if( firm_array.is_deleted(i) )
+			continue;
+
+		Firm* firmPtr = firm_array[i];
+
+		if( firmPtr->nation_recno == nationRecno && !firmPtr->under_construction && is_lair(firmPtr) )
+			lairCount++;
+	}
+
+	return lairCount;
+}
+//----------- End of function ModFryhtan::nation_lair_count -----------//
+
+
+//--------- Begin of function ModFryhtan::next_day_research ---------//
+//
+// The research of a Fryhtan kingdom goes on while it has a finished lair,
+// even if the lair where it started has been destroyed.
+//
+void ModFryhtan::next_day_research(int nationRecno)
+{
+	if( nationRecno < 1 || nationRecno > MAX_NATION || !is_fryhtan(nationRecno) )
+		return;
+
+	int lairCountChecked = 0, hasLair = 0;
+
+	for( int t=0 ; t<FRYHTAN_TECH_COUNT ; t++ )
+	{
+		if( tech_state_array[nationRecno-1][t] != FRYHTAN_TECH_RESEARCHING )
+			continue;
+
+		if( !lairCountChecked )
+		{
+			hasLair = nation_lair_count(nationRecno) > 0;
+			lairCountChecked = 1;
+		}
+
+		if( !hasLair )
+			return;
+
+		if( ++tech_days_array[nationRecno-1][t] >= tech_total_days(t) )
+		{
+			tech_state_array[nationRecno-1][t] = FRYHTAN_TECH_DONE;
+
+			if( nationRecno == nation_array.player_recno )
+				news_array.lair_tech_researched(t);
+		}
+	}
+}
+//----------- End of function ModFryhtan::next_day_research -----------//
+
+
+//--------- Begin of function ModFryhtan::alchemist_site_recno ---------//
+//
+// The raw material site under a lair, 0 if there is none.
+//
+int ModFryhtan::alchemist_site_recno(Firm* firmPtr)
+{
+	for( int yLoc=firmPtr->loc_y1 ; yLoc<=firmPtr->loc_y2 ; yLoc++ )
+	{
+		for( int xLoc=firmPtr->loc_x1 ; xLoc<=firmPtr->loc_x2 ; xLoc++ )
+		{
+			Location* locPtr = world.get_loc(xLoc, yLoc);
+
+			if( locPtr->has_site() && site_array[locPtr->site_recno()]->site_type == SITE_RAW )
+				return locPtr->site_recno();
+		}
+	}
+
+	return 0;
+}
+//----------- End of function ModFryhtan::alchemist_site_recno -----------//
+
+
+//--------- Begin of function ModFryhtan::can_build_lair_on_site ---------//
+//
+// With Alchemist Lair, a Fryhtan kingdom can build a lair on a raw material
+// site that has no mine (World::can_build_firm).
+//
+int ModFryhtan::can_build_lair_on_site(Location* locPtr, int builderUnitRecno)
+{
+	if( !builderUnitRecno || unit_array.is_deleted(builderUnitRecno) )
+		return 0;
+
+	int nationRecno = unit_array[builderUnitRecno]->nation_recno;
+
+	if( !nationRecno || !has_tech(nationRecno, FRYHTAN_TECH_ALCHEMIST_LAIR) )
+		return 0;
+
+	Site* sitePtr = site_array[locPtr->site_recno()];
+
+	return sitePtr->site_type == SITE_RAW && !sitePtr->has_mine;
+}
+//----------- End of function ModFryhtan::can_build_lair_on_site -----------//
+
+
+//--------- Begin of function ModFryhtan::is_alchemist_lair ---------//
+//
+int ModFryhtan::is_alchemist_lair(Firm* firmPtr)
+{
+	return is_lair(firmPtr) && has_tech(firmPtr->nation_recno, FRYHTAN_TECH_ALCHEMIST_LAIR) &&
+			 alchemist_site_recno(firmPtr) != 0;
+}
+//----------- End of function ModFryhtan::is_alchemist_lair -----------//
+
+
+//--------- Begin of function ModFryhtan::next_day_alchemist ---------//
+//
+// An Alchemist Lair with an Ordo or the king as its leader turns
+// ALCHEMIST_RAW_QTY of the raw material of its site into
+// ALCHEMIST_LIFE_POINTS every ALCHEMIST_DAYS days (less of the last ones, in
+// proportion). When the site is exhausted, it is a normal lair.
+//
+void ModFryhtan::next_day_alchemist(Firm* firmPtr)
+{
+	if( firmPtr->under_construction || !firmPtr->nation_recno ||
+		 info.game_date % ALCHEMIST_DAYS != firmPtr->firm_recno % ALCHEMIST_DAYS )
+	{
+		return;
+	}
+
+	if( !has_tech(firmPtr->nation_recno, FRYHTAN_TECH_ALCHEMIST_LAIR) )
+		return;
+
+	int siteRecno = alchemist_site_recno(firmPtr);
+
+	if( !siteRecno )
+		return;
+
+	Site* sitePtr = site_array[siteRecno];
+
+	if( !sitePtr->has_mine )		// the site is taken, no mine can be built on it
+	{
+		sitePtr->has_mine = 1;
+		site_array.untapped_raw_count--;
+	}
+
+	//--- it needs a Fryhtan leader: an Ordo or the king ---//
+
+	if( !firmPtr->overseer_recno || unit_array[firmPtr->overseer_recno]->race_id )
+		return;
+
+	int rawQty = MIN( (int) ALCHEMIST_RAW_QTY, sitePtr->reserve_qty );
+
+	if( rawQty <= 0 )
+		return;
+
+	sitePtr->reserve_qty -= rawQty;
+
+	add_life_points( firmPtr->nation_recno, MAX( 1, ALCHEMIST_LIFE_POINTS * rawQty / ALCHEMIST_RAW_QTY ) );
+
+	//--- the site is exhausted, as with a mine ---//
+
+	if( sitePtr->reserve_qty <= 0 )
+	{
+		site_array.untapped_raw_count++;		// del_site() decreases it again
+		site_array.del_site(siteRecno);
+	}
+}
+//----------- End of function ModFryhtan::next_day_alchemist -----------//
+
+
+//--------- Begin of function ModFryhtan::release_alchemist_site ---------//
+//
+// The lair is deleted: its site, if any, can have a mine again.
+//
+void ModFryhtan::release_alchemist_site(Firm* firmPtr)
+{
+	int siteRecno = alchemist_site_recno(firmPtr);
+
+	if( !siteRecno )
+		return;
+
+	Site* sitePtr = site_array[siteRecno];
+
+	if( sitePtr->has_mine )
+	{
+		sitePtr->has_mine = 0;
+		site_array.untapped_raw_count++;
+	}
+}
+//----------- End of function ModFryhtan::release_alchemist_site -----------//
+
+
 //--------- Begin of function ModFryhtan::largest_land_region_id ---------//
 //
 // The region id of the largest land of the map, 0 if there is none.
@@ -1576,6 +1940,35 @@ int ModFryhtan::largest_land_region_id()
 	return 0;
 }
 //----------- End of function ModFryhtan::largest_land_region_id -----------//
+
+
+//--------- Begin of function ModFryhtan::town_tribute_life_points ---------//
+//
+// The monthly tribute of life of an enslaved town: 1 for every 10 people, and
+// 1 more with 15 people or more (10-14: 1, 15-19: 2, 20-29: 3, 30-39: 4).
+//
+int ModFryhtan::town_tribute_life_points(int population)
+{
+	int lifePoints = population / LIFE_POINTS_TRIBUTE_PEOPLE;
+
+	if( population >= LIFE_POINTS_TRIBUTE_EXTRA_PEOPLE )
+		lifePoints++;
+
+	return lifePoints;
+}
+//----------- End of function ModFryhtan::town_tribute_life_points -----------//
+
+
+//--------- Begin of function ModFryhtan::firm_setup_life_points ---------//
+//
+int ModFryhtan::firm_setup_life_points(int firmId, int nationRecno)
+{
+	if( firmId == FIRM_CAMP && nationRecno && mod_fryhtan.is_fryhtan(nationRecno) )
+		return LIFE_POINTS_LAIR;
+
+	return 0;
+}
+//----------- End of function ModFryhtan::firm_setup_life_points -----------//
 
 
 //--------- Begin of function ModFryhtan::life_points ---------//
@@ -1885,7 +2278,7 @@ int ModFryhtan::next_day_town(Town* townPtr)
 	if( info.game_day == 1 && has_lair_commander(townPtr) )
 	{
 		nation_array[nationRecno]->add_income( INCOME_TAX, (float) town_tribute(townPtr) );
-		add_life_points( nationRecno, townPtr->population / LIFE_POINTS_TRIBUTE_PEOPLE );		// 1 for each 10 people
+		add_life_points( nationRecno, town_tribute_life_points(townPtr->population) );
 	}
 
 	return 1;

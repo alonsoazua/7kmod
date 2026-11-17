@@ -558,6 +558,16 @@ void Firm::disp_worker_list(int dispY1, int refreshFlag)
 			if( mouse.in_area(x, y, x+27, y+23) )
 				help.set_unit_help( unitPtr->unit_id, unitPtr->rank_id, x, y, x+27, y+23 );
 		}
+		else if( i >= max_worker_count() )		// 7kmod-fryhtan: a place the lair of this species doesn't have, darkened
+		{
+			if( refreshFlag==INFO_REPAINT || last_race_id_array[i] != (char) -2 )
+			{
+				vga_util.blt_buf( x, y, x+49, y+27, 0 );
+				vga_front.adjust_brightness( x, y, x+27, y+23, -6 );
+				last_race_id_array[i] = (char) -2;		// -2 marks a place the lair doesn't have
+				last_unit_id_array[i] = 0;
+			}
+		}
 		else
 		{
 			if( last_race_id_array[i] != 0 || last_unit_id_array[i] != 0 )

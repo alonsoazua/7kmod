@@ -134,6 +134,7 @@ static NewsInfo news_info_array[] =
 	{ &News::spy_confrontation, 0 },
 	{ &News::town_raided, 0 },				// 7kmod-fryhtan
 	{ &News::ordo_kidnap, 0 },				// 7kmod-fryhtan
+	{ &News::lair_tech_researched, 0 },	// 7kmod-fryhtan
 };
 
 //------- Define static variables --------//
@@ -1344,6 +1345,21 @@ void News::ordo_kidnap()
 	}
 }
 //------- End of function News::ordo_kidnap -----//
+
+
+//------ Begin of function News::lair_tech_researched -----//
+//
+// 7kmod-fryhtan: the player's Fryhtan kingdom researched a technology of the
+// lairs.
+//
+// short_para1 - the technology (FRYHTAN_TECH_???)
+//
+void News::lair_tech_researched()
+{
+	// TRANSLATORS: Your lairs have researched <Technology>.
+	snprintf(str, MAX_STR_LEN+1, _("Your lairs have researched %s."), ModFryhtan::tech_name(short_para1) );
+}
+//------- End of function News::lair_tech_researched -----//
 
 
 //------ Begin of function News::town_raided -----//

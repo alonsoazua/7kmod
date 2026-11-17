@@ -875,6 +875,23 @@ void NewsArray::ordo_kidnap(int townRecno, int ordoNameId, int villagerCount)
 //------- End of function NewsArray::ordo_kidnap -----//
 
 
+//------ Begin of function NewsArray::lair_tech_researched -----//
+//
+// 7kmod-fryhtan: the player's Fryhtan kingdom researched a technology of the
+// lairs.
+//
+void NewsArray::lair_tech_researched(int techId)
+{
+	News* newsPtr = add_news( NEWS_LAIR_TECH_RESEARCHED, NEWS_NORMAL, nation_array.player_recno );
+
+	if( !newsPtr )
+		return;
+
+	newsPtr->short_para1 = techId;
+}
+//------- End of function NewsArray::lair_tech_researched -----//
+
+
 //------ Begin of function NewsArray::intel_report -----//
 //
 // 7kmod-gameplay: a spy of the player made an intelligence report.

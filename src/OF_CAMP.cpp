@@ -52,6 +52,11 @@
 #include <OBUTTCUS.h>
 #include <vga_util.h>
 #include <ModFryhtan.h>
+#include <ModLifeIcon.h>
+#include <OIMGRES.h>
+#include <OFIRMRES.h>
+#include <OUNITRES.h>
+#include <OHELP.h>
 
 
 //----------- Define static vars -------------//
@@ -60,6 +65,26 @@ static Button3D button_patrol, button_reward, button_defense;
 static Button3D button_withdraw;			// 7kmod
 static Button3D button_lair_train[LAIR_TRAIN_TYPE_COUNT];		// 7kmod-fryhtan: Train and Train Ordo in a lair of a Fryhtan kingdom
 static short    last_lair_train_count[LAIR_TRAIN_TYPE_COUNT];	// 7kmod-fryhtan: the last number displayed on each button
+
+//--- 7kmod-fryhtan: the research menu of a lair (the technologies of the Fryhtan kingdom) ---//
+
+enum { LAIR_MENU_MAIN, LAIR_MENU_TECH_LIST, LAIR_MENU_TECH_CONFIRM };
+
+enum { LAIR_TECH_ICON_WIDTH = 99, LAIR_TECH_ICON_HEIGHT = 60,		// as the build buttons
+		 LAIR_TECH_OPTION_HEIGHT = 68 };
+
+static Button3D     button_lair_research;
+static ButtonCustom button_lair_tech[FRYHTAN_TECH_COUNT];
+static ButtonCustom button_lair_tech_confirm, button_lair_tech_cancel;
+static char         lair_menu_mode;
+static short        lair_menu_firm_recno;		// the lair whose menu is open
+static char         lair_menu_tech_id;
+static short        last_lair_tech_percent[FRYHTAN_TECH_COUNT];
+
+static void disp_lair_tech_icon(int x, int y, int nationRecno, int techId);
+static void disp_lair_tech_button(ButtonCustom* button, int repaintBody);
+static void disp_lair_research_menu(FirmCamp* firmPtr, int refreshFlag);
+static int  detect_lair_research_menu(FirmCamp* firmPtr);
 
 //------ 7kmod: recruit soldiers from linked towns ------//
 
@@ -393,6 +418,20 @@ void FirmCamp::put_info(int refreshFlag)
 	if( disp_recruit_town_menu_if_active(refreshFlag) )
 		return;
 
+	//------ 7kmod-fryhtan: the research menu of a lair -------//
+
+	if( lair_menu_mode != LAIR_MENU_MAIN )
+	{
+		if( lair_menu_firm_recno == firm_recno && own_firm() && mod_fryhtan.is_lair(this) )
+		{
+			disp_lair_research_menu(this, refreshFlag);
+			return;
+		}
+
+		lair_menu_mode = LAIR_MENU_MAIN;		// another firm is selected
+		refreshFlag = INFO_REPAINT;
+	}
+
 	//--------------------------------------//
 
 	disp_basic_info(INFO_Y1, refreshFlag);
@@ -463,6 +502,24 @@ void FirmCamp::put_info(int refreshFlag)
 
 				button_defense.paint( INFO_X1, INFO_Y1+242, 'A', defense_flag ? (char*)"DEFENSE1" : (char*)"DEFENSE0" );		// 7kmod: first place of the second page
 			}
+
+			//--- 7kmod-fryhtan: Research, on the second page of a lair ---//
+
+			if( buttonPage==1 && mod_fryhtan.is_lair(this) )
+			{
+				button_lair_research.paint( INFO_X1+BUTTON_ACTION_WIDTH*2, INFO_Y1+242, 'A', "RESEARCH" );
+				button_lair_research.set_help_code("");
+			}
+			else
+			{
+				button_lair_research.reset();
+			}
+		}
+
+		if( button_lair_research.init_flag )		// 7kmod-fryhtan
+		{
+			help.set_custom_help( button_lair_research.x1, button_lair_research.y1, button_lair_research.x2, button_lair_research.y2,
+				_("Research"), _("Research the technologies of your lairs. They are for all your lairs.") );
 		}
 
 		if( buttonPage==1 )
@@ -609,6 +666,289 @@ void FirmCamp::disp_lair_train_button(int trainType)
 //----------- End of function FirmCamp::disp_lair_train_button -----------//
 
 
+//------- Begin of static function disp_lair_tech_icon ---------//
+//
+// 7kmod-fryhtan: the icon of a technology of the lairs, 99x60 as the build
+// buttons. Alchemist Lair: the Lair build button (the Fort darkened with the
+// Fryhtan of the kingdom) with the Mine button in small in a corner.
+//
+static void disp_lair_tech_icon(int x, int y, int nationRecno, int techId)
+{
+	static char mineIconBuf[2*sizeof(short) + LAIR_TECH_ICON_WIDTH*LAIR_TECH_ICON_HEIGHT];
+	static char smallMineBuf[2*sizeof(short) + (LAIR_TECH_ICON_WIDTH/2)*(LAIR_TECH_ICON_HEIGHT/2)];
+	static int  smallMineDone = 0;
+
+	char* remapTable = game.get_color_remap_table(nationRecno, 0);
+	int   unitId = mod_fryhtan.nation_unit_id(nationRecno);
+
+	String str;
+
+	//--- the Mine button at half size, made once: drawn here, read back and scaled down ---//
+
+	if( !smallMineDone )
+	{
+		str  = "F-";
+		str += FIRM_MINE;
+		vga_front.put_bitmap_trans_remap_decompress( x, y, image_button.get_ptr(str), remapTable );
+		vga_front.read_bitmap( x, y, x+LAIR_TECH_ICON_WIDTH-1, y+LAIR_TECH_ICON_HEIGHT-1, mineIconBuf );
+
+		int smallWidth = LAIR_TECH_ICON_WIDTH/2, smallHeight = LAIR_TECH_ICON_HEIGHT/2;
+
+		*(short*) smallMineBuf = smallWidth;
+		*((short*) smallMineBuf + 1) = smallHeight;
+
+		char* srcPtr  = mineIconBuf + 2*sizeof(short);
+		char* destPtr = smallMineBuf + 2*sizeof(short);
+
+		for( int j=0 ; j<smallHeight ; j++ )
+		{
+			for( int i=0 ; i<smallWidth ; i++ )
+				destPtr[j*smallWidth+i] = srcPtr[(j*2)*LAIR_TECH_ICON_WIDTH + i*2];
+		}
+
+		smallMineDone = 1;
+	}
+
+	//--- the Lair button: the Fort button darkened, with the Fryhtan over it ---//
+
+	str  = "F-";
+	str += FIRM_CAMP;
+	vga_front.put_bitmap_trans_remap_decompress( x, y, image_button.get_ptr(str), remapTable );
+	vga_front.adjust_brightness( x+3, y+3, x+LAIR_TECH_ICON_WIDTH-4, y+LAIR_TECH_ICON_HEIGHT-4, -4 );
+
+	if( unitId )
+		vga_front.put_bitmap( x+LAIR_TECH_ICON_WIDTH-UNIT_LARGE_ICON_WIDTH-6, y+7, unit_res[unitId]->get_large_icon_ptr(RANK_SOLDIER) );
+
+	//--- the Mine at half size, in the top left corner, with a frame ---//
+
+	vga_front.put_bitmap( x+4, y+4, smallMineBuf );
+	vga_front.rect( x+3, y+3, x+4+LAIR_TECH_ICON_WIDTH/2, y+4+LAIR_TECH_ICON_HEIGHT/2, 1, V_BLACK );
+
+	font_san.put( x+8, y+LAIR_TECH_ICON_HEIGHT-20, _("Alchemist") );
+}
+//-------- End of static function disp_lair_tech_icon ---------//
+
+
+//------- Begin of static function disp_lair_tech_button ---------//
+//
+// custom_para.ptr - the lair (FirmCamp*), custom_para.value - the technology
+//
+static void disp_lair_tech_button(ButtonCustom* button, int repaintBody)
+{
+	FirmCamp* firmPtr = (FirmCamp*) button->custom_para.ptr;
+	int techId = button->custom_para.value;
+	int nationRecno = firmPtr->nation_recno;
+
+	if( button->pushed_flag )
+		vga_util.d3_panel_down( button->x1, button->y1, button->x2, button->y2 );
+	else
+		vga_util.d3_panel_up( button->x1, button->y1, button->x2, button->y2 );
+
+	disp_lair_tech_icon( button->x1+3, button->y1+4, nationRecno, techId );
+
+	//----- the name and the state -----//
+
+	int x = button->x1+3+LAIR_TECH_ICON_WIDTH+5;
+
+	font_san.put_paragraph( x, button->y1+6, button->x2-4, button->y1+36, ModFryhtan::tech_name(techId) );
+
+	int techState = mod_fryhtan.tech_state(nationRecno, techId);
+
+	if( techState == FRYHTAN_TECH_DONE )
+	{
+		font_san.put( x, button->y1+40, _("Researched") );
+	}
+	else if( techState == FRYHTAN_TECH_RESEARCHING )
+	{
+		font_san.put( x, button->y1+36, _("Researching") );
+
+		vga_front.indicator( x, button->y1+52, button->x2-6, button->y1+57,
+			(float) mod_fryhtan.tech_days(nationRecno, techId), (float) ModFryhtan::tech_total_days(techId), VGA_LIGHT_GREEN, V_BLACK );
+	}
+	else
+	{
+		font_san.put( x, button->y1+40, _("Available") );
+	}
+}
+//-------- End of static function disp_lair_tech_button ---------//
+
+
+//------- Begin of static function disp_lair_research_menu ---------//
+//
+// 7kmod-fryhtan: the list of the technologies of the lairs, or the
+// confirmation of one of them.
+//
+static void disp_lair_research_menu(FirmCamp* firmPtr, int refreshFlag)
+{
+	int nationRecno = firmPtr->nation_recno;
+
+	if( lair_menu_mode == LAIR_MENU_TECH_LIST )
+	{
+		int y = INFO_Y1;
+
+		for( int t=0 ; t<FRYHTAN_TECH_COUNT ; t++ )
+		{
+			int percent = mod_fryhtan.tech_days(nationRecno, t) * 100 / ModFryhtan::tech_total_days(t) +
+							  mod_fryhtan.tech_state(nationRecno, t) * 1000;		// redrawn when the state or the progress change
+
+			if( refreshFlag == INFO_REPAINT )
+			{
+				button_lair_tech[t].paint( INFO_X1, y, INFO_X2, y+LAIR_TECH_OPTION_HEIGHT-2,
+					disp_lair_tech_button, ButtonCustomPara(firmPtr, t) );
+			}
+			else if( percent != last_lair_tech_percent[t] )
+			{
+				button_lair_tech[t].paint();
+			}
+
+			last_lair_tech_percent[t] = percent;
+
+			if( mouse.in_area(button_lair_tech[t].x1, button_lair_tech[t].y1, button_lair_tech[t].x2, button_lair_tech[t].y2) )
+			{
+				help.set_custom_help( button_lair_tech[t].x1, button_lair_tech[t].y1, button_lair_tech[t].x2, button_lair_tech[t].y2,
+					ModFryhtan::tech_name(t), ModFryhtan::tech_desc(t) );
+			}
+
+			y += LAIR_TECH_OPTION_HEIGHT;
+		}
+
+		if( refreshFlag == INFO_REPAINT )
+		{
+			button_lair_tech_cancel.paint( INFO_X1, y, INFO_X2, y+LAIR_TECH_OPTION_HEIGHT*3/4,
+				ButtonCustom::disp_text_button_func, ButtonCustomPara((void*)_("Cancel"),0) );
+		}
+		return;
+	}
+
+	//------- the confirmation: "Research Alchemist Lair?", its cost, Confirm and Cancel -------//
+
+	if( refreshFlag != INFO_REPAINT )
+		return;
+
+	int techId = lair_menu_tech_id;
+	int y = INFO_Y1;
+
+	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+222 );
+
+	char titleStr[100];
+
+	// TRANSLATORS: Research <Technology>?
+	snprintf( titleStr, sizeof(titleStr), _("Research %s?"), ModFryhtan::tech_name(techId) );
+	font_san.center_put( INFO_X1, y+6, INFO_X2, y+22, titleStr );
+
+	disp_lair_tech_icon( INFO_X1+(INFO_X2-INFO_X1-LAIR_TECH_ICON_WIDTH)/2, y+28, nationRecno, techId );
+
+	font_san.put_paragraph( INFO_X1+8, y+94, INFO_X2-8, y+184, ModFryhtan::tech_desc(techId) );
+
+	//--- the cost: [coins] 1000   [Life Points] 30 ---//
+
+	int costY = y+188;
+	int x = INFO_X1+20;
+
+	vga_front.put_bitmap_trans( x, costY, (char*) life_cost_gold_icon );
+	x += *(short*) life_cost_gold_icon + 4;
+	x  = font_san.put( x, costY+5, misc.format(ModFryhtan::tech_cost(techId)) ) + 20;
+
+	vga_front.put_bitmap_trans( x, costY+2, (char*) life_cost_points_icon );
+	x += *(short*) life_cost_points_icon + 4;
+	font_san.put( x, costY+5, misc.format(ModFryhtan::tech_life_points(techId)) );
+
+	//--- Confirm and Cancel ---//
+
+	y += 226;
+
+	int canResearch = mod_fryhtan.can_start_research(nationRecno, techId);
+
+	if( !canResearch )
+	{
+		font_san.put_paragraph( INFO_X1+8, y, INFO_X2-8, y+30, _("You don't have enough gold or Life Points.") );
+		y += 34;
+	}
+
+	button_lair_tech_confirm.paint( INFO_X1, y, (INFO_X1+INFO_X2)/2-2, y+28,
+		ButtonCustom::disp_text_button_func, ButtonCustomPara((void*)_("Confirm"),0) );
+
+	button_lair_tech_cancel.paint( (INFO_X1+INFO_X2)/2+2, y, INFO_X2, y+28,
+		ButtonCustom::disp_text_button_func, ButtonCustomPara((void*)_("Cancel"),0) );
+
+	if( !canResearch )
+		vga_front.adjust_brightness( button_lair_tech_confirm.x1, button_lair_tech_confirm.y1, button_lair_tech_confirm.x2, button_lair_tech_confirm.y2, -5 );
+}
+//-------- End of static function disp_lair_research_menu ---------//
+
+
+//------- Begin of static function detect_lair_research_menu ---------//
+//
+static int detect_lair_research_menu(FirmCamp* firmPtr)
+{
+	int nationRecno = firmPtr->nation_recno;
+
+	if( lair_menu_mode == LAIR_MENU_TECH_LIST )
+	{
+		for( int t=0 ; t<FRYHTAN_TECH_COUNT ; t++ )
+		{
+			if( button_lair_tech[t].init_flag && button_lair_tech[t].detect() )
+			{
+				if( mod_fryhtan.tech_state(nationRecno, t) == FRYHTAN_TECH_NONE )		// available: ask to confirm
+				{
+					se_ctrl.immediate_sound("TURN_ON");
+					lair_menu_mode = LAIR_MENU_TECH_CONFIRM;
+					lair_menu_tech_id = t;
+				}
+				else
+				{
+					se_ctrl.immediate_sound("TURN_OFF");		// already researching or researched
+					button_lair_tech[t].paint();
+					return 1;
+				}
+
+				info.disp();
+				return 1;
+			}
+		}
+
+		if( button_lair_tech_cancel.detect() )
+		{
+			se_ctrl.immediate_sound("TURN_OFF");
+			lair_menu_mode = LAIR_MENU_MAIN;
+			info.disp();
+			return 1;
+		}
+
+		return 0;
+	}
+
+	//------- the confirmation -------//
+
+	if( button_lair_tech_confirm.detect() )
+	{
+		if( mod_fryhtan.start_research(nationRecno, lair_menu_tech_id) )
+		{
+			se_ctrl.immediate_sound("TURN_ON");
+			lair_menu_mode = LAIR_MENU_TECH_LIST;
+			info.disp();
+		}
+		else
+		{
+			se_ctrl.immediate_sound("TURN_OFF");
+			info.disp();
+		}
+		return 1;
+	}
+
+	if( button_lair_tech_cancel.detect() )
+	{
+		se_ctrl.immediate_sound("TURN_OFF");
+		lair_menu_mode = LAIR_MENU_TECH_LIST;
+		info.disp();
+		return 1;
+	}
+
+	return 0;
+}
+//-------- End of static function detect_lair_research_menu ---------//
+
+
 //--------- Begin of function FirmCamp::detect_info ---------//
 //
 int FirmCamp::detect_info()
@@ -617,6 +957,11 @@ int FirmCamp::detect_info()
 
 	if( is_recruit_town_menu_active() )
 		return detect_recruit_town_menu();
+
+	//------ 7kmod-fryhtan: the research menu of a lair -------//
+
+	if( lair_menu_mode != LAIR_MENU_MAIN && lair_menu_firm_recno == firm_recno )
+		return detect_lair_research_menu(this);
 
 	//--------------------------------------//
 
@@ -708,6 +1053,16 @@ int FirmCamp::detect_info()
 		{
 			assign_overseer(0);		// the overseer quits the camp
 		}
+		return 1;
+	}
+
+	//------- 7kmod-fryhtan: Research in a lair -------//
+
+	if( button_lair_research.init_flag && button_lair_research.detect() )
+	{
+		lair_menu_mode = LAIR_MENU_TECH_LIST;
+		lair_menu_firm_recno = firm_recno;
+		info.disp();
 		return 1;
 	}
 
@@ -1097,7 +1452,7 @@ int Firm::get_recruit_town_list(short* townRecnoArray)
 //
 int Firm::can_recruit_from_town()
 {
-	if( !own_firm() || under_construction || !worker_array || worker_count >= MAX_WORKER )
+	if( !own_firm() || under_construction || !worker_array || worker_count >= max_worker_count() )
 		return 0;
 
 	short townRecnoArray[MAX_LINKED_FIRM_TOWN];
@@ -1917,7 +2272,7 @@ int FirmCamp::get_absent_units(short* overseerRecnoPtr, short* soldierRecnoArray
 		return 0;
 
 	int soldierCount = 0;
-	int maxSoldier = MAX_WORKER - worker_count;
+	int maxSoldier = max_worker_count() - worker_count;
 
 	for( int i=1 ; i<=unit_array.size() ; i++ )
 	{
@@ -2249,7 +2604,7 @@ void FirmCamp::update_defense_unit(short unitRecno)
 //
 int FirmCamp::is_worker_full()
 {
-	return worker_count + patrol_unit_count + coming_unit_count >= MAX_WORKER;
+	return worker_count + patrol_unit_count + coming_unit_count >= max_worker_count();
 }
 //----------- End of function FirmCamp::is_worker_full ---------//
 
