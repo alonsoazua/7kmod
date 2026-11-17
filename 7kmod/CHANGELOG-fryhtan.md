@@ -80,6 +80,8 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
   pelear) a veces no dejaba entrenar aunque hubiera lugar: contaba también al líder y a
   los que murieron o entraron a otra guarida. Ahora cuenta lo mismo que muestran las
   casillas oscurecidas.
+- **Música al cargar una partida Fryhtan:** se quedaba la música del menú, porque el rey
+  Fryhtan no tiene raza. Ahora toca la misma que en una partida nueva.
 
 ### Cambiado
 - **Rokken y Holgh** se mueven a velocidad 4 (antes 3), como los demás.

@@ -81,6 +81,8 @@ together.
   training was sometimes blocked although there was room: it also counted the leader
   and the ones that died or went into another lair. Now it counts what the darkened
   places show.
+- **Music when loading a Fryhtan game:** the menu's music kept playing, because the
+  Fryhtan king has no race. Now it plays the same as a new game.
 
 ### Changed
 - **Rokken and Holgh** move at speed 4 (was 3), like the others.

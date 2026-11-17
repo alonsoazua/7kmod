@@ -725,8 +725,10 @@ void Battle::run_loaded()
 		if( !unit_array.is_deleted((~nation_array)->king_unit_recno) )
 			// if there is king in the nation take his race
 			kingRace = unit_array[(~nation_array)->king_unit_recno]->race_id;
-		else
-			// if king is killed, get the original nation
+
+		// if king is killed, get the original nation
+		// 7kmod-fryhtan: also for a Fryhtan king, who has no race (song 1 is the menu's); the nation's race is what a new game plays
+		if( !kingRace )
 			kingRace = (~nation_array)->race_id;
 	}
 
