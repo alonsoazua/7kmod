@@ -442,7 +442,20 @@ void Info::disp_heading()
 	if( mod_fryhtan.is_fryhtan(nation_array.player_recno) )
 	{
 		vga_front.put_bitmap( 447, 26, (char*) life_points_icon );		// it has the background of the bar, as REPU_UP
-		font_mid.disp( 476, 30, misc.format(mod_fryhtan.life_points(nation_array.player_recno), 4), 575 );
+		//--- with the net change of the last 365 days, as the food and the cash: "302 (+12)" ---//
+
+		int lifeChange = mod_fryhtan.life_points_change_365days(nation_array.player_recno);
+
+		str = misc.format(mod_fryhtan.life_points(nation_array.player_recno), 4);		// format type 4 - no thousand separators
+
+		if( lifeChange )		// as NationBase::food_str()
+		{
+			str += lifeChange > 0 ? " (+" : " (-";
+			str += misc.format( abs(lifeChange), 4 );
+			str += ")";
+		}
+
+		font_mid.disp( 476, 30, str, 575 );
 		font_mid.use_std_height();
 		return;
 	}

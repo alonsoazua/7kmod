@@ -321,6 +321,11 @@ public:
 	//------ Life Points of each Fryhtan kingdom ------//
 
 	int32_t	life_points_array[MAX_NATION];
+	int32_t	cur_year_life_points_change[MAX_NATION];		// the net change this year and the last one, for the top bar "(+x)"
+	int32_t	last_year_life_points_change[MAX_NATION];
+
+	int	life_points_change_365days(int nationRecno);		// the net change of the last 365 days, as food_change_365days()
+	void	next_year_life_points(int nationRecno);			// called on Jan 1 by NationBase::next_year()
 
 	int	life_points(int nationRecno);
 	void	add_life_points(int nationRecno, int points);		// points < 0: spent

@@ -911,6 +911,8 @@ void NationBase::next_year()
 	last_year_food_change = cur_year_food_change;
 	cur_year_food_change  = (float) 0;
 
+	mod_fryhtan.next_year_life_points(nation_recno);		// 7kmod-fryhtan: the yearly change of the Life Points
+
 	//---------- post imports ----------//
 
 	NationRelation* nationRelation = relation_array;

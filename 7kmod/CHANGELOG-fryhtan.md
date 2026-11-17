@@ -26,6 +26,8 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
   - **Se gastan en Fryhtans**, además del oro y la comida: entrenar un soldado cuesta
     10, un Ordo 15, y promover un soldado a Ordo 5. Al cancelar un entrenamiento se
     devuelven.
+  - Junto al número se ve su cambio de los últimos 365 días, como en la comida y el oro:
+    "302 (+12)".
 - **Sobrepoblación:** un pueblo esclavizado con 30 o más habitantes pierde 1 de lealtad
   cada 5 días y termina rebelándose si no baja de 30.
 - **Cull Population** (botón de espada en el pueblo esclavizado, solo con un Ordo

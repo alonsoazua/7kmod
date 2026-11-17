@@ -77,6 +77,8 @@ void ModFryhtan::reset()
 
 	memset( king_kill_array, 0, sizeof(king_kill_array) );
 	memset( life_points_array, 0, sizeof(life_points_array) );
+	memset( cur_year_life_points_change, 0, sizeof(cur_year_life_points_change) );
+	memset( last_year_life_points_change, 0, sizeof(last_year_life_points_change) );
 
 	if( town_ordo_array )
 		memset( town_ordo_array, 0, sizeof(TownOrdo) * town_ordo_array_size );
@@ -96,6 +98,8 @@ void ModFryhtan::init_nation(int nationRecno)
 	{
 		nation_monster_id[nationRecno-1] = 0;
 		life_points_array[nationRecno-1] = 0;
+		cur_year_life_points_change[nationRecno-1] = 0;
+		last_year_life_points_change[nationRecno-1] = 0;
 	}
 }
 //----------- End of function ModFryhtan::init_nation -----------//
@@ -1140,6 +1144,17 @@ int ModFryhtan::write_file(File* filePtr)
 			return 0;
 	}
 
+	//------- their yearly change -------//
+
+	for( i=0 ; i<MAX_NATION ; i++ )
+	{
+		if( !filePtr->file_put_long( cur_year_life_points_change[i] ) ||
+			 !filePtr->file_put_long( last_year_life_points_change[i] ) )
+		{
+			return 0;
+		}
+	}
+
 	return 1;
 }
 //----------- End of function ModFryhtan::write_file -----------//
@@ -1302,6 +1317,17 @@ int ModFryhtan::read_file(File* filePtr)
 	for( int n=0 ; n<MAX_NATION ; n++ )
 		life_points_array[n] = filePtr->file_get_long();
 
+	//------- their yearly change -------//
+
+	if( filePtr->file_pos() >= filePtr->file_size() )		// a saved game from before the yearly change
+		return 1;
+
+	for( int n=0 ; n<MAX_NATION ; n++ )
+	{
+		cur_year_life_points_change[n]  = filePtr->file_get_long();
+		last_year_life_points_change[n] = filePtr->file_get_long();
+	}
+
 	return 1;
 }
 //----------- End of function ModFryhtan::read_file -----------//
@@ -1414,10 +1440,42 @@ void ModFryhtan::add_life_points(int nationRecno, int points)
 		return;
 
 	int32_t& lifePoints = life_points_array[nationRecno-1];
+	int32_t  oldPoints  = lifePoints;
 
 	lifePoints = MAX( 0, MIN( 999999, lifePoints + points ) );
+
+	cur_year_life_points_change[nationRecno-1] += lifePoints - oldPoints;
 }
 //----------- End of function ModFryhtan::add_life_points -----------//
+
+
+//--------- Begin of function ModFryhtan::life_points_change_365days ---------//
+//
+// The net change of the Life Points in the last 365 days: this year's and
+// the matching part of last year's, as NationBase::food_change_365days().
+//
+int ModFryhtan::life_points_change_365days(int nationRecno)
+{
+	if( nationRecno < 1 || nationRecno > MAX_NATION )
+		return 0;
+
+	return (int) ( (float) last_year_life_points_change[nationRecno-1] * (365-info.year_day) / 365 +
+		cur_year_life_points_change[nationRecno-1] );
+}
+//----------- End of function ModFryhtan::life_points_change_365days -----------//
+
+
+//--------- Begin of function ModFryhtan::next_year_life_points ---------//
+//
+void ModFryhtan::next_year_life_points(int nationRecno)
+{
+	if( nationRecno < 1 || nationRecno > MAX_NATION )
+		return;
+
+	last_year_life_points_change[nationRecno-1] = cur_year_life_points_change[nationRecno-1];
+	cur_year_life_points_change[nationRecno-1]  = 0;
+}
+//----------- End of function ModFryhtan::next_year_life_points -----------//
 
 
 //--------- Begin of function ModFryhtan::kill_life_points ---------//

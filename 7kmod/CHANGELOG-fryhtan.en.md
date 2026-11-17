@@ -26,6 +26,8 @@ together.
     with the gold tribute.
   - **Spent on Fryhtans**, besides the gold and food: training a soldier costs 10, an
     Ordo 15, and promoting a soldier to Ordo 5. Cancelling a training gives them back.
+  - Next to the number, their change over the last 365 days, as for food and cash:
+    "302 (+12)".
 - **Overpopulation:** an enslaved town with 30 people or more loses 1 loyalty every 5
   days and rebels in the end unless it drops below 30.
 - **Cull Population** (sword button in the enslaved town, only with an Ordo inside):
