@@ -1137,10 +1137,9 @@ void Unit::detect_build_menu()
 
 				if( mod_fryhtan.has_tech(nation_recno, FRYHTAN_TECH_ALCHEMIST_LAIR) )
 				{
-					// TRANSLATORS: Build a Lair for $<Number> and <Number> Life Points. ...
-					snprintf( lairHelpStr, sizeof(lairHelpStr), _("Build a Lair for $%d and %d Life Points. Built on a raw material site, it is an Alchemist Lair: with an Ordo or the king, it turns %d of the raw material into %d Life Points every %d days."),
-						ModFryhtan::firm_setup_cost(firmId, nation_recno), lairLifePoints,
-						(int) ALCHEMIST_RAW_QTY, (int) ALCHEMIST_LIFE_POINTS, (int) ALCHEMIST_DAYS );
+					// TRANSLATORS: Build a Lair for $<Number> and <Number> Life Points. Built on a raw material site, ...
+					snprintf( lairHelpStr, sizeof(lairHelpStr), _("Build a Lair for $%d and %d Life Points. Built on a raw material site, it turns the raw material into Life Points. Requires an Ordo."),
+						ModFryhtan::firm_setup_cost(firmId, nation_recno), lairLifePoints );
 				}
 				else
 				{
@@ -2316,7 +2315,8 @@ static void disp_firm_button(ButtonCustom *button, int)
 	int unitId = (button->custom_para.value >> 16) & 0xffff;
 
 	if( firmId == FIRM_CAMP && unit_res[unitId]->unit_class == UNIT_CLASS_MONSTER && unit_array.selected_recno )
-		ModFryhtan::disp_lair_button( button->x1, button->y1, unit_array[unit_array.selected_recno]->nation_recno, _("Lair"), 0 );
+		ModFryhtan::disp_lair_button( button->x1, button->y1, unit_array[unit_array.selected_recno]->nation_recno,
+			ModFryhtan::unit_monster_id(unitId), _("Lair"), 0 );		// the lair of the species of the builder, the one that is built
 
 	if( button->pushed_flag )
 	{

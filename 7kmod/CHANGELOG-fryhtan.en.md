@@ -16,7 +16,8 @@ together.
 ### Added
 - **Life Points:** the currency of Fryhtan kingdoms. They show on the top bar, in place
   of the reputation, with their own icon (a green and gold yin-yang sphere).
-  - You start with 300.
+  - You start with 150, 300, 500 or 700 by the Treasure of New Game (Small to Very
+    Large).
   - **Earned by killing:** a soldier gives its combat level / 10 (1 with combat 10, 10
     with combat 100); a villager or town defender half that; a general x1.25; a king
     x1.5; always at least 1. A weapon gives 3 and a ship 5. Enemy Fryhtans count as
@@ -39,7 +40,14 @@ together.
   to the kingdom: it goes on while there is any lair.
   - **Alchemist Lair** ($1,000 and 30 Life Points, 6 months): lairs can be built on raw
     material sites. With an Ordo or the king, every 15 days they turn 50 of the site's
-    raw material into 5 Life Points.
+    raw material into 5 Life Points. On the map they read "(Alchemist Lair)", and the ">"
+    button of their panel shows the raw material left, the conversion and the next one.
+  - **Empowerment** ($1,000 and 50 Life Points, 6 months): Fryhtans trained in the lairs
+    get +10 combat (soldier 30, Ordo 40).
+  - The menu is like the Tower of Science's: the list of the technologies left, the
+    confirmation with its cost and the progress screen (with Change and Back). The cost
+    is paid once, to unlock it; you can switch technologies and each keeps its progress.
+  - A finished research shows a message and plays the "research complete" sound.
 - **Lair places by species:** species with many hit points fit fewer: Rokken 4; Wyrm,
   Droog, Haubudam and Sauroid 5; Holgh, Karrotten and Pfith 6; the others 8. A full lair
   has the hit points of a full human fort.
@@ -77,9 +85,11 @@ together.
 ### Changed
 - **Rokken and Holgh** move at speed 4 (was 3), like the others.
 - **Gold price:** all small Fryhtans cost $100 and all large ones $150.
-- **Build lair button:** it shows the lair of your species on the stone of the build
-  buttons (was the human fort with the Fryhtan's portrait). The Alchemist Lair icon is
-  that lair with the mine in small in a corner.
+- **Build lair button:** it shows the lair of the builder's species on the stone of the
+  build buttons (was the human fort with the Fryhtan's portrait). The Alchemist Lair icon
+  is that lair with the mine in small.
+- **Full lair:** you can train even without room; the new soldier stays outside. The
+  places the species doesn't have read "This lair only has N places.".
 - **AI against Fryhtan kingdoms:** an AI at war with a Fryhtan kingdom that hasn't
   attacked it for a while relaxes its conditions. After 6 months it asks half the
   surplus of troops to go to war and goes with 110% of the lair's defense (was

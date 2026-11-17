@@ -1012,6 +1012,26 @@ void ZoomMatrix::disp_text()
 		}
 	}
 
+	//------ 7kmod-fryhtan: the Alchemist Lairs of the player, with the town names -------//
+
+	if( config.disp_town_name && nation_array.player_recno && mod_fryhtan.is_fryhtan(nation_array.player_recno) )
+	{
+		for( int i=firm_array.size() ; i>0 ; i-- )
+		{
+			if( firm_array.is_deleted(i) )
+				continue;
+
+			Firm* firmPtr = firm_array[i];
+
+			if( firmPtr->nation_recno == nation_array.player_recno && firmPtr->firm_id == FIRM_CAMP &&
+				 !firmPtr->under_construction && mod_fryhtan.is_alchemist_lair(firmPtr) )
+			{
+				put_center_text( (firmPtr->abs_x1+firmPtr->abs_x2)/2,
+									  (firmPtr->abs_y1+firmPtr->abs_y2)/2, _("(Alchemist Lair)") );
+			}
+		}
+	}
+
 	//------ firms -------//
 
 	if( config.disp_spy_sign )

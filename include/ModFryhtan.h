@@ -40,9 +40,13 @@ enum { LAIR_PLACES_HIT_POINTS = 1600 };		// the places of a lair: this / the hit
 //--- the technologies of a Fryhtan kingdom, researched in its lairs ---//
 
 enum { FRYHTAN_TECH_ALCHEMIST_LAIR,			// a lair can be built on a raw material site and turns the raw material into Life Points
+		 FRYHTAN_TECH_EMPOWERMENT,				// the Fryhtans trained in the lairs have more combat
 		 FRYHTAN_TECH_COUNT };
 
-enum { FRYHTAN_TECH_NONE, FRYHTAN_TECH_RESEARCHING, FRYHTAN_TECH_DONE };		// the state of a technology for a kingdom
+enum { FRYHTAN_TECH_NONE,				// locked: researching it the first time costs its gold and Life Points
+		 FRYHTAN_TECH_RESEARCHING,		// being researched (one at a time)
+		 FRYHTAN_TECH_DONE,
+		 FRYHTAN_TECH_UNLOCKED };		// paid and paused, its progress kept: it can be researched again for free
 
 enum { ALCHEMIST_TECH_COST			= 1000,		// gold for researching Alchemist Lair
 		 ALCHEMIST_TECH_LIFE_POINTS	= 30,			// and Life Points
@@ -50,6 +54,11 @@ enum { ALCHEMIST_TECH_COST			= 1000,		// gold for researching Alchemist Lair
 		 ALCHEMIST_DAYS				= 15,			// an Alchemist Lair turns ALCHEMIST_RAW_QTY of its site...
 		 ALCHEMIST_RAW_QTY			= 50,			// ...into ALCHEMIST_LIFE_POINTS every ALCHEMIST_DAYS days,
 		 ALCHEMIST_LIFE_POINTS		= 5 };		// with an Ordo or the king as its leader
+
+enum { EMPOWERMENT_TECH_COST		= 1000,		// gold for researching Empowerment
+		 EMPOWERMENT_TECH_LIFE_POINTS = 50,		// and Life Points
+		 EMPOWERMENT_TECH_DAYS		= 180,		// days of research
+		 EMPOWERMENT_COMBAT			= 10 };		// the Fryhtans trained in the lairs (soldiers and Ordos) have this more combat
 
 enum { FRYHTAN_BASE_POPULATION = 20 };		// population of Fryhtans allowed at the start
 enum { FRYHTAN_POPULATION_LIMIT = 0 };		// 1: training is limited by the Fryhtan population cap (off for now)
@@ -278,7 +287,8 @@ public:
 	int	cancel_lair_train(int firmRecno, int trainType=LAIR_TRAIN_SOLDIER);
 	void	next_day_lair(int firmRecno);
 	int	add_lair_soldier(Firm* firmPtr, int monsterId, int combatLevel=LAIR_TRAIN_COMBAT);
-	int	add_lair_ordo(Firm* firmPtr, int monsterId);
+	int	add_lair_ordo(Firm* firmPtr, int monsterId, int combatLevel=LAIR_ORDO_COMBAT);
+	int	lair_train_combat(int nationRecno, int trainType);		// the combat of a trained soldier or Ordo, +10 with Empowerment
 	static int	train_food(int trainType)	{ return trainType==LAIR_TRAIN_ORDO ? LAIR_ORDO_FOOD : LAIR_TRAIN_FOOD; }
 	// days needed for training, by the size of the species
 	static int	train_days(int trainType, int monsterId)
@@ -365,22 +375,22 @@ public:
 
 	static const char*	tech_name(int techId);
 	static const char*	tech_desc(int techId);
-	static int	tech_cost(int techId)				{ return ALCHEMIST_TECH_COST; }
-	static int	tech_life_points(int techId)		{ return ALCHEMIST_TECH_LIFE_POINTS; }
-	static int	tech_total_days(int techId)		{ return ALCHEMIST_TECH_DAYS; }
+	static int	tech_cost(int techId)				{ return techId==FRYHTAN_TECH_EMPOWERMENT ? EMPOWERMENT_TECH_COST : ALCHEMIST_TECH_COST; }
+	static int	tech_life_points(int techId)		{ return techId==FRYHTAN_TECH_EMPOWERMENT ? EMPOWERMENT_TECH_LIFE_POINTS : ALCHEMIST_TECH_LIFE_POINTS; }
+	static int	tech_total_days(int techId)		{ return techId==FRYHTAN_TECH_EMPOWERMENT ? EMPOWERMENT_TECH_DAYS : ALCHEMIST_TECH_DAYS; }
 
 	int	tech_state(int nationRecno, int techId);
 	int	has_tech(int nationRecno, int techId)		{ return tech_state(nationRecno, techId) == FRYHTAN_TECH_DONE; }
 	int	tech_days(int nationRecno, int techId);
-	int	can_start_research(int nationRecno, int techId);		// available, and the kingdom has the gold and the Life Points
-	int	start_research(int nationRecno, int techId);				// pay and start; it can't be cancelled
+	int	can_start_research(int nationRecno, int techId);		// locked with the gold and the Life Points, or unlocked
+	int	start_research(int nationRecno, int techId);				// research it (paying if it is locked); the one being researched is paused
 	void	next_day_research(int nationRecno);		// called by NationBase::next_day()
 	int	nation_lair_count(int nationRecno);
 
 	//------ Alchemist Lair: a lair on a raw material site ------//
 
 	static char*	lair_icon(int monsterId, int nationRecno);
-	static void		disp_lair_button(int x, int y, int nationRecno, const char* label, int withMine);		// a 99x60 button with the lair of the kingdom (and a mine in small)		// the lair of the species as on the map, scaled down for icons (LAIR_ICON_MAX_WIDTH x LAIR_ICON_MAX_HEIGHT at most); 255 is transparent
+	static void		disp_lair_button(int x, int y, int nationRecno, int monsterId, const char* label, int withMine);		// a 99x60 button with the lair of the species (and a mine in small); monsterId 0: the kingdom's species		// the lair of the species as on the map, scaled down for icons (LAIR_ICON_MAX_WIDTH x LAIR_ICON_MAX_HEIGHT at most); 255 is transparent
 
 	int	alchemist_site_recno(Firm* firmPtr);		// the raw material site under the lair, 0 if none
 	int	can_build_lair_on_site(Location* locPtr, int builderUnitRecno);
@@ -400,6 +410,7 @@ public:
 	void	next_year_life_points(int nationRecno);			// called on Jan 1 by NationBase::next_year()
 
 	int	life_points(int nationRecno);
+	int	start_life_points(int nationRecno);		// by the Treasure of the new game
 	void	add_life_points(int nationRecno, int points);		// points < 0: spent
 	static int	train_life_points(int trainType, int monsterId);		// the Life Points for training a soldier or an Ordo of the species
 	static int	kill_life_points(Unit* targetUnit);		// the Life Points for killing the unit

@@ -15,7 +15,8 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
 ### Agregado
 - **Life Points:** la moneda de los reinos Fryhtan. Se ven en la barra de arriba, en
   lugar de la reputación, con su propio ícono (una esfera yin-yang verde y dorada).
-  - Empiezas con 300.
+  - Empiezas con 150, 300, 500 o 700 según el Treasure de New Game (Small a Very
+    Large).
   - **Se ganan matando:** un soldado da su nivel de combate / 10 (1 con combate 10, 10
     con combate 100); un aldeano o defensor, la mitad; un general ×1.25; un rey ×1.5;
     siempre al menos 1. Un arma da 3 y un barco 5. Los Fryhtans enemigos cuentan como
@@ -38,7 +39,15 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
   sigue mientras haya alguna guarida.
   - **Alchemist Lair** ($1,000 y 30 life points, 6 meses): las guaridas se pueden
     construir sobre un yacimiento de materiales. Con un Ordo o el rey, cada 15 días
-    convierten 50 materiales del yacimiento en 5 life points.
+    convierten 50 materiales del yacimiento en 5 life points. En el mapa dicen
+    "(Alchemist Lair)", y el botón ">" de su panel muestra el material que le queda, la
+    conversión y la próxima.
+  - **Empowerment** ($1,000 y 50 life points, 6 meses): los Fryhtans entrenados en las
+    guaridas salen con +10 de combate (soldado 30, Ordo 40).
+  - El menú es como el de la Torre de Ciencia: la lista de las tecnologías que faltan, la
+    confirmación con su costo y la pantalla de avance (con Change y Back). El costo se paga
+    una vez, al desbloquearla; se puede cambiar de tecnología y cada una guarda su avance.
+  - Al terminar una investigación sale un aviso y suena el "research complete".
 - **Lugares de la guarida según la especie:** las especies con mucha vida caben menos:
   Rokken 4; Wyrm, Droog, Haubudam y Sauroid 5; Holgh, Karrotten y Pfith 6; las demás 8.
   Así una guarida llena tiene la vida de un fuerte humano lleno.
@@ -75,9 +84,11 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
 ### Cambiado
 - **Rokken y Holgh** se mueven a velocidad 4 (antes 3), como los demás.
 - **Precio en oro:** todos los Fryhtans chicos cuestan $100 y todos los grandes $150.
-- **Botón de construir guarida:** muestra la guarida de tu especie sobre la piedra de los
-  botones de construcción (antes, el fuerte humano con el retrato del Fryhtan). El ícono
-  de Alchemist Lair es esa guarida con la mina en pequeño en una esquina.
+- **Botón de construir guarida:** muestra la guarida de la especie de quien construye
+  sobre la piedra de los botones de construcción (antes, el fuerte humano con el retrato
+  del Fryhtan). El ícono de Alchemist Lair es esa guarida con la mina en pequeño.
+- **Guarida llena:** se puede entrenar aunque no haya lugar; el soldado nuevo se queda
+  afuera. Los lugares que la especie no tiene dicen "This lair only has N places.".
 - **IA contra reinos Fryhtan:** si una IA lleva tiempo en guerra con un reino Fryhtan sin
   atacarlo, relaja sus condiciones. A los 6 meses pide la mitad del sobrante de tropas
   para salir a atacar y va con el 110% de la defensa de la guarida (antes 125–150%); al

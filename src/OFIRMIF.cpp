@@ -567,6 +567,15 @@ void Firm::disp_worker_list(int dispY1, int refreshFlag)
 				last_race_id_array[i] = (char) -2;		// -2 marks a place the lair doesn't have
 				last_unit_id_array[i] = 0;
 			}
+
+			//--- its help: the places of the lair ---//
+
+			static char placesHelpStr[100];
+
+			// TRANSLATORS: This lair only has <Number> places.
+			snprintf( placesHelpStr, sizeof(placesHelpStr), _("This lair only has %d places."), max_worker_count() );
+
+			help.set_custom_help( x, y, x+27, y+23, _("Lair"), placesHelpStr );
 		}
 		else
 		{

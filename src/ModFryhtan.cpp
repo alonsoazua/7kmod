@@ -33,6 +33,7 @@
 #include <OF_MONS.h>
 #include <OWORLD.h>
 #include <OSITE.h>
+#include <OCONFIG.h>
 #include <OREGION.h>
 #include <ONATION.h>
 #include <OFIRM.h>
@@ -136,7 +137,7 @@ void ModFryhtan::set_nation_monster(int nationRecno, int monsterId)
 		return;
 
 	if( monsterId && !nation_monster_id[nationRecno-1] )		// a new Fryhtan kingdom: its starting Life Points
-		life_points_array[nationRecno-1] = FRYHTAN_START_LIFE_POINTS;
+		life_points_array[nationRecno-1] = start_life_points(nationRecno);
 
 	nation_monster_id[nationRecno-1] = monsterId;
 }
@@ -388,22 +389,7 @@ int ModFryhtan::can_train_in_lair(int firmRecno, int trainType)
 	if( lairPtr->train_count >= LAIR_MAX_TRAIN_QUEUE )
 		return 0;
 
-	//--- a soldier must fit in the lair, with its soldiers, those outside that return to it ---//
-	//--- (the darkened places, FirmCamp::get_absent_units) and the ones queued                ---//
-	//--- (not patrol_unit_count: it keeps the units that died or went to another fort)       ---//
-
-	if( trainType == LAIR_TRAIN_SOLDIER && firmPtr->firm_id == FIRM_CAMP )
-	{
-		FirmCamp* campPtr = firmPtr->cast_to_FirmCamp();
-
-		short absentOverseerRecno;
-		short absentSoldierArray[MAX_WORKER];
-
-		int absentCount = campPtr->get_absent_units( &absentOverseerRecno, absentSoldierArray );
-
-		if( campPtr->worker_count + absentCount + lairPtr->type_count(LAIR_TRAIN_SOLDIER) >= campPtr->max_worker_count() )
-			return 0;
-	}
+	// a soldier is trained even if the lair is full: it stays outside, next to the lair (add_lair_soldier)
 
 	if( nation_array[firmPtr->nation_recno]->food < train_food(trainType) )
 		return 0;
@@ -527,12 +513,12 @@ void ModFryhtan::next_day_lair(int firmRecno)
 
 	if( trainType == LAIR_TRAIN_ORDO )
 	{
-		if( !add_lair_ordo(firmPtr, lairPtr->monster_id) )
+		if( !add_lair_ordo(firmPtr, lairPtr->monster_id, lair_train_combat(firmPtr->nation_recno, trainType)) )
 			return;		// no space next to the lair, try again the next day
 	}
 	else
 	{
-		if( !add_lair_soldier(firmPtr, lairPtr->monster_id) )
+		if( !add_lair_soldier(firmPtr, lairPtr->monster_id, lair_train_combat(firmPtr->nation_recno, trainType)) )
 			return;
 	}
 
@@ -603,7 +589,7 @@ int ModFryhtan::add_lair_soldier(Firm* firmPtr, int monsterId, int combatLevel)
 //
 // return: <int> the unit recno, 0 if there is no space for it
 //
-int ModFryhtan::add_lair_ordo(Firm* firmPtr, int monsterId)
+int ModFryhtan::add_lair_ordo(Firm* firmPtr, int monsterId, int combatLevel)
 {
 	int unitId = monster_res[monsterId]->unit_id;
 	SpriteInfo* spriteInfo = sprite_res[ unit_res[unitId]->sprite_id ];
@@ -627,7 +613,7 @@ int ModFryhtan::add_lair_ordo(Firm* firmPtr, int monsterId)
 	unitPtr->set_rank( RANK_GENERAL );
 	unitPtr->skill.set_skill( SKILL_LEADING );
 	unitPtr->skill.skill_level = LAIR_ORDO_LEADERSHIP;
-	unitPtr->set_combat_level( LAIR_ORDO_COMBAT );
+	unitPtr->set_combat_level( combatLevel );
 	unitPtr->hit_points = (float) unitPtr->max_hit_points;
 	unitPtr->name_id = (uint16_t) new_ordo_name_id( firmPtr->nation_recno );
 
@@ -1021,7 +1007,7 @@ char* ModFryhtan::lair_icon(int monsterId, int nationRecno)
 // button at a third of its size in the top left corner (Alchemist Lair,
 // without a label).
 //
-void ModFryhtan::disp_lair_button(int x, int y, int nationRecno, const char* label, int withMine)
+void ModFryhtan::disp_lair_button(int x, int y, int nationRecno, int monsterId, const char* label, int withMine)
 {
 	enum { BUTTON_WIDTH = 99, BUTTON_HEIGHT = 60 };
 
@@ -1091,7 +1077,10 @@ void ModFryhtan::disp_lair_button(int x, int y, int nationRecno, const char* lab
 
 	//--- the lair of the kingdom, in the middle ---//
 
-	char* lairIcon = lair_icon( mod_fryhtan.nation_monster_id[nationRecno-1], nationRecno );
+	if( !monsterId )
+		monsterId = mod_fryhtan.nation_monster_id[nationRecno-1];
+
+	char* lairIcon = lair_icon( monsterId, nationRecno );
 
 	if( lairIcon )
 	{
@@ -1958,10 +1947,31 @@ void ModFryhtan::ai_attack_sent(int aiNationRecno, int targetNationRecno)
 //----------- End of function ModFryhtan::ai_attack_sent -----------//
 
 
+//--------- Begin of function ModFryhtan::lair_train_combat ---------//
+//
+// The combat of a Fryhtan trained in a lair: LAIR_TRAIN_COMBAT for a
+// soldier, LAIR_ORDO_COMBAT for an Ordo; EMPOWERMENT_COMBAT more with the
+// technology Empowerment.
+//
+int ModFryhtan::lair_train_combat(int nationRecno, int trainType)
+{
+	int combatLevel = trainType == LAIR_TRAIN_ORDO ? LAIR_ORDO_COMBAT : LAIR_TRAIN_COMBAT;
+
+	if( has_tech(nationRecno, FRYHTAN_TECH_EMPOWERMENT) )
+		combatLevel += EMPOWERMENT_COMBAT;
+
+	return combatLevel;
+}
+//----------- End of function ModFryhtan::lair_train_combat -----------//
+
+
 //--------- Begin of function ModFryhtan::tech_name ---------//
 //
 const char* ModFryhtan::tech_name(int techId)
 {
+	if( techId == FRYHTAN_TECH_EMPOWERMENT )
+		return _("Empowerment");
+
 	return _("Alchemist Lair");
 }
 //----------- End of function ModFryhtan::tech_name -----------//
@@ -1973,11 +1983,14 @@ const char* ModFryhtan::tech_desc(int techId)
 {
 	static char descStr[200];
 
-	// TRANSLATORS: Lairs can be built on raw material sites, where an Ordo or the king turns <Number> of the raw material into <Number> Life Points every <Number> days.
-	snprintf( descStr, sizeof(descStr), _("Lairs can be built on raw material sites, where an Ordo or the king turns %d of the raw material into %d Life Points every %d days."),
-		(int) ALCHEMIST_RAW_QTY, (int) ALCHEMIST_LIFE_POINTS, (int) ALCHEMIST_DAYS );
+	if( techId == FRYHTAN_TECH_EMPOWERMENT )
+	{
+		// TRANSLATORS: Fryhtans trained in your lairs get +<Number> combat.
+		snprintf( descStr, sizeof(descStr), _("Fryhtans trained in your lairs get +%d combat."), (int) EMPOWERMENT_COMBAT );
+		return descStr;
+	}
 
-	return descStr;
+	return _("Lairs can be built on raw material sites to turn the raw material into Life Points. Requires an Ordo.");
 }
 //----------- End of function ModFryhtan::tech_desc -----------//
 
@@ -2010,7 +2023,15 @@ int ModFryhtan::tech_days(int nationRecno, int techId)
 //
 int ModFryhtan::can_start_research(int nationRecno, int techId)
 {
-	if( tech_state(nationRecno, techId) != FRYHTAN_TECH_NONE || !is_fryhtan(nationRecno) )
+	if( !is_fryhtan(nationRecno) )
+		return 0;
+
+	int techState = tech_state(nationRecno, techId);
+
+	if( techState == FRYHTAN_TECH_UNLOCKED )		// already paid
+		return 1;
+
+	if( techState != FRYHTAN_TECH_NONE )
 		return 0;
 
 	Nation* nationPtr = nation_array[nationRecno];
@@ -2023,19 +2044,33 @@ int ModFryhtan::can_start_research(int nationRecno, int techId)
 
 //--------- Begin of function ModFryhtan::start_research ---------//
 //
-// Pay the gold and the Life Points of the technology and start researching
-// it. The research belongs to the kingdom and can't be cancelled.
+// Research a technology, as in the Tower of Science: the first time it is
+// unlocked, paying its gold and Life Points; after that it is free. The
+// kingdom researches one at a time: the one being researched is paused
+// (unlocked), keeping its progress.
 //
 int ModFryhtan::start_research(int nationRecno, int techId)
 {
 	if( !can_start_research(nationRecno, techId) )
 		return 0;
 
-	nation_array[nationRecno]->add_expense( EXPENSE_FIRM, (float) tech_cost(techId) );		// the research of the lairs
-	add_life_points( nationRecno, -tech_life_points(techId) );
+	if( tech_state(nationRecno, techId) == FRYHTAN_TECH_NONE )		// unlock it
+	{
+		nation_array[nationRecno]->add_expense( EXPENSE_FIRM, (float) tech_cost(techId) );		// the research of the lairs
+		add_life_points( nationRecno, -tech_life_points(techId) );
+
+		tech_days_array[nationRecno-1][techId] = 0;
+	}
+
+	//--- pause the one being researched ---//
+
+	for( int t=0 ; t<FRYHTAN_TECH_COUNT ; t++ )
+	{
+		if( tech_state_array[nationRecno-1][t] == FRYHTAN_TECH_RESEARCHING )
+			tech_state_array[nationRecno-1][t] = FRYHTAN_TECH_UNLOCKED;
+	}
 
 	tech_state_array[nationRecno-1][techId] = FRYHTAN_TECH_RESEARCHING;
-	tech_days_array[nationRecno-1][techId]  = 0;
 
 	return 1;
 }
@@ -2095,7 +2130,26 @@ void ModFryhtan::next_day_research(int nationRecno)
 			tech_state_array[nationRecno-1][t] = FRYHTAN_TECH_DONE;
 
 			if( nationRecno == nation_array.player_recno )
+			{
 				news_array.lair_tech_researched(t);
+
+				//--- the "research complete" sound of the Tower of Science, at a lair of the kingdom ---//
+
+				for( int i=firm_array.size() ; i>0 ; i-- )
+				{
+					if( firm_array.is_deleted(i) )
+						continue;
+
+					Firm* firmPtr = firm_array[i];
+
+					if( firmPtr->nation_recno == nationRecno && !firmPtr->under_construction && is_lair(firmPtr) )
+					{
+						se_res.far_sound( firmPtr->center_x, firmPtr->center_y, 1, 'F', FIRM_RESEARCH, "FINS",
+							'S', unit_res[UNIT_CATAPULT]->sprite_id );
+						break;
+					}
+				}
+			}
 		}
 	}
 }
@@ -2280,6 +2334,33 @@ int ModFryhtan::firm_setup_life_points(int firmId, int nationRecno)
 	return 0;
 }
 //----------- End of function ModFryhtan::firm_setup_life_points -----------//
+
+
+//--------- Begin of function ModFryhtan::start_life_points ---------//
+//
+// The Life Points a Fryhtan kingdom starts with, by the Treasure of the new
+// game: Small 150, Medium 300, Large 500, Very Large 700 (the AI with its own
+// Treasure).
+//
+int ModFryhtan::start_life_points(int nationRecno)
+{
+	int startUpCash = config.start_up_cash;
+
+	if( nationRecno != nation_array.player_recno && !nation_array.is_deleted(nationRecno) &&
+		 nation_array[nationRecno]->nation_type == NATION_AI )
+	{
+		startUpCash = config.ai_start_up_cash;
+	}
+
+	switch( startUpCash )
+	{
+		case OPTION_LOW:			return 150;
+		case OPTION_HIGH:			return 500;
+		case OPTION_VERY_HIGH:	return 700;
+		default:						return FRYHTAN_START_LIFE_POINTS;		// Medium: 300
+	}
+}
+//----------- End of function ModFryhtan::start_life_points -----------//
 
 
 //--------- Begin of function ModFryhtan::life_points ---------//
