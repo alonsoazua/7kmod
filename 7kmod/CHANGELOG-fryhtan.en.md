@@ -14,6 +14,18 @@ together.
 ## [Unreleased]
 
 ### Added
+- **Life Points:** the currency of Fryhtan kingdoms. They show on the top bar, in place
+  of the reputation, with their own icon (a green and gold yin-yang sphere).
+  - You start with 300.
+  - **Earned by killing:** a soldier gives its combat level / 10 (1 with combat 10, 10
+    with combat 100); a villager or town defender half that; a general x1.25; a king
+    x1.5; always at least 1. A weapon gives 3 and a ship 5. Enemy Fryhtans count as
+    soldiers. Villagers killed in an attacked town, by Cull or by Taskmaster give 1
+    each.
+  - **Tribute of life:** each enslaved village gives 1 a month for every 10 villagers,
+    with the gold tribute.
+  - **Spent on Fryhtans**, besides the gold and food: training a soldier costs 10, an
+    Ordo 15, and promoting a soldier to Ordo 5. Cancelling a training gives them back.
 - **Overpopulation:** an enslaved town with 30 people or more loses 1 loyalty every 5
   days and rebels in the end unless it drops below 30.
 - **Cull Population** (sword button in the enslaved town, only with an Ordo inside):

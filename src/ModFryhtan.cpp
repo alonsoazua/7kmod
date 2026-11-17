@@ -76,6 +76,7 @@ void ModFryhtan::reset()
 		memset( raid_date_array, 0, sizeof(int32_t) * raid_date_array_size );
 
 	memset( king_kill_array, 0, sizeof(king_kill_array) );
+	memset( life_points_array, 0, sizeof(life_points_array) );
 
 	if( town_ordo_array )
 		memset( town_ordo_array, 0, sizeof(TownOrdo) * town_ordo_array_size );
@@ -92,7 +93,10 @@ void ModFryhtan::reset()
 void ModFryhtan::init_nation(int nationRecno)
 {
 	if( nationRecno >= 1 && nationRecno <= MAX_NATION )
+	{
 		nation_monster_id[nationRecno-1] = 0;
+		life_points_array[nationRecno-1] = 0;
+	}
 }
 //----------- End of function ModFryhtan::init_nation -----------//
 
@@ -101,8 +105,13 @@ void ModFryhtan::init_nation(int nationRecno)
 //
 void ModFryhtan::set_nation_monster(int nationRecno, int monsterId)
 {
-	if( nationRecno >= 1 && nationRecno <= MAX_NATION )
-		nation_monster_id[nationRecno-1] = monsterId;
+	if( nationRecno < 1 || nationRecno > MAX_NATION )
+		return;
+
+	if( monsterId && !nation_monster_id[nationRecno-1] )		// a new Fryhtan kingdom: its starting Life Points
+		life_points_array[nationRecno-1] = FRYHTAN_START_LIFE_POINTS;
+
+	nation_monster_id[nationRecno-1] = monsterId;
 }
 //----------- End of function ModFryhtan::set_nation_monster -----------//
 
@@ -358,6 +367,9 @@ int ModFryhtan::can_train_in_lair(int firmRecno, int trainType)
 	if( nation_array[firmPtr->nation_recno]->cash < train_cost(lairPtr->monster_id) )
 		return 0;
 
+	if( life_points(firmPtr->nation_recno) < train_life_points(trainType) )
+		return 0;
+
 	if( FRYHTAN_POPULATION_LIMIT &&
 		 nation_population(firmPtr->nation_recno) + lair_train_population(firmRecno) >
 		 nation_population_cap(firmPtr->nation_recno) )
@@ -384,6 +396,7 @@ int ModFryhtan::add_lair_train(int firmRecno, int trainType)
 
 	nation_array[firmPtr->nation_recno]->consume_food( (float) train_food(trainType) );
 	nation_array[firmPtr->nation_recno]->add_expense( EXPENSE_TRAIN_UNIT, (float) train_cost(lairPtr->monster_id) );
+	add_life_points( firmPtr->nation_recno, -train_life_points(trainType) );
 
 	if( trainType == LAIR_TRAIN_ORDO )
 		lairPtr->ordo_mask |= (1 << lairPtr->train_count);
@@ -423,6 +436,7 @@ int ModFryhtan::cancel_lair_train(int firmRecno, int trainType)
 
 	nation_array[firmPtr->nation_recno]->add_food( (float) train_food(trainType) );
 	nation_array[firmPtr->nation_recno]->add_expense( EXPENSE_TRAIN_UNIT, (float) -train_cost(lairPtr->monster_id) );		// the gold back
+	add_life_points( firmPtr->nation_recno, train_life_points(trainType) );		// the Life Points back
 
 	//------ remove it, the ones after it move one place forward ------//
 
@@ -1118,6 +1132,14 @@ int ModFryhtan::write_file(File* filePtr)
 			return 0;
 	}
 
+	//------- the Life Points of each kingdom -------//
+
+	for( i=0 ; i<MAX_NATION ; i++ )
+	{
+		if( !filePtr->file_put_long( life_points_array[i] ) )
+			return 0;
+	}
+
 	return 1;
 }
 //----------- End of function ModFryhtan::write_file -----------//
@@ -1131,6 +1153,11 @@ int ModFryhtan::read_file(File* filePtr)
 
 	if( !filePtr->file_get_short_array( nation_monster_id, MAX_NATION ) )
 		return 0;
+
+	//--- saved games from before the Life Points: the Fryhtan kingdoms get the starting ones (read below in newer games) ---//
+
+	for( int n=0 ; n<MAX_NATION ; n++ )
+		life_points_array[n] = nation_monster_id[n] ? FRYHTAN_START_LIFE_POINTS : 0;
 
 	//------- the lairs -------//
 
@@ -1267,6 +1294,14 @@ int ModFryhtan::read_file(File* filePtr)
 			ordoPtr->next_death_date = filePtr->file_get_long();
 	}
 
+	//------- the Life Points of each kingdom -------//
+
+	if( filePtr->file_pos() >= filePtr->file_size() )		// a saved game from before the Life Points
+		return 1;
+
+	for( int n=0 ; n<MAX_NATION ; n++ )
+		life_points_array[n] = filePtr->file_get_long();
+
 	return 1;
 }
 //----------- End of function ModFryhtan::read_file -----------//
@@ -1355,6 +1390,91 @@ int ModFryhtan::kill_gold(int combatLevel, int percent)
 	return MAX( 1, (int) (gold * percent / 100 + 0.5f) );
 }
 //----------- End of function ModFryhtan::kill_gold -----------//
+
+
+//--------- Begin of function ModFryhtan::life_points ---------//
+//
+int ModFryhtan::life_points(int nationRecno)
+{
+	if( nationRecno < 1 || nationRecno > MAX_NATION )
+		return 0;
+
+	return life_points_array[nationRecno-1];
+}
+//----------- End of function ModFryhtan::life_points -----------//
+
+
+//--------- Begin of function ModFryhtan::add_life_points ---------//
+//
+// Only Fryhtan kingdoms have Life Points. They never go below 0.
+//
+void ModFryhtan::add_life_points(int nationRecno, int points)
+{
+	if( nationRecno < 1 || nationRecno > MAX_NATION || !is_fryhtan(nationRecno) )
+		return;
+
+	int32_t& lifePoints = life_points_array[nationRecno-1];
+
+	lifePoints = MAX( 0, MIN( 999999, lifePoints + points ) );
+}
+//----------- End of function ModFryhtan::add_life_points -----------//
+
+
+//--------- Begin of function ModFryhtan::kill_life_points ---------//
+//
+// The Life Points for killing a unit: its combat level / 10 (1 with combat
+// 10, 10 with combat 100); a villager or a town defender half that, a
+// general x1.25, a king x1.5; rounded, at least 1. Weapons and ships, which
+// have no combat level, give a fixed amount. Fryhtans count as soldiers.
+//
+int ModFryhtan::kill_life_points(Unit* targetUnit)
+{
+	char unitClass = unit_res[targetUnit->unit_id]->unit_class;
+
+	if( unitClass == UNIT_CLASS_WEAPON )
+		return LIFE_POINTS_WEAPON;
+
+	if( unitClass == UNIT_CLASS_SHIP )
+		return LIFE_POINTS_SHIP;
+
+	int percent = 100;
+
+	if( targetUnit->rank_id == RANK_KING )
+		percent = LIFE_POINTS_KING_PERCENT;
+	else if( targetUnit->rank_id == RANK_GENERAL )
+		percent = LIFE_POINTS_GENERAL_PERCENT;
+	else if( targetUnit->race_id && (targetUnit->is_civilian() || targetUnit->unit_mode == UNIT_MODE_DEFEND_TOWN) )
+		percent = LIFE_POINTS_CIVILIAN_PERCENT;
+
+	int combatLevel = MAX( 0, MIN(100, (int) targetUnit->skill.combat_level) );
+
+	// rounded: (combat x percent / 100) / 10, the .5 up
+	int points = (combatLevel * percent + LIFE_POINTS_KILL_COMBAT*100/2) / (LIFE_POINTS_KILL_COMBAT*100);
+
+	return MAX( 1, points );
+}
+//----------- End of function ModFryhtan::kill_life_points -----------//
+
+
+//--------- Begin of function ModFryhtan::reward_life_points ---------//
+//
+// A Fryhtan kingdom gets Life Points for each unit of another nation (or
+// independent) that its units kill: humans, Fryhtans, weapons and ships.
+//
+// <int>   nationRecno - the nation of the attacker
+// <Unit*> targetUnit  - the unit killed
+//
+void ModFryhtan::reward_life_points(int nationRecno, Unit* targetUnit)
+{
+	if( !nationRecno || !is_fryhtan(nationRecno) || nation_array.is_deleted(nationRecno) )
+		return;
+
+	if( targetUnit->nation_recno == nationRecno )
+		return;
+
+	add_life_points( nationRecno, kill_life_points(targetUnit) );
+}
+//----------- End of function ModFryhtan::reward_life_points -----------//
 
 
 //--------- Begin of function ModFryhtan::reset_king_kills ---------//
@@ -1545,7 +1665,10 @@ int ModFryhtan::next_day_town(Town* townPtr)
 	//------- the tribute, at the start of each month (only with an Ordo or the king in a linked lair) -------//
 
 	if( info.game_day == 1 && has_lair_commander(townPtr) )
+	{
 		nation_array[nationRecno]->add_income( INCOME_TAX, (float) town_tribute(townPtr) );
+		add_life_points( nationRecno, townPtr->population / LIFE_POINTS_TRIBUTE_PEOPLE );		// 1 for each 10 people
+	}
 
 	return 1;
 }
@@ -2232,7 +2355,10 @@ void ModFryhtan::next_day_town_ordo(Town* townPtr)
 			ordoPtr->next_death_date = info.game_date + TASKMASTER_DEATH_DAYS + misc.random(TASKMASTER_DEATH_DAYS_RANGE+1);
 
 			if( townPtr->population > 1 )		// never the last one
+			{
 				townPtr->kill_town_people(0, 0);
+				add_life_points( ordoPtr->nation_recno, LIFE_POINTS_VILLAGER );
+			}
 		}
 	}
 }
@@ -2792,6 +2918,8 @@ void ModFryhtan::reward_town_villager(int nationRecno)
 
 	nationPtr->add_income( INCOME_TREASURE, (float) KILL_GOLD_UNIT );
 	nationPtr->add_food( (float) KILL_FOOD_UNIT );
+
+	add_life_points( nationRecno, LIFE_POINTS_VILLAGER );
 }
 //----------- End of function ModFryhtan::reward_town_villager -----------//
 

@@ -186,6 +186,11 @@ void Unit::hit_target(Unit* parentUnit, Unit* targetUnit, float attackDamage, sh
 	{
 		targetUnit->hit_points = (float) 0;
 
+		//--- 7kmod-fryhtan: a Fryhtan kingdom gets Life Points for every unit it kills ---//
+
+		if( parentNationRecno )
+			mod_fryhtan.reward_life_points(parentNationRecno, targetUnit);
+
 		//---- if the unit killed is a human unit -----//
 
 		if( targetUnit->race_id )

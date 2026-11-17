@@ -585,23 +585,23 @@ void FirmCamp::disp_lair_train_button(int trainType)
 
 	int monsterId = mod_fryhtan.lair_monster_id(firm_recno);
 
-	static char helpStr[LAIR_TRAIN_TYPE_COUNT][250];
+	static char helpStr[LAIR_TRAIN_TYPE_COUNT][300];
 
 	if( trainType == LAIR_TRAIN_ORDO )
 	{
 		snprintf( helpStr[trainType], sizeof(helpStr[trainType]),
-			_("Train a %s Ordo (general, leadership %d, combat %d) in %d days for $%d and %d food. It comes out next to the lair. Right click removes one from the queue."),
+			_("Train a %s Ordo (general, leadership %d, combat %d) in %d days for $%d, %d food and %d Life Points. It comes out next to the lair. Right click removes one from the queue."),
 			ModFryhtan::monster_name(monsterId), (int) LAIR_ORDO_LEADERSHIP, (int) LAIR_ORDO_COMBAT, ModFryhtan::train_days(trainType, monsterId),
-			ModFryhtan::train_cost(monsterId), (int) LAIR_ORDO_FOOD );
+			ModFryhtan::train_cost(monsterId), (int) LAIR_ORDO_FOOD, ModFryhtan::train_life_points(trainType) );
 
 		help.set_custom_help( button.x1, button.y1, button.x2, button.y2, _("Train Ordo"), helpStr[trainType] );
 	}
 	else
 	{
 		snprintf( helpStr[trainType], sizeof(helpStr[trainType]),
-			_("Train a %s (combat %d) in %d days for $%d and %d food. Right click removes one from the queue."),
+			_("Train a %s (combat %d) in %d days for $%d, %d food and %d Life Points. Right click removes one from the queue."),
 			ModFryhtan::monster_name(monsterId), (int) LAIR_TRAIN_COMBAT, ModFryhtan::train_days(trainType, monsterId),
-			ModFryhtan::train_cost(monsterId), (int) LAIR_TRAIN_FOOD );
+			ModFryhtan::train_cost(monsterId), (int) LAIR_TRAIN_FOOD, ModFryhtan::train_life_points(trainType) );
 
 		help.set_custom_help( button.x1, button.y1, button.x2, button.y2, _("Train"), helpStr[trainType] );
 	}

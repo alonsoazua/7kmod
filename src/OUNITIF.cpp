@@ -614,6 +614,11 @@ void Unit::disp_button(int dispY1)
 			if( rank_id==RANK_SOLDIER )
 			{
 				button_promote.paint( x, dispY1, 'A', "PROMOTE" );
+				button_promote.set_help_code("");		// the custom help with the Life Points is set in detect_main_menu()
+
+				if( mod_fryhtan.life_points(nation_recno) < LIFE_POINTS_PROMOTE )
+					button_promote.disable();
+
 				x += BUTTON_ACTION_WIDTH;
 			}
 			else if( rank_id==RANK_GENERAL )
@@ -744,13 +749,32 @@ void Unit::detect_button()
 
 	//-------- detect promote/demote button --------//
 
+	//--- 7kmod-fryhtan: the help of Promote for a Fryhtan soldier, with its cost in Life Points ---//
+
+	if( rank_id == RANK_SOLDIER && button_promote.init_flag &&
+		 !race_id && nation_recno && mod_fryhtan.is_fryhtan(nation_recno) )
+	{
+		static char promoteHelpStr[200];
+
+		// TRANSLATORS: Promote this Fryhtan to Ordo (general) for <Number> Life Points.
+		snprintf( promoteHelpStr, sizeof(promoteHelpStr), _("Promote this Fryhtan to Ordo (general) for %d Life Points."),
+			(int) LIFE_POINTS_PROMOTE );
+
+		help.set_custom_help( button_promote.x1, button_promote.y1, button_promote.x2, button_promote.y2,
+			_("Promote to Ordo"), promoteHelpStr );
+	}
+
 	if( rank_id == RANK_SOLDIER )
 	{
 		if( button_promote.detect() )
 		{
 			if( !race_id && nation_recno && mod_fryhtan.is_fryhtan(nation_recno) )		// 7kmod-fryhtan: a Fryhtan soldier becomes an Ordo
 			{
-				mod_fryhtan.promote_ordo(this);
+				if( mod_fryhtan.life_points(nation_recno) >= LIFE_POINTS_PROMOTE )		// it costs Life Points
+				{
+					mod_fryhtan.add_life_points( nation_recno, -LIFE_POINTS_PROMOTE );
+					mod_fryhtan.promote_ordo(this);
+				}
 			}
 			else if(!remote.is_enable() )
 			{

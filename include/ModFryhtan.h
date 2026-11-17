@@ -103,6 +103,21 @@ enum { ENSLAVE_MIN_RESISTANCE = 45,			// the lairs lower the resistance of an in
 		 ENSLAVED_TOWN_NO_COMMANDER_LOYALTY = 0,	// its target loyalty when no Ordo or king commands a linked lair
 		 TRIBUTE_PER_PERSON		= 3 };			// monthly tribute of an enslaved town for each person
 
+//--- Life Points: the currency of a Fryhtan kingdom, from the units it kills, spent on Fryhtans ---//
+
+enum { FRYHTAN_START_LIFE_POINTS = 300,		// a Fryhtan kingdom starts with these
+		 LIFE_POINTS_SOLDIER		= 10,			// training a Fryhtan soldier in a lair (with the gold and the food)
+		 LIFE_POINTS_ORDO			= 15,			// training an Ordo
+		 LIFE_POINTS_PROMOTE		= 5,			// promoting a Fryhtan soldier to Ordo (the difference)
+		 LIFE_POINTS_TRIBUTE_PEOPLE = 10,		// an enslaved town gives 1 a month for each this many people
+		 LIFE_POINTS_KILL_COMBAT	= 10,			// killing a soldier gives its combat level / this...
+		 LIFE_POINTS_CIVILIAN_PERCENT = 50,		// ...a villager or town defender this %...
+		 LIFE_POINTS_GENERAL_PERCENT = 125,		// ...a general this %, a king this % (at least 1)
+		 LIFE_POINTS_KING_PERCENT	= 150,
+		 LIFE_POINTS_WEAPON		= 3,			// killing a weapon (it has no combat level)
+		 LIFE_POINTS_SHIP			= 5,			// killing a ship
+		 LIFE_POINTS_VILLAGER		= 1 };		// a villager killed in a town (attack, Cull or Taskmaster)
+
 class Firm;
 class Unit;
 class Town;
@@ -302,6 +317,16 @@ public:
 	int		raid_date_array_size;
 
 	char		king_kill_array[MAX_NATION][MAX_NATION];		// the kings each Fryhtan kingdom killed of each kingdom: [killer-1][kingdom-1]
+
+	//------ Life Points of each Fryhtan kingdom ------//
+
+	int32_t	life_points_array[MAX_NATION];
+
+	int	life_points(int nationRecno);
+	void	add_life_points(int nationRecno, int points);		// points < 0: spent
+	static int	train_life_points(int trainType)	{ return trainType==LAIR_TRAIN_ORDO ? LIFE_POINTS_ORDO : LIFE_POINTS_SOLDIER; }
+	static int	kill_life_points(Unit* targetUnit);		// the Life Points for killing the unit
+	void	reward_life_points(int nationRecno, Unit* targetUnit);		// a unit killed by a unit of the nation
 
 	void		reset_king_kills(int nationRecno);		// a new kingdom
 

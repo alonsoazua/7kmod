@@ -45,6 +45,8 @@
 #include <OCOLTBL.h>
 #include <OINFO.h>
 #include <ModEditor.h>
+#include <ModFryhtan.h>
+#include <ModLifeIcon.h>
 #include <OOPTMENU.h>
 #include "gettext.h"
 
@@ -434,6 +436,16 @@ void Info::disp_heading()
 	strPtr = nationPtr->cash_str();
 
 	font_mid.disp( 305, 30, strPtr, 445);
+
+	//------- 7kmod-fryhtan: a Fryhtan kingdom shows its Life Points instead of the reputation ---//
+
+	if( mod_fryhtan.is_fryhtan(nation_array.player_recno) )
+	{
+		vga_front.put_bitmap( 447, 26, (char*) life_points_icon );		// it has the background of the bar, as REPU_UP
+		font_mid.disp( 476, 30, misc.format(mod_fryhtan.life_points(nation_array.player_recno), 4), 575 );
+		font_mid.use_std_height();
+		return;
+	}
 
 	//------- display reputation ---------//
 

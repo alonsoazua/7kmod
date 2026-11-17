@@ -13,6 +13,19 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
 ## [Sin publicar]
 
 ### Agregado
+- **Life Points:** la moneda de los reinos Fryhtan. Se ven en la barra de arriba, en
+  lugar de la reputación, con su propio ícono (una esfera yin-yang verde y dorada).
+  - Empiezas con 300.
+  - **Se ganan matando:** un soldado da su nivel de combate / 10 (1 con combate 10, 10
+    con combate 100); un aldeano o defensor, la mitad; un general ×1.25; un rey ×1.5;
+    siempre al menos 1. Un arma da 3 y un barco 5. Los Fryhtans enemigos cuentan como
+    soldados. Los aldeanos que mueren en un pueblo atacado, por Cull o por Taskmaster
+    dan 1 cada uno.
+  - **Tributo de vida:** cada pueblo esclavizado da 1 al mes por cada 10 aldeanos,
+    junto con el tributo de oro.
+  - **Se gastan en Fryhtans**, además del oro y la comida: entrenar un soldado cuesta
+    10, un Ordo 15, y promover un soldado a Ordo 5. Al cancelar un entrenamiento se
+    devuelven.
 - **Sobrepoblación:** un pueblo esclavizado con 30 o más habitantes pierde 1 de lealtad
   cada 5 días y termina rebelándose si no baja de 30.
 - **Cull Population** (botón de espada en el pueblo esclavizado, solo con un Ordo

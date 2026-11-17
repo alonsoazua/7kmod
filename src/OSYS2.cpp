@@ -64,6 +64,7 @@
 #include <OOPTMENU.h>
 #include <OINGMENU.h>
 #include <CmdLine.h>
+#include <ModFryhtan.h>
 #include <gettext.h>
 
 
@@ -582,7 +583,17 @@ void Sys::disp_frame()
 		//---------- display help ----------//
 
 		if( !remote.is_enable() )		// help is only available in a single player game as it has to pause the game
+		{
+			//--- 7kmod-fryhtan: the Life Points of a Fryhtan kingdom, where the reputation is ---//
+
+			if( nation_array.player_recno && mod_fryhtan.is_fryhtan(nation_array.player_recno) )
+			{
+				help.set_custom_help( 447, 25, 540, 47, _("Life Points"),
+					_("Your kingdom gets Life Points for every unit it kills and from the monthly tribute of its enslaved villages (1 for every 10 people). Training a Fryhtan costs Life Points.") );
+			}
+
 			help.disp();
+		}
 	}
 	// ####### end Glbert 24/10 #######//
 
