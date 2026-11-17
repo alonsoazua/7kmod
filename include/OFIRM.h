@@ -154,6 +154,7 @@ class FirmHarbor;
 class Firm
 {
 public:
+	static  void forget_info_menus();		// 7kmod: a Fort or lair selected again opens on its main menu, page 1
 	char   firm_id;            // Firm ID, meanings are defined in OFIRMID.H
 	short  firm_build_id;
 	short  firm_recno;         // record no. of this firm in the firm_array

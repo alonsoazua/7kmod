@@ -34,10 +34,10 @@ together.
     more.
   - Building a lair costs 30 (besides the $500); the starting lair doesn't.
   - The tribute of life gives 1 more if the village has 15 villagers or more.
-- **Lair technologies:** the **Research** button (second page of the lair's buttons)
-  opens the list of the kingdom's technologies. Choosing one asks to confirm, with its
-  cost in gold and Life Points; once started it can't be cancelled. The progress belongs
-  to the kingdom: it goes on while there is any lair.
+- **Lair technologies:** the **Research** button (second place of the second page of the
+  lair's buttons) opens the list of the kingdom's technologies. Choosing one asks to
+  confirm, with its cost in gold and Life Points. The progress belongs to the kingdom:
+  it goes on while there is any lair.
   - **Alchemist Lair** ($1,000 and 30 Life Points, 6 months): lairs can be built on raw
     material sites. With an Ordo or the king, every 15 days they turn 50 of the site's
     raw material into 5 Life Points. On the map they read "(Alchemist Lair)", and the ">"
@@ -81,6 +81,8 @@ together.
   training was sometimes blocked although there was room: it also counted the leader
   and the ones that died or went into another lair. Now it counts what the darkened
   places show.
+- **Selecting a Fort or a lair again** opens it on its main menu and the first page of
+  buttons; it used to stay on the menu (research, alchemist detail) or page you left.
 - **Music when loading a Fryhtan game:** the menu's music kept playing, because the
   Fryhtan king has no race. Now it plays the same as a new game.
 

@@ -44,6 +44,7 @@
 #include <OREMOTE.h>
 #include "gettext.h"
 #include <ModFryhtan.h>
+#include <OF_CAMP.h>
 
 //------------- Define coordinations -----------//
 
@@ -758,6 +759,26 @@ int Firm::button_page()
 	return button_page_no;
 }
 //----------- End of function Firm::button_page ---------//
+
+
+//--------- Begin of function Firm::forget_info_menus --------//
+//
+// 7kmod: called while no firm is selected, so that a Fort or a lair
+// selected again opens on its main menu and the first page of buttons.
+// The other firms keep their page (the spy button).
+//
+void Firm::forget_info_menus()
+{
+	if( button_page_firm_recno &&
+		 ( firm_array.is_deleted(button_page_firm_recno) || firm_array[button_page_firm_recno]->firm_id == FIRM_CAMP ) )
+	{
+		button_page_firm_recno = 0;
+		button_page_no = 0;
+	}
+
+	forget_lair_menu();		// 7kmod-fryhtan
+}
+//----------- End of function Firm::forget_info_menus ---------//
 
 
 //--------- Begin of function Firm::has_button_pages --------//

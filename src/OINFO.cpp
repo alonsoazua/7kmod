@@ -305,6 +305,9 @@ void Info::disp()
 
 	vga.use_front();
 
+	if( !firm_array.selected_recno )		// 7kmod: a Fort or lair selected again opens on its main menu, page 1
+		Firm::forget_info_menus();
+
 	//------ 7kmod-editor: the side panel of the editor ------//
 
 	if( mod_editor.is_editing() )
@@ -362,6 +365,9 @@ void Info::update()
 	vga.use_front();
 
 	//-------------------------------------------//
+
+	if( !firm_array.selected_recno )		// 7kmod: a Fort or lair selected again opens on its main menu, page 1
+		Firm::forget_info_menus();
 
 	if( mod_editor.is_editing() )		// 7kmod-editor: the side panel of the editor
 		mod_editor.disp_panel(INFO_UPDATE);

@@ -33,10 +33,10 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
     Rattus, Pfith), 9 (Karrotten, Holgh, Droog) o 10 (las demás). Un Ordo cuesta 5 más.
   - Construir una guarida cuesta 30 (además de los $500); la guarida inicial no.
   - El tributo de vida da 1 más si el pueblo tiene 15 aldeanos o más.
-- **Tecnologías de guarida:** el botón **Research** (segunda página de botones de la
-  guarida) abre la lista de tecnologías del reino. Al elegir una se pide confirmar, con
-  su costo en oro y life points; ya empezada no se cancela. El avance es del reino:
-  sigue mientras haya alguna guarida.
+- **Tecnologías de guarida:** el botón **Research** (segundo lugar de la segunda página
+  de botones de la guarida) abre la lista de tecnologías del reino. Al elegir una se
+  pide confirmar, con su costo en oro y life points. El avance es del reino: sigue
+  mientras haya alguna guarida.
   - **Alchemist Lair** ($1,000 y 30 life points, 6 meses): las guaridas se pueden
     construir sobre un yacimiento de materiales. Con un Ordo o el rey, cada 15 días
     convierten 50 materiales del yacimiento en 5 life points. En el mapa dicen
@@ -80,6 +80,9 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
   pelear) a veces no dejaba entrenar aunque hubiera lugar: contaba también al líder y a
   los que murieron o entraron a otra guarida. Ahora cuenta lo mismo que muestran las
   casillas oscurecidas.
+- **Al volver a seleccionar un fuerte o una guarida** abre en su menú principal y en la
+  página 1 de botones; antes se quedaba en el menú (investigación, detalle del
+  alquimista) o la página en que lo dejaste.
 - **Música al cargar una partida Fryhtan:** se quedaba la música del menú, porque el rey
   Fryhtan no tiene raza. Ahora toca la misma que en una partida nueva.
 

@@ -88,6 +88,18 @@ static short        lair_menu_firm_recno;		// the lair whose menu is open
 static char         lair_menu_tech_id;
 static short        last_lair_tech_percent[FRYHTAN_TECH_COUNT];
 
+//--------- Begin of function forget_lair_menu ---------//
+//
+// 7kmod-fryhtan: called while no firm is selected (Firm::forget_info_menus),
+// so that a lair selected again opens on its main menu.
+//
+void forget_lair_menu()
+{
+	lair_menu_mode = LAIR_MENU_MAIN;
+	lair_menu_firm_recno = 0;
+}
+//----------- End of function forget_lair_menu ---------//
+
 static void disp_lair_tech_icon(int x, int y, int nationRecno, int techId);
 static void disp_lair_tech_small_icon(int x, int y, int nationRecno, int techId);
 static int  lair_tech_in_progress(int nationRecno);
@@ -557,7 +569,7 @@ void FirmCamp::put_info(int refreshFlag)
 
 			if( buttonPage==1 && mod_fryhtan.is_lair(this) )
 			{
-				button_lair_research.paint( INFO_X1+BUTTON_ACTION_WIDTH*2, INFO_Y1+242, 'A', "RESEARCH" );
+				button_lair_research.paint( INFO_X1+BUTTON_ACTION_WIDTH, INFO_Y1+242, 'A', "RESEARCH" );
 				button_lair_research.set_help_code("");
 
 				if( all_lair_techs_researched(nation_recno) )		// nothing left to research
@@ -577,7 +589,7 @@ void FirmCamp::put_info(int refreshFlag)
 				_("Research the technologies of your lairs. They are for all your lairs.") );
 		}
 
-		if( buttonPage==1 )
+		if( buttonPage==1 && !mod_fryhtan.is_lair(this) )		// 7kmod-fryhtan: a lair has no spies, Research takes its place
 			disp_spy_button( INFO_X1+BUTTON_ACTION_WIDTH, INFO_Y1+242, refreshFlag );		// 7kmod: after Alert / At ease
 
 		disp_button_page_arrows( INFO_Y1+242+BUTTON_ACTION_HEIGHT+1, refreshFlag );
