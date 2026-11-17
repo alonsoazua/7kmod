@@ -68,6 +68,12 @@ together.
   nor workers of buildings. The migration the player orders between their own towns is
   unchanged.
 
+### Fixed
+- **Lair places:** with the soldiers outside (for example, after sending them to fight)
+  training was sometimes blocked although there was room: it also counted the leader
+  and the ones that died or went into another lair. Now it counts what the darkened
+  places show.
+
 ### Changed
 - **Rokken and Holgh** move at speed 4 (was 3), like the others.
 - **Gold price:** all small Fryhtans cost $100 and all large ones $150.

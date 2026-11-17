@@ -388,17 +388,21 @@ int ModFryhtan::can_train_in_lair(int firmRecno, int trainType)
 	if( lairPtr->train_count >= LAIR_MAX_TRAIN_QUEUE )
 		return 0;
 
-	//--- a soldier must fit in the lair, with its soldiers (also those outside) and the ones queued ---//
+	//--- a soldier must fit in the lair, with its soldiers, those outside that return to it ---//
+	//--- (the darkened places, FirmCamp::get_absent_units) and the ones queued                ---//
+	//--- (not patrol_unit_count: it keeps the units that died or went to another fort)       ---//
 
 	if( trainType == LAIR_TRAIN_SOLDIER && firmPtr->firm_id == FIRM_CAMP )
 	{
 		FirmCamp* campPtr = firmPtr->cast_to_FirmCamp();
 
-		if( campPtr->worker_count + campPtr->patrol_unit_count + campPtr->coming_unit_count +
-			 lairPtr->type_count(LAIR_TRAIN_SOLDIER) >= campPtr->max_worker_count() )
-		{
+		short absentOverseerRecno;
+		short absentSoldierArray[MAX_WORKER];
+
+		int absentCount = campPtr->get_absent_units( &absentOverseerRecno, absentSoldierArray );
+
+		if( campPtr->worker_count + absentCount + lairPtr->type_count(LAIR_TRAIN_SOLDIER) >= campPtr->max_worker_count() )
 			return 0;
-		}
 	}
 
 	if( nation_array[firmPtr->nation_recno]->food < train_food(trainType) )

@@ -66,6 +66,12 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
   trabajadores de edificios. La migración que ordena el jugador entre sus pueblos sigue
   igual.
 
+### Corregido
+- **Lugares de la guarida:** con los soldados afuera (por ejemplo, después de mandarlos a
+  pelear) a veces no dejaba entrenar aunque hubiera lugar: contaba también al líder y a
+  los que murieron o entraron a otra guarida. Ahora cuenta lo mismo que muestran las
+  casillas oscurecidas.
+
 ### Cambiado
 - **Rokken y Holgh** se mueven a velocidad 4 (antes 3), como los demás.
 - **Precio en oro:** todos los Fryhtans chicos cuestan $100 y todos los grandes $150.
