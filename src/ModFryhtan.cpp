@@ -394,10 +394,10 @@ int ModFryhtan::can_train_in_lair(int firmRecno, int trainType)
 	if( nation_array[firmPtr->nation_recno]->food < train_food(trainType) )
 		return 0;
 
-	if( nation_array[firmPtr->nation_recno]->cash < train_cost(lairPtr->monster_id) )
+	if( nation_array[firmPtr->nation_recno]->cash < train_cost(lairPtr->monster_id, firmPtr->nation_recno) )
 		return 0;
 
-	if( life_points(firmPtr->nation_recno) < train_life_points(trainType, lairPtr->monster_id) )
+	if( life_points(firmPtr->nation_recno) < train_life_points(trainType, lairPtr->monster_id, firmPtr->nation_recno) )
 		return 0;
 
 	if( FRYHTAN_POPULATION_LIMIT &&
@@ -425,8 +425,8 @@ int ModFryhtan::add_lair_train(int firmRecno, int trainType)
 	Firm* firmPtr = firm_array[firmRecno];
 
 	nation_array[firmPtr->nation_recno]->consume_food( (float) train_food(trainType) );
-	nation_array[firmPtr->nation_recno]->add_expense( EXPENSE_TRAIN_UNIT, (float) train_cost(lairPtr->monster_id) );
-	add_life_points( firmPtr->nation_recno, -train_life_points(trainType, lairPtr->monster_id) );
+	nation_array[firmPtr->nation_recno]->add_expense( EXPENSE_TRAIN_UNIT, (float) train_cost(lairPtr->monster_id, firmPtr->nation_recno) );
+	add_life_points( firmPtr->nation_recno, -train_life_points(trainType, lairPtr->monster_id, firmPtr->nation_recno) );
 
 	if( trainType == LAIR_TRAIN_ORDO )
 		lairPtr->ordo_mask |= (1 << lairPtr->train_count);
@@ -465,8 +465,8 @@ int ModFryhtan::cancel_lair_train(int firmRecno, int trainType)
 	Firm* firmPtr = firm_array[firmRecno];
 
 	nation_array[firmPtr->nation_recno]->add_food( (float) train_food(trainType) );
-	nation_array[firmPtr->nation_recno]->add_expense( EXPENSE_TRAIN_UNIT, (float) -train_cost(lairPtr->monster_id) );		// the gold back
-	add_life_points( firmPtr->nation_recno, train_life_points(trainType, lairPtr->monster_id) );		// the Life Points back
+	nation_array[firmPtr->nation_recno]->add_expense( EXPENSE_TRAIN_UNIT, (float) -train_cost(lairPtr->monster_id, firmPtr->nation_recno) );		// the gold back
+	add_life_points( firmPtr->nation_recno, train_life_points(trainType, lairPtr->monster_id, firmPtr->nation_recno) );		// the Life Points back
 
 	//------ remove it, the ones after it move one place forward ------//
 
@@ -1261,20 +1261,45 @@ int ModFryhtan::lair_max_soldiers(int monsterId)
 // The gold for training a soldier or an Ordo of the species: $100 for the
 // small ones, $150 for the large ones.
 //
-int ModFryhtan::train_cost(int monsterId)
+int ModFryhtan::train_cost(int monsterId, int nationRecno)
 {
-	return is_large_monster(monsterId) ? LAIR_LARGE_TRAIN_COST : LAIR_SMALL_TRAIN_COST;
+	return brood_mastery_price( is_large_monster(monsterId) ? LAIR_LARGE_TRAIN_COST : LAIR_SMALL_TRAIN_COST, nationRecno );
 }
 //----------- End of function ModFryhtan::train_cost -----------//
+
+
+//--------- Begin of function ModFryhtan::promote_life_points ---------//
+//
+int ModFryhtan::promote_life_points(int nationRecno)
+{
+	return brood_mastery_price( LIFE_POINTS_PROMOTE, nationRecno );
+}
+//----------- End of function ModFryhtan::promote_life_points -----------//
+
+
+//--------- Begin of function ModFryhtan::brood_mastery_price ---------//
+//
+// A cost of training or promoting with Brood Mastery: BROOD_MASTERY_PERCENT
+// of it, rounded (10 -> 8, 9 -> 7, 8 -> 6, 7 -> 6, 5 -> 4, $150 -> $120).
+//
+int ModFryhtan::brood_mastery_price(int value, int nationRecno)
+{
+	if( !mod_fryhtan.has_tech(nationRecno, FRYHTAN_TECH_BROOD_MASTERY) )
+		return value;
+
+	return (value * BROOD_MASTERY_PERCENT + 50) / 100;
+}
+//----------- End of function ModFryhtan::brood_mastery_price -----------//
 
 
 //--------- Begin of function ModFryhtan::train_life_points ---------//
 //
 // The Life Points for training a Fryhtan in a lair, by species: 7 for Ick,
 // Doink and Broosken, 8 for Deezboanz, Rattus and Pfith, 9 for Karrotten,
-// Holgh and Droog, 10 for the others. An Ordo costs 5 more.
+// Holgh and Droog, 10 for the others. An Ordo costs 5 more. Less with Brood
+// Mastery.
 //
-int ModFryhtan::train_life_points(int trainType, int monsterId)
+int ModFryhtan::train_life_points(int trainType, int monsterId, int nationRecno)
 {
 	static const char speciesLifePoints[] =		// by monster id (MONSTER.DBF), 1 to 13
 	{
@@ -1301,7 +1326,7 @@ int ModFryhtan::train_life_points(int trainType, int monsterId)
 	if( trainType == LAIR_TRAIN_ORDO )
 		lifePoints += LIFE_POINTS_ORDO_EXTRA;
 
-	return lifePoints;
+	return brood_mastery_price( lifePoints, nationRecno );
 }
 //----------- End of function ModFryhtan::train_life_points -----------//
 
@@ -1969,8 +1994,13 @@ int ModFryhtan::lair_train_combat(int nationRecno, int trainType)
 //
 const char* ModFryhtan::tech_name(int techId)
 {
-	if( techId == FRYHTAN_TECH_EMPOWERMENT )
-		return _("Empowerment");
+	switch( techId )
+	{
+		case FRYHTAN_TECH_EMPOWERMENT:			return _("Empowerment");
+		case FRYHTAN_TECH_BROOD_MASTERY:		return _("Brood Mastery");
+		case FRYHTAN_TECH_DOMINION:			return _("Dominion");
+		case FRYHTAN_TECH_SACRIFICIAL_RITES:	return _("Sacrificial Rites");
+	}
 
 	return _("Alchemist Lair");
 }
@@ -1990,9 +2020,127 @@ const char* ModFryhtan::tech_desc(int techId)
 		return descStr;
 	}
 
+	if( techId == FRYHTAN_TECH_BROOD_MASTERY )
+	{
+		// TRANSLATORS: Training Fryhtans in your lairs costs <Number>% less gold and Life Points.
+		snprintf( descStr, sizeof(descStr), _("Training Fryhtans in your lairs costs %d%% less gold and Life Points."), 100 - (int) BROOD_MASTERY_PERCENT );
+		return descStr;
+	}
+
+	if( techId == FRYHTAN_TECH_DOMINION )
+	{
+		// TRANSLATORS: Your enslaved towns get +<Number> loyalty, and overpopulation starts at <Number> people.
+		snprintf( descStr, sizeof(descStr), _("Your enslaved towns get +%d loyalty, and overpopulation starts at %d people."),
+			(int) DOMINION_LOYALTY, (int) OVERPOPULATED_TOWN_POPULATION + DOMINION_OVERPOPULATION );
+		return descStr;
+	}
+
+	if( techId == FRYHTAN_TECH_SACRIFICIAL_RITES )
+		return _("When a town nears overpopulation, your Ordo will sacrifice humans instead of kidnapping them. Sacrifices give additional Life Points.");
+
 	return _("Lairs can be built on raw material sites to turn the raw material into Life Points. Requires an Ordo.");
 }
 //----------- End of function ModFryhtan::tech_desc -----------//
+
+
+//--------- Begin of function ModFryhtan::tech_cost ---------//
+//
+int ModFryhtan::tech_cost(int techId)
+{
+	switch( techId )
+	{
+		case FRYHTAN_TECH_EMPOWERMENT:			return EMPOWERMENT_TECH_COST;
+		case FRYHTAN_TECH_BROOD_MASTERY:		return BROOD_MASTERY_TECH_COST;
+		case FRYHTAN_TECH_DOMINION:			return DOMINION_TECH_COST;
+		case FRYHTAN_TECH_SACRIFICIAL_RITES:	return RITES_TECH_COST;
+	}
+
+	return ALCHEMIST_TECH_COST;
+}
+
+
+//--------- Begin of function ModFryhtan::tech_life_points ---------//
+//
+int ModFryhtan::tech_life_points(int techId)
+{
+	switch( techId )
+	{
+		case FRYHTAN_TECH_EMPOWERMENT:			return EMPOWERMENT_TECH_LIFE_POINTS;
+		case FRYHTAN_TECH_BROOD_MASTERY:		return BROOD_MASTERY_TECH_LIFE_POINTS;
+		case FRYHTAN_TECH_DOMINION:			return DOMINION_TECH_LIFE_POINTS;
+		case FRYHTAN_TECH_SACRIFICIAL_RITES:	return RITES_TECH_LIFE_POINTS;
+	}
+
+	return ALCHEMIST_TECH_LIFE_POINTS;
+}
+
+
+//--------- Begin of function ModFryhtan::tech_total_days ---------//
+//
+int ModFryhtan::tech_total_days(int techId)
+{
+	switch( techId )
+	{
+		case FRYHTAN_TECH_EMPOWERMENT:			return EMPOWERMENT_TECH_DAYS;
+		case FRYHTAN_TECH_BROOD_MASTERY:		return BROOD_MASTERY_TECH_DAYS;
+		case FRYHTAN_TECH_DOMINION:			return DOMINION_TECH_DAYS;
+		case FRYHTAN_TECH_SACRIFICIAL_RITES:	return RITES_TECH_DAYS;
+	}
+
+	return ALCHEMIST_TECH_DAYS;
+}
+
+
+//--------- Begin of function ModFryhtan::tech_required ---------//
+//
+// The chains: Brood Mastery -> Empowerment, Dominion -> Sacrificial Rites.
+//
+int ModFryhtan::tech_required(int techId)
+{
+	switch( techId )
+	{
+		case FRYHTAN_TECH_EMPOWERMENT:			return FRYHTAN_TECH_BROOD_MASTERY;
+		case FRYHTAN_TECH_SACRIFICIAL_RITES:	return FRYHTAN_TECH_DOMINION;
+	}
+
+	return -1;
+}
+
+
+//--------- Begin of function ModFryhtan::tech_list_order ---------//
+//
+// The order of the list of the lairs, by branch: Alchemist Lair; Brood
+// Mastery, Empowerment; Dominion, Sacrificial Rites.
+//
+int ModFryhtan::tech_list_order(int i)
+{
+	static const char listOrder[FRYHTAN_TECH_COUNT] =
+	{
+		FRYHTAN_TECH_ALCHEMIST_LAIR,
+		FRYHTAN_TECH_BROOD_MASTERY,
+		FRYHTAN_TECH_EMPOWERMENT,
+		FRYHTAN_TECH_DOMINION,
+		FRYHTAN_TECH_SACRIFICIAL_RITES,
+	};
+
+	return listOrder[i];
+}
+
+
+//--------- Begin of function ModFryhtan::tech_available ---------//
+//
+// Whether the technology is in the list: its required technology is
+// researched. One already unlocked or researched before the chains (a saved
+// game) stays available.
+//
+int ModFryhtan::tech_available(int nationRecno, int techId)
+{
+	int requiredId = tech_required(techId);
+
+	return requiredId < 0 || has_tech(nationRecno, requiredId) ||
+			 tech_state(nationRecno, techId) != FRYHTAN_TECH_NONE;
+}
+//----------- End of function ModFryhtan::tech_available -----------//
 
 
 //--------- Begin of function ModFryhtan::tech_state ---------//
@@ -2031,7 +2179,7 @@ int ModFryhtan::can_start_research(int nationRecno, int techId)
 	if( techState == FRYHTAN_TECH_UNLOCKED )		// already paid
 		return 1;
 
-	if( techState != FRYHTAN_TECH_NONE )
+	if( techState != FRYHTAN_TECH_NONE || !tech_available(nationRecno, techId) )
 		return 0;
 
 	Nation* nationPtr = nation_array[nationRecno];
@@ -2108,6 +2256,7 @@ void ModFryhtan::next_day_research(int nationRecno)
 {
 	if( nationRecno < 1 || nationRecno > MAX_NATION || !is_fryhtan(nationRecno) )
 		return;
+
 
 	int lairCountChecked = 0, hasLair = 0;
 
@@ -3310,11 +3459,38 @@ void ModFryhtan::next_day_town_ordo(Town* townPtr)
 		int days = kidnap_days(leadership);
 		ordoPtr->next_kidnap_date = info.game_date + days/2 + misc.random(days+1);
 
+		//--- Sacrificial Rites: a town of RITES_POPULATION people or more has villagers sacrificed instead ---//
+
+		int hasRites = has_tech(ordoPtr->nation_recno, FRYHTAN_TECH_SACRIFICIAL_RITES);
+
+		if( hasRites && townPtr->population >= RITES_POPULATION )
+		{
+			int lifePoints = 0, sacrificeCount;
+
+			for( sacrificeCount=0 ; sacrificeCount<RITES_VILLAGERS && townPtr->population > 1 ; sacrificeCount++ )
+			{
+				townPtr->kill_town_people(0, 0);		// a random race, by its people; no attacker: no loyalty loss
+				reward_town_villager(ordoPtr->nation_recno);		// the spoils and the Life Points of a villager killed...
+
+				int extraPoints = RITES_LIFE_POINTS_MIN + misc.random(RITES_LIFE_POINTS_MAX - RITES_LIFE_POINTS_MIN + 1);
+				add_life_points( ordoPtr->nation_recno, extraPoints );		// ...and more
+				lifePoints += LIFE_POINTS_VILLAGER + extraPoints;
+			}
+
+			if( sacrificeCount && townPtr->nation_recno == nation_array.player_recno )
+				news_array.ordo_sacrifice( townRecno, ordoPtr->name_id, sacrificeCount, lifePoints );
+
+			return;
+		}
+
 		int kidnapCount = 0;
 
 		for( int k=0 ; k<KIDNAP_VILLAGERS ; k++ )
 		{
 			if( townPtr->population <= 0 || townPtr->population >= MAX_TOWN_POPULATION )
+				break;
+
+			if( hasRites && townPtr->population >= RITES_POPULATION )		// up to RITES_POPULATION, not into the overpopulation
 				break;
 
 			int pick = misc.random(townPtr->population);
@@ -3489,8 +3665,23 @@ void ModFryhtan::demote_ordo(Unit* unitPtr)
 //
 int ModFryhtan::is_overpopulated(Town* townPtr)
 {
-	return townPtr->population >= OVERPOPULATED_TOWN_POPULATION;
+	return townPtr->population >= overpopulated_population(townPtr->nation_recno);
 }
+
+
+//--------- Begin of function ModFryhtan::overpopulated_population ---------//
+//
+// The people an enslaved town of the kingdom is overpopulated with:
+// OVERPOPULATED_TOWN_POPULATION, DOMINION_OVERPOPULATION more with Dominion.
+//
+int ModFryhtan::overpopulated_population(int nationRecno)
+{
+	if( mod_fryhtan.has_tech(nationRecno, FRYHTAN_TECH_DOMINION) )
+		return OVERPOPULATED_TOWN_POPULATION + DOMINION_OVERPOPULATION;
+
+	return OVERPOPULATED_TOWN_POPULATION;
+}
+//----------- End of function ModFryhtan::overpopulated_population -----------//
 
 
 //--------- Begin of function ModFryhtan::next_day_town_overpopulation ---------//

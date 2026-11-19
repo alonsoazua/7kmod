@@ -38,12 +38,22 @@ together.
   lair's buttons) opens the list of the kingdom's technologies. Choosing one asks to
   confirm, with its cost in gold and Life Points. The progress belongs to the kingdom:
   it goes on while there is any lair.
-  - **Alchemist Lair** ($1,000 and 30 Life Points, 6 months): lairs can be built on raw
+  - **Alchemist Lair** ($500 and 20 Life Points, 6 months): lairs can be built on raw
     material sites. With an Ordo or the king, every 15 days they turn 50 of the site's
     raw material into 5 Life Points. On the map they read "(Alchemist Lair)", and the ">"
     button of their panel shows the raw material left, the conversion and the next one.
-  - **Empowerment** ($1,000 and 50 Life Points, 6 months): Fryhtans trained in the lairs
-    get +10 combat (soldier 30, Ordo 40).
+  - **Brood Mastery** ($1,000 and 30 Life Points, 6 months): training soldiers and Ordos
+    in the lairs costs 20% less gold and Life Points, rounded (Rokken $120 and 8 LP);
+    promoting to Ordo costs 4.
+  - **Empowerment** ($1,500 and 50 Life Points, 6 months, requires Brood Mastery):
+    Fryhtans trained in the lairs get +10 combat (soldier 30, Ordo 40).
+  - **Dominion** ($1,000 and 30 Life Points, 6 months): enslaved towns get +10 loyalty,
+    and overpopulation starts at 32 people (for Subjugate too).
+  - **Sacrificial Rites** ($1,000 and 30 Life Points, 6 months, requires Dominion): an
+    Ordo doing Kidnap kidnaps up to 31 people; at 31, its next capture sacrifices 5
+    villagers instead, each one for the usual Life Point plus 1 or 2. A message tells it.
+  - Chained technologies don't show in the list until the previous one is done. The
+    list goes by branch, and each technology has its own graphic (but Alchemist Lair).
   - The menu is like the Tower of Science's: the list of the technologies left, the
     confirmation with its cost and the progress screen (with Change and Back). The cost
     is paid once, to unlock it; you can switch technologies and each keeps its progress.

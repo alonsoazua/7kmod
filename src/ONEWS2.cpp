@@ -875,6 +875,30 @@ void NewsArray::ordo_kidnap(int townRecno, int ordoNameId, int villagerCount)
 //------- End of function NewsArray::ordo_kidnap -----//
 
 
+//------ Begin of function NewsArray::ordo_sacrifice -----//
+//
+// 7kmod-fryhtan: an Ordo of the player sacrificed villagers of an enslaved
+// town (Sacrificial Rites).
+//
+void NewsArray::ordo_sacrifice(int townRecno, int ordoNameId, int villagerCount, int lifePoints)
+{
+	News* newsPtr = add_news( NEWS_ORDO_SACRIFICE, NEWS_NORMAL, nation_array.player_recno );
+
+	if( !newsPtr )
+		return;
+
+	Town* townPtr = town_array[townRecno];
+
+	newsPtr->short_para1 = townPtr->town_name_id;
+	newsPtr->short_para2 = (short) ordoNameId;
+	newsPtr->short_para3 = villagerCount;
+	newsPtr->short_para4 = lifePoints;
+
+	newsPtr->set_loc( townPtr->center_x, townPtr->center_y, NEWS_LOC_TOWN, townRecno );
+}
+//------- End of function NewsArray::ordo_sacrifice -----//
+
+
 //------ Begin of function NewsArray::lair_tech_researched -----//
 //
 // 7kmod-fryhtan: the player's Fryhtan kingdom researched a technology of the

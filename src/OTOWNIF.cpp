@@ -518,7 +518,7 @@ void Town::disp_main_menu(int refreshFlag)
 			{
 				// TRANSLATORS: Large villages tend to rebel. Cull them when their population gets too big (<Number> or more).
 				snprintf( cullHelpStr, sizeof(cullHelpStr), _("Large villages tend to rebel. Cull them when their population gets too big (%d or more)."),
-							 (int) OVERPOPULATED_TOWN_POPULATION );
+							 ModFryhtan::overpopulated_population(nation_recno) );
 			}
 			else
 			{

@@ -37,13 +37,23 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
   de botones de la guarida) abre la lista de tecnologías del reino. Al elegir una se
   pide confirmar, con su costo en oro y life points. El avance es del reino: sigue
   mientras haya alguna guarida.
-  - **Alchemist Lair** ($1,000 y 30 life points, 6 meses): las guaridas se pueden
+  - **Alchemist Lair** ($500 y 20 life points, 6 meses): las guaridas se pueden
     construir sobre un yacimiento de materiales. Con un Ordo o el rey, cada 15 días
     convierten 50 materiales del yacimiento en 5 life points. En el mapa dicen
     "(Alchemist Lair)", y el botón ">" de su panel muestra el material que le queda, la
     conversión y la próxima.
-  - **Empowerment** ($1,000 y 50 life points, 6 meses): los Fryhtans entrenados en las
-    guaridas salen con +10 de combate (soldado 30, Ordo 40).
+  - **Brood Mastery** ($1,000 y 30 life points, 6 meses): entrenar soldados y Ordos en
+    las guaridas cuesta 20% menos oro y life points, redondeando (Rokken $120 y 8 LP);
+    ascender a Ordo cuesta 4.
+  - **Empowerment** ($1,500 y 50 life points, 6 meses, requiere Brood Mastery): los
+    Fryhtans entrenados en las guaridas salen con +10 de combate (soldado 30, Ordo 40).
+  - **Dominion** ($1,000 y 30 life points, 6 meses): los pueblos esclavizados tienen +10
+    de lealtad, y la sobrepoblación empieza en 32 habitantes (también para Subjugate).
+  - **Sacrificial Rites** ($1,000 y 30 life points, 6 meses, requiere Dominion): un Ordo
+    en Kidnap secuestra hasta 31 habitantes; con 31, en su siguiente captura sacrifica 5
+    aldeanos, cada uno por el life point normal más 1 o 2. Sale una noticia.
+  - Las tecnologías encadenadas no aparecen en la lista hasta terminar la anterior. La
+    lista va por rama, y cada tecnología tiene su propio gráfico (salvo Alchemist Lair).
   - El menú es como el de la Torre de Ciencia: la lista de las tecnologías que faltan, la
     confirmación con su costo y la pantalla de avance (con Change y Back). El costo se paga
     una vez, al desbloquearla; se puede cambiar de tecnología y cada una guarda su avance.

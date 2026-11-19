@@ -716,7 +716,7 @@ void FirmCamp::disp_lair_train_button(int trainType)
 		snprintf( helpStr[trainType], sizeof(helpStr[trainType]),
 			_("Train a %s Ordo (general, leadership %d, combat %d) in %d days for $%d, %d food and %d Life Points. It comes out next to the lair. Right click removes one from the queue."),
 			ModFryhtan::monster_name(monsterId), (int) LAIR_ORDO_LEADERSHIP, mod_fryhtan.lair_train_combat(nation_recno, trainType), ModFryhtan::train_days(trainType, monsterId),
-			ModFryhtan::train_cost(monsterId), (int) LAIR_ORDO_FOOD, ModFryhtan::train_life_points(trainType, monsterId) );
+			ModFryhtan::train_cost(monsterId, nation_recno), (int) LAIR_ORDO_FOOD, ModFryhtan::train_life_points(trainType, monsterId, nation_recno) );
 
 		help.set_custom_help( button.x1, button.y1, button.x2, button.y2, _("Train Ordo"), helpStr[trainType] );
 	}
@@ -725,12 +725,36 @@ void FirmCamp::disp_lair_train_button(int trainType)
 		snprintf( helpStr[trainType], sizeof(helpStr[trainType]),
 			_("Train a %s (combat %d) in %d days for $%d, %d food and %d Life Points. Right click removes one from the queue."),
 			ModFryhtan::monster_name(monsterId), mod_fryhtan.lair_train_combat(nation_recno, trainType), ModFryhtan::train_days(trainType, monsterId),
-			ModFryhtan::train_cost(monsterId), (int) LAIR_TRAIN_FOOD, ModFryhtan::train_life_points(trainType, monsterId) );
+			ModFryhtan::train_cost(monsterId, nation_recno), (int) LAIR_TRAIN_FOOD, ModFryhtan::train_life_points(trainType, monsterId, nation_recno) );
 
 		help.set_custom_help( button.x1, button.y1, button.x2, button.y2, _("Train"), helpStr[trainType] );
 	}
 }
 //----------- End of function FirmCamp::disp_lair_train_button -----------//
+
+
+//------- Begin of static function lair_tech_graphic ---------//
+//
+// 7kmod-fryhtan: the own graphic of a technology of the lairs, small (46x38)
+// or large (69x60); NULL for Alchemist Lair (the lair with the Mine).
+//
+static char* lair_tech_graphic(int techId, int largeFlag)
+{
+	switch( techId )
+	{
+		case FRYHTAN_TECH_EMPOWERMENT:
+			return (char*) (largeFlag ? tech_empowerment_large_icon : tech_empowerment_icon);
+		case FRYHTAN_TECH_BROOD_MASTERY:
+			return (char*) (largeFlag ? tech_brood_mastery_large_icon : tech_brood_mastery_icon);
+		case FRYHTAN_TECH_DOMINION:
+			return (char*) (largeFlag ? tech_dominion_large_icon : tech_dominion_icon);
+		case FRYHTAN_TECH_SACRIFICIAL_RITES:
+			return (char*) (largeFlag ? tech_sacrificial_rites_large_icon : tech_sacrificial_rites_icon);
+	}
+
+	return NULL;
+}
+//-------- End of static function lair_tech_graphic ---------//
 
 
 //------- Begin of static function disp_lair_tech_icon ---------//
@@ -741,13 +765,15 @@ void FirmCamp::disp_lair_train_button(int trainType)
 //
 static void disp_lair_tech_icon(int x, int y, int nationRecno, int techId)
 {
-	if( techId == FRYHTAN_TECH_EMPOWERMENT )		// its own graphic, centered in the place of the large icon, in a frame
+	char* graphic = lair_tech_graphic(techId, 1);
+
+	if( graphic )		// its own graphic, centered in the place of the large icon, in a frame
 	{
-		int iconWidth  = *(short*) tech_empowerment_large_icon;
-		int iconHeight = *((short*) tech_empowerment_large_icon + 1);
+		int iconWidth  = *(short*) graphic;
+		int iconHeight = *((short*) graphic + 1);
 		int iconX = x + (LAIR_TECH_ICON_WIDTH-iconWidth)/2;
 
-		vga_front.put_bitmap( iconX, y, (char*) tech_empowerment_large_icon );
+		vga_front.put_bitmap( iconX, y, graphic );
 		vga_front.rect( iconX-1, y-1, iconX+iconWidth, y+iconHeight, 1, V_BLACK );
 		return;
 	}
@@ -770,9 +796,11 @@ static void disp_lair_tech_small_icon(int x, int y, int nationRecno, int techId)
 	static char smallBuf[FRYHTAN_TECH_COUNT][2*sizeof(short) + LAIR_TECH_SMALL_ICON_WIDTH*LAIR_TECH_SMALL_ICON_HEIGHT];
 	static char smallDone[FRYHTAN_TECH_COUNT];
 
-	if( techId == FRYHTAN_TECH_EMPOWERMENT )		// its own graphic, as the icons of the Tower of Science
+	char* graphic = lair_tech_graphic(techId, 0);
+
+	if( graphic )		// its own graphic, as the icons of the Tower of Science
 	{
-		Vga::active_buf->put_bitmap( x, y, (char*) tech_empowerment_icon );
+		Vga::active_buf->put_bitmap( x, y, graphic );
 		return;
 	}
 
@@ -985,11 +1013,15 @@ static void disp_lair_research_menu(FirmCamp* firmPtr, int refreshFlag)
 
 		lair_tech_list_count = 0;
 
-		for( int t=0 ; t<FRYHTAN_TECH_COUNT ; t++ )
+		for( int i=0 ; i<FRYHTAN_TECH_COUNT ; i++ )
 		{
+			int t = ModFryhtan::tech_list_order(i);		// by branch
 			int techState = mod_fryhtan.tech_state(nationRecno, t);
 
 			if( techState != FRYHTAN_TECH_NONE && techState != FRYHTAN_TECH_UNLOCKED )		// not the one being researched nor the researched ones
+				continue;
+
+			if( !mod_fryhtan.tech_available(nationRecno, t) )		// its required technology isn't researched yet
 				continue;
 
 			button_lair_tech[lair_tech_list_count].paint( INFO_X1, y, INFO_X2, y+LAIR_TECH_OPTION_HEIGHT-2,
@@ -1062,7 +1094,7 @@ static void disp_lair_research_menu(FirmCamp* firmPtr, int refreshFlag)
 	int techId = lair_menu_tech_id;
 	int y = INFO_Y1;
 
-	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+222 );
+	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+236 );		// room for 6 lines of description
 
 	char titleStr[100];
 
@@ -1072,11 +1104,11 @@ static void disp_lair_research_menu(FirmCamp* firmPtr, int refreshFlag)
 
 	disp_lair_tech_icon( INFO_X1+(INFO_X2-INFO_X1-LAIR_TECH_ICON_WIDTH)/2, y+28, nationRecno, techId );
 
-	font_san.put_paragraph( INFO_X1+8, y+94, INFO_X2-8, y+184, ModFryhtan::tech_desc(techId) );
+	font_san.put_paragraph( INFO_X1+8, y+94, INFO_X2-8, y+198, ModFryhtan::tech_desc(techId) );
 
 	//--- the cost: [coins] 1000   [Life Points] 30 ---//
 
-	int costY = y+188;
+	int costY = y+202;
 	int x = INFO_X1+20;
 
 	vga_front.put_bitmap_trans( x, costY, (char*) life_cost_gold_icon );
@@ -1089,7 +1121,7 @@ static void disp_lair_research_menu(FirmCamp* firmPtr, int refreshFlag)
 
 	//--- Confirm and Cancel ---//
 
-	y += 226;
+	y += 240;
 
 	int canResearch = mod_fryhtan.can_start_research(nationRecno, techId);
 

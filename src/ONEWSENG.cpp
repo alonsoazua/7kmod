@@ -135,6 +135,7 @@ static NewsInfo news_info_array[] =
 	{ &News::town_raided, 0 },				// 7kmod-fryhtan
 	{ &News::ordo_kidnap, 0 },				// 7kmod-fryhtan
 	{ &News::lair_tech_researched, 0 },	// 7kmod-fryhtan
+	{ &News::ordo_sacrifice, 0 },			// 7kmod-fryhtan
 };
 
 //------- Define static variables --------//
@@ -1345,6 +1346,25 @@ void News::ordo_kidnap()
 	}
 }
 //------- End of function News::ordo_kidnap -----//
+
+
+//------ Begin of function News::ordo_sacrifice -----//
+//
+// 7kmod-fryhtan: an Ordo of the player sacrificed villagers of an enslaved
+// town (Sacrificial Rites).
+//
+// short_para1 - name id. of the town
+// short_para2 - name id. of the Ordo (an Ordo name id., above 32767)
+// short_para3 - the villagers sacrificed
+// short_para4 - the Life Points they gave
+//
+void News::ordo_sacrifice()
+{
+	// TRANSLATORS: Your Ordo <Name> has sacrificed <Number> villagers of <Town>: +<Number> Life Points.
+	snprintf(str, MAX_STR_LEN+1, _("Your Ordo %s has sacrificed %d villagers of %s: +%d Life Points."),
+				news_unit_name(0, short_para2, 1), (int) short_para3, town_res.get_name(short_para1), (int) short_para4 );
+}
+//------- End of function News::ordo_sacrifice -----//
 
 
 //------ Begin of function News::lair_tech_researched -----//

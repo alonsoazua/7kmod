@@ -1255,6 +1255,9 @@ void Town::update_target_loyalty()
 
 		targetLoyalty = MAX( targetLoyalty, mod_fryhtan.subjugate_loyalty(this) );		// an Ordo doing Subjugate inside the town
 
+		if( mod_fryhtan.has_tech(nation_recno, FRYHTAN_TECH_DOMINION) )		// the technology Dominion
+			targetLoyalty = MIN( 100, targetLoyalty + DOMINION_LOYALTY );
+
 		for( int i=0 ; i<MAX_RACE ; i++ )
 		{
 			race_target_loyalty_array[i] = targetLoyalty;

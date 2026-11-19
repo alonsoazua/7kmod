@@ -40,25 +40,47 @@ enum { LAIR_PLACES_HIT_POINTS = 1600 };		// the places of a lair: this / the hit
 //--- the technologies of a Fryhtan kingdom, researched in its lairs ---//
 
 enum { FRYHTAN_TECH_ALCHEMIST_LAIR,			// a lair can be built on a raw material site and turns the raw material into Life Points
-		 FRYHTAN_TECH_EMPOWERMENT,				// the Fryhtans trained in the lairs have more combat
-		 FRYHTAN_TECH_COUNT };
+		 FRYHTAN_TECH_EMPOWERMENT,				// the Fryhtans trained in the lairs have more combat (requires Brood Mastery)
+		 FRYHTAN_TECH_BROOD_MASTERY,			// training Fryhtans in the lairs costs less gold and Life Points
+		 FRYHTAN_TECH_DOMINION,					// the enslaved towns are more loyal and are overpopulated later
+		 FRYHTAN_TECH_SACRIFICIAL_RITES,		// an Ordo doing Kidnap sacrifices villagers in a nearly overpopulated town (requires Dominion)
+		 FRYHTAN_TECH_COUNT };					// the ids are saved: new ones go at the end (the list has its own order, tech_list_order())
 
 enum { FRYHTAN_TECH_NONE,				// locked: researching it the first time costs its gold and Life Points
 		 FRYHTAN_TECH_RESEARCHING,		// being researched (one at a time)
 		 FRYHTAN_TECH_DONE,
 		 FRYHTAN_TECH_UNLOCKED };		// paid and paused, its progress kept: it can be researched again for free
 
-enum { ALCHEMIST_TECH_COST			= 1000,		// gold for researching Alchemist Lair
-		 ALCHEMIST_TECH_LIFE_POINTS	= 30,			// and Life Points
+enum { ALCHEMIST_TECH_COST			= 500,		// gold for researching Alchemist Lair
+		 ALCHEMIST_TECH_LIFE_POINTS	= 20,			// and Life Points
 		 ALCHEMIST_TECH_DAYS			= 180,		// days of research
 		 ALCHEMIST_DAYS				= 15,			// an Alchemist Lair turns ALCHEMIST_RAW_QTY of its site...
 		 ALCHEMIST_RAW_QTY			= 50,			// ...into ALCHEMIST_LIFE_POINTS every ALCHEMIST_DAYS days,
 		 ALCHEMIST_LIFE_POINTS		= 5 };		// with an Ordo or the king as its leader
 
-enum { EMPOWERMENT_TECH_COST		= 1000,		// gold for researching Empowerment
+enum { EMPOWERMENT_TECH_COST		= 1500,		// gold for researching Empowerment
 		 EMPOWERMENT_TECH_LIFE_POINTS = 50,		// and Life Points
 		 EMPOWERMENT_TECH_DAYS		= 180,		// days of research
 		 EMPOWERMENT_COMBAT			= 10 };		// the Fryhtans trained in the lairs (soldiers and Ordos) have this more combat
+
+enum { BROOD_MASTERY_TECH_COST	= 1000,		// gold for researching Brood Mastery
+		 BROOD_MASTERY_TECH_LIFE_POINTS = 30,	// and Life Points
+		 BROOD_MASTERY_TECH_DAYS	= 180,		// days of research
+		 BROOD_MASTERY_PERCENT		= 80 };		// training a soldier or an Ordo, and promoting one, costs this % of the gold and Life Points (rounded)
+
+enum { DOMINION_TECH_COST			= 1000,		// gold for researching Dominion
+		 DOMINION_TECH_LIFE_POINTS	= 30,			// and Life Points
+		 DOMINION_TECH_DAYS			= 180,		// days of research
+		 DOMINION_LOYALTY				= 10,			// the enslaved towns have this more target loyalty
+		 DOMINION_OVERPOPULATION	= 2 };		// and are overpopulated with this many more people
+
+enum { RITES_TECH_COST				= 1000,		// gold for researching Sacrificial Rites
+		 RITES_TECH_LIFE_POINTS		= 30,			// and Life Points
+		 RITES_TECH_DAYS				= 180,		// days of research
+		 RITES_POPULATION				= 31,			// an Ordo doing Kidnap kidnaps up to this many people, and from this many on...
+		 RITES_VILLAGERS				= 5,			// ...sacrifices this many villagers instead, on its next kidnap
+		 RITES_LIFE_POINTS_MIN		= 1,			// each one gives the Life Points of a villager killed plus 1 or 2 at random
+		 RITES_LIFE_POINTS_MAX		= 2 };
 
 enum { FRYHTAN_BASE_POPULATION = 20 };		// population of Fryhtans allowed at the start
 enum { FRYHTAN_POPULATION_LIMIT = 0 };		// 1: training is limited by the Fryhtan population cap (off for now)
@@ -296,7 +318,8 @@ public:
 					  return is_large_monster(monsterId) ? LAIR_TRAIN_DAYS : LAIR_SMALL_TRAIN_DAYS; }
 
 	// gold for training a soldier or an Ordo, by the size of the species
-	static int	train_cost(int monsterId);		// the gold for training a soldier or an Ordo of the species
+	static int	train_cost(int monsterId, int nationRecno);		// the gold for training a soldier or an Ordo of the species (less with Brood Mastery)
+	static int	promote_life_points(int nationRecno);		// the Life Points for promoting a Fryhtan soldier to Ordo
 
 	//------ names of the Ordos ------//
 
@@ -375,9 +398,12 @@ public:
 
 	static const char*	tech_name(int techId);
 	static const char*	tech_desc(int techId);
-	static int	tech_cost(int techId)				{ return techId==FRYHTAN_TECH_EMPOWERMENT ? EMPOWERMENT_TECH_COST : ALCHEMIST_TECH_COST; }
-	static int	tech_life_points(int techId)		{ return techId==FRYHTAN_TECH_EMPOWERMENT ? EMPOWERMENT_TECH_LIFE_POINTS : ALCHEMIST_TECH_LIFE_POINTS; }
-	static int	tech_total_days(int techId)		{ return techId==FRYHTAN_TECH_EMPOWERMENT ? EMPOWERMENT_TECH_DAYS : ALCHEMIST_TECH_DAYS; }
+	static int	tech_cost(int techId);
+	static int	tech_life_points(int techId);
+	static int	tech_total_days(int techId);
+	static int	tech_required(int techId);			// the technology that must be researched first, -1 if none
+	static int	tech_list_order(int i);				// the technology in the i-th place of the list of the lairs
+	int	tech_available(int nationRecno, int techId);	// in the list: its required technology is researched (or it was already started)
 
 	int	tech_state(int nationRecno, int techId);
 	int	has_tech(int nationRecno, int techId)		{ return tech_state(nationRecno, techId) == FRYHTAN_TECH_DONE; }
@@ -412,7 +438,7 @@ public:
 	int	life_points(int nationRecno);
 	int	start_life_points(int nationRecno);		// by the Treasure of the new game
 	void	add_life_points(int nationRecno, int points);		// points < 0: spent
-	static int	train_life_points(int trainType, int monsterId);		// the Life Points for training a soldier or an Ordo of the species
+	static int	train_life_points(int trainType, int monsterId, int nationRecno);		// the Life Points for training a soldier or an Ordo of the species
 	static int	kill_life_points(Unit* targetUnit);		// the Life Points for killing the unit
 	static int	firm_setup_life_points(int firmId, int nationRecno);		// the Life Points for building a firm: LIFE_POINTS_LAIR for a lair
 	static int	town_tribute_life_points(int population);
@@ -445,6 +471,8 @@ public:
 	void	make_town_independent(Town* townPtr);
 	void	rebels_return_to_town(Town* townPtr);
 	static int	is_overpopulated(Town* townPtr);		// an enslaved town losing loyalty for its population
+	static int	overpopulated_population(int nationRecno);		// OVERPOPULATED_TOWN_POPULATION, more with Dominion
+	static int	brood_mastery_price(int value, int nationRecno);		// the value with Brood Mastery, rounded
 	void	next_day_town_overpopulation(Town* townPtr);
 	int	can_cull_town(Town* townPtr);
 	int	cull_town(Town* townPtr);					// Cull Population: kills 3 or 4 villagers, for the spoils; return: the villagers killed
