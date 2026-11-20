@@ -60,9 +60,10 @@ In the game folder:
 
     Changelog\   Changes of each version (7kmod = Classic,
                  gameplay = New Adversaries, fryhtan = the Fryhtan kingdom).
-    Docs\        Keyboard shortcuts (KEYBINDINGS), Greater Beings, espionage
-                 (SPYING), siege weapons (SIEGE_WEAPONS) and the advanced
-                 config.txt options (ADVANCED_CONFIG).
+    Docs\        The players' guide (GUIDE: everything the mod changes, by
+                 topic), keyboard shortcuts (KEYBINDINGS), Greater Beings,
+                 espionage (SPYING), siege weapons (SIEGE_WEAPONS) and the
+                 advanced config.txt options (ADVANCED_CONFIG).
     7kaa-manual.pdf   The manual of the original game.
 
 The files ending in .en.txt are the English version; the others are in

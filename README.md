@@ -71,6 +71,8 @@ the instructions are at the top of the script.
 Everything is in the [`7kmod/`](7kmod/) folder. The player documents have an English
 version with the same name ending in `.en.md`:
 
+- [`GUIDE.en.md`](7kmod/GUIDE.en.md): **the players' guide**, everything the mod changes,
+  by topic (in `7kmod-gameplay`, with what is only in New Adversaries marked).
 - `CHANGELOG*.en.md`: changes by version; each branch has its own besides those of the
   previous branches.
 - `ADVANCED_CONFIG.en.md`: `config.txt` options.
