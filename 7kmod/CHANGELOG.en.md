@@ -24,7 +24,18 @@ which includes everything in `7kmod` and documents its own changes in
 
 ## [Unreleased]
 
+---
+
+## [0.5.0] - 2026-11-20
+
+Released as **New Adversaries Classic 0.5.0**, in the installer
+`NewAdversaries-0.5.0-setup.exe`.
+
 ### Added
+- **"Game Speed" message:** changing the speed (keys `1`–`9`), unpausing and starting or
+  loading a game show "Game Speed: N" (N is the key of that speed, 9 the highest) where
+  "Game Paused" shows, for 10 seconds. In multiplayer it also shows when another player
+  changes the speed.
 - **Clearer groups** (`Ctrl+1`–`9` to assign, `Alt+1`–`9` to select):
   - **Group buttons:** on the right edge of the map, above the clear news button, a small
     button for each group with units on the map, from 1 (top) to 9 (bottom), each in its
@@ -50,20 +61,6 @@ which includes everything in `7kmod` and documents its own changes in
     list (it used to select only that unit); **double click** selects only that unit;
     **`Ctrl` + click** puts it in focus and centers the view on it. Right click still
     removes it from the selection.
-
----
-
-## [0.5.0] - 2026-11-19
-
-Released as **New Adversaries Classic 0.5.0**, in the installer
-`NewAdversaries-0.5.0-setup.exe`.
-
-### Added
-
-- **"Game Speed" message:** changing the speed (keys `1`–`9`), unpausing and starting or
-  loading a game show "Game Speed: N" (N is the key of that speed, 9 the highest) where
-  "Game Paused" shows, for 10 seconds. In multiplayer it also shows when another player
-  changes the speed.
 
 ---
 
