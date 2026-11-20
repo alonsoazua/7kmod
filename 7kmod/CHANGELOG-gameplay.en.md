@@ -22,23 +22,9 @@ the game plays. This branch includes everything in the `7kmod` branch, documente
 
 ## [Unreleased]
 
-### Added
-- **Players' guide** (`GUIDE.md` and `GUIDE.en.md`): everything the mod changes, by
-  topic and in players' terms, with what is only in New Adversaries marked [NA]. The
-  installer puts it in `Docs` and in the Start menu.
-- **`COMBAT_ANALYSIS` in English** (`COMBAT_ANALYSIS.en.md`), and the installer puts it
-  in `Docs` with the other documents.
-- **Fryhtan kingdom** (brought from `7kmod-fryhtan`): the training bar on the map (from
-  7kmod) also on the lairs.
-
-### Changed
-- **Fryhtan kingdom** (brought from `7kmod-fryhtan`): the text of an enslaved town has
-  two pages, the tribute and how overpopulation works, and without an Ordo it reads
-  "Send an Ordo to enable actions." (see `CHANGELOG-fryhtan.en.md`).
-
 ---
 
-## [0.4.0] - 2026-11-19
+## [0.4.0] - 2026-11-20
 
 Released as **New Adversaries 0.5.0**, in the installer `NewAdversaries-0.5.0-setup.exe`.
 Based on **7kmod 0.5.0** (see `CHANGELOG.en.md`).
@@ -56,12 +42,22 @@ Based on **7kmod 0.5.0** (see `CHANGELOG.en.md`).
     Cull Population and Subjugate, the flipped portrait of ranked Fryhtans and nobody
     migrating on their own to an enslaved town.
   - Games with a Fryhtan kingdom start on the largest land.
+- **Players' guide** (`GUIDE.md` and `GUIDE.en.md`): everything the mod changes, by
+  topic and in players' terms, with what is only in New Adversaries marked [NA]. The
+  installer puts it in `Docs` and in the Start menu.
+- **`COMBAT_ANALYSIS` in English** (`COMBAT_ANALYSIS.en.md`), and the installer puts it
+  in `Docs` with the other documents.
+- **Fryhtan kingdom** (brought from `7kmod-fryhtan`): the training bar on the map (from
+  7kmod) also on the lairs.
 
 ### Changed
 - **Fryhtan kingdom:** gold prices by size ($100 small, $150 large), training costs by
   species, Rokken and Holgh at speed 4, Taskmaster only gives food, training with a full
   lair, the last lair destroyed decides who gets the enslaved town, and the AI attacks
   Fryhtan kingdoms more.
+- **Fryhtan kingdom** (brought from `7kmod-fryhtan`): the text of an enslaved town has
+  two pages, the tribute and how overpopulation works, and without an Ordo it reads
+  "Send an Ordo to enable actions." (see `CHANGELOG-fryhtan.en.md`).
 
 ### Fixed
 - **Fryhtan kingdom:** training with the soldiers out of the lair, the music when loading

@@ -13,25 +13,9 @@ together.
 
 ## [Unreleased]
 
-### Added
-- **Training bar on the lair:** as the one of towns (7kmod), a small green bar on your
-  lairs shows the progress of the Fryhtan being trained, a bit below the center (under
-  "(Alchemist Lair)").
-
-### Changed
-- **Text of an enslaved town in two pages**, with the small squares "1" and "2" in the
-  corner of the panel (the current page's, pressed):
-  - **1:** the tribute, shorter: "Enslaved town: $156 of tribute at the end of the
-    month."
-  - **2:** how overpopulation works: "When the population reaches 30, the town loses
-    loyalty and may rebel." (32 with Dominion).
-  - Selecting the town again opens it on page 1.
-- **Enslaved town without an Ordo:** where the Ordo's buttons go it reads "Send an Ordo
-  to enable actions."
-
 ---
 
-## [0.2.0] - 2026-11-19
+## [0.2.0] - 2026-11-20
 
 Included in **New Adversaries 0.5.0** (gameplay 0.4.0, 7kmod 0.5.0).
 
@@ -108,16 +92,9 @@ Included in **New Adversaries 0.5.0** (gameplay 0.4.0, 7kmod 0.5.0).
 - **Nobody migrates on their own to an enslaved town**, neither villagers of other towns
   nor workers of buildings. The migration the player orders between their own towns is
   unchanged.
-
-### Fixed
-- **Lair places:** with the soldiers outside (for example, after sending them to fight)
-  training was sometimes blocked although there was room: it also counted the leader
-  and the ones that died or went into another lair. Now it counts what the darkened
-  places show.
-- **Selecting a Fort or a lair again** opens it on its main menu and the first page of
-  buttons; it used to stay on the menu (research, alchemist detail) or page you left.
-- **Music when loading a Fryhtan game:** the menu's music kept playing, because the
-  Fryhtan king has no race. Now it plays the same as a new game.
+- **Training bar on the lair:** as the one of towns (7kmod), a small green bar on your
+  lairs shows the progress of the Fryhtan being trained, a bit below the center (under
+  "(Alchemist Lair)").
 
 ### Changed
 - **Rokken and Holgh** move at speed 4 (was 3), like the others.
@@ -137,6 +114,25 @@ Included in **New Adversaries 0.5.0** (gameplay 0.4.0, 7kmod 0.5.0).
   prefers it as a target; not if the Fryhtan kingdom is over 1.5 times as strong as it.
 - **Taskmaster** no longer gives gold: only food, doubled (+10 to +40 a year per
   villager by leadership). The forced labor kills a villager every 30 to 90 days.
+- **Text of an enslaved town in two pages**, with the small squares "1" and "2" in the
+  corner of the panel (the current page's, pressed):
+  - **1:** the tribute, shorter: "Enslaved town: $156 of tribute at the end of the
+    month."
+  - **2:** how overpopulation works: "When the population reaches 30, the town loses
+    loyalty and may rebel." (32 with Dominion).
+  - Selecting the town again opens it on page 1.
+- **Enslaved town without an Ordo:** where the Ordo's buttons go it reads "Send an Ordo
+  to enable actions."
+
+### Fixed
+- **Lair places:** with the soldiers outside (for example, after sending them to fight)
+  training was sometimes blocked although there was room: it also counted the leader
+  and the ones that died or went into another lair. Now it counts what the darkened
+  places show.
+- **Selecting a Fort or a lair again** opens it on its main menu and the first page of
+  buttons; it used to stay on the menu (research, alchemist detail) or page you left.
+- **Music when loading a Fryhtan game:** the menu's music kept playing, because the
+  Fryhtan king has no race. Now it plays the same as a new game.
 
 ---
 

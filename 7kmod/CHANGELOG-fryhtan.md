@@ -12,25 +12,9 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
 
 ## [Sin publicar]
 
-### Agregado
-- **Barra de entrenamiento en la guarida:** como la de los pueblos (7kmod), una barra
-  verde chica en tus guaridas muestra el avance del Fryhtan que se entrena, un poco abajo
-  del centro (debajo de "(Alchemist Lair)").
-
-### Cambiado
-- **Texto del pueblo esclavizado en dos páginas**, con los cuadritos "1" y "2" en la
-  esquina del panel (el de la página actual, hundido):
-  - **1:** el tributo, más corto: "Enslaved town: $156 of tribute at the end of the
-    month."
-  - **2:** cómo funciona la sobrepoblación: "When the population reaches 30, the town
-    loses loyalty and may rebel." (32 con Dominion).
-  - Al volver a seleccionar el pueblo abre en la página 1.
-- **Pueblo esclavizado sin Ordo:** donde van los botones del Ordo dice "Send an Ordo to
-  enable actions."
-
 ---
 
-## [0.2.0] - 2026-11-19
+## [0.2.0] - 2026-11-20
 
 Incluida en **New Adversaries 0.5.0** (gameplay 0.4.0, 7kmod 0.5.0).
 
@@ -107,17 +91,9 @@ Incluida en **New Adversaries 0.5.0** (gameplay 0.4.0, 7kmod 0.5.0).
 - **Nadie migra por su cuenta a un pueblo esclavizado**, ni aldeanos de otros pueblos ni
   trabajadores de edificios. La migración que ordena el jugador entre sus pueblos sigue
   igual.
-
-### Corregido
-- **Lugares de la guarida:** con los soldados afuera (por ejemplo, después de mandarlos a
-  pelear) a veces no dejaba entrenar aunque hubiera lugar: contaba también al líder y a
-  los que murieron o entraron a otra guarida. Ahora cuenta lo mismo que muestran las
-  casillas oscurecidas.
-- **Al volver a seleccionar un fuerte o una guarida** abre en su menú principal y en la
-  página 1 de botones; antes se quedaba en el menú (investigación, detalle del
-  alquimista) o la página en que lo dejaste.
-- **Música al cargar una partida Fryhtan:** se quedaba la música del menú, porque el rey
-  Fryhtan no tiene raza. Ahora toca la misma que en una partida nueva.
+- **Barra de entrenamiento en la guarida:** como la de los pueblos (7kmod), una barra
+  verde chica en tus guaridas muestra el avance del Fryhtan que se entrena, un poco abajo
+  del centro (debajo de "(Alchemist Lair)").
 
 ### Cambiado
 - **Rokken y Holgh** se mueven a velocidad 4 (antes 3), como los demás.
@@ -137,6 +113,26 @@ Incluida en **New Adversaries 0.5.0** (gameplay 0.4.0, 7kmod 0.5.0).
   prefiere como blanco; no si el reino Fryhtan es más de 1.5 veces más fuerte que ella.
 - **Taskmaster** ya no da oro: solo comida, el doble (de +10 a +40 al año por aldeano
   según el liderazgo). El trabajo forzado mata un aldeano cada 30 a 90 días.
+- **Texto del pueblo esclavizado en dos páginas**, con los cuadritos "1" y "2" en la
+  esquina del panel (el de la página actual, hundido):
+  - **1:** el tributo, más corto: "Enslaved town: $156 of tribute at the end of the
+    month."
+  - **2:** cómo funciona la sobrepoblación: "When the population reaches 30, the town
+    loses loyalty and may rebel." (32 con Dominion).
+  - Al volver a seleccionar el pueblo abre en la página 1.
+- **Pueblo esclavizado sin Ordo:** donde van los botones del Ordo dice "Send an Ordo to
+  enable actions."
+
+### Corregido
+- **Lugares de la guarida:** con los soldados afuera (por ejemplo, después de mandarlos a
+  pelear) a veces no dejaba entrenar aunque hubiera lugar: contaba también al líder y a
+  los que murieron o entraron a otra guarida. Ahora cuenta lo mismo que muestran las
+  casillas oscurecidas.
+- **Al volver a seleccionar un fuerte o una guarida** abre en su menú principal y en la
+  página 1 de botones; antes se quedaba en el menú (investigación, detalle del
+  alquimista) o la página en que lo dejaste.
+- **Música al cargar una partida Fryhtan:** se quedaba la música del menú, porque el rey
+  Fryhtan no tiene raza. Ahora toca la misma que en una partida nueva.
 
 ---
 
