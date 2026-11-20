@@ -218,7 +218,7 @@ Batch size: **8** in towns, **10** in the War Factory and **5** in the harbor.
 | List of towns of the fort's Recruit button **(mod, both branches)** | Right click on the panel | Closes the list, just like Cancel. |
 | Town, Train Captain button **(mod, gameplay)** | Left / right click | Adds / removes a captain from the queue. |
 | Unit panel with several selected **(mod, both branches)** | `>` / `<` button at the right of the name bar | Shows / hides the list of selected units. With several pages, `<` and `>` at the bottom change the page. |
-| List of selected units **(mod, both branches)** | Left / right click on a unit | Puts it in focus (yellow frame; its combat and skill show below) without changing the selection / removes it from the selection. |
+| List of selected units **(mod, both branches)** | Left / right click on a unit | Puts it in focus (yellow frame; its title, name, combat and skill show below) without changing the selection / removes it from the selection. |
 | List of selected units **(mod)** | Double click on a unit | Selects only that unit (opens its panel). |
 | List of selected units **(mod)** | `Ctrl` + click on a unit | Puts it in focus and centers the view on it. |
 | Fort panel, darkened units (outside the fort) **(mod, both branches)** | Left click | Moves the camera to that unit and selects it. |

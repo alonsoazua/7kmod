@@ -46,7 +46,8 @@
 //------- layout of the list, like the list of soldiers of a fort -------//
 
 #define LIST_COLUMN_COUNT		4
-#define LIST_ROW_COUNT			7		// 8 before the panel of the unit in focus
+#define LIST_ROW_COUNT			6		// 8 before the panel of the unit in focus
+#define FOCUS_PANEL_HEIGHT		70		// the panel of the unit in focus, below the list
 #define LIST_PAGE_SIZE			(LIST_COLUMN_COUNT*LIST_ROW_COUNT)
 #define LIST_CELL_WIDTH			50
 #define LIST_CELL_HEIGHT		29
@@ -268,20 +269,33 @@ void unit_list_disp(Unit* mainUnit, int dispY1, int refreshFlag)
 
 	//---------- paint the panel ---------//
 
-	int stripY1 = INFO_Y2 - 24;		// the page strip at the bottom
-	int focusY1 = stripY1 - 34;		// the rows of the unit in focus, above it
+	int focusY1 = INFO_Y2 - FOCUS_PANEL_HEIGHT;		// the panel of the unit in focus, at the bottom
+	int stripY1 = focusY1 - 3 - 24;					// the page strip at the bottom of the list, above it
 
 	if( refreshFlag == INFO_REPAINT )
 	{
-		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, INFO_Y2 );
+		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, focusY1-3 );
 
-		//--- the unit in focus: combat and skill, as in the unit panel (only the player's units, as the numbers of the list) ---//
+		//--- the panel of the unit in focus: its title and name as in the unit panel profile, ---//
+		//--- its combat and skill (only the player's humans and Fryhtans, as the numbers of the list) ---//
+
+		vga_util.d3_panel_up( INFO_X1, focusY1, INFO_X2, INFO_Y2 );
+
+		const char* titleStr = mainUnit->profile_title();
+
+		if( titleStr )
+		{
+			font_san.center_put( INFO_X1, focusY1+2, INFO_X2-2, focusY1+18, titleStr );
+			font_san.center_put( INFO_X1, focusY1+17, INFO_X2-2, focusY1+33, mainUnit->unit_name(0) );		// 0-without title
+		}
+		else
+			font_san.center_put( INFO_X1, focusY1+2, INFO_X2-2, focusY1+33, mainUnit->unit_name() );		// non-human units
 
 		UnitInfo* focusInfo = unit_res[mainUnit->unit_id];
 
 		if( mainUnit->is_own() && (mainUnit->race_id || focusInfo->unit_class == UNIT_CLASS_MONSTER) )		// as Unit::has_unit_info(): humans and Fryhtans
 		{
-			int x = INFO_X1+4, y = focusY1;
+			int x = INFO_X1+4, y = focusY1+35;
 
 			font_san.field( x, y, _("Combat"), x+92, mainUnit->skill.combat_level, 1, INFO_X2-2, INFO_REPAINT );
 

@@ -1608,8 +1608,39 @@ void Unit::disp_unit_profile(int dispY1, int refreshFlag)
 	if( refreshFlag != INFO_REPAINT )		// only display in repaint mode
 		return;
 
-	//-----------------------------------------//
+	const char *str = profile_title();
 
+	//---------------- paint the panel --------------//
+
+	vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+44);
+
+	vga_front.put_bitmap( x, dispY1+3, unit_res[unit_id]->get_large_icon_ptr(rank_id) );
+
+	//--------------------------------------//
+
+	x += UNIT_LARGE_ICON_WIDTH;
+
+	if( str )
+	{
+		font_san.center_put( x, dispY1+4, INFO_X2-2, dispY1+21, str );
+		font_san.center_put( x, dispY1+22, INFO_X2-2, dispY1+40, unit_name(0) );		// 0-without title
+	}
+	else
+	{
+		font_san.center_put( x, dispY1, INFO_X2-2, dispY1+44, unit_name() );		// non-human units
+	}
+}
+//----------- End of function Unit::disp_unit_profile -----------//
+
+
+//--------- Begin of function Unit::profile_title ---------//
+//
+// 7kmod: the first line of the profile of the unit panel ("Soldier",
+// "General"...), with the name below it; NULL for the units displayed with
+// unit_name() alone. Also for the list of units (OUNITLST.cpp).
+//
+const char* Unit::profile_title()
+{
 	const char *str=NULL;
 
 	if( race_id )
@@ -1685,27 +1716,9 @@ void Unit::disp_unit_profile(int dispY1, int refreshFlag)
 		}
 	}
 
-	//---------------- paint the panel --------------//
-
-	vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, dispY1+44);
-
-	vga_front.put_bitmap( x, dispY1+3, unit_res[unit_id]->get_large_icon_ptr(rank_id) );
-
-	//--------------------------------------//
-
-	x += UNIT_LARGE_ICON_WIDTH;
-
-	if( str )
-	{
-		font_san.center_put( x, dispY1+4, INFO_X2-2, dispY1+21, str );
-		font_san.center_put( x, dispY1+22, INFO_X2-2, dispY1+40, unit_name(0) );		// 0-without title
-	}
-	else
-	{
-		font_san.center_put( x, dispY1, INFO_X2-2, dispY1+44, unit_name() );		// non-human units
-	}
+	return str;
 }
-//----------- End of function Unit::disp_unit_profile -----------//
+//----------- End of function Unit::profile_title -----------//
 
 
 //--------- Begin of function Unit::detect_unit_profile ---------//
