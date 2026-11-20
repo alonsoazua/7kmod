@@ -37,6 +37,10 @@ incluye todo lo de `7kmod` y documenta lo suyo en `CHANGELOG-gameplay.md`.
   - **`Alt+número` dos veces** (en menos de medio segundo) además centra la vista en el
     grupo.
 
+- **Barra de entrenamiento en el mapa:** una barra verde chica muestra el avance de lo
+  que se entrena en tus pueblos (encima del nombre), War Factories y Harbors (al centro).
+  Solo en tus edificios y mientras entrenan.
+
 ### Cambiado
 - **Lista de unidades seleccionadas:** abajo, un panel aparte con la unidad en foco (la
   del marco amarillo): su título y su nombre, como en el panel de la unidad ("Soldier",

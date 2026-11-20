@@ -36,6 +36,10 @@ which includes everything in `7kmod` and documents its own changes in
     group.
   - **`Alt+number` twice** (within half a second) also centers the view on the group.
 
+- **Training bar on the map:** a small green bar shows the progress of what your towns
+  (above the name), War Factories and Harbors (at the center) are training. Only on your
+  buildings and while they train.
+
 ### Changed
 - **List of selected units:** at the bottom, a separate panel with the unit in focus (the
   one with the yellow frame): its title and name, as in the unit panel ("Soldier",
