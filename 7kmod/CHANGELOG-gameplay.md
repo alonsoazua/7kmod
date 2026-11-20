@@ -21,23 +21,9 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 
 ## [Sin publicar]
 
-### Agregado
-- **Guía para jugadores** (`GUIDE.md` y `GUIDE.en.md`): todo lo que cambia el mod, por
-  tema y en lenguaje de jugador, con lo que solo está en New Adversaries marcado [NA].
-  El instalador la pone en `Docs` y en el menú Inicio.
-- **`COMBAT_ANALYSIS` en inglés** (`COMBAT_ANALYSIS.en.md`), y el instalador lo pone en
-  `Docs` con los demás documentos.
-- **Reino Fryhtan** (traído de `7kmod-fryhtan`): la barra de entrenamiento en el mapa
-  (de 7kmod) también en las guaridas.
-
-### Cambiado
-- **Reino Fryhtan** (traído de `7kmod-fryhtan`): el texto del pueblo esclavizado tiene
-  dos páginas, el tributo y cómo funciona la sobrepoblación, y sin Ordo dice "Send an
-  Ordo to enable actions." (ver `CHANGELOG-fryhtan.md`).
-
 ---
 
-## [0.4.0] - 2026-11-19
+## [0.4.0] - 2026-11-20
 
 Publicada como **New Adversaries 0.5.0**, en el instalador
 `NewAdversaries-0.5.0-setup.exe`. Basada en **7kmod 0.5.0** (ver `CHANGELOG.md`).
@@ -55,12 +41,22 @@ Publicada como **New Adversaries 0.5.0**, en el instalador
     esclavizados (30) con Cull Population y Subjugate, el retrato volteado de los
     Fryhtans con rango y que nadie migre por su cuenta a un pueblo esclavizado.
   - Las partidas con un reino Fryhtan empiezan en la masa de tierra más grande.
+- **Guía para jugadores** (`GUIDE.md` y `GUIDE.en.md`): todo lo que cambia el mod, por
+  tema y en lenguaje de jugador, con lo que solo está en New Adversaries marcado [NA].
+  El instalador la pone en `Docs` y en el menú Inicio.
+- **`COMBAT_ANALYSIS` en inglés** (`COMBAT_ANALYSIS.en.md`), y el instalador lo pone en
+  `Docs` con los demás documentos.
+- **Reino Fryhtan** (traído de `7kmod-fryhtan`): la barra de entrenamiento en el mapa
+  (de 7kmod) también en las guaridas.
 
 ### Cambiado
 - **Reino Fryhtan:** precios en oro por tamaño ($100 chicos, $150 grandes), costos de
   entrenamiento por especie, Rokken y Holgh a velocidad 4, Taskmaster solo da comida, se
   puede entrenar con la guarida llena, la última guarida destruida decide a quién pasa
   el pueblo esclavizado, y la IA ataca más a los reinos Fryhtan.
+- **Reino Fryhtan** (traído de `7kmod-fryhtan`): el texto del pueblo esclavizado tiene
+  dos páginas, el tributo y cómo funciona la sobrepoblación, y sin Ordo dice "Send an
+  Ordo to enable actions." (ver `CHANGELOG-fryhtan.md`).
 
 ### Corregido
 - **Reino Fryhtan:** entrenar con los soldados afuera de la guarida, la música al cargar
