@@ -70,7 +70,7 @@ static uint16_t inspect_name_id_array[MAX_UNIT_LIST];		// as Unit::name_id (a sh
 static char   inspect_nation_array[MAX_UNIT_LIST];
 
 static short  last_list_recno_array[MAX_UNIT_LIST];	// to know when the list changes
-static short  last_focus_recno, last_focus_hit_points, last_focus_level;		// to know when the panel of the unit in focus changes
+static int    last_focus_recno, last_focus_level;		// to know when the rows of the unit in focus change
 static short  last_list_count;
 static short  last_list_page;
 
@@ -244,18 +244,16 @@ void unit_list_disp(Unit* mainUnit, int dispY1, int refreshFlag)
 	int listChanged = unitCount != last_list_count || list_page != last_list_page ||
 							memcmp(recnoArray, last_list_recno_array, sizeof(short)*unitCount) != 0;
 
-	//--- the unit in focus (the one of the unit panel): its panel changes with its hit points or level ---//
+	//--- the unit in focus (the one of the unit panel): its rows change with its levels ---//
 
 	int focusLevel = mainUnit->skill.combat_level * 1000 + mainUnit->skill.skill_level;
 
-	if( mainUnit->sprite_recno != last_focus_recno || (int) mainUnit->hit_points != last_focus_hit_points ||
-		 focusLevel != last_focus_level )
+	if( mainUnit->sprite_recno != last_focus_recno || focusLevel != last_focus_level )
 	{
 		listChanged = 1;
 	}
 
 	last_focus_recno      = mainUnit->sprite_recno;
-	last_focus_hit_points = (int) mainUnit->hit_points;
 	last_focus_level      = focusLevel;
 
 	last_list_count = unitCount;
@@ -271,44 +269,25 @@ void unit_list_disp(Unit* mainUnit, int dispY1, int refreshFlag)
 	//---------- paint the panel ---------//
 
 	int stripY1 = INFO_Y2 - 24;		// the page strip at the bottom
-	int focusY1 = stripY1 - 36;		// the panel of the unit in focus, above it
+	int focusY1 = stripY1 - 34;		// the rows of the unit in focus, above it
 
 	if( refreshFlag == INFO_REPAINT )
 	{
 		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, INFO_Y2 );
 
-		//--- the unit in focus: combat and skill (only the player's units, as the numbers of the list), hit points ---//
-
-		vga_util.d3_panel_down( INFO_X1+4, focusY1, INFO_X2-4, focusY1+33 );
+		//--- the unit in focus: combat and skill, as in the unit panel (only the player's units, as the numbers of the list) ---//
 
 		UnitInfo* focusInfo = unit_res[mainUnit->unit_id];
-		String str;
 
-		if( mainUnit->is_own() && focusInfo->unit_class != UNIT_CLASS_WEAPON &&
-			 focusInfo->unit_class != UNIT_CLASS_SHIP && focusInfo->unit_class != UNIT_CLASS_CARAVAN )
+		if( mainUnit->is_own() && (mainUnit->race_id || focusInfo->unit_class == UNIT_CLASS_MONSTER) )		// as Unit::has_unit_info(): humans and Fryhtans
 		{
-			str  = _("Combat");
-			str += " ";
-			str += (int) mainUnit->skill.combat_level;
+			int x = INFO_X1+4, y = focusY1;
 
-			if( mainUnit->skill.skill_id > 0 && mainUnit->skill.skill_id <= MAX_SKILL )
-			{
-				str += "   ";
-				str += _(Skill::skill_str_array[mainUnit->skill.skill_id-1]);
-				str += " ";
-				str += (int) mainUnit->skill.skill_level;
-			}
+			font_san.field( x, y, _("Combat"), x+92, mainUnit->skill.combat_level, 1, INFO_X2-2, INFO_REPAINT );
 
-			font_san.put( INFO_X1+9, focusY1+3, str );
+			if( mainUnit->skill.skill_id )
+				font_san.field( x, y+16, mainUnit->skill.skill_des(), x+92, mainUnit->skill.skill_level, 1, INFO_X2-2, INFO_REPAINT );
 		}
-
-		str  = _("Hit Points");
-		str += " ";
-		str += (int) mainUnit->hit_points;
-		str += "/";
-		str += mainUnit->max_hit_points;
-
-		font_san.put( INFO_X1+9, focusY1+17, str );
 
 		int groupNum = mainUnit->is_own() ? group_select.selected_group() : 0;		// the selection is a group (Ctrl+1-9)
 

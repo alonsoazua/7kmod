@@ -38,9 +38,10 @@ incluye todo lo de `7kmod` y documenta lo suyo en `CHANGELOG-gameplay.md`.
     grupo.
 
 ### Cambiado
-- **Lista de unidades seleccionadas:** abajo, un panel con el combate, la habilidad (por
-  ejemplo Leadership o Mining) y la vida de la unidad en foco (la del marco amarillo); la
-  lista pasa de 8 a 7 filas (28 unidades por página).
+- **Lista de unidades seleccionadas:** abajo, el combate y la habilidad (por ejemplo
+  Leadership o Mining) de la unidad en foco (la del marco amarillo), con los recuadros
+  del panel de la unidad; solo tus humanos y Fryhtans. La lista pasa de 8 a 7 filas (28
+  unidades por página).
   - **Clic** en una unidad la pone en foco sin quitar la selección ni cerrar la lista
     (antes seleccionaba solo esa unidad); **doble clic** selecciona solo esa unidad;
     **`Ctrl` + clic** la pone en foco y centra la vista en ella. El clic derecho la sigue
