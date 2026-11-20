@@ -24,6 +24,13 @@ which includes everything in `7kmod` and documents its own changes in
 
 ## [Unreleased]
 
+### Added
+
+- **"Game Speed" message:** changing the speed (keys `1`–`9`), unpausing and starting or
+  loading a game show "Game Speed: N" (N is the key of that speed, 9 the highest) where
+  "Game Paused" shows, for 10 seconds. In multiplayer it also shows when another player
+  changes the speed.
+
 ---
 
 ## [0.4.0] - 2026-11-14

@@ -23,6 +23,13 @@ incluye todo lo de `7kmod` y documenta lo suyo en `CHANGELOG-gameplay.md`.
 
 ## [Sin publicar]
 
+### Agregado
+
+- **Aviso "Game Speed":** al cambiar la velocidad (teclas `1`–`9`), al quitar la pausa y
+  al iniciar o cargar una partida aparece "Game Speed: N" (N es la tecla de esa
+  velocidad, 9 la máxima) en el mismo lugar que "Game Paused", durante 10 segundos. En
+  multijugador también aparece cuando otro jugador cambia la velocidad.
+
 ---
 
 ## [0.4.0] - 2026-11-14
