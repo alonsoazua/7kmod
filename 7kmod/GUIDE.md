@@ -41,6 +41,8 @@ marca está en las dos.
   guerra, astilleros (y guaridas, en los reinos Fryhtan) muestra el avance de lo que se
   está entrenando o construyendo.
 
+![Barra de entrenamiento sobre un pueblo y una guarida](images/guide/training-bar.png)
+
 ### Selección de unidades
 - **El recuadro prefiere a los militares:** si dentro hay soldados, armas o barcos de
   guerra, solo se seleccionan esos y los civiles se ignoran. Con `Alt` se seleccionan
@@ -57,6 +59,8 @@ marca está en las dos.
   más importante de las que hay dentro, y su lista muestra a todas, agrupadas por reino.
   No se revela su combate.
 
+![Lista de unidades con la unidad en foco](images/guide/units-list.png)
+
 ### Grupos
 - `Ctrl+1`–`9` guarda la selección como grupo; `Alt+1`–`9` lo selecciona, y dos veces
   seguidas además centra la vista en él.
@@ -65,6 +69,8 @@ marca está en las dos.
   doble clic además centra la vista.
 - El panel de una unidad muestra su número de grupo junto al color del reino, y la lista
   dice "Group N" cuando la selección es un grupo completo.
+
+![Botones de grupo y número de grupo en el panel](images/guide/groups.png)
 
 ### Paneles con más información
 - **Poder de ataque y armadura** en el panel de las unidades: "Melee pwr", "Ranged pwr"
@@ -75,6 +81,8 @@ marca está en las dos.
 - **Retrato del rey** de cada reino en el reporte de reinos (F1).
 - **Retratos de los Fryhtans** en las listas de unidades y de soldados del fuerte.
 
+![Panel de un general con poder de ataque y armadura](images/guide/unit-panel.png)
+
 ### Generales y honores
 - Un general se enoja si su **contribución** en batalla es mucho mayor que lo que le has
   pagado en recompensas. Ahora se ve:
@@ -83,6 +91,8 @@ marca está en las dos.
     **Pay selected** y **Pay all** pagan los honores.
   - **Petición de honores:** cuando un general llega al límite, sale una noticia y puedes
     aceptar o rechazar su petición.
+
+![Reporte militar, pestaña Contributions](images/guide/contributions.png)
 
 ---
 
@@ -198,6 +208,8 @@ Solo en partidas de un jugador. En **New Game**, la pestaña **Fryhtans** permit
 una de las 13 especies. El reino se llama "<nombre> <especie> Horde" y su rey es el
 **All High**.
 
+![New Game, pestaña Fryhtans](images/guide/new-game-fryhtans.png)
+
 ### Cómo empieza
 - El All High dentro de una **guarida** con 4 soldados de su especie, y un **pueblo
   esclavizado** de 20 habitantes enlazado.
@@ -245,6 +257,8 @@ por generales y reyes).
 | Las demás | $150 | 10 | 15 |
 | Ascender a Ordo | — | 5 | — |
 
+![Life Points y panel de la guarida](images/guide/lair.png)
+
 ### Pueblos esclavizados
 - **Cómo se esclaviza:** una guarida con líder enlazada a un pueblo independiente le
   baja la resistencia; para terminar de bajarla hay que pelear. A un pueblo de otro
@@ -271,6 +285,8 @@ Con un Ordo adentro también se puede usar **Cull Population** (botón de espada
 o 4 aldeanos a cambio de un poco de oro, comida y LP. Sin Ordo, el pueblo dice "Send an
 Ordo to enable actions."
 
+![Pueblo esclavizado con un Ordo dentro](images/guide/enslaved-town.png)
+
 ### Tecnologías de guarida
 Se investigan con el botón **Research** (página 2 de la guarida). El costo se paga una
 vez al desbloquearla; puedes cambiar de tecnología y cada una guarda su avance. Tardan 6
@@ -284,6 +300,8 @@ meses.
 | **Dominion** | $1,000 + 30 LP | — | +10 de lealtad en los pueblos esclavizados; la sobrepoblación empieza en 32 |
 | **Sacrificial Rites** | $1,000 + 30 LP | Dominion | Un pueblo con un Ordo que llega a la sobrepoblación sacrifica 5 aldeanos a cambio de LP extra |
 
+![Tecnologías de guarida](images/guide/lair-techs.png)
+
 ---
 
 ## 8. Editor de escenarios
@@ -296,6 +314,8 @@ existente). Permite armar un mapa desde cero o desde uno generado:
 - Pintar terreno: pasto, tierra, agua, colinas.
 - Agregar y quitar reinos y cambiar su color.
 - Elegir las metas, probar el escenario (**F12**) y guardarlo.
+
+![Editor de escenarios](images/guide/editor.png)
 
 ---
 

@@ -43,8 +43,9 @@ Based on **7kmod 0.5.0** (see `CHANGELOG.en.md`).
     migrating on their own to an enslaved town.
   - Games with a Fryhtan kingdom start on the largest land.
 - **Players' guide** (`GUIDE.md` and `GUIDE.en.md`): everything the mod changes, by
-  topic and in players' terms, with what is only in New Adversaries marked [NA]. The
-  installer puts it in `Docs` and in the Start menu.
+  topic and in players' terms, with what is only in New Adversaries marked [NA], and 10
+  screenshots of the game (`7kmod/images/guide/`, shown on GitHub). The installer puts
+  it in `Docs`, without the images, and in the Start menu.
 - **`COMBAT_ANALYSIS` in English** (`COMBAT_ANALYSIS.en.md`), and the installer puts it
   in `Docs` with the other documents.
 - **Fryhtan kingdom** (brought from `7kmod-fryhtan`): the training bar on the map (from
