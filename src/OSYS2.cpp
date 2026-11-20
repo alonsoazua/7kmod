@@ -1051,6 +1051,29 @@ void Sys::disp_zoom()
 		vga.use_front();
 	}
 
+	//--- 7kmod: show the speed of the game for a while after it's set (keys 1-9, unpausing, starting or loading a game) ---//
+
+	else if( sys.speed_msg_end_time && !mod_editor.is_editing() )
+	{
+		if( misc.get_time() >= sys.speed_msg_end_time )
+			sys.speed_msg_end_time = 0;
+		else
+		{
+			// the key of the speed: 1-8 (3-24), 9 the highest one (99)
+			int speedKey = config.frame_speed >= 99 ? 9 : (config.frame_speed+2) / 3;
+
+			char speedStr[50];
+			// TRANSLATORS: Game Speed: <Number>
+			snprintf( speedStr, sizeof(speedStr), _("Game Speed: %d"), speedKey );
+
+			int x = ZOOM_X1 + ( (ZOOM_X2-ZOOM_X1+1) - font_news.text_width(speedStr) ) / 2;
+
+			vga.use_back();
+			font_news.disp( x, ZOOM_Y1+10, speedStr, ZOOM_X2 );
+			vga.use_front();
+		}
+	}
+
 	//----- next frame, increase the frame counter -----//
 
 	sys.frames_in_this_second++;		// no. of frames displayed in this second

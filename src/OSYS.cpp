@@ -180,6 +180,7 @@ Sys::Sys()
    is_mp_game = 0;
    toggle_full_screen_flag = 0;
    user_pause_flag = 0;
+   speed_msg_end_time = 0;
    disp_fps_flag = 0;
 }
 //----------- End of function Sys::Sys -----------//
@@ -2666,6 +2667,10 @@ void Sys::set_speed(int frameSpeed, int remoteCall)
    }
 
    config.frame_speed = requested_speed;
+
+   //--- 7kmod: show "Game Speed: N" on the map for SPEED_MSG_TIME (the pause shows "Game Paused") ---//
+
+   speed_msg_end_time = requested_speed > 0 ? misc.get_time() + SPEED_MSG_TIME : 0;
 }
 //--------- End of function Sys::set_speed ---------//
 

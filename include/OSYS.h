@@ -35,6 +35,8 @@ enum { COMMON_DATA_BUF_SIZE = 64*1024 };			// keep a 64K common buffer for all t
 
 #define FRAMES_PER_DAY	10			// no. of frames per day
 
+enum { SPEED_MSG_TIME = 10000 };		// 7kmod: "Game Speed: N" shows for 10 seconds after setting the speed
+
 #define MAX_SCENARIO_PATH 3		// 7kmod-editor: the third is the scenarios of the editor (ModEditor::init_scenario_dir())
 
 
@@ -90,6 +92,7 @@ public:
 	char		toggle_full_screen_flag;
 	char		cheat_enabled_flag;
 	char		user_pause_flag;
+	unsigned long speed_msg_end_time;		// 7kmod: "Game Speed: N" shows on the map until this time (misc.get_time()), 0 if not
 	char		disp_fps_flag;
 
 	char 		view_mode;				// the view mode can be MODE_???
