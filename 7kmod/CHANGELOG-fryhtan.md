@@ -12,6 +12,17 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
 
 ## [Sin publicar]
 
+### Cambiado
+- **Texto del pueblo esclavizado en dos páginas**, con los cuadritos "1" y "2" en la
+  esquina del panel (el de la página actual, hundido):
+  - **1:** el tributo, más corto: "Enslaved town: $156 of tribute at the end of the
+    month."
+  - **2:** cómo funciona la sobrepoblación: "When the population reaches 30, the town
+    loses loyalty and may rebel." (32 con Dominion).
+  - Al volver a seleccionar el pueblo abre en la página 1.
+- **Pueblo esclavizado sin Ordo:** donde van los botones del Ordo dice "Send an Ordo to
+  enable actions."
+
 ---
 
 ## [0.2.0] - 2026-11-19

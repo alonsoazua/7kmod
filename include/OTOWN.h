@@ -513,6 +513,8 @@ public:
 
 extern TownArray town_array;
 
+void forget_enslaved_tab();		// 7kmod-fryhtan: an enslaved town selected again shows the first page of its text (OTOWNIF.cpp)
+
 //---------------------------------------------------//
 
 #endif

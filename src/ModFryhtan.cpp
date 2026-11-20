@@ -2257,8 +2257,6 @@ void ModFryhtan::next_day_research(int nationRecno)
 	if( nationRecno < 1 || nationRecno > MAX_NATION || !is_fryhtan(nationRecno) )
 		return;
 
-
-
 	int lairCountChecked = 0, hasLair = 0;
 
 	for( int t=0 ; t<FRYHTAN_TECH_COUNT ; t++ )

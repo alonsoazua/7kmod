@@ -13,6 +13,17 @@ together.
 
 ## [Unreleased]
 
+### Changed
+- **Text of an enslaved town in two pages**, with the small squares "1" and "2" in the
+  corner of the panel (the current page's, pressed):
+  - **1:** the tribute, shorter: "Enslaved town: $156 of tribute at the end of the
+    month."
+  - **2:** how overpopulation works: "When the population reaches 30, the town loses
+    loyalty and may rebel." (32 with Dominion).
+  - Selecting the town again opens it on page 1.
+- **Enslaved town without an Ordo:** where the Ordo's buttons go it reads "Send an Ordo
+  to enable actions."
+
 ---
 
 ## [0.2.0] - 2026-11-19
