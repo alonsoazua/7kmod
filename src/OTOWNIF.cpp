@@ -503,6 +503,13 @@ void Town::disp_main_menu(int refreshFlag)
 
 		if( refreshFlag == INFO_REPAINT || ordoKey != lastOrdoKey )
 		{
+			if( ordoPtr && !lastOrdoKey && refreshFlag != INFO_REPAINT )		// an Ordo enters the town: repaint, to clear "Send an Ordo to enable actions."
+			{
+				lastOrdoKey = ordoKey;
+				info.disp();
+				return;
+			}
+
 			lastOrdoKey = ordoKey;
 
 			if( ordoPtr )
