@@ -34,6 +34,17 @@ incluye todo lo de `7kmod` y documenta lo suyo en `CHANGELOG-gameplay.md`.
     la unidad (solo tus unidades con grupo).
   - **Lista de unidades:** dice "Group N" abajo cuando la selección es exactamente un
     grupo.
+  - **`Alt+número` dos veces** (en menos de medio segundo) además centra la vista en el
+    grupo.
+
+### Cambiado
+- **Lista de unidades seleccionadas:** abajo, un panel con el combate, la habilidad (por
+  ejemplo Leadership o Mining) y la vida de la unidad en foco (la del marco amarillo); la
+  lista pasa de 8 a 7 filas (28 unidades por página).
+  - **Clic** en una unidad la pone en foco sin quitar la selección ni cerrar la lista
+    (antes seleccionaba solo esa unidad); **doble clic** selecciona solo esa unidad;
+    **`Ctrl` + clic** la pone en foco y centra la vista en ella. El clic derecho la sigue
+    quitando de la selección.
 
 ---
 

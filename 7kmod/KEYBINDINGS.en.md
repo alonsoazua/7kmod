@@ -108,7 +108,7 @@ In the training and production menus, `↑` and `↓` move the queue selection (
 | Key | Action | Name for `bindkey` |
 |---|---|---|
 | `Ctrl+1` to `Ctrl+9` | Assigns the selected units to group 1–9. | `KEYEVENT_SET_GROUP_1` … `_9` |
-| `Alt+1` to `Alt+9` | Selects group 1–9. | `KEYEVENT_SEL_GROUP_1` … `_9` |
+| `Alt+1` to `Alt+9` | Selects group 1–9. **(mod)** Twice in a row (within half a second) also centers the view on the group. | `KEYEVENT_SEL_GROUP_1` … `_9` |
 
 **(mod)** The groups with units on the map have a small button (1–9) on the right edge
 of the map, above the clear news button, each in its own place: a click selects the
@@ -218,7 +218,9 @@ Batch size: **8** in towns, **10** in the War Factory and **5** in the harbor.
 | List of towns of the fort's Recruit button **(mod, both branches)** | Right click on the panel | Closes the list, just like Cancel. |
 | Town, Train Captain button **(mod, gameplay)** | Left / right click | Adds / removes a captain from the queue. |
 | Unit panel with several selected **(mod, both branches)** | `>` / `<` button at the right of the name bar | Shows / hides the list of selected units. With several pages, `<` and `>` at the bottom change the page. |
-| List of selected units **(mod, both branches)** | Left / right click on a unit | Selects only that unit (opens its panel) / removes it from the selection. |
+| List of selected units **(mod, both branches)** | Left / right click on a unit | Puts it in focus (yellow frame; its combat, skill and hit points show below) without changing the selection / removes it from the selection. |
+| List of selected units **(mod)** | Double click on a unit | Selects only that unit (opens its panel). |
+| List of selected units **(mod)** | `Ctrl` + click on a unit | Puts it in focus and centers the view on it. |
 | Fort panel, darkened units (outside the fort) **(mod, both branches)** | Left click | Moves the camera to that unit and selects it. |
 | Fort, Withdraw button **(mod, both branches)** | Click | All the units that left the fort return to it. Alert / At ease is on page 2 of the fort's buttons. |
 

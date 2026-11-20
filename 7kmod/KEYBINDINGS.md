@@ -111,7 +111,7 @@ En los menús de entrenamiento y producción, `↑` y `↓` mueven la selección
 | Tecla | Acción | Nombre para `bindkey` |
 |---|---|---|
 | `Ctrl+1` a `Ctrl+9` | Asigna las unidades seleccionadas al grupo 1–9. | `KEYEVENT_SET_GROUP_1` … `_9` |
-| `Alt+1` a `Alt+9` | Selecciona el grupo 1–9. | `KEYEVENT_SEL_GROUP_1` … `_9` |
+| `Alt+1` a `Alt+9` | Selecciona el grupo 1–9. **(mod)** Dos veces seguidas (en menos de medio segundo) además centra la vista en el grupo. | `KEYEVENT_SEL_GROUP_1` … `_9` |
 
 **(mod)** Los grupos con unidades en el mapa tienen un botón chico (1–9) en la orilla
 derecha del mapa, encima del botón de borrar noticias, cada uno en su lugar: clic
@@ -223,7 +223,9 @@ puerto.
 | Lista de pueblos del botón Recruit del fuerte **(mod, ambas ramas)** | Clic derecho en el panel | Cierra la lista, igual que Cancel. |
 | Pueblo, botón Train Captain **(mod, gameplay)** | Clic izquierdo / derecho | Agrega / quita un capitán de la cola. |
 | Panel de la unidad con varias seleccionadas **(mod, ambas ramas)** | Botón `>` / `<` a la derecha de la barra del nombre | Muestra / oculta la lista de las unidades seleccionadas. Con varias páginas, `<` y `>` abajo cambian de página. |
-| Lista de unidades seleccionadas **(mod, ambas ramas)** | Clic izquierdo / derecho en una unidad | Selecciona solo esa unidad (abre su panel) / la quita de la selección. |
+| Lista de unidades seleccionadas **(mod, ambas ramas)** | Clic izquierdo / derecho en una unidad | La pone en foco (marco amarillo; abajo se ven su combate, su habilidad y su vida) sin quitar la selección / la quita de la selección. |
+| Lista de unidades seleccionadas **(mod)** | Doble clic en una unidad | Selecciona solo esa unidad (abre su panel). |
+| Lista de unidades seleccionadas **(mod)** | `Ctrl` + clic en una unidad | La pone en foco y centra la vista en ella. |
 | Panel del fuerte, unidades oscurecidas (fuera del fuerte) **(mod, ambas ramas)** | Clic izquierdo | Mueve la cámara a esa unidad y la selecciona. |
 | Fuerte, botón Withdraw **(mod, ambas ramas)** | Clic | Todas las unidades que salieron del fuerte regresan a él. Alert / At ease está en la página 2 de los botones del fuerte. |
 

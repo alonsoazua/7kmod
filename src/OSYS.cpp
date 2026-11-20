@@ -1620,47 +1620,47 @@ void Sys::detect_letter_key(unsigned scanCode, unsigned skeyState)
 
    else if( ISKEY(KEYEVENT_SEL_GROUP_1) )
    {
-      group_select.select_grouped_units(1);
+      group_select.key_select_group(1);		// 7kmod: twice also centers the map on the group
    }
 
    else if( ISKEY(KEYEVENT_SEL_GROUP_2) )
    {
-      group_select.select_grouped_units(2);
+      group_select.key_select_group(2);		// 7kmod: twice also centers the map on the group
    }
 
    else if( ISKEY(KEYEVENT_SEL_GROUP_3) )
    {
-      group_select.select_grouped_units(3);
+      group_select.key_select_group(3);		// 7kmod: twice also centers the map on the group
    }
 
    else if( ISKEY(KEYEVENT_SEL_GROUP_4) )
    {
-      group_select.select_grouped_units(4);
+      group_select.key_select_group(4);		// 7kmod: twice also centers the map on the group
    }
 
    else if( ISKEY(KEYEVENT_SEL_GROUP_5) )
    {
-      group_select.select_grouped_units(5);
+      group_select.key_select_group(5);		// 7kmod: twice also centers the map on the group
    }
 
    else if( ISKEY(KEYEVENT_SEL_GROUP_6) )
    {
-      group_select.select_grouped_units(6);
+      group_select.key_select_group(6);		// 7kmod: twice also centers the map on the group
    }
 
    else if( ISKEY(KEYEVENT_SEL_GROUP_7) )
    {
-      group_select.select_grouped_units(7);
+      group_select.key_select_group(7);		// 7kmod: twice also centers the map on the group
    }
 
    else if( ISKEY(KEYEVENT_SEL_GROUP_8) )
    {
-      group_select.select_grouped_units(8);
+      group_select.key_select_group(8);		// 7kmod: twice also centers the map on the group
    }
 
    else if( ISKEY(KEYEVENT_SEL_GROUP_9) )
    {
-      group_select.select_grouped_units(9);
+      group_select.key_select_group(9);		// 7kmod: twice also centers the map on the group
    }
 
    //---- keys for toggling map mode ----//

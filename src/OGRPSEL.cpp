@@ -29,6 +29,7 @@
 #include <OFONT.h>
 #include <OMOUSE.h>
 #include <OWORLD.h>
+#include <OMISC.h>
 #include <OSE.h>
 #include <OHELP.h>
 #include <ModEditor.h>
@@ -44,6 +45,10 @@ enum { GROUP_BUTTON_X1 = ZOOM_X2-13,		// as the news buttons: NEWS_X2+3
 static int group_button_y1(int groupNum) { return GROUP_BUTTON_Y9 - (MAX_SELECT_GROUP_NUM-groupNum) * GROUP_BUTTON_SPACE; }
 
 static char group_has_units[MAX_SELECT_GROUP_NUM+1];		// set by disp_buttons(), for detect_buttons()
+
+enum { GROUP_KEY_DOUBLE_TIME = 500 };		// Alt+number twice within this (ms) also centers the map on the group
+static int           last_key_group;
+static unsigned long last_key_time;
 
 // the colors of the news buttons (NEWS_LOG, NEWS_CLR): light and dark border, face
 enum { GROUP_BUTTON_LIGHT = 0x4F, GROUP_BUTTON_DARK = 0x99, GROUP_BUTTON_FACE = 0x5E,
@@ -206,6 +211,35 @@ int GroupSelect::select_grouped_units(int groupNum)
 //--------------- end of function GroupSelect::select_grouped_units ----------------//
 
 
+//--------------- begin of function GroupSelect::key_select_group ----------------//
+//
+// 7kmod: Alt+number selects the group; the same number again within
+// GROUP_KEY_DOUBLE_TIME also centers the map on it (on the unit shown in the
+// panel), as a double click on its button.
+//
+void GroupSelect::key_select_group(int groupNum)
+{
+	unsigned long curTime = misc.get_time();
+	int doublePress = groupNum == last_key_group && curTime - last_key_time < GROUP_KEY_DOUBLE_TIME;
+
+	int unitRecno = select_grouped_units(groupNum);
+
+	if( doublePress && unitRecno )
+	{
+		Unit* unitPtr = unit_array[unitRecno];
+		world.go_loc( unitPtr->next_x_loc(), unitPtr->next_y_loc() );
+
+		last_key_group = 0;		// a third press is a new first one
+	}
+	else
+	{
+		last_key_group = groupNum;
+		last_key_time  = curTime;
+	}
+}
+//--------------- end of function GroupSelect::key_select_group ----------------//
+
+
 //--------------- begin of function GroupSelect::disp_buttons ----------------//
 //
 // 7kmod: a column of small buttons 1-9 above the clear news button, each in
@@ -217,6 +251,7 @@ void GroupSelect::disp_buttons()
 	memset( group_has_units, 0, sizeof(group_has_units) );
 
 	int playerNation = nation_array.player_recno;
+
 
 	if( !playerNation || sys.view_mode != MODE_NORMAL || mod_editor.is_editing() )
 		return;
