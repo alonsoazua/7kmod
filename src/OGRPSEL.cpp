@@ -252,7 +252,6 @@ void GroupSelect::disp_buttons()
 
 	int playerNation = nation_array.player_recno;
 
-
 	if( !playerNation || sys.view_mode != MODE_NORMAL || mod_editor.is_editing() )
 		return;
 
