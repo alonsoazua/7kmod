@@ -87,6 +87,10 @@ LangString RunGame    ${LANG_SPANISH} "Jugar New Adversaries"
 LangString RunGame    ${LANG_ENGLISH} "Play New Adversaries"
 LangString ShowReadme ${LANG_SPANISH} "Ver el LEEME"
 LangString ShowReadme ${LANG_ENGLISH} "Show the README"
+LangString GuideName  ${LANG_SPANISH} "Guía de New Adversaries"
+LangString GuideName  ${LANG_ENGLISH} "New Adversaries Guide"
+LangString GuideFile  ${LANG_SPANISH} "Docs\GUIDE.txt"
+LangString GuideFile  ${LANG_ENGLISH} "Docs\GUIDE.en.txt"
 LangString Uninstall  ${LANG_SPANISH} "Desinstalar"
 LangString Uninstall  ${LANG_ENGLISH} "Uninstall"
 
@@ -160,6 +164,7 @@ Section "$(SecGame)" SecGameId
     CreateShortcut "$SMPROGRAMS\$StartMenuFolder\New Adversaries Classic.lnk" "$INSTDIR\7k-newAdversaries-Classic.exe" "" "$INSTDIR\7k-newAdversaries-Classic.exe" 0
     CreateShortcut "$SMPROGRAMS\$StartMenuFolder\LEEME.lnk" "$INSTDIR\LEEME.txt"
     CreateShortcut "$SMPROGRAMS\$StartMenuFolder\README.lnk" "$INSTDIR\README.txt"
+    CreateShortcut "$SMPROGRAMS\$StartMenuFolder\$(GuideName).lnk" "$INSTDIR\$(GuideFile)"
     CreateShortcut "$SMPROGRAMS\$StartMenuFolder\Changelog.lnk" "$INSTDIR\Changelog"
     CreateShortcut "$SMPROGRAMS\$StartMenuFolder\$(Uninstall).lnk" "$INSTDIR\uninstall.exe"
   !insertmacro MUI_STARTMENU_WRITE_END

@@ -23,6 +23,9 @@ the game plays. This branch includes everything in the `7kmod` branch, documente
 ## [Unreleased]
 
 ### Added
+- **Players' guide** (`GUIDE.md` and `GUIDE.en.md`): everything the mod changes, by
+  topic and in players' terms, with what is only in New Adversaries marked [NA]. The
+  installer puts it in `Docs` and in the Start menu.
 - **Fryhtan kingdom** (brought from `7kmod-fryhtan`): the training bar on the map (from
   7kmod) also on the lairs.
 
