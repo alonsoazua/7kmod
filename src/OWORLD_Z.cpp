@@ -1066,7 +1066,8 @@ void ZoomMatrix::disp_text()
 //
 // 7kmod: a small progress bar over the player's towns training a unit
 // (above the name), War Factories building a weapon and Harbors building a
-// ship (at the center), as the progress bar of their panel.
+// ship (at the center), as the progress bar of their panel. 7kmod-fryhtan:
+// and lairs training Fryhtans.
 //
 void ZoomMatrix::disp_train_bars()
 {
@@ -1104,6 +1105,7 @@ void ZoomMatrix::disp_train_bars()
 			continue;
 
 		float progress = -1;
+		int   barY = (firmPtr->abs_y1+firmPtr->abs_y2)/2;
 
 		if( firmPtr->firm_id == FIRM_WAR_FACTORY )
 		{
@@ -1129,8 +1131,21 @@ void ZoomMatrix::disp_train_bars()
 			}
 		}
 
+		else if( firmPtr->firm_id == FIRM_CAMP )		// 7kmod-fryhtan: a lair training Fryhtans, as the bar of its Train button
+		{
+			FryhtanLair* lairPtr = mod_fryhtan.get_lair(i);
+
+			if( lairPtr && lairPtr->train_count > 0 )
+			{
+				progress = ( (float) lairPtr->train_days + (float) sys.day_frame_count / FRAMES_PER_DAY ) /
+							  (float) ModFryhtan::train_days( lairPtr->train_type(0), lairPtr->monster_id );
+
+				barY += 9;		// below "(Alchemist Lair)"
+			}
+		}
+
 		if( progress >= 0 )
-			put_progress_bar( (firmPtr->abs_x1+firmPtr->abs_x2)/2, (firmPtr->abs_y1+firmPtr->abs_y2)/2, progress );
+			put_progress_bar( (firmPtr->abs_x1+firmPtr->abs_x2)/2, barY, progress );
 	}
 }
 //----------- End of function ZoomMatrix::disp_train_bars ------------//

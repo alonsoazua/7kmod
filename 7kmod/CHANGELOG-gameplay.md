@@ -21,6 +21,10 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 
 ## [Sin publicar]
 
+### Agregado
+- **Reino Fryhtan** (traído de `7kmod-fryhtan`): la barra de entrenamiento en el mapa
+  (de 7kmod) también en las guaridas.
+
 ### Cambiado
 - **Reino Fryhtan** (traído de `7kmod-fryhtan`): el texto del pueblo esclavizado tiene
   dos páginas, el tributo y cómo funciona la sobrepoblación, y sin Ordo dice "Send an

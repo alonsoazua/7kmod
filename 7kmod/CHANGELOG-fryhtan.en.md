@@ -13,6 +13,11 @@ together.
 
 ## [Unreleased]
 
+### Added
+- **Training bar on the lair:** as the one of towns (7kmod), a small green bar on your
+  lairs shows the progress of the Fryhtan being trained, a bit below the center (under
+  "(Alchemist Lair)").
+
 ### Changed
 - **Text of an enslaved town in two pages**, with the small squares "1" and "2" in the
   corner of the panel (the current page's, pressed):
