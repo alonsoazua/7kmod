@@ -97,6 +97,10 @@ static Button3D   button_recruit, button_train, button_tax, button_grant;
 static Button3D   button_raid;		// 7kmod-fryhtan: the Raid button of an independent town linked to a lair
 static Button     button_raid_village, button_raid_cancel;		// 7kmod-fryhtan: in the Raid menu
 static Button3D   button_cull;			// 7kmod-fryhtan: Cull Population in an enslaved town
+static int        enslaved_tab=1, enslaved_tab_town_recno=0;		// 7kmod-fryhtan: the page (1 or 2) of the text of an enslaved town, and its town
+static int        enslaved_tab_y1;		// 7kmod-fryhtan: where its buttons "1" and "2" are
+
+enum { ENSLAVED_TAB_SIZE = 14 };		// 7kmod-fryhtan: the square buttons "1" and "2"
 static Button3D   button_ordo;			// 7kmod-fryhtan: the Ordo inside an enslaved town (the spy button), opens the Ordo menu
 static Button     button_ordo_next, button_ordo_leave, button_ordo_back;		// 7kmod-fryhtan: in the Ordo menu
 static Button3D   button_spy, button_cancel, button_spy_mobilize,
@@ -437,9 +441,22 @@ void Town::disp_main_menu(int refreshFlag)
 
 			char str[200];
 
-			if( mod_fryhtan.has_lair_commander(this) )
+			if( enslaved_tab_town_recno != town_recno )		// another town: the first page
 			{
-				snprintf( str, sizeof(str), _("Enslaved town. At the end of the month you will receive $%d as tribute."),
+				enslaved_tab_town_recno = town_recno;
+				enslaved_tab = 1;
+			}
+
+			if( enslaved_tab == 2 )		//--- page 2: how the overpopulation works ---//
+			{
+				// TRANSLATORS: When the population reaches <Number>, the town loses loyalty and may rebel.
+				snprintf( str, sizeof(str), _("When the population reaches %d, the town loses loyalty and may rebel."),
+							 ModFryhtan::overpopulated_population(nation_recno) );
+			}
+			else if( mod_fryhtan.has_lair_commander(this) )		//--- page 1: the tribute ---//
+			{
+				// TRANSLATORS: Enslaved town: $<Number> of tribute at the end of the month.
+				snprintf( str, sizeof(str), _("Enslaved town: $%d of tribute at the end of the month."),
 							 mod_fryhtan.town_tribute(this) );
 			}
 			else
@@ -448,7 +465,32 @@ void Town::disp_main_menu(int refreshFlag)
 			}
 
 			vga_util.d3_panel_up( BUTTON_X1, y, BUTTON_X2, y+52 );
-			font_san.put_paragraph( BUTTON_X1+6, y+4, BUTTON_X2-6, y+50, str );
+			font_san.put_paragraph( BUTTON_X1+6, y+4, BUTTON_X2-ENSLAVED_TAB_SIZE-8, y+50, str );
+
+			//--- the square buttons "1" and "2" of the pages, the current one pressed ---//
+
+			enslaved_tab_y1 = y+4;
+
+			for( int tab=1 ; tab<=2 ; tab++ )
+			{
+				int x1 = BUTTON_X2-ENSLAVED_TAB_SIZE-4, y1 = enslaved_tab_y1 + (tab-1)*(ENSLAVED_TAB_SIZE+3);
+				int x2 = x1+ENSLAVED_TAB_SIZE, y2 = y1+ENSLAVED_TAB_SIZE;
+
+				if( tab == enslaved_tab )
+					vga_util.d3_panel_down( x1, y1, x2, y2, 1 );
+				else
+					vga_util.d3_panel_up( x1, y1, x2, y2, 1 );
+
+				font_small.center_put( x1, y1, x2, y2, tab==1 ? "1" : "2" );
+			}
+
+			//--- no Ordo inside the town: where its buttons go, what it's for ---//
+
+			if( !mod_fryhtan.town_ordo(town_recno) )
+			{
+				vga_util.d3_panel_up( BUTTON_X1, y+55, BUTTON_X2, y+92 );
+				font_san.put_paragraph( BUTTON_X1+6, y+59, BUTTON_X2-6, y+91, _("Send an Ordo to enable actions.") );
+			}
 		}
 
 		y += 55;
@@ -1439,6 +1481,18 @@ void Town::disp_auto_loyalty()
 //----------- End of function Town::disp_auto_loyalty -----------//
 
 
+//--------- Begin of function forget_enslaved_tab ---------//
+//
+// 7kmod-fryhtan: called while no town is selected, so that an enslaved town
+// selected again shows the first page of its text (the tribute).
+//
+void forget_enslaved_tab()
+{
+	enslaved_tab_town_recno = 0;
+}
+//----------- End of function forget_enslaved_tab ---------//
+
+
 //--------- Begin of function Town::detect_main_menu ---------//
 //
 int Town::detect_main_menu()
@@ -1470,6 +1524,25 @@ int Town::detect_main_menu()
 		info.disp();
 		disable_refresh = 0;
 		return 1;
+	}
+
+	//----- 7kmod-fryhtan: the pages of the text of an enslaved town ---//
+
+	if( nation_recno == nation_array.player_recno && mod_fryhtan.is_enslaved_town(this) &&
+		 enslaved_tab_town_recno == town_recno )
+	{
+		for( int tab=1 ; tab<=2 ; tab++ )
+		{
+			int x1 = BUTTON_X2-ENSLAVED_TAB_SIZE-4, y1 = enslaved_tab_y1 + (tab-1)*(ENSLAVED_TAB_SIZE+3);
+
+			if( tab != enslaved_tab && mouse.single_click(x1, y1, x1+ENSLAVED_TAB_SIZE, y1+ENSLAVED_TAB_SIZE) )
+			{
+				enslaved_tab = tab;
+				se_ctrl.immediate_sound("TURN_ON");
+				info.disp();
+				return 1;
+			}
+		}
 	}
 
 	//----- 7kmod-fryhtan: Cull Population in an enslaved town ---//

@@ -308,6 +308,9 @@ void Info::disp()
 	if( !firm_array.selected_recno )		// 7kmod: a Fort or lair selected again opens on its main menu, page 1
 		Firm::forget_info_menus();
 
+	if( !town_array.selected_recno )		// 7kmod-fryhtan: an enslaved town selected again shows the first page of its text
+		forget_enslaved_tab();
+
 	//------ 7kmod-editor: the side panel of the editor ------//
 
 	if( mod_editor.is_editing() )
@@ -368,6 +371,9 @@ void Info::update()
 
 	if( !firm_array.selected_recno )		// 7kmod: a Fort or lair selected again opens on its main menu, page 1
 		Firm::forget_info_menus();
+
+	if( !town_array.selected_recno )		// 7kmod-fryhtan: an enslaved town selected again shows the first page of its text
+		forget_enslaved_tab();
 
 	if( mod_editor.is_editing() )		// 7kmod-editor: the side panel of the editor
 		mod_editor.disp_panel(INFO_UPDATE);

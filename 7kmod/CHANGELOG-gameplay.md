@@ -21,6 +21,11 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 
 ## [Sin publicar]
 
+### Cambiado
+- **Reino Fryhtan** (traído de `7kmod-fryhtan`): el texto del pueblo esclavizado tiene
+  dos páginas, el tributo y cómo funciona la sobrepoblación, y sin Ordo dice "Send an
+  Ordo to enable actions." (ver `CHANGELOG-fryhtan.md`).
+
 ---
 
 ## [0.4.0] - 2026-11-19

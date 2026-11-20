@@ -22,6 +22,11 @@ the game plays. This branch includes everything in the `7kmod` branch, documente
 
 ## [Unreleased]
 
+### Changed
+- **Fryhtan kingdom** (brought from `7kmod-fryhtan`): the text of an enslaved town has
+  two pages, the tribute and how overpopulation works, and without an Ordo it reads
+  "Send an Ordo to enable actions." (see `CHANGELOG-fryhtan.en.md`).
+
 ---
 
 ## [0.4.0] - 2026-11-19
