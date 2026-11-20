@@ -223,7 +223,7 @@ puerto.
 | Lista de pueblos del botón Recruit del fuerte **(mod, ambas ramas)** | Clic derecho en el panel | Cierra la lista, igual que Cancel. |
 | Pueblo, botón Train Captain **(mod, gameplay)** | Clic izquierdo / derecho | Agrega / quita un capitán de la cola. |
 | Panel de la unidad con varias seleccionadas **(mod, ambas ramas)** | Botón `>` / `<` a la derecha de la barra del nombre | Muestra / oculta la lista de las unidades seleccionadas. Con varias páginas, `<` y `>` abajo cambian de página. |
-| Lista de unidades seleccionadas **(mod, ambas ramas)** | Clic izquierdo / derecho en una unidad | La pone en foco (marco amarillo; abajo se ven su combate y su habilidad) sin quitar la selección / la quita de la selección. |
+| Lista de unidades seleccionadas **(mod, ambas ramas)** | Clic izquierdo / derecho en una unidad | La pone en foco (marco amarillo; abajo se ven su título, su nombre, su combate y su habilidad) sin quitar la selección / la quita de la selección. |
 | Lista de unidades seleccionadas **(mod)** | Doble clic en una unidad | Selecciona solo esa unidad (abre su panel). |
 | Lista de unidades seleccionadas **(mod)** | `Ctrl` + clic en una unidad | La pone en foco y centra la vista en ella. |
 | Panel del fuerte, unidades oscurecidas (fuera del fuerte) **(mod, ambas ramas)** | Clic izquierdo | Mueve la cámara a esa unidad y la selecciona. |

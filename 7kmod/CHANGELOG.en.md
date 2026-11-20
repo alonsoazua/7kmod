@@ -37,10 +37,11 @@ which includes everything in `7kmod` and documents its own changes in
   - **`Alt+number` twice** (within half a second) also centers the view on the group.
 
 ### Changed
-- **List of selected units:** at the bottom, the combat and the skill (for example
-  Leadership or Mining) of the unit in focus (the one with the yellow frame), with the
-  boxes of the unit panel; only your humans and Fryhtans. The list goes from 8 to 7 rows
-  (28 units per page).
+- **List of selected units:** at the bottom, a separate panel with the unit in focus (the
+  one with the yellow frame): its title and name, as in the unit panel ("Soldier",
+  "Rocelin Middleton"), and its combat and skill (for example Leadership or Mining) with
+  the boxes of the unit panel (these only for your humans and Fryhtans). The list goes
+  from 8 to 6 rows (24 units per page).
   - **Click** on a unit puts it in focus without changing the selection or closing the
     list (it used to select only that unit); **double click** selects only that unit;
     **`Ctrl` + click** puts it in focus and centers the view on it. Right click still

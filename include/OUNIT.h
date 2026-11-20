@@ -463,6 +463,7 @@ public:
 
 	virtual void disp_info(int refreshFlag);
 	virtual void disp_unit_profile(int dispY1, int refreshFlag);
+	const char*	 profile_title();		// 7kmod: the first line of the profile ("Soldier", "General"...), NULL for non-human units (shown with unit_name() alone)
 	virtual int  detect_unit_profile();
 	virtual void detect_info();
 	virtual bool is_in_build_menu();
