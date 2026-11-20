@@ -2246,6 +2246,28 @@ int Town::recruit_dec_loyalty(int raceId, int decNow)
 //----------- End of function Town::recruit_dec_loyalty -----------//
 
 
+//--------- Begin of function Town::train_progress ---------//
+//
+// 7kmod: the progress (0-1) of the unit being trained, as the progress bar
+// of the town panel; -1 if not training. For the bar on the map.
+//
+float Town::train_progress()
+{
+	if( !train_unit_recno )
+		return -1;
+
+	int totalDays;
+
+	if( config.fast_build && nation_recno==nation_array.player_recno )
+		totalDays = TOTAL_TRAIN_DAYS/2;
+	else
+		totalDays = TOTAL_TRAIN_DAYS;
+
+	return float(sys.frame_count-start_train_frame_no) / float(totalDays * FRAMES_PER_DAY);
+}
+//----------- End of function Town::train_progress -----------//
+
+
 //--------- Begin of function Town::process_train ---------//
 void Town::process_train()
 {

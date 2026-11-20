@@ -160,6 +160,8 @@ protected:
 	void blacken_fog_of_war();
 
 	void disp_text();
+	void disp_train_bars();		// 7kmod: the progress of the training in the player's towns, War Factories and Harbors
+	void put_progress_bar(int x, int y, float progress);		// 7kmod: a small bar centered at x, from y (absolute positions)
 	void put_center_text(int x, int y, const char* str);
 };
 

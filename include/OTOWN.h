@@ -160,6 +160,7 @@ public:
 	char  train_queue_skill_array[MAX_TRAIN_QUEUE];	// it stores the skill id.
 	char  train_queue_race_array[MAX_TRAIN_QUEUE];	// it stores the race id.
 	char  train_queue_count;
+	float	train_progress();		// 7kmod: the progress (0-1) of the unit being trained, -1 if none
 	short	train_unit_recno;			// race id. of the unit the town is currently training, 0-if currently not training any
 	int	train_unit_action_id;	// id. of the action to be assigned to this unit when it is finished training.
 	short	train_queue_firm_array[MAX_TRAIN_QUEUE];	// 7kmod: the Fort each queued unit goes into when trained, 0 for none

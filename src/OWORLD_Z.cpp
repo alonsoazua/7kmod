@@ -61,6 +61,10 @@
 #include <OANLINE.h>
 #include <OFIRMDIE.h>
 #include <OIMGRES.h>
+#include <OF_WAR.h>
+#include <OF_HARB.h>
+#include <OUNITRES.h>
+#include <COLOR.h>
 #include <ModEditor.h>
 #include "gettext.h"
 
@@ -503,6 +507,8 @@ void ZoomMatrix::draw_frame()
 
 	else if( !config.explore_whole_map )
 		blacken_unexplored();
+
+	disp_train_bars();		// 7kmod
 
 	disp_text();
 }
@@ -1024,6 +1030,110 @@ void ZoomMatrix::disp_text()
 	}
 }
 //----------- End of function ZoomMatrix::disp_text ------------//
+
+
+//---------- Begin of function ZoomMatrix::disp_train_bars -----------//
+//
+// 7kmod: a small progress bar over the player's towns training a unit
+// (above the name), War Factories building a weapon and Harbors building a
+// ship (at the center), as the progress bar of their panel.
+//
+void ZoomMatrix::disp_train_bars()
+{
+	int playerNation = nation_array.player_recno;
+
+	if( !playerNation )
+		return;
+
+	//------- towns -------//
+
+	for( int i=town_array.size() ; i>0 ; i-- )
+	{
+		if( town_array.is_deleted(i) )
+			continue;
+
+		Town* townPtr = town_array[i];
+
+		if( townPtr->nation_recno != playerNation || !townPtr->train_unit_recno )
+			continue;
+
+		put_progress_bar( (townPtr->abs_x1+townPtr->abs_x2)/2, (townPtr->abs_y1+townPtr->abs_y2)/2 - 14,
+								townPtr->train_progress() );
+	}
+
+	//------- War Factories and Harbors -------//
+
+	for( int i=firm_array.size() ; i>0 ; i-- )
+	{
+		if( firm_array.is_deleted(i) )
+			continue;
+
+		Firm* firmPtr = firm_array[i];
+
+		if( firmPtr->nation_recno != playerNation || firmPtr->under_construction )
+			continue;
+
+		float progress = -1;
+
+		if( firmPtr->firm_id == FIRM_WAR_FACTORY )
+		{
+			FirmWar* warPtr = (FirmWar*) firmPtr;
+
+			if( warPtr->build_unit_id )		// as FirmWar::disp_war_info()
+			{
+				float buildProgressDays = warPtr->build_progress_days
+												  + (float) (sys.frame_count-warPtr->last_process_build_frame_no) / FRAMES_PER_DAY
+												  * (float) (warPtr->worker_count*6+warPtr->productivity/2) / 100;
+
+				progress = buildProgressDays / unit_res[warPtr->build_unit_id]->build_days;
+			}
+		}
+		else if( firmPtr->firm_id == FIRM_HARBOR )
+		{
+			FirmHarbor* harborPtr = (FirmHarbor*) firmPtr;
+
+			if( harborPtr->build_unit_id )		// as FirmHarbor::disp_build_info()
+			{
+				progress = (float) (sys.frame_count-harborPtr->start_build_frame_no) /
+							  ( (float) unit_res[harborPtr->build_unit_id]->build_days * FRAMES_PER_DAY );
+			}
+		}
+
+		if( progress >= 0 )
+			put_progress_bar( (firmPtr->abs_x1+firmPtr->abs_x2)/2, (firmPtr->abs_y1+firmPtr->abs_y2)/2, progress );
+	}
+}
+//----------- End of function ZoomMatrix::disp_train_bars ------------//
+
+
+//---------- Begin of function ZoomMatrix::put_progress_bar -----------//
+//
+// 7kmod: a small progress bar, black frame and green bar, centered at x and
+// from y (absolute positions on the map). Not displayed if it's not all in
+// the map view.
+//
+void ZoomMatrix::put_progress_bar(int x, int y, float progress)
+{
+	enum { BAR_WIDTH = 32, BAR_HEIGHT = 6 };
+
+	if( progress < 0 )
+		return;
+
+	if( progress > 1 )
+		progress = 1;
+
+	int x1 = x - World::view_top_x - BAR_WIDTH/2 + ZOOM_X1;
+	int y1 = y - World::view_top_y + ZOOM_Y1;
+	int x2 = x1 + BAR_WIDTH - 1;
+	int y2 = y1 + BAR_HEIGHT - 1;
+
+	if( x1 < ZOOM_X1 || x2 > ZOOM_X2 || y1 < ZOOM_Y1 || y2 > ZOOM_Y2 )
+		return;
+
+	vga_back.rect( x1, y1, x2, y2, 1, V_BLACK );
+	vga_back.indicator( x1+1, y1+1, x2-1, y2-1, progress, 1.0f, VGA_LIGHT_GREEN, VGA_GRAY+2 );
+}
+//----------- End of function ZoomMatrix::put_progress_bar ------------//
 
 
 //---------- Begin of function ZoomMatrix::put_center_text -----------//
