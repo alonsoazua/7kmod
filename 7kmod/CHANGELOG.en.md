@@ -24,6 +24,17 @@ which includes everything in `7kmod` and documents its own changes in
 
 ## [Unreleased]
 
+### Added
+- **Clearer groups** (`Ctrl+1`–`9` to assign, `Alt+1`–`9` to select):
+  - **Group buttons:** on the right edge of the map, above the clear news button, a small
+    button for each group with units on the map, from 1 (top) to 9 (bottom), each in its
+    own place and in the style of the news buttons. A click selects the group; a double
+    click also centers the view on it. The selected group's looks pressed.
+  - **Unit panel:** next to the kingdom color, a box with the number of the unit's group
+    (only your units with a group).
+  - **List of units:** reads "Group N" at the bottom when the selection is exactly a
+    group.
+
 ---
 
 ## [0.5.0] - 2026-11-19

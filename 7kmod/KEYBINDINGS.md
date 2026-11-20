@@ -113,6 +113,12 @@ En los menús de entrenamiento y producción, `↑` y `↓` mueven la selección
 | `Ctrl+1` a `Ctrl+9` | Asigna las unidades seleccionadas al grupo 1–9. | `KEYEVENT_SET_GROUP_1` … `_9` |
 | `Alt+1` a `Alt+9` | Selecciona el grupo 1–9. | `KEYEVENT_SEL_GROUP_1` … `_9` |
 
+**(mod)** Los grupos con unidades en el mapa tienen un botón chico (1–9) en la orilla
+derecha del mapa, encima del botón de borrar noticias, cada uno en su lugar: clic
+selecciona el grupo y doble clic además centra la vista en él. El botón del grupo
+seleccionado se ve hundido. El panel de una unidad tuya muestra su grupo junto al color
+del reino, y la lista de unidades dice "Group N" cuando la selección es un grupo.
+
 ---
 
 ## Ratón en el mapa

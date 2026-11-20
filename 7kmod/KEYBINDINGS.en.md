@@ -110,6 +110,12 @@ In the training and production menus, `↑` and `↓` move the queue selection (
 | `Ctrl+1` to `Ctrl+9` | Assigns the selected units to group 1–9. | `KEYEVENT_SET_GROUP_1` … `_9` |
 | `Alt+1` to `Alt+9` | Selects group 1–9. | `KEYEVENT_SEL_GROUP_1` … `_9` |
 
+**(mod)** The groups with units on the map have a small button (1–9) on the right edge
+of the map, above the clear news button, each in its own place: a click selects the
+group and a double click also centers the view on it. The button of the selected group
+looks pressed. The panel of one of your units shows its group next to the kingdom
+color, and the list of units reads "Group N" when the selection is a group.
+
 ---
 
 ## Mouse on the map
