@@ -49,9 +49,10 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
     Fryhtans entrenados en las guaridas salen con +10 de combate (soldado 30, Ordo 40).
   - **Dominion** ($1,000 y 30 life points, 6 meses): los pueblos esclavizados tienen +10
     de lealtad, y la sobrepoblación empieza en 32 habitantes (también para Subjugate).
-  - **Sacrificial Rites** ($1,000 y 30 life points, 6 meses, requiere Dominion): un Ordo
-    en Kidnap secuestra hasta 31 habitantes; con 31, en su siguiente captura sacrifica 5
-    aldeanos, cada uno por el life point normal más 1 o 2. Sale una noticia.
+  - **Sacrificial Rites** ($1,000 y 30 life points, 6 meses, requiere Dominion): un pueblo
+    esclavizado con un Ordo dentro (en cualquier orden) que llega a la sobrepoblación (32)
+    sacrifica 5 aldeanos de inmediato, cada uno por el life point normal más 1 o 2. Sale
+    una noticia. Sin Ordo no hay sacrificio.
   - Las tecnologías encadenadas no aparecen en la lista hasta terminar la anterior. La
     lista va por rama, y cada tecnología tiene su propio gráfico (salvo Alchemist Lair).
   - El menú es como el de la Torre de Ciencia: la lista de las tecnologías que faltan, la

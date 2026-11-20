@@ -3,8 +3,8 @@
  *
  * 7kmod-fryhtan: the icons of the technologies of the lairs, in the game
  * palette (PAL_STD.RES): <short> width, <short> height, then the pixels.
- * Made from notas/recursos/empowerment, brood_mastery, dominion and
- * sacrificial_rites.
+ * Made from notas/recursos/tecnologias/ (empowerment, brood_mastery, dominion and
+ * sacrificial_rites).
  */
 
 #ifndef __MODTECHICON_H

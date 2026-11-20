@@ -43,7 +43,7 @@ enum { FRYHTAN_TECH_ALCHEMIST_LAIR,			// a lair can be built on a raw material s
 		 FRYHTAN_TECH_EMPOWERMENT,				// the Fryhtans trained in the lairs have more combat (requires Brood Mastery)
 		 FRYHTAN_TECH_BROOD_MASTERY,			// training Fryhtans in the lairs costs less gold and Life Points
 		 FRYHTAN_TECH_DOMINION,					// the enslaved towns are more loyal and are overpopulated later
-		 FRYHTAN_TECH_SACRIFICIAL_RITES,		// an Ordo doing Kidnap sacrifices villagers in a nearly overpopulated town (requires Dominion)
+		 FRYHTAN_TECH_SACRIFICIAL_RITES,		// an Ordo in a town sacrifices villagers when it's overpopulated (requires Dominion)
 		 FRYHTAN_TECH_COUNT };					// the ids are saved: new ones go at the end (the list has its own order, tech_list_order())
 
 enum { FRYHTAN_TECH_NONE,				// locked: researching it the first time costs its gold and Life Points
@@ -77,8 +77,7 @@ enum { DOMINION_TECH_COST			= 1000,		// gold for researching Dominion
 enum { RITES_TECH_COST				= 1000,		// gold for researching Sacrificial Rites
 		 RITES_TECH_LIFE_POINTS		= 30,			// and Life Points
 		 RITES_TECH_DAYS				= 180,		// days of research
-		 RITES_POPULATION				= 31,			// an Ordo doing Kidnap kidnaps up to this many people, and from this many on...
-		 RITES_VILLAGERS				= 5,			// ...sacrifices this many villagers instead, on its next kidnap
+		 RITES_VILLAGERS				= 5,			// an Ordo in an overpopulated town sacrifices this many villagers at once (checked every day)
 		 RITES_LIFE_POINTS_MIN		= 1,			// each one gives the Life Points of a villager killed plus 1 or 2 at random
 		 RITES_LIFE_POINTS_MAX		= 2 };
 

@@ -50,8 +50,9 @@ together.
   - **Dominion** ($1,000 and 30 Life Points, 6 months): enslaved towns get +10 loyalty,
     and overpopulation starts at 32 people (for Subjugate too).
   - **Sacrificial Rites** ($1,000 and 30 Life Points, 6 months, requires Dominion): an
-    Ordo doing Kidnap kidnaps up to 31 people; at 31, its next capture sacrifices 5
-    villagers instead, each one for the usual Life Point plus 1 or 2. A message tells it.
+    enslaved town with an Ordo inside (whatever its order) that reaches overpopulation
+    (32) sacrifices 5 villagers at once, each one for the usual Life Point plus 1 or 2. A
+    message tells it. Without an Ordo there is no sacrifice.
   - Chained technologies don't show in the list until the previous one is done. The
     list goes by branch, and each technology has its own graphic (but Alchemist Lair).
   - The menu is like the Tower of Science's: the list of the technologies left, the

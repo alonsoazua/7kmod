@@ -2036,7 +2036,7 @@ const char* ModFryhtan::tech_desc(int techId)
 	}
 
 	if( techId == FRYHTAN_TECH_SACRIFICIAL_RITES )
-		return _("When a town nears overpopulation, your Ordo will sacrifice humans instead of kidnapping them. Sacrifices give additional Life Points.");
+		return _("When a town reaches overpopulation, your Ordo will sacrifice humans. Sacrifices give additional Life Points.");
 
 	return _("Lairs can be built on raw material sites to turn the raw material into Life Points. Requires an Ordo.");
 }
@@ -2256,6 +2256,7 @@ void ModFryhtan::next_day_research(int nationRecno)
 {
 	if( nationRecno < 1 || nationRecno > MAX_NATION || !is_fryhtan(nationRecno) )
 		return;
+
 
 
 	int lairCountChecked = 0, hasLair = 0;
@@ -3441,6 +3442,26 @@ void ModFryhtan::next_day_town_ordo(Town* townPtr)
 	if( nationPtr->cash > 0 )
 		nationPtr->add_expense( EXPENSE_MOBILE_UNIT, (float) unit_res[ordoPtr->unit_id]->year_cost / 365, 1 );
 
+	//------- Sacrificial Rites: whatever its order, it sacrifices villagers of an overpopulated town -------//
+
+	if( is_overpopulated(townPtr) && has_tech(ordoPtr->nation_recno, FRYHTAN_TECH_SACRIFICIAL_RITES) )
+	{
+		int lifePoints = 0, sacrificeCount;
+
+		for( sacrificeCount=0 ; sacrificeCount<RITES_VILLAGERS && townPtr->population > 1 ; sacrificeCount++ )
+		{
+			townPtr->kill_town_people(0, 0);		// a random race, by its people; no attacker: no loyalty loss
+			reward_town_villager(ordoPtr->nation_recno);		// the spoils and the Life Points of a villager killed...
+
+			int extraPoints = RITES_LIFE_POINTS_MIN + misc.random(RITES_LIFE_POINTS_MAX - RITES_LIFE_POINTS_MIN + 1);
+			add_life_points( ordoPtr->nation_recno, extraPoints );		// ...and more
+			lifePoints += LIFE_POINTS_VILLAGER + extraPoints;
+		}
+
+		if( sacrificeCount && townPtr->nation_recno == nation_array.player_recno )
+			news_array.ordo_sacrifice( townRecno, ordoPtr->name_id, sacrificeCount, lifePoints );
+	}
+
 	//------- Subjugate: it culls an overpopulated town, to prevent rebellions (no news) -------//
 
 	if( ordoPtr->action == ORDO_ACTION_SUBJUGATE && info.game_date%SUBJUGATE_CULL_DAYS == townRecno%SUBJUGATE_CULL_DAYS &&
@@ -3459,30 +3480,6 @@ void ModFryhtan::next_day_town_ordo(Town* townPtr)
 		int days = kidnap_days(leadership);
 		ordoPtr->next_kidnap_date = info.game_date + days/2 + misc.random(days+1);
 
-		//--- Sacrificial Rites: a town of RITES_POPULATION people or more has villagers sacrificed instead ---//
-
-		int hasRites = has_tech(ordoPtr->nation_recno, FRYHTAN_TECH_SACRIFICIAL_RITES);
-
-		if( hasRites && townPtr->population >= RITES_POPULATION )
-		{
-			int lifePoints = 0, sacrificeCount;
-
-			for( sacrificeCount=0 ; sacrificeCount<RITES_VILLAGERS && townPtr->population > 1 ; sacrificeCount++ )
-			{
-				townPtr->kill_town_people(0, 0);		// a random race, by its people; no attacker: no loyalty loss
-				reward_town_villager(ordoPtr->nation_recno);		// the spoils and the Life Points of a villager killed...
-
-				int extraPoints = RITES_LIFE_POINTS_MIN + misc.random(RITES_LIFE_POINTS_MAX - RITES_LIFE_POINTS_MIN + 1);
-				add_life_points( ordoPtr->nation_recno, extraPoints );		// ...and more
-				lifePoints += LIFE_POINTS_VILLAGER + extraPoints;
-			}
-
-			if( sacrificeCount && townPtr->nation_recno == nation_array.player_recno )
-				news_array.ordo_sacrifice( townRecno, ordoPtr->name_id, sacrificeCount, lifePoints );
-
-			return;
-		}
-
 		int kidnapCount = 0;
 
 		for( int k=0 ; k<KIDNAP_VILLAGERS ; k++ )
@@ -3490,8 +3487,6 @@ void ModFryhtan::next_day_town_ordo(Town* townPtr)
 			if( townPtr->population <= 0 || townPtr->population >= MAX_TOWN_POPULATION )
 				break;
 
-			if( hasRites && townPtr->population >= RITES_POPULATION )		// up to RITES_POPULATION, not into the overpopulation
-				break;
 
 			int pick = misc.random(townPtr->population);
 			int raceId = 0;
