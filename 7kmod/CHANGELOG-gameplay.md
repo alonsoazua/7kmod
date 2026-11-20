@@ -42,8 +42,9 @@ Publicada como **New Adversaries 0.5.0**, en el instalador
     Fryhtans con rango y que nadie migre por su cuenta a un pueblo esclavizado.
   - Las partidas con un reino Fryhtan empiezan en la masa de tierra más grande.
 - **Guía para jugadores** (`GUIDE.md` y `GUIDE.en.md`): todo lo que cambia el mod, por
-  tema y en lenguaje de jugador, con lo que solo está en New Adversaries marcado [NA].
-  El instalador la pone en `Docs` y en el menú Inicio.
+  tema y en lenguaje de jugador, con lo que solo está en New Adversaries marcado [NA], y
+  10 capturas del juego (`7kmod/images/guide/`, se ven en GitHub). El instalador la pone
+  en `Docs`, sin las imágenes, y en el menú Inicio.
 - **`COMBAT_ANALYSIS` en inglés** (`COMBAT_ANALYSIS.en.md`), y el instalador lo pone en
   `Docs` con los demás documentos.
 - **Reino Fryhtan** (traído de `7kmod-fryhtan`): la barra de entrenamiento en el mapa

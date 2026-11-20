@@ -40,6 +40,8 @@ in both.
 - **Training bar:** a small green bar over your towns, War Factories, Harbors (and
   lairs, in Fryhtan kingdoms) shows the progress of what is being trained or built.
 
+![Training bar over a town and a lair](images/guide/training-bar.png)
+
 ### Selecting units
 - **The selection box prefers military units:** if there are soldiers, weapons or war
   ships inside, only those are selected and civilians are ignored. With `Alt`, all are
@@ -56,6 +58,8 @@ in both.
   most important unit inside, and its list shows all of them, grouped by kingdom. Their
   combat is not revealed.
 
+![List of units with the unit in focus](images/guide/units-list.png)
+
 ### Groups
 - `Ctrl+1`–`9` saves the selection as a group; `Alt+1`–`9` selects it, and pressing it
   twice in a row also centers the view on it.
@@ -64,6 +68,8 @@ in both.
   the view.
 - A unit's panel shows its group number next to the kingdom color, and the list reads
   "Group N" when the selection is a whole group.
+
+![Group buttons and group number in the panel](images/guide/groups.png)
 
 ### Panels with more information
 - **Attack power and armor** in the units' panel: "Melee pwr", "Ranged pwr" and
@@ -75,6 +81,8 @@ in both.
 - **King's portrait** of each kingdom in the kingdoms report (F1).
 - **Fryhtan portraits** in the lists of units and of fort soldiers.
 
+![Panel of a general with attack power and armor](images/guide/unit-panel.png)
+
 ### Generals and honors
 - A general gets unhappy if his battle **contribution** is much greater than what you
   have paid him in rewards. Now you can see it:
@@ -83,6 +91,8 @@ in both.
     **Pay selected** and **Pay all** pay the honors.
   - **Request for honors:** when a general reaches the limit, a news message appears and
     you can accept or reject his request.
+
+![Military report, Contributions tab](images/guide/contributions.png)
 
 ---
 
@@ -197,6 +207,8 @@ Single player games only. In **New Game**, the **Fryhtans** tab lets you choose 
 the 13 species. The kingdom is called "<name> <species> Horde" and its king is the **All
 High**.
 
+![New Game, Fryhtans tab](images/guide/new-game-fryhtans.png)
+
 ### How it starts
 - The All High inside a **lair** with 4 soldiers of its species, and a linked
   **enslaved town** of 20 people.
@@ -243,6 +255,8 @@ for generals and kings).
 | The rest | $150 | 10 | 15 |
 | Promote to Ordo | — | 5 | — |
 
+![Life Points and the lair panel](images/guide/lair.png)
+
 ### Enslaved towns
 - **How to enslave:** a lair with a leader linked to an independent town lowers its
   resistance; to bring it down all the way you have to fight. For a town of another
@@ -270,6 +284,8 @@ With an Ordo inside you can also use **Cull Population** (sword button): it kill
 4 villagers for a little gold, food and LP. Without an Ordo, the town reads "Send an
 Ordo to enable actions."
 
+![Enslaved town with an Ordo inside](images/guide/enslaved-town.png)
+
 ### Lair technologies
 Researched with the **Research** button (page 2 of the lair). The cost is paid once, to
 unlock it; you can switch technologies and each keeps its progress. They take 6 months.
@@ -281,6 +297,8 @@ unlock it; you can switch technologies and each keeps its progress. They take 6 
 | **Empowerment** | $1,500 + 50 LP | Brood Mastery | Trained Fryhtans get +10 combat |
 | **Dominion** | $1,000 + 30 LP | — | +10 loyalty in enslaved towns; overpopulation starts at 32 |
 | **Sacrificial Rites** | $1,000 + 30 LP | Dominion | A town with an Ordo that reaches overpopulation sacrifices 5 villagers for extra LP |
+
+![Lair technologies](images/guide/lair-techs.png)
 
 ---
 
@@ -294,6 +312,8 @@ scenario). It lets you build a map from scratch or from a generated one:
 - Paint terrain: grass, earth, water, hills.
 - Add and remove kingdoms and change their color.
 - Choose the goals, test the scenario (**F12**) and save it.
+
+![Scenario editor](images/guide/editor.png)
 
 ---
 

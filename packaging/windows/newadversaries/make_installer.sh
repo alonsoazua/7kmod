@@ -38,7 +38,7 @@ find "$STAGE" -name 'Makefile*' -delete
 cp -r "$REPO/7kmod/MODSOUND" "$STAGE/"
 
 # read me, licenses, changelogs and player documents (Markdown as .txt, CRLF)
-txt() { sed 's/$/\r/' "$1" > "$2"; }
+txt() { sed '/^!\[[^]]*\](images\//d' "$1" | cat -s | sed 's/$/\r/' > "$2"; }		# without the guide's images
 txt "$HERE/LEEME.txt"  "$STAGE/LEEME.txt"
 txt "$HERE/README.txt" "$STAGE/README.txt"
 mkdir -p "$STAGE/Licencias" "$STAGE/Changelog" "$STAGE/Docs"
