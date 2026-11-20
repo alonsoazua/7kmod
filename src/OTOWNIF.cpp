@@ -96,6 +96,7 @@ static VBrowseIF  browse_race, browse_spy;
 static Button3D   button_recruit, button_train, button_tax, button_grant;
 static Button3D   button_raid;		// 7kmod-fryhtan: the Raid button of an independent town linked to a lair
 static Button     button_raid_village, button_raid_cancel;		// 7kmod-fryhtan: in the Raid menu
+static Button3D   button_cull;			// 7kmod-fryhtan: Cull Population in an enslaved town
 static Button3D   button_ordo;			// 7kmod-fryhtan: the Ordo inside an enslaved town (the spy button), opens the Ordo menu
 static Button     button_ordo_next, button_ordo_leave, button_ordo_back;		// 7kmod-fryhtan: in the Ordo menu
 static Button3D   button_spy, button_cancel, button_spy_mobilize,
@@ -477,6 +478,55 @@ void Town::disp_main_menu(int refreshFlag)
 					return;
 				}
 			}
+		}
+
+		//--- Cull Population: kills 3 or 4 villagers, for the spoils ---//
+
+		static int lastCullEnable = -1, lastCullOrdo = -1;
+		int cullEnable = mod_fryhtan.can_cull_town(this);
+
+		if( refreshFlag == INFO_REPAINT || (ordoPtr != NULL) != lastCullOrdo )		// only with an Ordo inside the town
+		{
+			lastCullOrdo = ordoPtr != NULL;
+
+			if( ordoPtr )
+			{
+				button_cull.paint( BUTTON_X1+BUTTON_ACTION_WIDTH, y, 'A', "DEMOTE" );
+				button_cull.set_help_code("");		// the custom help is set below
+			}
+			else
+				button_cull.reset();
+
+			lastCullEnable = -1;
+		}
+
+		if( button_cull.init_flag && cullEnable != lastCullEnable )
+		{
+			lastCullEnable = cullEnable;
+
+			if( cullEnable )
+				button_cull.enable();
+			else
+				button_cull.disable();
+		}
+
+		if( button_cull.init_flag )
+		{
+			static char cullHelpStr[200];
+
+			if( cullEnable )
+			{
+				// TRANSLATORS: Large villages tend to rebel. Cull them when their population gets too big (<Number> or more).
+				snprintf( cullHelpStr, sizeof(cullHelpStr), _("Large villages tend to rebel. Cull them when their population gets too big (%d or more)."),
+							 ModFryhtan::overpopulated_population(nation_recno) );
+			}
+			else
+			{
+				// TRANSLATORS: The village needs at least <Number> people.
+				snprintf( cullHelpStr, sizeof(cullHelpStr), _("The village needs at least %d people."), (int) CULL_MIN_POPULATION );
+			}
+
+			help.set_custom_help( button_cull.x1, button_cull.y1, button_cull.x2, button_cull.y2, _("Cull Population"), cullHelpStr );
 		}
 
 		if( ordoPtr && button_ordo.init_flag )
@@ -992,27 +1042,26 @@ void Town::disp_ordo_menu(int refreshFlag)
 
 		case ORDO_ACTION_TASKMASTER:
 		{
-			int taskGold = ModFryhtan::taskmaster_gold(leadership);
-
-			// TRANSLATORS: +$<Gold> a month and +<Food> food a year per villager.
-			snprintf( str, sizeof(str), _("+$%d.%02d a month and +%d food a year per villager."),
-						 taskGold/100, taskGold%100, ModFryhtan::taskmaster_food(leadership) );
+			// TRANSLATORS: +<Food> food a year per villager. The forced labor kills a villager every <Days> to <Days> days.
+			snprintf( str, sizeof(str), _("+%d food a year per villager. The forced labor kills a villager every %d to %d days."),
+						 ModFryhtan::taskmaster_food(leadership), (int) TASKMASTER_DEATH_DAYS,
+						 (int) (TASKMASTER_DEATH_DAYS + TASKMASTER_DEATH_DAYS_RANGE) );
 			break;
 		}
 
 		default:
-			// TRANSLATORS: The loyalty of the village doesn't drop below <Number>.
-			snprintf( str, sizeof(str), _("The loyalty of the village doesn't drop below %d."),
+			// TRANSLATORS: The loyalty of the village doesn't drop below <Number>. Culls overpopulation to prevent rebellions.
+			snprintf( str, sizeof(str), _("The loyalty of the village doesn't drop below %d. Culls overpopulation to prevent rebellions."),
 						 MIN( leadership, (int) SUBJUGATE_MAX_LOYALTY ) );
 			break;
 	}
 
-	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+36 );
-	font_san.put_paragraph( INFO_X1+6, y+3, INFO_X2-6, y+35, str, 0 );
+	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+66 );		// up to 4 lines
+	font_san.put_paragraph( INFO_X1+6, y+3, INFO_X2-6, y+65, str, 0 );
 
 	//------- loyalty, leadership, combat and hit points -------//
 
-	y += 40;
+	y += 70;
 
 	vga_util.d3_panel_up( INFO_X1, y, INFO_X2, y+4+16*4+2 );
 
@@ -1420,6 +1469,19 @@ int Town::detect_main_menu()
 		disable_refresh = 1;    // static var for disp_info() only
 		info.disp();
 		disable_refresh = 0;
+		return 1;
+	}
+
+	//----- 7kmod-fryhtan: Cull Population in an enslaved town ---//
+
+	if( button_cull.init_flag && nation_recno == nation_array.player_recno &&
+		 mod_fryhtan.is_enslaved_town(this) && button_cull.detect() )
+	{
+		if( mod_fryhtan.cull_town(this) )
+			se_ctrl.immediate_sound("TURN_ON");
+
+		if( !town_array.is_deleted(town_recno) )
+			info.disp();
 		return 1;
 	}
 

@@ -38,6 +38,8 @@
 // the large icons of each rank (soldier, Ordo and All High).
 
 static char* monster_small_icon_buf_array[MAX_UNIT_TYPE][3];		// [unitId-1][soldier, general, king]
+static char* monster_mirror_icon_buf_array[MAX_UNIT_TYPE];			// 7kmod-fryhtan: [unitId-1] the soldier icon flipped, for generals, Ordos and kings
+static char* make_mirror_icon(char* iconPtr);
 
 static char* make_small_icon(char* largeIconPtr);
 
@@ -133,6 +135,9 @@ void UnitRes::deinit()
 				mem_del( monster_small_icon_buf_array[i][j] );
 				monster_small_icon_buf_array[i][j] = NULL;
 			}
+
+			mem_del( monster_mirror_icon_buf_array[i] );
+			monster_mirror_icon_buf_array[i] = NULL;
 		}
 
 		res_large_icon.deinit();
@@ -277,6 +282,24 @@ void UnitRes::load_info()
 		{
 			mem_del( bufArray[j] );		// mem_del() accepts NULL
 			bufArray[j] = NULL;
+		}
+
+		//--- 7kmod-fryhtan: Fryhtans have no portraits of general or king, so these ranks ---//
+		//--- (generals, Ordos and kings) get the soldier portrait flipped horizontally    ---//
+
+		mem_del( monster_mirror_icon_buf_array[i] );
+		monster_mirror_icon_buf_array[i] = NULL;
+
+		if( unitInfo->general_icon_ptr == unitInfo->soldier_icon_ptr ||
+			 unitInfo->king_icon_ptr == unitInfo->soldier_icon_ptr )
+		{
+			monster_mirror_icon_buf_array[i] = make_mirror_icon(unitInfo->soldier_icon_ptr);
+
+			if( unitInfo->general_icon_ptr == unitInfo->soldier_icon_ptr )
+				unitInfo->general_icon_ptr = monster_mirror_icon_buf_array[i];
+
+			if( unitInfo->king_icon_ptr == unitInfo->soldier_icon_ptr )
+				unitInfo->king_icon_ptr = monster_mirror_icon_buf_array[i];
 		}
 
 		bufArray[0] = make_small_icon(unitInfo->soldier_icon_ptr);
@@ -626,6 +649,36 @@ char *UnitInfo::get_small_icon_ptr(char rankId)
 }
 // -------- End of function UnitInfo::get_small_icon_ptr --------//
 // ##### end Gilbert 17/10 ########//
+
+
+//-------- Begin of static function make_mirror_icon --------//
+//
+// 7kmod-fryhtan: a copy of a unit icon flipped horizontally.
+//
+// return: <char*> the new bitmap, to be freed with mem_del()
+//
+static char* make_mirror_icon(char* iconPtr)
+{
+	int width  = *(short*) iconPtr;
+	int height = *((short*) iconPtr + 1);
+	int dataSize = 2*sizeof(short) + width*height;
+
+	char* mirrorPtr = mem_add( dataSize );
+
+	memcpy( mirrorPtr, iconPtr, 2*sizeof(short) );
+
+	unsigned char* srcPtr  = (unsigned char*) iconPtr + 2*sizeof(short);
+	unsigned char* destPtr = (unsigned char*) mirrorPtr + 2*sizeof(short);
+
+	for( int y=0 ; y<height ; y++ )
+	{
+		for( int x=0 ; x<width ; x++ )
+			destPtr[y*width + x] = srcPtr[y*width + width-1-x];
+	}
+
+	return mirrorPtr;
+}
+//-------- End of static function make_mirror_icon ---------//
 
 
 //-------- Begin of static function make_small_icon --------//

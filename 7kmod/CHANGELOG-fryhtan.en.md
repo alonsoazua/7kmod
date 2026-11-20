@@ -13,6 +13,109 @@ together.
 
 ## [Unreleased]
 
+### Added
+- **Life Points:** the currency of Fryhtan kingdoms. They show on the top bar, in place
+  of the reputation, with their own icon (a green and gold yin-yang sphere).
+  - You start with 150, 300, 500 or 700 by the Treasure of New Game (Small to Very
+    Large).
+  - **Earned by killing:** a soldier gives its combat level / 10 (1 with combat 10, 10
+    with combat 100); a villager or town defender half that; a general x1.25; a king
+    x1.5; always at least 1. A weapon gives 3 and a ship 5. Enemy Fryhtans count as
+    soldiers. Villagers killed in an attacked town, by Cull or by Taskmaster give 1
+    each.
+  - **Tribute of life:** each enslaved village gives 1 a month for every 10 villagers,
+    with the gold tribute.
+  - **Spent on Fryhtans**, besides the gold and food: training a soldier costs 10, an
+    Ordo 15, and promoting a soldier to Ordo 5. Cancelling a training gives them back.
+  - Next to the number, their change over the last 365 days, as for food and cash:
+    "302 (+12)".
+  - Training costs depend on the species: 7 (Ick, Doink, Broosken), 8 (Deezboanz,
+    Rattus, Pfith), 9 (Karrotten, Holgh, Droog) or 10 (the others). An Ordo costs 5
+    more.
+  - Building a lair costs 30 (besides the $500); the starting lair doesn't.
+  - The tribute of life gives 1 more if the village has 15 villagers or more.
+- **Lair technologies:** the **Research** button (second place of the second page of the
+  lair's buttons) opens the list of the kingdom's technologies. Choosing one asks to
+  confirm, with its cost in gold and Life Points. The progress belongs to the kingdom:
+  it goes on while there is any lair.
+  - **Alchemist Lair** ($500 and 20 Life Points, 6 months): lairs can be built on raw
+    material sites. With an Ordo or the king, every 15 days they turn 50 of the site's
+    raw material into 5 Life Points. On the map they read "(Alchemist Lair)", and the ">"
+    button of their panel shows the raw material left, the conversion and the next one.
+  - **Brood Mastery** ($1,000 and 30 Life Points, 6 months): training soldiers and Ordos
+    in the lairs costs 20% less gold and Life Points, rounded (Rokken $120 and 8 LP);
+    promoting to Ordo costs 4.
+  - **Empowerment** ($1,500 and 50 Life Points, 6 months, requires Brood Mastery):
+    Fryhtans trained in the lairs get +10 combat (soldier 30, Ordo 40).
+  - **Dominion** ($1,000 and 30 Life Points, 6 months): enslaved towns get +10 loyalty,
+    and overpopulation starts at 32 people (for Subjugate too).
+  - **Sacrificial Rites** ($1,000 and 30 Life Points, 6 months, requires Dominion): an
+    enslaved town with an Ordo inside (whatever its order) that reaches overpopulation
+    (32) sacrifices 5 villagers at once, each one for the usual Life Point plus 1 or 2. A
+    message tells it. Without an Ordo there is no sacrifice.
+  - Chained technologies don't show in the list until the previous one is done. The
+    list goes by branch, and each technology has its own graphic (but Alchemist Lair).
+  - The menu is like the Tower of Science's: the list of the technologies left, the
+    confirmation with its cost and the progress screen (with Change and Back). The cost
+    is paid once, to unlock it; you can switch technologies and each keeps its progress.
+  - A finished research shows a message and plays the "research complete" sound.
+- **Lair places by species:** species with many hit points fit fewer: Rokken 4; Wyrm,
+  Droog, Haubudam and Sauroid 5; Holgh, Karrotten and Pfith 6; the others 8. A full lair
+  has the hit points of a full human fort.
+- **Portrait of ranked Fryhtans:** generals, Ordos and the king have the soldier
+  portrait of their species flipped, to tell them apart.
+- **Games with a Fryhtan kingdom:** all kingdoms start on the largest land, as Fryhtans
+  can't move by sea. Land Mass must be at least medium: choosing Fryhtans in New Game
+  moves Small to Medium.
+- **Overpopulation:** an enslaved town with 30 people or more loses 1 loyalty every 5
+  days and rebels in the end unless it drops below 30.
+- **Cull Population** (sword button in the enslaved town, only with an Ordo inside):
+  kills 3 or 4 villagers and gives $2 and 5 food for each one; it needs at least 5
+  people. Its help: "Large villages tend to rebel. Cull them when their population gets
+  too big (30 or more)."
+- **Subjugate** culls on its own when the town reaches 30 people, to prevent rebellions
+  (with spoils, without news). It checks every 5 days.
+- **Who destroys the last linked lair** of an enslaved town decides what happens:
+  - **rebels:** the town declares its independence at once and the rebels nearby go
+    back into it as villagers (it stays a normal independent town, not one controlled
+    by rebels);
+  - **an enemy kingdom:** the town goes to that kingdom at once;
+  - **wild Fryhtans**, selling it or anything else: the usual 3-month grace.
+- **Grace without rebellion:** an enslaved town that goes to a human kingdom can't rebel
+  for 3 months.
+- **Nobody migrates on their own to an enslaved town**, neither villagers of other towns
+  nor workers of buildings. The migration the player orders between their own towns is
+  unchanged.
+
+### Fixed
+- **Lair places:** with the soldiers outside (for example, after sending them to fight)
+  training was sometimes blocked although there was room: it also counted the leader
+  and the ones that died or went into another lair. Now it counts what the darkened
+  places show.
+- **Selecting a Fort or a lair again** opens it on its main menu and the first page of
+  buttons; it used to stay on the menu (research, alchemist detail) or page you left.
+- **Music when loading a Fryhtan game:** the menu's music kept playing, because the
+  Fryhtan king has no race. Now it plays the same as a new game.
+
+### Changed
+- **Rokken and Holgh** move at speed 4 (was 3), like the others.
+- **Gold price:** all small Fryhtans cost $100 and all large ones $150.
+- **Build lair button:** it shows the lair of the builder's species on the stone of the
+  build buttons (was the human fort with the Fryhtan's portrait). The Alchemist Lair icon
+  is that lair with the mine in small.
+- **Full lair:** you can train even without room; the new soldier stays outside. The
+  places the species doesn't have read "This lair only has N places.".
+- **AI against Fryhtan kingdoms:** an AI at war with a Fryhtan kingdom that hasn't
+  attacked it for a while relaxes its conditions. After 6 months it asks half the
+  surplus of troops to go to war and goes with 110% of the lair's defense (was
+  125–150%); after a year it asks no surplus (its towns stay protected) and goes with
+  100%. Attacking starts the count again.
+- **More aggressive AI against Fryhtan kingdoms (test):** when picking whom to declare
+  war on, a human AI sees a Fryhtan kingdom as if it had 70% of its strength, so it
+  prefers it as a target; not if the Fryhtan kingdom is over 1.5 times as strong as it.
+- **Taskmaster** no longer gives gold: only food, doubled (+10 to +40 a year per
+  villager by leadership). The forced labor kills a villager every 30 to 90 days.
+
 ---
 
 ## [0.1.0] - 2026-11-14

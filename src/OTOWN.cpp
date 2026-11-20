@@ -402,6 +402,7 @@ void Town::next_day()
 	if( mod_fryhtan.is_enslaved_town(this) )
 	{
 		mod_fryhtan.next_day_town_ordo(this);		// an Ordo inside the town
+		mod_fryhtan.next_day_town_overpopulation(this);		// 30 people or more: the loyalty drops
 
 		if( town_array.is_deleted(townRecno) )
 			return;
@@ -748,6 +749,8 @@ void Town::set_nation(int newNationRecno)
 	if( nation_recno == newNationRecno )
 		return;
 
+	int wasEnslaved = mod_fryhtan.is_enslaved_town(this);		// 7kmod-fryhtan: for the grace period below
+
 	mod_fryhtan.ordo_leave_town(town_recno, 1);		// 7kmod-fryhtan: an Ordo inside the town comes out (or is lost)
 
 	//--------- update town network (pre-step) ---------//
@@ -837,6 +840,11 @@ void Town::set_nation(int newNationRecno)
 
 	if( mod_fryhtan.is_fryhtan(nation_recno) )
 		last_rebel_date = info.game_date - (3-1)*30;
+
+	//--- 7kmod-fryhtan: an enslaved town that passes to a human kingdom can't rebel for REBEL_INTERVAL_MONTH (3 months) ---//
+
+	else if( wasEnslaved && nation_recno )
+		last_rebel_date = info.game_date;
 
 	mod_fryhtan.reset_town_dates(town_recno);		// 7kmod-fryhtan: no grace period or raid left from an older owner
 
@@ -1247,8 +1255,16 @@ void Town::update_target_loyalty()
 
 		targetLoyalty = MAX( targetLoyalty, mod_fryhtan.subjugate_loyalty(this) );		// an Ordo doing Subjugate inside the town
 
+		if( mod_fryhtan.has_tech(nation_recno, FRYHTAN_TECH_DOMINION) )		// the technology Dominion
+			targetLoyalty = MIN( 100, targetLoyalty + DOMINION_LOYALTY );
+
 		for( int i=0 ; i<MAX_RACE ; i++ )
+		{
 			race_target_loyalty_array[i] = targetLoyalty;
+
+			if( ModFryhtan::is_overpopulated(this) )		// overpopulated: the loyalty doesn't rise back while it drops (ModFryhtan::next_day_town_overpopulation())
+				race_target_loyalty_array[i] = MIN( targetLoyalty, (int) race_loyalty_array[i] );
+		}
 
 		return;
 	}
@@ -2386,6 +2402,9 @@ void Town::think_migrate()
 			continue;
 
 		if( townPtr->population>=MAX_TOWN_POPULATION )
+			continue;
+
+		if( mod_fryhtan.is_enslaved_town(townPtr) )		// 7kmod-fryhtan: nobody migrates to an enslaved town by himself
 			continue;
 
 		townDistance = misc.rects_distance(loc_x1, loc_y1, loc_x2, loc_y2,

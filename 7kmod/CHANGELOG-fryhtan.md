@@ -12,6 +12,110 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
 
 ## [Sin publicar]
 
+### Agregado
+- **Life Points:** la moneda de los reinos Fryhtan. Se ven en la barra de arriba, en
+  lugar de la reputación, con su propio ícono (una esfera yin-yang verde y dorada).
+  - Empiezas con 150, 300, 500 o 700 según el Treasure de New Game (Small a Very
+    Large).
+  - **Se ganan matando:** un soldado da su nivel de combate / 10 (1 con combate 10, 10
+    con combate 100); un aldeano o defensor, la mitad; un general ×1.25; un rey ×1.5;
+    siempre al menos 1. Un arma da 3 y un barco 5. Los Fryhtans enemigos cuentan como
+    soldados. Los aldeanos que mueren en un pueblo atacado, por Cull o por Taskmaster
+    dan 1 cada uno.
+  - **Tributo de vida:** cada pueblo esclavizado da 1 al mes por cada 10 aldeanos,
+    junto con el tributo de oro.
+  - **Se gastan en Fryhtans**, además del oro y la comida: entrenar un soldado cuesta
+    10, un Ordo 15, y promover un soldado a Ordo 5. Al cancelar un entrenamiento se
+    devuelven.
+  - Junto al número se ve su cambio de los últimos 365 días, como en la comida y el oro:
+    "302 (+12)".
+  - El costo de entrenar depende de la especie: 7 (Ick, Doink, Broosken), 8 (Deezboanz,
+    Rattus, Pfith), 9 (Karrotten, Holgh, Droog) o 10 (las demás). Un Ordo cuesta 5 más.
+  - Construir una guarida cuesta 30 (además de los $500); la guarida inicial no.
+  - El tributo de vida da 1 más si el pueblo tiene 15 aldeanos o más.
+- **Tecnologías de guarida:** el botón **Research** (segundo lugar de la segunda página
+  de botones de la guarida) abre la lista de tecnologías del reino. Al elegir una se
+  pide confirmar, con su costo en oro y life points. El avance es del reino: sigue
+  mientras haya alguna guarida.
+  - **Alchemist Lair** ($500 y 20 life points, 6 meses): las guaridas se pueden
+    construir sobre un yacimiento de materiales. Con un Ordo o el rey, cada 15 días
+    convierten 50 materiales del yacimiento en 5 life points. En el mapa dicen
+    "(Alchemist Lair)", y el botón ">" de su panel muestra el material que le queda, la
+    conversión y la próxima.
+  - **Brood Mastery** ($1,000 y 30 life points, 6 meses): entrenar soldados y Ordos en
+    las guaridas cuesta 20% menos oro y life points, redondeando (Rokken $120 y 8 LP);
+    ascender a Ordo cuesta 4.
+  - **Empowerment** ($1,500 y 50 life points, 6 meses, requiere Brood Mastery): los
+    Fryhtans entrenados en las guaridas salen con +10 de combate (soldado 30, Ordo 40).
+  - **Dominion** ($1,000 y 30 life points, 6 meses): los pueblos esclavizados tienen +10
+    de lealtad, y la sobrepoblación empieza en 32 habitantes (también para Subjugate).
+  - **Sacrificial Rites** ($1,000 y 30 life points, 6 meses, requiere Dominion): un pueblo
+    esclavizado con un Ordo dentro (en cualquier orden) que llega a la sobrepoblación (32)
+    sacrifica 5 aldeanos de inmediato, cada uno por el life point normal más 1 o 2. Sale
+    una noticia. Sin Ordo no hay sacrificio.
+  - Las tecnologías encadenadas no aparecen en la lista hasta terminar la anterior. La
+    lista va por rama, y cada tecnología tiene su propio gráfico (salvo Alchemist Lair).
+  - El menú es como el de la Torre de Ciencia: la lista de las tecnologías que faltan, la
+    confirmación con su costo y la pantalla de avance (con Change y Back). El costo se paga
+    una vez, al desbloquearla; se puede cambiar de tecnología y cada una guarda su avance.
+  - Al terminar una investigación sale un aviso y suena el "research complete".
+- **Lugares de la guarida según la especie:** las especies con mucha vida caben menos:
+  Rokken 4; Wyrm, Droog, Haubudam y Sauroid 5; Holgh, Karrotten y Pfith 6; las demás 8.
+  Así una guarida llena tiene la vida de un fuerte humano lleno.
+- **Retrato de los Fryhtans con rango:** los generales, los Ordos y el rey tienen el
+  retrato del soldado de su especie volteado, para distinguirlos.
+- **Partidas con un reino Fryhtan:** todos los reinos empiezan en la masa de tierra más
+  grande, porque los Fryhtans no pueden moverse por mar. Land Mass debe ser al menos
+  mediano: al elegir Fryhtan en New Game, Small pasa a Medium.
+- **Sobrepoblación:** un pueblo esclavizado con 30 o más habitantes pierde 1 de lealtad
+  cada 5 días y termina rebelándose si no baja de 30.
+- **Cull Population** (botón de espada en el pueblo esclavizado, solo con un Ordo
+  adentro): mata 3 o 4 aldeanos y da $2 y 5 de comida por cada uno; necesita al menos
+  5 habitantes. Su ayuda: "Large villages tend to rebel. Cull them when their
+  population gets too big (30 or more)."
+- **Subjugate** hace Cull solo cuando el pueblo llega a 30 habitantes, para evitar
+  rebeliones (con botín, sin aviso). Lo revisa cada 5 días.
+- **Quién destruye la última guarida enlazada** de un pueblo esclavizado decide qué pasa:
+  - **rebeldes:** el pueblo se independiza al momento y los rebeldes cercanos vuelven a
+    él como aldeanos (queda independiente normal, no controlado por rebeldes);
+  - **un reino enemigo:** el pueblo pasa al momento a ese reino;
+  - **Fryhtans salvajes**, venta u otra causa: los 3 meses de gracia de siempre.
+- **Gracia sin rebelión:** un pueblo esclavizado que pasa a un reino humano no se puede
+  rebelar durante 3 meses.
+- **Nadie migra por su cuenta a un pueblo esclavizado**, ni aldeanos de otros pueblos ni
+  trabajadores de edificios. La migración que ordena el jugador entre sus pueblos sigue
+  igual.
+
+### Corregido
+- **Lugares de la guarida:** con los soldados afuera (por ejemplo, después de mandarlos a
+  pelear) a veces no dejaba entrenar aunque hubiera lugar: contaba también al líder y a
+  los que murieron o entraron a otra guarida. Ahora cuenta lo mismo que muestran las
+  casillas oscurecidas.
+- **Al volver a seleccionar un fuerte o una guarida** abre en su menú principal y en la
+  página 1 de botones; antes se quedaba en el menú (investigación, detalle del
+  alquimista) o la página en que lo dejaste.
+- **Música al cargar una partida Fryhtan:** se quedaba la música del menú, porque el rey
+  Fryhtan no tiene raza. Ahora toca la misma que en una partida nueva.
+
+### Cambiado
+- **Rokken y Holgh** se mueven a velocidad 4 (antes 3), como los demás.
+- **Precio en oro:** todos los Fryhtans chicos cuestan $100 y todos los grandes $150.
+- **Botón de construir guarida:** muestra la guarida de la especie de quien construye
+  sobre la piedra de los botones de construcción (antes, el fuerte humano con el retrato
+  del Fryhtan). El ícono de Alchemist Lair es esa guarida con la mina en pequeño.
+- **Guarida llena:** se puede entrenar aunque no haya lugar; el soldado nuevo se queda
+  afuera. Los lugares que la especie no tiene dicen "This lair only has N places.".
+- **IA contra reinos Fryhtan:** si una IA lleva tiempo en guerra con un reino Fryhtan sin
+  atacarlo, relaja sus condiciones. A los 6 meses pide la mitad del sobrante de tropas
+  para salir a atacar y va con el 110% de la defensa de la guarida (antes 125–150%); al
+  año no pide sobrante (sus pueblos siguen protegidos) y va con el 100%. Al atacar, el
+  conteo vuelve a cero.
+- **IA más agresiva contra los reinos Fryhtan (prueba):** al elegir a quién declararle la
+  guerra, una IA humana ve a un reino Fryhtan como si tuviera el 70% de su fuerza, así lo
+  prefiere como blanco; no si el reino Fryhtan es más de 1.5 veces más fuerte que ella.
+- **Taskmaster** ya no da oro: solo comida, el doble (de +10 a +40 al año por aldeano
+  según el liderazgo). El trabajo forzado mata un aldeano cada 30 a 90 días.
+
 ---
 
 ## [0.1.0] - 2026-11-14

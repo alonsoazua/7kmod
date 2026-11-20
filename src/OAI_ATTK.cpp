@@ -28,6 +28,7 @@
 #include <OFIRMALL.h>
 #include <OTALKRES.h>
 #include <ONATION.h>
+#include <ModFryhtan.h>
 
 
 //------ Declare static functions --------//
@@ -116,6 +117,18 @@ int Nation::ai_attack_target(int targetXLoc, int targetYLoc, int targetCombatLev
 	//### end jesse 28/11/2024 ###//
 
 	attack_camp_count=0;
+
+	//--- 7kmod-fryhtan: an AI that has waited long to attack a Fryhtan kingdom goes with less force ---//
+
+	if( !defenseMode )
+	{
+		int relaxLevel = mod_fryhtan.ai_wait_relax_level(nation_recno, ai_attack_target_nation_recno);
+
+		if( relaxLevel == 2 )
+			minTargetCombatLevel = MIN( minTargetCombatLevel, targetCombatLevel * AI_RELAX_FORCE_PERCENT_2 / 100 );
+		else if( relaxLevel == 1 )
+			minTargetCombatLevel = MIN( minTargetCombatLevel, targetCombatLevel * AI_RELAX_FORCE_PERCENT_1 / 100 );
+	}
 
 	AttackCamp townCampArray[MAX_SUITABLE_TOWN_CAMP];
 	short townCampCount;
@@ -458,6 +471,9 @@ int Nation::ai_attack_target(int targetXLoc, int targetYLoc, int targetCombatLev
 	ai_attack_target_sync();
 
 	ai_attack_target_execute(!justMoveToFlag);
+
+	if( !defenseMode )		// 7kmod-fryhtan: troops sent against a Fryhtan kingdom, its waiting time starts again
+		mod_fryhtan.ai_attack_sent(nation_recno, ai_attack_target_nation_recno);
 
 	return totalCombatLevel;
 }

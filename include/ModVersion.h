@@ -55,6 +55,8 @@
 // Only the 7kmod-fryhtan branch defines MOD_FRYHTAN_VERSION here; the Fryhtan
 // kingdom merged into 7kmod-gameplay shows the gameplay version.
 
+#define MOD_FRYHTAN_VERSION		"0.1.0"
+
 
 
 

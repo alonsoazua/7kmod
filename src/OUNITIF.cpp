@@ -614,6 +614,11 @@ void Unit::disp_button(int dispY1)
 			if( rank_id==RANK_SOLDIER )
 			{
 				button_promote.paint( x, dispY1, 'A', "PROMOTE" );
+				button_promote.set_help_code("");		// the custom help with the Life Points is set in detect_main_menu()
+
+				if( mod_fryhtan.life_points(nation_recno) < ModFryhtan::promote_life_points(nation_recno) )
+					button_promote.disable();
+
 				x += BUTTON_ACTION_WIDTH;
 			}
 			else if( rank_id==RANK_GENERAL )
@@ -744,13 +749,32 @@ void Unit::detect_button()
 
 	//-------- detect promote/demote button --------//
 
+	//--- 7kmod-fryhtan: the help of Promote for a Fryhtan soldier, with its cost in Life Points ---//
+
+	if( rank_id == RANK_SOLDIER && button_promote.init_flag &&
+		 !race_id && nation_recno && mod_fryhtan.is_fryhtan(nation_recno) )
+	{
+		static char promoteHelpStr[200];
+
+		// TRANSLATORS: Promote this Fryhtan to Ordo (general) for <Number> Life Points.
+		snprintf( promoteHelpStr, sizeof(promoteHelpStr), _("Promote this Fryhtan to Ordo (general) for %d Life Points."),
+			ModFryhtan::promote_life_points(nation_recno) );
+
+		help.set_custom_help( button_promote.x1, button_promote.y1, button_promote.x2, button_promote.y2,
+			_("Promote to Ordo"), promoteHelpStr );
+	}
+
 	if( rank_id == RANK_SOLDIER )
 	{
 		if( button_promote.detect() )
 		{
 			if( !race_id && nation_recno && mod_fryhtan.is_fryhtan(nation_recno) )		// 7kmod-fryhtan: a Fryhtan soldier becomes an Ordo
 			{
-				mod_fryhtan.promote_ordo(this);
+				if( mod_fryhtan.life_points(nation_recno) >= ModFryhtan::promote_life_points(nation_recno) )		// it costs Life Points
+				{
+					mod_fryhtan.add_life_points( nation_recno, -ModFryhtan::promote_life_points(nation_recno) );
+					mod_fryhtan.promote_ordo(this);
+				}
 			}
 			else if(!remote.is_enable() )
 			{
@@ -1103,8 +1127,39 @@ void Unit::detect_build_menu()
 
 		if( button_build_flag[i] && firm_res[firmId]->can_build(sprite_recno) )
 		{
+			//--- 7kmod-fryhtan: the lair of a Fryhtan kingdom, with its cost in gold and Life Points ---//
+
+			int lairLifePoints = ModFryhtan::firm_setup_life_points(firmId, nation_recno);
+
+			if( lairLifePoints )
+			{
+				static char lairHelpStr[300];
+
+				if( mod_fryhtan.has_tech(nation_recno, FRYHTAN_TECH_ALCHEMIST_LAIR) )
+				{
+					// TRANSLATORS: Build a Lair for $<Number> and <Number> Life Points. Built on a raw material site, ...
+					snprintf( lairHelpStr, sizeof(lairHelpStr), _("Build a Lair for $%d and %d Life Points. Built on a raw material site, it turns the raw material into Life Points. Requires an Ordo."),
+						ModFryhtan::firm_setup_cost(firmId, nation_recno), lairLifePoints );
+				}
+				else
+				{
+					// TRANSLATORS: Build a Lair for $<Number> and <Number> Life Points.
+					snprintf( lairHelpStr, sizeof(lairHelpStr), _("Build a Lair for $%d and %d Life Points."),
+						ModFryhtan::firm_setup_cost(firmId, nation_recno), lairLifePoints );
+				}
+
+				ButtonCustom& lairButton = button_build_array[i];
+				help.set_custom_help( lairButton.x1, lairButton.y1, lairButton.x2, lairButton.y2, _("Lair"), lairHelpStr );
+			}
+
 			if( button_build_array[i].detect(GETKEY(button_build_hotkey[i])) )
 			{
+				if( lairLifePoints && mod_fryhtan.life_points(nation_recno) < lairLifePoints )		// not enough Life Points for a lair
+				{
+					se_ctrl.immediate_sound("TURN_OFF");
+					break;
+				}
+
 				power.issue_command(COMMAND_BUILD_FIRM, sprite_recno, firmId);
 				rc = 1;
 				break;
@@ -2255,16 +2310,13 @@ static void disp_firm_button(ButtonCustom *button, int)
 
 	vga_front.put_bitmap_trans_remap_decompress(button->x1, button->y1,	bitmap, (char*) button->custom_para.ptr);
 
-	//--- 7kmod-fryhtan: the lair of a Fryhtan kingdom, the Fort button with the Fryhtan over it ---//
+	//--- 7kmod-fryhtan: the lair of a Fryhtan kingdom: the lair of its species on the stone of the build buttons ---//
 
 	int unitId = (button->custom_para.value >> 16) & 0xffff;
 
-	if( firmId == FIRM_CAMP && unit_res[unitId]->unit_class == UNIT_CLASS_MONSTER )
-	{
-		vga_front.adjust_brightness( button->x1+3, button->y1+3, button->x2-3, button->y2-3, -4 );
-		vga_front.put_bitmap( button->x2-UNIT_LARGE_ICON_WIDTH-6, button->y1+7, unit_res[unitId]->get_large_icon_ptr(RANK_SOLDIER) );
-		font_san.put( button->x1+8, button->y2-20, _("Lair") );
-	}
+	if( firmId == FIRM_CAMP && unit_res[unitId]->unit_class == UNIT_CLASS_MONSTER && unit_array.selected_recno )
+		ModFryhtan::disp_lair_button( button->x1, button->y1, unit_array[unit_array.selected_recno]->nation_recno,
+			ModFryhtan::unit_monster_id(unitId), _("Lair"), 0 );		// the lair of the species of the builder, the one that is built
 
 	if( button->pushed_flag )
 	{

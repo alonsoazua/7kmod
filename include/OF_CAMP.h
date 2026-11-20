@@ -198,6 +198,8 @@ private:
 };
 #pragma pack()
 
+void forget_lair_menu();		// 7kmod-fryhtan: close the research / alchemist menu of a lair
+
 //--------------------------------------//
 
 #endif

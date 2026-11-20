@@ -134,6 +134,8 @@ static NewsInfo news_info_array[] =
 	{ &News::spy_confrontation, 0 },
 	{ &News::town_raided, 0 },				// 7kmod-fryhtan
 	{ &News::ordo_kidnap, 0 },				// 7kmod-fryhtan
+	{ &News::lair_tech_researched, 0 },	// 7kmod-fryhtan
+	{ &News::ordo_sacrifice, 0 },			// 7kmod-fryhtan
 };
 
 //------- Define static variables --------//
@@ -1344,6 +1346,40 @@ void News::ordo_kidnap()
 	}
 }
 //------- End of function News::ordo_kidnap -----//
+
+
+//------ Begin of function News::ordo_sacrifice -----//
+//
+// 7kmod-fryhtan: an Ordo of the player sacrificed villagers of an enslaved
+// town (Sacrificial Rites).
+//
+// short_para1 - name id. of the town
+// short_para2 - name id. of the Ordo (an Ordo name id., above 32767)
+// short_para3 - the villagers sacrificed
+// short_para4 - the Life Points they gave
+//
+void News::ordo_sacrifice()
+{
+	// TRANSLATORS: Your Ordo <Name> has sacrificed <Number> villagers of <Town>: +<Number> Life Points.
+	snprintf(str, MAX_STR_LEN+1, _("Your Ordo %s has sacrificed %d villagers of %s: +%d Life Points."),
+				news_unit_name(0, short_para2, 1), (int) short_para3, town_res.get_name(short_para1), (int) short_para4 );
+}
+//------- End of function News::ordo_sacrifice -----//
+
+
+//------ Begin of function News::lair_tech_researched -----//
+//
+// 7kmod-fryhtan: the player's Fryhtan kingdom researched a technology of the
+// lairs.
+//
+// short_para1 - the technology (FRYHTAN_TECH_???)
+//
+void News::lair_tech_researched()
+{
+	// TRANSLATORS: Your lairs have researched <Technology>.
+	snprintf(str, MAX_STR_LEN+1, _("Your lairs have researched %s."), ModFryhtan::tech_name(short_para1) );
+}
+//------- End of function News::lair_tech_researched -----//
 
 
 //------ Begin of function News::town_raided -----//

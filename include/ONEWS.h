@@ -102,6 +102,8 @@ enum { NEWS_DIPLOMACY=1,
 		 NEWS_SPY_CONFRONTATION,	// 7kmod-gameplay: a confrontation between counter-spies in an independent town
 		 NEWS_TOWN_RAIDED,			// 7kmod-fryhtan: the player's Fryhtan kingdom raided an independent town
 		 NEWS_ORDO_KIDNAP,			// 7kmod-fryhtan: an Ordo of the player kidnapped a villager into an enslaved town
+		 NEWS_LAIR_TECH_RESEARCHED,	// 7kmod-fryhtan: the player's Fryhtan kingdom researched a technology of the lairs
+		 NEWS_ORDO_SACRIFICE,		// 7kmod-fryhtan: an Ordo of the player sacrificed villagers of an enslaved town (Sacrificial Rites)
 	  };
 
 //------- Define struct News ---------//
@@ -200,6 +202,8 @@ public:
 	void  villager_joined();
 	void  town_raided();			// 7kmod-fryhtan
 	void  ordo_kidnap();			// 7kmod-fryhtan
+	void  ordo_sacrifice();		// 7kmod-fryhtan
+	void  lair_tech_researched();	// 7kmod-fryhtan
 	void  intel_report();
 	void  counter_spy_caught();
 	void  spy_confrontation();
@@ -278,6 +282,8 @@ public:
 	void  villager_joined(int unitRecno, int townNameId);
 	void  town_raided(int townRecno, int townNameId, int loot, int killCount, int defenderCount);		// 7kmod-fryhtan
 	void  ordo_kidnap(int townRecno, int ordoNameId, int villagerCount);		// 7kmod-fryhtan
+	void  ordo_sacrifice(int townRecno, int ordoNameId, int villagerCount, int lifePoints);		// 7kmod-fryhtan
+	void  lair_tech_researched(int techId);		// 7kmod-fryhtan
 	void  intel_report(int targetNationRecno);
 	void  counter_spy_caught(int townNameId, int spyNationRecno);
 	void  spy_confrontation(int townNameId, int otherNationRecno, int playerWon);

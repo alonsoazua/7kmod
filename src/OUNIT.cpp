@@ -1750,7 +1750,7 @@ void Unit::pay_expense()
       {
          if( nationPtr->food > 0 )
          {
-            nationPtr->consume_food( (float) invoked_fryhtan_food_year(unit_id) / 365 );
+            nationPtr->consume_food( ModFryhtan::fryhtan_food_year(unit_id, nation_recno) / 365 );		// 7kmod-fryhtan: half in a Fryhtan kingdom
          }
          else if( hit_points > 0 )
          {

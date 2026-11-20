@@ -30,14 +30,63 @@ class File;
 
 //------- Define constant -------//
 
-enum { FRYHTAN_LARGE_MIN_LEVEL = 6 };
-enum { FRYHTAN_BROOSKEN = 3, FRYHTAN_PFITH = 5, FRYHTAN_DOINK = 7, FRYHTAN_ICK = 10 };		// monster ids. (MONSTER.DBF) with their own size or price: Pfith is small, the other three are cheaper		// monster level from which a Fryhtan is large (FRYHTAN_LARGE_POPULATION)
-enum { FRYHTAN_BASE_POPULATION = 20 };
+enum { FRYHTAN_LARGE_MIN_LEVEL = 6 };		// monster level from which a Fryhtan is large (FRYHTAN_LARGE_POPULATION)
+enum { FRYHTAN_PFITH = 5 };		// monster id (MONSTER.DBF) with its own size: Pfith is small, although its level is 6
+
+enum { LAIR_ICON_MAX_WIDTH = 92, LAIR_ICON_MAX_HEIGHT = 54 };		// the lair drawn in an icon (ModFryhtan::lair_icon)
+
+enum { LAIR_PLACES_HIT_POINTS = 1600 };		// the places of a lair: this / the hit points of the species (as 8 humans of 200), at most MAX_WORKER
+
+//--- the technologies of a Fryhtan kingdom, researched in its lairs ---//
+
+enum { FRYHTAN_TECH_ALCHEMIST_LAIR,			// a lair can be built on a raw material site and turns the raw material into Life Points
+		 FRYHTAN_TECH_EMPOWERMENT,				// the Fryhtans trained in the lairs have more combat (requires Brood Mastery)
+		 FRYHTAN_TECH_BROOD_MASTERY,			// training Fryhtans in the lairs costs less gold and Life Points
+		 FRYHTAN_TECH_DOMINION,					// the enslaved towns are more loyal and are overpopulated later
+		 FRYHTAN_TECH_SACRIFICIAL_RITES,		// an Ordo in a town sacrifices villagers when it's overpopulated (requires Dominion)
+		 FRYHTAN_TECH_COUNT };					// the ids are saved: new ones go at the end (the list has its own order, tech_list_order())
+
+enum { FRYHTAN_TECH_NONE,				// locked: researching it the first time costs its gold and Life Points
+		 FRYHTAN_TECH_RESEARCHING,		// being researched (one at a time)
+		 FRYHTAN_TECH_DONE,
+		 FRYHTAN_TECH_UNLOCKED };		// paid and paused, its progress kept: it can be researched again for free
+
+enum { ALCHEMIST_TECH_COST			= 500,		// gold for researching Alchemist Lair
+		 ALCHEMIST_TECH_LIFE_POINTS	= 20,			// and Life Points
+		 ALCHEMIST_TECH_DAYS			= 180,		// days of research
+		 ALCHEMIST_DAYS				= 15,			// an Alchemist Lair turns ALCHEMIST_RAW_QTY of its site...
+		 ALCHEMIST_RAW_QTY			= 50,			// ...into ALCHEMIST_LIFE_POINTS every ALCHEMIST_DAYS days,
+		 ALCHEMIST_LIFE_POINTS		= 5 };		// with an Ordo or the king as its leader
+
+enum { EMPOWERMENT_TECH_COST		= 1500,		// gold for researching Empowerment
+		 EMPOWERMENT_TECH_LIFE_POINTS = 50,		// and Life Points
+		 EMPOWERMENT_TECH_DAYS		= 180,		// days of research
+		 EMPOWERMENT_COMBAT			= 10 };		// the Fryhtans trained in the lairs (soldiers and Ordos) have this more combat
+
+enum { BROOD_MASTERY_TECH_COST	= 1000,		// gold for researching Brood Mastery
+		 BROOD_MASTERY_TECH_LIFE_POINTS = 30,	// and Life Points
+		 BROOD_MASTERY_TECH_DAYS	= 180,		// days of research
+		 BROOD_MASTERY_PERCENT		= 80 };		// training a soldier or an Ordo, and promoting one, costs this % of the gold and Life Points (rounded)
+
+enum { DOMINION_TECH_COST			= 1000,		// gold for researching Dominion
+		 DOMINION_TECH_LIFE_POINTS	= 30,			// and Life Points
+		 DOMINION_TECH_DAYS			= 180,		// days of research
+		 DOMINION_LOYALTY				= 10,			// the enslaved towns have this more target loyalty
+		 DOMINION_OVERPOPULATION	= 2 };		// and are overpopulated with this many more people
+
+enum { RITES_TECH_COST				= 1000,		// gold for researching Sacrificial Rites
+		 RITES_TECH_LIFE_POINTS		= 30,			// and Life Points
+		 RITES_TECH_DAYS				= 180,		// days of research
+		 RITES_VILLAGERS				= 5,			// an Ordo in an overpopulated town sacrifices this many villagers at once (checked every day)
+		 RITES_LIFE_POINTS_MIN		= 1,			// each one gives the Life Points of a villager killed plus 1 or 2 at random
+		 RITES_LIFE_POINTS_MAX		= 2 };
+
+enum { FRYHTAN_BASE_POPULATION = 20 };		// population of Fryhtans allowed at the start
 enum { FRYHTAN_POPULATION_LIMIT = 0 };		// 1: training is limited by the Fryhtan population cap (off for now)
 enum { FRYHTAN_SMALL_POPULATION = 2,		// population taken by a small Fryhtan of the kingdom
 		 FRYHTAN_LARGE_POPULATION = 3 };		// and by a large one
 enum { FRYHTAN_SPECIES_COUNT = 13 };			// no. of records in MONSTER.DBF
-enum { FRYHTAN_DEFAULT_MONSTER_ID = 6 };		// Rokken, the default choice in the new game screen		// population of Fryhtans allowed at the start
+enum { FRYHTAN_DEFAULT_MONSTER_ID = 6 };		// Rokken, the default choice in the new game screen
 enum { FRYHTAN_START_SOLDIER_COUNT = 4 };		// soldiers in the starting lair
 enum { FRYHTAN_START_TOWN_POPULATION = 20 };		// people of the starting enslaved town
 
@@ -50,9 +99,8 @@ enum { LAIR_SETUP_COST = 500,						// cost of building a lair
 enum { LAIR_TRAIN_FOOD = 20,						// food used for training a Fryhtan in a lair
 		 LAIR_TRAIN_DAYS = 15,						// days needed for training it (a large one)
 		 LAIR_SMALL_TRAIN_DAYS = 10,				// days needed for training a small one
-		 LAIR_SMALL_TRAIN_COST = 150,			// gold for training a small Fryhtan, soldier or Ordo
-		 LAIR_LARGE_TRAIN_COST = 200,			// gold for training a large one
-		 LAIR_CHEAP_TRAIN_COST = 100,			// gold for training an Ick, a Broosken or a Doink
+		 LAIR_SMALL_TRAIN_COST = 100,			// gold for training a small Fryhtan, soldier or Ordo
+		 LAIR_LARGE_TRAIN_COST = 150,			// gold for training a large one
 		 LAIR_TRAIN_COMBAT = 20,					// combat level of a trained Fryhtan
 		 LAIR_TRAIN_LEADERSHIP = 20,				// leadership of a trained Fryhtan (as a human soldier)
 		 LAIR_SHOW_TRAIN_ORDO = 1,				// 1: the lair has the Train Ordo button (hidden: the soldiers are promoted)
@@ -66,9 +114,9 @@ enum { LAIR_ORDO_FOOD = 40,						// food used for training an Ordo (general) in 
 
 enum { LAIR_TRAIN_SOLDIER, LAIR_TRAIN_ORDO, LAIR_TRAIN_TYPE_COUNT };		// what a lair trains
 
-enum { ORDO_NAME_ID_BASE = 60000 };
+enum { ORDO_NAME_ID_BASE = 60000 };				// Unit::name_id of an Ordo with a name: ORDO_NAME_ID_BASE + the name index (1-based)
 
-enum { FRYHTAN_HEADER_MARK = 0x7F };				// mark of the species in the header of a saved game				// Unit::name_id of an Ordo with a name: ORDO_NAME_ID_BASE + the name index (1-based)
+enum { FRYHTAN_HEADER_MARK = 0x7F };				// mark of the species in the header of a saved game
 
 enum { KILL_GOLD_UNIT		= 2,					// gold for killing a human villager (a soldier: ModFryhtan::kill_gold())
 		 KILL_GOLD_MIN_COMBAT	= 10,				// a soldier gives KILL_GOLD_UNIT with this combat level...
@@ -81,9 +129,9 @@ enum { KILL_GOLD_UNIT		= 2,					// gold for killing a human villager (a soldier:
 		 KILL_FOOD_GENERAL	= 20,					// a human general
 		 KILL_FOOD_KING		= 100 };				// a human king
 
-enum { LOST_LAIR_GRACE_DAYS = 90 };
+enum { LOST_LAIR_GRACE_DAYS = 90 };				// an enslaved town without a linked lair becomes independent after this
 
-enum { FRYHTAN_REPAIR_DAYS = 5 };				// the buildings of a Fryhtan kingdom recover 1 hit point in this time, like a construction worker of skill 20			// an enslaved town without a linked lair becomes independent after this
+enum { FRYHTAN_REPAIR_DAYS = 5 };				// the buildings of a Fryhtan kingdom recover 1 hit point in this time, like a construction worker of skill 20
 
 //--- raiding an independent town from a linked lair ---//
 
@@ -102,6 +150,30 @@ enum { ENSLAVE_MIN_RESISTANCE = 45,			// the lairs lower the resistance of an in
 		 ENSLAVED_TOWN_LOYALTY  = 50,			// fixed loyalty of the people of an enslaved town with an Ordo or the king in a linked lair
 		 ENSLAVED_TOWN_NO_COMMANDER_LOYALTY = 0,	// its target loyalty when no Ordo or king commands a linked lair
 		 TRIBUTE_PER_PERSON		= 3 };			// monthly tribute of an enslaved town for each person
+
+//--- Life Points: the currency of a Fryhtan kingdom, from the units it kills, spent on Fryhtans ---//
+
+enum { FRYHTAN_START_LIFE_POINTS = 300,		// a Fryhtan kingdom starts with these
+		 LIFE_POINTS_SOLDIER		= 10,			// training a Fryhtan soldier in a lair (with the gold and the food): 7 to 10 by species, see train_life_points()
+		 LIFE_POINTS_ORDO_EXTRA	= 5,			// an Ordo costs this more than a soldier of its species
+		 LIFE_POINTS_PROMOTE		= 5,			// promoting a Fryhtan soldier to Ordo (the difference)
+		 LIFE_POINTS_LAIR			= 30,			// building a lair (with its gold), not the starting one
+		 LIFE_POINTS_TRIBUTE_EXTRA_PEOPLE = 15,	// an enslaved town with this many people gives 1 more a month
+		 LIFE_POINTS_TRIBUTE_PEOPLE = 10,		// an enslaved town gives 1 a month for each this many people
+		 LIFE_POINTS_KILL_COMBAT	= 10,			// killing a soldier gives its combat level / this...
+		 LIFE_POINTS_CIVILIAN_PERCENT = 50,		// ...a villager or town defender this %...
+		 LIFE_POINTS_GENERAL_PERCENT = 125,		// ...a general this %, a king this % (at least 1)
+		 LIFE_POINTS_KING_PERCENT	= 150,
+		 LIFE_POINTS_WEAPON		= 3,			// killing a weapon (it has no combat level)
+		 LIFE_POINTS_SHIP			= 5,			// killing a ship
+		 LIFE_POINTS_VILLAGER		= 1 };		// a villager killed in a town (attack, Cull or Taskmaster)
+
+//--- the AI at war with a Fryhtan kingdom, without attacking it for a while (Nation::ai_attack_target, Town::think_capture_enemy_town) ---//
+
+enum { AI_RELAX_DAYS_1				= 180,		// after 6 months: half the surplus protection, 110% of the target's defense
+		 AI_RELAX_DAYS_2				= 365,		// after 1 year: no surplus protection, 100% of the target's defense
+		 AI_RELAX_FORCE_PERCENT_1	= 110,
+		 AI_RELAX_FORCE_PERCENT_2	= 100 };
 
 class Firm;
 class Unit;
@@ -167,10 +239,20 @@ enum { ORDO_TASK_MIN_LEADERSHIP = 30,		// the leadership range of the effects of
 		 KIDNAP_VILLAGERS = 2,					// villagers brought by each kidnap
 		 ORDO_TOWN_VILLAGERS_PER_SOLDIER = 5,	// inside a town, these villagers count as one soldier for the leadership of the Ordo...
 		 ORDO_LEADERSHIP_PERCENT = 150,		// ...whose leadership rises faster than a human general's (also in a lair)
-		 TASKMASTER_GOLD_LOW = 50,				// extra tribute a month for each villager, in 1/100 $, with the lowest leadership...
-		 TASKMASTER_GOLD_HIGH = 200,			// ...and with the highest one
-		 TASKMASTER_FOOD_LOW = 5,				// extra food a year for each villager, with the lowest leadership...
-		 TASKMASTER_FOOD_HIGH = 20 };			// ...and with the highest one
+		 TASKMASTER_FOOD_LOW = 10,				// extra food a year for each villager, with the lowest leadership...
+		 TASKMASTER_FOOD_HIGH = 40,				// ...and with the highest one (no extra gold)
+		 TASKMASTER_DEATH_DAYS = 30,			// Taskmaster kills a villager every this many days...
+		 TASKMASTER_DEATH_DAYS_RANGE = 60,		// ...plus up to these at random (60 on average)
+		 FRYHTAN_KINGDOM_FOOD_PERCENT = 100,	// the Fryhtans of a Fryhtan kingdom eat this % of what the invoked ones eat (50 was tried and reverted)
+		 REBELS_RETURN_DISTANCE = 20,			// the rebels this near a town that won its independence go back into it
+		 AI_FRYHTAN_TARGET_PERCENT = 70,		// the AI picks a war target as if a Fryhtan kingdom had this % of its strength...
+		 AI_FRYHTAN_TARGET_MAX_STRENGTH = 150,	// ...unless it is over this % of the AI's own strength (0: always)
+		 OVERPOPULATED_TOWN_POPULATION = 30,	// an enslaved town with this many people loses loyalty...
+		 OVERPOPULATED_LOYALTY_DAYS = 5,		// ...1 point every this many days, and rebels in the end
+		 CULL_MIN_POPULATION = 5,				// Cull Population needs this many people in the town...
+		 CULL_MIN_KILL = 3,						// ...and kills 3 or 4 of them
+		 CULL_MAX_KILL = 4,
+		 SUBJUGATE_CULL_DAYS = 5 };			// Subjugate checks every this many days if it has to cull the town
 
 struct TownOrdo
 {
@@ -185,6 +267,7 @@ struct TownOrdo
 	uint8_t	skill_potential;
 	uint8_t	leadership_minor;	// the fractions of the leadership and the combat level (Skill)
 	uint8_t	combat_minor;
+	int32_t	next_death_date;	// Taskmaster: when it kills a villager next
 };
 
 //------- Define class ModFryhtan -------//
@@ -214,6 +297,7 @@ public:
 	void	set_lair(int firmRecno, int monsterId);
 	void	del_lair(int firmRecno);
 	FryhtanLair*	get_lair(int firmRecno);		// NULL if the firm is not a lair
+	static int	lair_max_soldiers(int monsterId);		// the places for soldiers in a lair of the species (4 to MAX_WORKER)
 	int	lair_monster_id(int firmRecno);
 	int	is_lair(Firm* firmPtr);
 
@@ -224,7 +308,8 @@ public:
 	int	cancel_lair_train(int firmRecno, int trainType=LAIR_TRAIN_SOLDIER);
 	void	next_day_lair(int firmRecno);
 	int	add_lair_soldier(Firm* firmPtr, int monsterId, int combatLevel=LAIR_TRAIN_COMBAT);
-	int	add_lair_ordo(Firm* firmPtr, int monsterId);
+	int	add_lair_ordo(Firm* firmPtr, int monsterId, int combatLevel=LAIR_ORDO_COMBAT);
+	int	lair_train_combat(int nationRecno, int trainType);		// the combat of a trained soldier or Ordo, +10 with Empowerment
 	static int	train_food(int trainType)	{ return trainType==LAIR_TRAIN_ORDO ? LAIR_ORDO_FOOD : LAIR_TRAIN_FOOD; }
 	// days needed for training, by the size of the species
 	static int	train_days(int trainType, int monsterId)
@@ -232,7 +317,8 @@ public:
 					  return is_large_monster(monsterId) ? LAIR_TRAIN_DAYS : LAIR_SMALL_TRAIN_DAYS; }
 
 	// gold for training a soldier or an Ordo, by the size of the species
-	static int	train_cost(int monsterId);		// the gold for training a soldier or an Ordo of the species
+	static int	train_cost(int monsterId, int nationRecno);		// the gold for training a soldier or an Ordo of the species (less with Brood Mastery)
+	static int	promote_life_points(int nationRecno);		// the Life Points for promoting a Fryhtan soldier to Ordo
 
 	//------ names of the Ordos ------//
 
@@ -292,6 +378,71 @@ public:
 
 	char		king_kill_array[MAX_NATION][MAX_NATION];		// the kings each Fryhtan kingdom killed of each kingdom: [killer-1][kingdom-1]
 
+	//------ Life Points of each Fryhtan kingdom ------//
+
+	int32_t	life_points_array[MAX_NATION];
+
+	//------ the AI against Fryhtan kingdoms: it relaxes its conditions to attack when it waits too long ------//
+
+	int32_t	ai_last_attack_date[MAX_NATION][MAX_NATION];		// [AI nation-1][Fryhtan nation-1]: the last time the AI sent troops against the Fryhtan kingdom
+
+	int	ai_wait_relax_level(int aiNationRecno, int fryhtanNationRecno);		// 0, 1 (6 months without attacking) or 2 (1 year)
+	int	ai_relax_level(int aiNationRecno);		// the highest level against any Fryhtan kingdom it is at war with
+	void	ai_attack_sent(int aiNationRecno, int targetNationRecno);
+
+	//------ the technologies of each Fryhtan kingdom, researched in its lairs ------//
+
+	char		tech_state_array[MAX_NATION][FRYHTAN_TECH_COUNT];		// FRYHTAN_TECH_NONE, _RESEARCHING or _DONE
+	int16_t	tech_days_array[MAX_NATION][FRYHTAN_TECH_COUNT];		// days researched
+
+	static const char*	tech_name(int techId);
+	static const char*	tech_desc(int techId);
+	static int	tech_cost(int techId);
+	static int	tech_life_points(int techId);
+	static int	tech_total_days(int techId);
+	static int	tech_required(int techId);			// the technology that must be researched first, -1 if none
+	static int	tech_list_order(int i);				// the technology in the i-th place of the list of the lairs
+	int	tech_available(int nationRecno, int techId);	// in the list: its required technology is researched (or it was already started)
+
+	int	tech_state(int nationRecno, int techId);
+	int	has_tech(int nationRecno, int techId)		{ return tech_state(nationRecno, techId) == FRYHTAN_TECH_DONE; }
+	int	tech_days(int nationRecno, int techId);
+	int	can_start_research(int nationRecno, int techId);		// locked with the gold and the Life Points, or unlocked
+	int	start_research(int nationRecno, int techId);				// research it (paying if it is locked); the one being researched is paused
+	void	next_day_research(int nationRecno);		// called by NationBase::next_day()
+	int	nation_lair_count(int nationRecno);
+
+	//------ Alchemist Lair: a lair on a raw material site ------//
+
+	static char*	lair_icon(int monsterId, int nationRecno);
+	static void		disp_lair_button(int x, int y, int nationRecno, int monsterId, const char* label, int withMine);		// a 99x60 button with the lair of the species (and a mine in small); monsterId 0: the kingdom's species		// the lair of the species as on the map, scaled down for icons (LAIR_ICON_MAX_WIDTH x LAIR_ICON_MAX_HEIGHT at most); 255 is transparent
+
+	int	alchemist_site_recno(Firm* firmPtr);		// the raw material site under the lair, 0 if none
+	int	can_build_lair_on_site(Location* locPtr, int builderUnitRecno);
+	int	is_alchemist_lair(Firm* firmPtr);			// a lair on a raw material site, with the technology
+	void	next_day_alchemist(Firm* firmPtr);
+	void	release_alchemist_site(Firm* firmPtr);		// the lair is deleted: the site is free again for a mine
+
+	//------ the start of a game with a Fryhtan kingdom ------//
+
+	int	start_region_id;		// when not 0, the starting towns of the kingdoms are on this region (the largest land), see TownArray::think_town_loc(). Not saved.
+
+	static int	largest_land_region_id();
+	int32_t	cur_year_life_points_change[MAX_NATION];		// the net change this year and the last one, for the top bar "(+x)"
+	int32_t	last_year_life_points_change[MAX_NATION];
+
+	int	life_points_change_365days(int nationRecno);		// the net change of the last 365 days, as food_change_365days()
+	void	next_year_life_points(int nationRecno);			// called on Jan 1 by NationBase::next_year()
+
+	int	life_points(int nationRecno);
+	int	start_life_points(int nationRecno);		// by the Treasure of the new game
+	void	add_life_points(int nationRecno, int points);		// points < 0: spent
+	static int	train_life_points(int trainType, int monsterId, int nationRecno);		// the Life Points for training a soldier or an Ordo of the species
+	static int	kill_life_points(Unit* targetUnit);		// the Life Points for killing the unit
+	static int	firm_setup_life_points(int firmId, int nationRecno);		// the Life Points for building a firm: LIFE_POINTS_LAIR for a lair
+	static int	town_tribute_life_points(int population);
+	void	reward_life_points(int nationRecno, Unit* targetUnit);		// a unit killed by a unit of the nation
+
 	void		reset_king_kills(int nationRecno);		// a new kingdom
 
 	int32_t	raid_date(int townRecno);
@@ -312,9 +463,18 @@ public:
 	int	subjugate_loyalty(Town* townPtr);		// the lowest loyalty Subjugate keeps, 0 without it
 	static int	ordo_task_level(int leadership);		// the leadership in ORDO_TASK_MIN/MAX_LEADERSHIP
 	static int	kidnap_days(int leadership);			// the average days between kidnaps
-	static int	taskmaster_gold(int leadership);		// extra tribute a month for each villager, in 1/100 $
 	static int	taskmaster_food(int leadership);		// extra food a year for each villager
-	int	taskmaster_town_gold(Town* townPtr);			// the extra tribute of the town this month, $
+	static float	fryhtan_food_year(int unitId, int nationRecno);		// the food a Fryhtan of the nation eats a year
+	int	lair_orphan_towns(Firm* firmPtr, short* townRecnoArray);		// the enslaved towns linked only to the lair
+	void	lair_destroyed(short* townRecnoArray, int townCount, Unit* attackUnit, int attackNationRecno, int lairNationRecno);
+	void	make_town_independent(Town* townPtr);
+	void	rebels_return_to_town(Town* townPtr);
+	static int	is_overpopulated(Town* townPtr);		// an enslaved town losing loyalty for its population
+	static int	overpopulated_population(int nationRecno);		// OVERPOPULATED_TOWN_POPULATION, more with Dominion
+	static int	brood_mastery_price(int value, int nationRecno);		// the value with Brood Mastery, rounded
+	void	next_day_town_overpopulation(Town* townPtr);
+	int	can_cull_town(Town* townPtr);
+	int	cull_town(Town* townPtr);					// Cull Population: kills 3 or 4 villagers, for the spoils; return: the villagers killed
 	void	train_town_ordo(Town* townPtr, TownOrdo* ordoPtr);		// its leadership and combat rise, it recovers hit points
 	static int	enslave_min_resistance(int leadership);	// how low the lairs lower the resistance of an independent town
 	void	promote_ordo(Unit* unitPtr);			// a Fryhtan soldier of a Fryhtan kingdom becomes an Ordo

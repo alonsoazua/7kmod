@@ -1226,6 +1226,9 @@ void Unit::process_build_firm()
 
 				if(nationPtr->cash < ModFryhtan::firm_setup_cost(action_para, nation_recno))		// 7kmod-fryhtan: the cost of a lair
 					shouldProceed = 0; // out of cash
+
+				if( mod_fryhtan.life_points(nation_recno) < ModFryhtan::firm_setup_life_points(action_para, nation_recno) )		// 7kmod-fryhtan: and its Life Points
+					shouldProceed = 0;
 			}
 			else
 				nationPtr = NULL;

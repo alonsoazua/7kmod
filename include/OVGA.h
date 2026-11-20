@@ -99,6 +99,8 @@ public:
 	Vga();
 	~Vga();
 
+	const SDL_Color* get_game_pal()		{ return game_pal; }		// 7kmod-fryhtan: the colors of the game palette (scaling icons)
+
 	int    init();
 	void   deinit();
 

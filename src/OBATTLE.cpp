@@ -107,6 +107,15 @@ void Battle::run(NewNationPara *mpGame, int mpPlayerCount)
 		seedFile.file_close();
 	#endif
 
+	//--- 7kmod-fryhtan: Fryhtans can't move by sea, so a game with a Fryhtan kingdom has at least a moderate land mass ---//
+
+	if( !mpGame && game.game_mode != GAME_DEMO && !mod_editor.editing_flag &&
+		 config.fryhtan_monster_id > 0 && config.fryhtan_monster_id <= monster_res.monster_count &&
+		 config.land_mass == OPTION_LOW )
+	{
+		config.land_mass = OPTION_MODERATE;
+	}
+
 	world.generate_map();
 
 	//------- create player nation --------//
@@ -466,6 +475,18 @@ void Battle::create_pregame_object()
 	int		noSpaceFlag=0;
 	Nation*  nationPtr;
 
+	//--- 7kmod-fryhtan: with a Fryhtan kingdom, all kingdoms start on the largest land, ---//
+	//--- as Fryhtans can't move by sea (see TownArray::think_town_loc)                 ---//
+
+	for( nationRecno=1 ; nationRecno<=nation_array.size() ; nationRecno++ )
+	{
+		if( !nation_array.is_deleted(nationRecno) && mod_fryhtan.is_fryhtan(nationRecno) )
+		{
+			mod_fryhtan.start_region_id = ModFryhtan::largest_land_region_id();
+			break;
+		}
+	}
+
 	for( nationRecno=1 ; nationRecno<=nation_array.size() ; nationRecno++ )
 	{
 		if( nation_array.is_deleted(nationRecno) )
@@ -575,6 +596,8 @@ void Battle::create_pregame_object()
 		if( nationPtr->is_ai() )
 			nationPtr->update_ai_region();
 	}
+
+	mod_fryhtan.start_region_id = 0;		// 7kmod-fryhtan: the independent towns go anywhere
 
 	//--- if there is no space for creating new town/firm or unit, delete the unprocessed nations ---//
 
@@ -702,8 +725,10 @@ void Battle::run_loaded()
 		if( !unit_array.is_deleted((~nation_array)->king_unit_recno) )
 			// if there is king in the nation take his race
 			kingRace = unit_array[(~nation_array)->king_unit_recno]->race_id;
-		else
-			// if king is killed, get the original nation
+
+		// if king is killed, get the original nation
+		// 7kmod-fryhtan: also for a Fryhtan king, who has no race (song 1 is the menu's); the nation's race is what a new game plays
+		if( !kingRace )
 			kingRace = (~nation_array)->race_id;
 	}
 

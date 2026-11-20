@@ -1159,7 +1159,12 @@ int World::can_build_firm(int xLoc1, int yLoc1, int firmId, short unitRecno)
 				// ##### patch end Gilbert 14/3 ######//
 
 				if( firmId != FIRM_MINE && locPtr->has_site() )		// don't allow building any buildings other than mines on a location with a site
-					return 0;
+				{
+					//--- 7kmod-fryhtan: with Alchemist Lair, a Fryhtan kingdom builds lairs on raw material sites ---//
+
+					if( !(firmId == FIRM_CAMP && mod_fryhtan.can_build_lair_on_site(locPtr, unitRecno)) )
+						return 0;
+				}
 			}
 		}
 		return 1;

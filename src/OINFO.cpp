@@ -45,6 +45,8 @@
 #include <OCOLTBL.h>
 #include <OINFO.h>
 #include <ModEditor.h>
+#include <ModFryhtan.h>
+#include <ModLifeIcon.h>
 #include <OOPTMENU.h>
 #include "gettext.h"
 
@@ -303,6 +305,9 @@ void Info::disp()
 
 	vga.use_front();
 
+	if( !firm_array.selected_recno )		// 7kmod: a Fort or lair selected again opens on its main menu, page 1
+		Firm::forget_info_menus();
+
 	//------ 7kmod-editor: the side panel of the editor ------//
 
 	if( mod_editor.is_editing() )
@@ -360,6 +365,9 @@ void Info::update()
 	vga.use_front();
 
 	//-------------------------------------------//
+
+	if( !firm_array.selected_recno )		// 7kmod: a Fort or lair selected again opens on its main menu, page 1
+		Firm::forget_info_menus();
 
 	if( mod_editor.is_editing() )		// 7kmod-editor: the side panel of the editor
 		mod_editor.disp_panel(INFO_UPDATE);
@@ -434,6 +442,29 @@ void Info::disp_heading()
 	strPtr = nationPtr->cash_str();
 
 	font_mid.disp( 305, 30, strPtr, 445);
+
+	//------- 7kmod-fryhtan: a Fryhtan kingdom shows its Life Points instead of the reputation ---//
+
+	if( mod_fryhtan.is_fryhtan(nation_array.player_recno) )
+	{
+		vga_front.put_bitmap( 447, 26, (char*) life_points_icon );		// it has the background of the bar, as REPU_UP
+		//--- with the net change of the last 365 days, as the food and the cash: "302 (+12)" ---//
+
+		int lifeChange = mod_fryhtan.life_points_change_365days(nation_array.player_recno);
+
+		str = misc.format(mod_fryhtan.life_points(nation_array.player_recno), 4);		// format type 4 - no thousand separators
+
+		if( lifeChange )		// as NationBase::food_str()
+		{
+			str += lifeChange > 0 ? " (+" : " (-";
+			str += misc.format( abs(lifeChange), 4 );
+			str += ")";
+		}
+
+		font_mid.disp( 476, 30, str, 575 );
+		font_mid.use_std_height();
+		return;
+	}
 
 	//------- display reputation ---------//
 
