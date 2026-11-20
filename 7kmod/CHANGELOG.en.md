@@ -24,6 +24,13 @@ which includes everything in `7kmod` and documents its own changes in
 
 ## [Unreleased]
 
+---
+
+## [0.5.0] - 2026-11-19
+
+Released as **New Adversaries Classic 0.5.0**, in the installer
+`NewAdversaries-0.5.0-setup.exe`.
+
 ### Added
 
 - **"Game Speed" message:** changing the speed (keys `1`–`9`), unpausing and starting or
