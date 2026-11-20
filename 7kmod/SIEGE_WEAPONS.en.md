@@ -7,7 +7,7 @@ Reference on how siege weapons work in Seven Kingdoms: Ancient Adversaries 2.15.
 SACTION and SPRITE tables) and from the code (`src/OUNIT.cpp`, `src/OUNITAT.cpp`,
 `src/OBULLET.cpp`, `src/OB_FLAME.cpp`, `src/OU_CART.cpp`, `src/OF_CAMP.cpp`,
 `src/OF_WAR.cpp`). Damage per second was calculated with the rules of
-`tools/combat_sim.py` (see `COMBAT_ANALYSIS.md`, Spanish only).
+`tools/combat_sim.py` (see `COMBAT_ANALYSIS.en.md`).
 
 None of the changes of 7kmod or 7kmod-gameplay modify siege weapons: everything in this
 document is from the original game. The only thing that changes in gameplay is the

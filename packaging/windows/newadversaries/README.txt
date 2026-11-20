@@ -62,8 +62,9 @@ In the game folder:
                  gameplay = New Adversaries, fryhtan = the Fryhtan kingdom).
     Docs\        The players' guide (GUIDE: everything the mod changes, by
                  topic), keyboard shortcuts (KEYBINDINGS), Greater Beings,
-                 espionage (SPYING), siege weapons (SIEGE_WEAPONS) and the
-                 advanced config.txt options (ADVANCED_CONFIG).
+                 espionage (SPYING), siege weapons (SIEGE_WEAPONS), combat
+                 (COMBAT_ANALYSIS) and the advanced config.txt options
+                 (ADVANCED_CONFIG).
     7kaa-manual.pdf   The manual of the original game.
 
 The files ending in .en.txt are the English version; the others are in

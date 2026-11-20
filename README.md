@@ -79,6 +79,8 @@ version with the same name ending in `.en.md`:
 - `KEYBINDINGS.en.md`: keyboard shortcuts.
 - `GREATER_BEINGS.en.md`, `SPYING.en.md`, `SIEGE_WEAPONS.en.md`: how Greater Beings,
   spying and siege weapons work.
+- `COMBAT_ANALYSIS.en.md` (in `7kmod-gameplay`): how combat works, with tables by race
+  and Fryhtan.
 
 ## Building
 
