@@ -1,4 +1,4 @@
-NEW ADVERSARIES 0.4.0
+NEW ADVERSARIES 0.5.0
 Un mod de Seven Kingdoms: Ancient Adversaries
 ==============================================
 
@@ -19,7 +19,8 @@ New Adversaries (7k-newAdversaries.exe)
     - Juega como un reino Fryhtan (pestaña "Fryhtans" en New Game): entrena
       Fryhtans en tus guaridas, esclaviza pueblos y cóbrales tributo, saquéalos
       con Raid y manda a tus Ordos a someterlos, secuestrar aldeanos o
-      explotarlos.
+      explotarlos. Gana Life Points matando e investiga las tecnologías de
+      tus guaridas.
     - Invoca Fryhtans desde la Sede de Poder; la IA también los usa.
     - Greater Beings con poderes nuevos, espionaje ampliado (propaganda,
       accidentes, reportes de inteligencia), comercio de materias primas en el

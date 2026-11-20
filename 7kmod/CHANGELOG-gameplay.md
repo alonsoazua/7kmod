@@ -23,6 +23,41 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 
 ---
 
+## [0.4.0] - 2026-11-19
+
+Publicada como **New Adversaries 0.5.0**, en el instalador
+`NewAdversaries-0.5.0-setup.exe`. Basada en **7kmod 0.5.0** (ver `CHANGELOG.md`).
+
+### Agregado
+- **Reino Fryhtan** (traído de la rama experimental `7kmod-fryhtan`; el detalle está en
+  `CHANGELOG-fryhtan.md`, versión 0.2.0):
+  - **Life Points:** la moneda de los reinos Fryhtan, en la barra de arriba con su
+    cambio anual. Se ganan matando (según el nivel de combate), con el tributo de los
+    pueblos esclavizados y con los aldeanos que mueren; se gastan al entrenar Fryhtans,
+    ascender Ordos y construir guaridas. Los iniciales dependen del Treasure de New Game.
+  - **Tecnologías de guarida** (botón Research, como la Torre de Ciencia): Alchemist
+    Lair, Brood Mastery → Empowerment y Dominion → Sacrificial Rites.
+  - Lugares de la guarida según la vida de la especie, sobrepoblación de los pueblos
+    esclavizados (30) con Cull Population y Subjugate, el retrato volteado de los
+    Fryhtans con rango y que nadie migre por su cuenta a un pueblo esclavizado.
+  - Las partidas con un reino Fryhtan empiezan en la masa de tierra más grande.
+
+### Cambiado
+- **Reino Fryhtan:** precios en oro por tamaño ($100 chicos, $150 grandes), costos de
+  entrenamiento por especie, Rokken y Holgh a velocidad 4, Taskmaster solo da comida, se
+  puede entrenar con la guarida llena, la última guarida destruida decide a quién pasa
+  el pueblo esclavizado, y la IA ataca más a los reinos Fryhtan.
+
+### Corregido
+- **Reino Fryhtan:** entrenar con los soldados afuera de la guarida, la música al cargar
+  una partida Fryhtan y el menú en que se quedaban el fuerte y la guarida.
+
+### Compatibilidad
+- **Partidas guardadas:** carga las de gameplay 0.3.0 (los reinos Fryhtan reciben los
+  life points iniciales); gameplay 0.3.0 no carga las partidas nuevas.
+
+---
+
 ## [0.3.0] - 2026-11-14
 
 Publicada como **New Adversaries 0.4.0**, en el instalador

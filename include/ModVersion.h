@@ -46,7 +46,7 @@
 // It is kept apart from the 7kmod version above so that changing either
 // of them doesn't conflict when 7kmod-gameplay is rebased on 7kmod.
 
-#define MOD_GAMEPLAY_VERSION	"0.3.0"
+#define MOD_GAMEPLAY_VERSION	"0.4.0"
 
 
 //------- version of the 7kmod-fryhtan branch --------//

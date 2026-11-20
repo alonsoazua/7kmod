@@ -1,4 +1,4 @@
-NEW ADVERSARIES 0.4.0
+NEW ADVERSARIES 0.5.0
 A mod of Seven Kingdoms: Ancient Adversaries
 ============================================
 
@@ -19,7 +19,8 @@ New Adversaries (7k-newAdversaries.exe)
     - Play as a Fryhtan kingdom ("Fryhtans" tab in New Game): train Fryhtans
       in your lairs, enslave villages and collect their tribute, plunder them
       with Raid and send your Ordos to subjugate them, kidnap villagers or work
-      them harder.
+      them harder. Earn Life Points by killing and research the technologies of
+      your lairs.
     - Invoke Fryhtans from the Seat of Power; the AI uses them too.
     - Greater Beings with new powers, extended espionage (propaganda,
       accidents, intelligence reports), raw material trade at the harbor,

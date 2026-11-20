@@ -12,6 +12,12 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
 
 ## [Sin publicar]
 
+---
+
+## [0.2.0] - 2026-11-19
+
+Incluida en **New Adversaries 0.5.0** (gameplay 0.4.0, 7kmod 0.5.0).
+
 ### Agregado
 - **Life Points:** la moneda de los reinos Fryhtan. Se ven en la barra de arriba, en
   lugar de la reputación, con su propio ícono (una esfera yin-yang verde y dorada).

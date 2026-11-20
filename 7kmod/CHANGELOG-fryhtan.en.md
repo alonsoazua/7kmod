@@ -13,6 +13,12 @@ together.
 
 ## [Unreleased]
 
+---
+
+## [0.2.0] - 2026-11-19
+
+Included in **New Adversaries 0.5.0** (gameplay 0.4.0, 7kmod 0.5.0).
+
 ### Added
 - **Life Points:** the currency of Fryhtan kingdoms. They show on the top bar, in place
   of the reputation, with their own icon (a green and gold yin-yang sphere).

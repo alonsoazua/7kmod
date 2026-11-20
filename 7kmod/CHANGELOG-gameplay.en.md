@@ -24,6 +24,41 @@ the game plays. This branch includes everything in the `7kmod` branch, documente
 
 ---
 
+## [0.4.0] - 2026-11-19
+
+Released as **New Adversaries 0.5.0**, in the installer `NewAdversaries-0.5.0-setup.exe`.
+Based on **7kmod 0.5.0** (see `CHANGELOG.en.md`).
+
+### Added
+- **Fryhtan kingdom** (brought from the experimental `7kmod-fryhtan` branch; the details
+  are in `CHANGELOG-fryhtan.en.md`, version 0.2.0):
+  - **Life Points:** the currency of Fryhtan kingdoms, on the top bar with their yearly
+    change. Earned by killing (by combat level), from the tribute of enslaved towns and
+    from villagers that die; spent training Fryhtans, promoting Ordos and building
+    lairs. The starting ones depend on the Treasure of New Game.
+  - **Lair technologies** (Research button, like the Tower of Science): Alchemist Lair,
+    Brood Mastery → Empowerment and Dominion → Sacrificial Rites.
+  - Lair places by the species' hit points, overpopulation of enslaved towns (30) with
+    Cull Population and Subjugate, the flipped portrait of ranked Fryhtans and nobody
+    migrating on their own to an enslaved town.
+  - Games with a Fryhtan kingdom start on the largest land.
+
+### Changed
+- **Fryhtan kingdom:** gold prices by size ($100 small, $150 large), training costs by
+  species, Rokken and Holgh at speed 4, Taskmaster only gives food, training with a full
+  lair, the last lair destroyed decides who gets the enslaved town, and the AI attacks
+  Fryhtan kingdoms more.
+
+### Fixed
+- **Fryhtan kingdom:** training with the soldiers out of the lair, the music when loading
+  a Fryhtan game and the menu the fort and the lair stayed on.
+
+### Compatibility
+- **Saved games:** loads those of gameplay 0.3.0 (Fryhtan kingdoms get the starting Life
+  Points); gameplay 0.3.0 doesn't load the new games.
+
+---
+
 ## [0.3.0] - 2026-11-14
 
 Released as **New Adversaries 0.4.0**, in the installer `NewAdversaries-0.4.0-setup.exe`.
