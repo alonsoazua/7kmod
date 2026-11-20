@@ -23,6 +23,13 @@ incluye todo lo de `7kmod` y documenta lo suyo en `CHANGELOG-gameplay.md`.
 
 ## [Sin publicar]
 
+---
+
+## [0.5.0] - 2026-11-19
+
+Publicada como **New Adversaries Classic 0.5.0**, en el instalador
+`NewAdversaries-0.5.0-setup.exe`.
+
 ### Agregado
 
 - **Aviso "Game Speed":** al cambiar la velocidad (teclas `1`–`9`), al quitar la pausa y

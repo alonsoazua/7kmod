@@ -28,7 +28,7 @@
 
 //------- version of the 7kmod branch --------//
 
-#define MOD_7KMOD_VERSION		"0.4.0"
+#define MOD_7KMOD_VERSION		"0.5.0"
 
 
 //------- public version of New Adversaries --------//
@@ -37,7 +37,7 @@
 // New Adversaries Classic (7kmod). The branch versions above and below are
 // kept in the changelogs.
 
-#define MOD_PUBLIC_VERSION		"0.4.0"
+#define MOD_PUBLIC_VERSION		"0.5.0"
 
 
 //------- version of the 7kmod-gameplay branch --------//
@@ -46,7 +46,7 @@
 // It is kept apart from the 7kmod version above so that changing either
 // of them doesn't conflict when 7kmod-gameplay is rebased on 7kmod.
 
-#define MOD_GAMEPLAY_VERSION	"0.3.0"
+#define MOD_GAMEPLAY_VERSION	"0.4.0"
 
 
 //------- version of the 7kmod-fryhtan branch --------//
@@ -55,7 +55,7 @@
 // Only the 7kmod-fryhtan branch defines MOD_FRYHTAN_VERSION here; the Fryhtan
 // kingdom merged into 7kmod-gameplay shows the gameplay version.
 
-#define MOD_FRYHTAN_VERSION		"0.1.0"
+#define MOD_FRYHTAN_VERSION		"0.2.0"
 
 
 
