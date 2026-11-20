@@ -12,6 +12,11 @@ La traducción al inglés está en `CHANGELOG-fryhtan.en.md`; los dos se actuali
 
 ## [Sin publicar]
 
+### Agregado
+- **Barra de entrenamiento en la guarida:** como la de los pueblos (7kmod), una barra
+  verde chica en tus guaridas muestra el avance del Fryhtan que se entrena, un poco abajo
+  del centro (debajo de "(Alchemist Lair)").
+
 ### Cambiado
 - **Texto del pueblo esclavizado en dos páginas**, con los cuadritos "1" y "2" en la
   esquina del panel (el de la página actual, hundido):
