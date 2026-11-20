@@ -23,6 +23,38 @@
 #include <OPOWER.h>
 #include <OUNIT.h>
 #include <ONATION.h>
+#include <OINFO.h>
+#include <OSYS.h>
+#include <OVGA.h>
+#include <OFONT.h>
+#include <OMOUSE.h>
+#include <OWORLD.h>
+#include <OSE.h>
+#include <OHELP.h>
+#include <ModEditor.h>
+#include <gettext.h>
+
+//--- 7kmod: the buttons of the groups, in a column above the clear news button (ONEWS.cpp) ---//
+
+enum { GROUP_BUTTON_X1 = ZOOM_X2-13,		// as the news buttons: NEWS_X2+3
+		 GROUP_BUTTON_SIZE = 10,
+		 GROUP_BUTTON_SPACE = 12,
+		 GROUP_BUTTON_Y9 = ZOOM_Y2-5-38 };		// the button of group 9, above the clear news button (NEWS_Y2-26)
+
+static int group_button_y1(int groupNum) { return GROUP_BUTTON_Y9 - (MAX_SELECT_GROUP_NUM-groupNum) * GROUP_BUTTON_SPACE; }
+
+static char group_has_units[MAX_SELECT_GROUP_NUM+1];		// set by disp_buttons(), for detect_buttons()
+
+// the colors of the news buttons (NEWS_LOG, NEWS_CLR): light and dark border, face
+enum { GROUP_BUTTON_LIGHT = 0x4F, GROUP_BUTTON_DARK = 0x99, GROUP_BUTTON_FACE = 0x5E,
+		 GROUP_BUTTON_FACE_DOWN = 0x5C, GROUP_BUTTON_DIGIT = 0x93 };
+
+// the digits 1-9 in 3x5 pixels, as the lines of the news buttons; a row per char, bit 2 = left
+static const unsigned char group_digit_font[10][5] =
+{
+	{ 7,5,5,5,7 }, { 2,6,2,2,7 }, { 7,1,7,4,7 }, { 7,1,3,1,7 }, { 5,5,7,1,1 },
+	{ 7,4,7,1,7 }, { 7,4,7,5,7 }, { 7,1,1,2,2 }, { 7,5,7,5,7 }, { 7,5,7,1,7 },
+};
 
 //--------------- begin of function GroupSelect::GroupSelect ----------------//
 GroupSelect::GroupSelect()
@@ -91,6 +123,8 @@ void GroupSelect::group_units(int groupNum)
 		else if(unitPtr->group_select_id==groupNum) // old member in this group
 			unitPtr->group_select_id = 0;
 	}
+
+	info.disp();		// 7kmod: the group in the unit panel and in the list of units
 }
 //--------------- end of function GroupSelect::group_units ----------------//
 
@@ -98,7 +132,7 @@ void GroupSelect::group_units(int groupNum)
 //--------------- begin of function GroupSelect::select_grouped_units ----------------//
 // <int> groupNum = 1 - MAX_SELECT_GROUP_NUM
 //
-void GroupSelect::select_grouped_units(int groupNum)
+int GroupSelect::select_grouped_units(int groupNum)
 {
 	err_when(groupNum<1 || groupNum>MAX_SELECT_GROUP_NUM);
 
@@ -130,7 +164,7 @@ void GroupSelect::select_grouped_units(int groupNum)
 	}
 
 	if(!groupUnitCount)
-		return;
+		return 0;
 	
 	power.reset_selection();
 
@@ -164,7 +198,145 @@ void GroupSelect::select_grouped_units(int groupNum)
 	{
 		unit_array.selected_recno = showSelectedUnitPtr->sprite_recno;
 		info.disp();
+		return showSelectedUnitPtr->sprite_recno;
 	}
+
+	return 0;
 }
 //--------------- end of function GroupSelect::select_grouped_units ----------------//
+
+
+//--------------- begin of function GroupSelect::disp_buttons ----------------//
+//
+// 7kmod: a column of small buttons 1-9 above the clear news button, each in
+// its own place, only for the groups with units on the map. A click selects
+// the group (as Alt+number) and a double click also centers the map on it.
+//
+void GroupSelect::disp_buttons()
+{
+	memset( group_has_units, 0, sizeof(group_has_units) );
+
+	int playerNation = nation_array.player_recno;
+
+	if( !playerNation || sys.view_mode != MODE_NORMAL || mod_editor.is_editing() )
+		return;
+
+	for( int i=unit_array.size() ; i>0 ; i-- )
+	{
+		if( unit_array.is_deleted(i) )
+			continue;
+
+		Unit* unitPtr = unit_array[i];
+
+		if( unitPtr->group_select_id > 0 && unitPtr->group_select_id <= MAX_SELECT_GROUP_NUM &&
+			 unitPtr->nation_recno == playerNation && unitPtr->is_visible() )
+		{
+			group_has_units[(int)unitPtr->group_select_id] = 1;
+		}
+	}
+
+	int selectedGroup = selected_group();
+
+	vga.use_back();
+
+	for( int g=1 ; g<=MAX_SELECT_GROUP_NUM ; g++ )
+	{
+		if( !group_has_units[g] )
+			continue;
+
+		int x1 = GROUP_BUTTON_X1, y1 = group_button_y1(g);
+		int x2 = x1+GROUP_BUTTON_SIZE-1, y2 = y1+GROUP_BUTTON_SIZE-1;
+
+		int pressed = g == selectedGroup;		// the selected group, pressed
+
+		vga_back.bar( x1, y1, x2, y2, pressed ? GROUP_BUTTON_LIGHT : GROUP_BUTTON_DARK );
+		vga_back.bar( x1, y1, x2-1, y2-1, pressed ? GROUP_BUTTON_DARK : GROUP_BUTTON_LIGHT );
+		vga_back.bar( x1+1, y1+1, x2-1, y2-1, pressed ? GROUP_BUTTON_FACE_DOWN : GROUP_BUTTON_FACE );
+
+		for( int row=0 ; row<5 ; row++ )		// the digit, centered
+		{
+			for( int col=0 ; col<3 ; col++ )
+			{
+				if( group_digit_font[g][row] & (4>>col) )
+					vga_back.bar( x1+4+col, y1+3+row, x1+4+col, y1+3+row, GROUP_BUTTON_DIGIT );
+			}
+		}
+	}
+
+	vga.use_front();
+}
+//--------------- end of function GroupSelect::disp_buttons ----------------//
+
+
+//--------------- begin of function GroupSelect::detect_buttons ----------------//
+//
+int GroupSelect::detect_buttons()
+{
+	if( !nation_array.player_recno || sys.view_mode != MODE_NORMAL || mod_editor.is_editing() )
+		return 0;
+
+	for( int g=1 ; g<=MAX_SELECT_GROUP_NUM ; g++ )
+	{
+		if( !group_has_units[g] )
+			continue;
+
+		int x1 = GROUP_BUTTON_X1, y1 = group_button_y1(g);
+		int x2 = x1+GROUP_BUTTON_SIZE-1, y2 = y1+GROUP_BUTTON_SIZE-1;
+
+		int doubleClick = mouse.double_click(x1, y1, x2, y2);
+
+		if( doubleClick || mouse.single_click(x1, y1, x2, y2) )
+		{
+			int unitRecno = select_grouped_units(g);
+
+			if( doubleClick && unitRecno )		// a double click also centers the map on the group
+			{
+				Unit* unitPtr = unit_array[unitRecno];
+				world.go_loc( unitPtr->next_x_loc(), unitPtr->next_y_loc() );
+			}
+
+			se_ctrl.immediate_sound("TURN_ON");
+			return 1;
+		}
+	}
+
+	return 0;
+}
+//--------------- end of function GroupSelect::detect_buttons ----------------//
+
+
+//--------------- begin of function GroupSelect::selected_group ----------------//
+//
+// 7kmod: the group whose units on the map are exactly the selected units, 0
+// if the selection isn't a group.
+//
+int GroupSelect::selected_group()
+{
+	if( !unit_array.selected_recno || unit_array.is_deleted(unit_array.selected_recno) )
+		return 0;
+
+	int groupNum = unit_array[unit_array.selected_recno]->group_select_id;
+
+	if( groupNum < 1 || groupNum > MAX_SELECT_GROUP_NUM )
+		return 0;
+
+	int playerNation = nation_array.player_recno;
+
+	for( int i=unit_array.size() ; i>0 ; i-- )
+	{
+		if( unit_array.is_deleted(i) )
+			continue;
+
+		Unit* unitPtr = unit_array[i];
+
+		if( !unitPtr->is_visible() || unitPtr->nation_recno != playerNation )
+			continue;
+
+		if( (unitPtr->group_select_id == groupNum) != (unitPtr->selected_flag != 0) )		// in the group but not selected, or selected but not in the group
+			return 0;
+	}
+
+	return groupNum;
+}
+//--------------- end of function GroupSelect::selected_group ----------------//
 

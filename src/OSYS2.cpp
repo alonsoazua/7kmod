@@ -34,6 +34,7 @@
 #include <OUNIT.h>
 #include <OHELP.h>
 #include <OTUTOR.h>
+#include <OGRPSEL.h>
 #include <ONEWS.h>
 #include <OBULLET.h>
 #include <OREBEL.h>
@@ -882,6 +883,9 @@ void Sys::detect_view()
 	// ##### patch begin Gilbert 31/3 #####//
 	if( news_array.detect() )
 		return;
+
+	if( group_select.detect_buttons() )		// 7kmod: the buttons of the groups
+		return;
 	// ##### patch end Gilbert 31/3 #####//
 
 	//---- pressing right button in command mode -> cancel command mode ----//
@@ -1037,6 +1041,8 @@ void Sys::disp_zoom()
 	//-------- display news messages ---------//
 
 	news_array.disp();
+
+	group_select.disp_buttons();		// 7kmod: the buttons of the groups, above the clear news button
 
 	//--- 7kmod: show that the game is paused (by the player or when the window loses focus) ---//
 

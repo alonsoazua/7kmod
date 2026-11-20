@@ -24,6 +24,7 @@
 #include <KEY.h>
 #include <OVGA.h>
 #include <vga_util.h>
+#include <OGRPSEL.h>
 #include <OMOUSE.h>
 #include <OFONT.h>
 #include <OMOUSE.h>
@@ -370,8 +371,21 @@ void Unit::disp_basic_info(int dispY1, int refreshFlag)
 		{
 			int dispTitle = is_own() || nation_recno==0;		// only display title for own units or independent units (which is for rebel leader only)
 
+			//--- 7kmod: the group of an own unit (Ctrl+1-9), in a box next to the nation color ---//
+
+			int nameX1 = INFO_X1+21;
+
+			if( is_own() && group_select_id > 0 && group_select_id <= MAX_SELECT_GROUP_NUM )
+			{
+				char groupStr[2] = { (char) ('0'+group_select_id), 0 };
+
+				vga_util.d3_panel_down( INFO_X1+23, dispY1+3, INFO_X1+40, dispY1+18 );
+				font_san.center_put( INFO_X1+23, dispY1+3, INFO_X1+41, dispY1+19, groupStr );
+				nameX1 = INFO_X1+41;
+			}
+
 			if( dispName )
-				font_san.center_put( INFO_X1+21, dispY1, INFO_X2-2, dispY1+21, unit_name(dispTitle) );
+				font_san.center_put( nameX1, dispY1, INFO_X2-2, dispY1+21, unit_name(dispTitle) );
 
 			vga_util.d3_panel_down( INFO_X1+3, dispY1+3, INFO_X1+20, dispY1+18 );
 
