@@ -38,6 +38,7 @@
 #include <ONATION.h>
 #include <OSE.h>
 #include <OMISC.h>
+#include <OWORLD.h>
 #include <OSTR.h>
 #include <OUNITLST.h>
 #include "gettext.h"
@@ -45,7 +46,7 @@
 //------- layout of the list, like the list of soldiers of a fort -------//
 
 #define LIST_COLUMN_COUNT		4
-#define LIST_ROW_COUNT			8
+#define LIST_ROW_COUNT			7		// 8 before the panel of the unit in focus
 #define LIST_PAGE_SIZE			(LIST_COLUMN_COUNT*LIST_ROW_COUNT)
 #define LIST_CELL_WIDTH			50
 #define LIST_CELL_HEIGHT		29
@@ -69,6 +70,7 @@ static uint16_t inspect_name_id_array[MAX_UNIT_LIST];		// as Unit::name_id (a sh
 static char   inspect_nation_array[MAX_UNIT_LIST];
 
 static short  last_list_recno_array[MAX_UNIT_LIST];	// to know when the list changes
+static short  last_focus_recno, last_focus_hit_points, last_focus_level;		// to know when the panel of the unit in focus changes
 static short  last_list_count;
 static short  last_list_page;
 
@@ -242,6 +244,20 @@ void unit_list_disp(Unit* mainUnit, int dispY1, int refreshFlag)
 	int listChanged = unitCount != last_list_count || list_page != last_list_page ||
 							memcmp(recnoArray, last_list_recno_array, sizeof(short)*unitCount) != 0;
 
+	//--- the unit in focus (the one of the unit panel): its panel changes with its hit points or level ---//
+
+	int focusLevel = mainUnit->skill.combat_level * 1000 + mainUnit->skill.skill_level;
+
+	if( mainUnit->sprite_recno != last_focus_recno || (int) mainUnit->hit_points != last_focus_hit_points ||
+		 focusLevel != last_focus_level )
+	{
+		listChanged = 1;
+	}
+
+	last_focus_recno      = mainUnit->sprite_recno;
+	last_focus_hit_points = (int) mainUnit->hit_points;
+	last_focus_level      = focusLevel;
+
 	last_list_count = unitCount;
 	last_list_page  = list_page;
 	memcpy( last_list_recno_array, recnoArray, sizeof(short)*unitCount );
@@ -255,10 +271,44 @@ void unit_list_disp(Unit* mainUnit, int dispY1, int refreshFlag)
 	//---------- paint the panel ---------//
 
 	int stripY1 = INFO_Y2 - 24;		// the page strip at the bottom
+	int focusY1 = stripY1 - 36;		// the panel of the unit in focus, above it
 
 	if( refreshFlag == INFO_REPAINT )
 	{
 		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, INFO_Y2 );
+
+		//--- the unit in focus: combat and skill (only the player's units, as the numbers of the list), hit points ---//
+
+		vga_util.d3_panel_down( INFO_X1+4, focusY1, INFO_X2-4, focusY1+33 );
+
+		UnitInfo* focusInfo = unit_res[mainUnit->unit_id];
+		String str;
+
+		if( mainUnit->is_own() && focusInfo->unit_class != UNIT_CLASS_WEAPON &&
+			 focusInfo->unit_class != UNIT_CLASS_SHIP && focusInfo->unit_class != UNIT_CLASS_CARAVAN )
+		{
+			str  = _("Combat");
+			str += " ";
+			str += (int) mainUnit->skill.combat_level;
+
+			if( mainUnit->skill.skill_id > 0 && mainUnit->skill.skill_id <= MAX_SKILL )
+			{
+				str += "   ";
+				str += _(Skill::skill_str_array[mainUnit->skill.skill_id-1]);
+				str += " ";
+				str += (int) mainUnit->skill.skill_level;
+			}
+
+			font_san.put( INFO_X1+9, focusY1+3, str );
+		}
+
+		str  = _("Hit Points");
+		str += " ";
+		str += (int) mainUnit->hit_points;
+		str += "/";
+		str += mainUnit->max_hit_points;
+
+		font_san.put( INFO_X1+9, focusY1+17, str );
 
 		int groupNum = mainUnit->is_own() ? group_select.selected_group() : 0;		// the selection is a group (Ctrl+1-9)
 
@@ -365,7 +415,10 @@ void unit_list_disp(Unit* mainUnit, int dispY1, int refreshFlag)
 
 //--------- Begin of function unit_list_detect ---------//
 //
-// Left click on a unit: select only that unit and show its panel.
+// Left click on a unit: it's the unit in focus (shown in the unit panel and
+// below the list); the selection and the list are kept.
+// Ctrl + left click: also center the map on it.
+// Double click: select only that unit and show its panel.
 // Right click on a unit: remove it from the selection (or the inspect list).
 //
 int unit_list_detect(Unit* mainUnit, int dispY1)
@@ -408,9 +461,9 @@ int unit_list_detect(Unit* mainUnit, int dispY1)
 
 		int unitRecno = recnoArray[i];
 
-		//--- left click: select only this unit and show its panel ---//
+		//--- double click: select only this unit and show its panel ---//
 
-		if( mouse.any_click(x, y, x+27, y+23, LEFT_BUTTON) )
+		if( mouse.double_click(x, y, x+27, y+23) )
 		{
 			unit_list_close();
 
@@ -418,6 +471,25 @@ int unit_list_detect(Unit* mainUnit, int dispY1)
 			// for units of other kingdoms, the inspect list is kept and ">" shows it again
 
 			select_one_unit(unitRecno);
+			return 1;
+		}
+
+		//--- left click: the unit in focus; with Ctrl, also center the map on it ---//
+
+		if( mouse.single_click(x, y, x+27, y+23) )
+		{
+			Unit* unitPtr = unit_array[unitRecno];
+
+			if( ownList )
+				unit_array.selected_recno = unitRecno;		// the selection is kept
+			else
+				select_one_unit(unitRecno);		// the inspect list is kept, and stays open
+
+			if( mouse.event_skey_state & CONTROL_KEY_MASK )
+				world.go_loc( unitPtr->next_x_loc(), unitPtr->next_y_loc() );
+
+			se_ctrl.immediate_sound("TURN_ON");
+			info.disp();
 			return 1;
 		}
 

@@ -37,6 +37,7 @@ class GroupSelect
 
 		void	group_units(int groupNum);
 		int	select_grouped_units(int groupNum);		// 7kmod: returns the unit shown in the panel, 0 if the group has none
+		void	key_select_group(int groupNum);		// 7kmod: Alt+number; the same number again soon also centers the map on the group
 
 		//--- 7kmod: the buttons of the groups, at the right of the news, and the group of the selection ---//
 
