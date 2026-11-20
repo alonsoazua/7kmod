@@ -76,6 +76,7 @@ static short  last_list_count;
 static short  last_list_page;
 
 static int	  sort_main_nation_recno;					// for sorting the inspect list
+static int	  inspect_first_nation_recno;				// the kingdom first in the inspect list: the one of the unit shown when the list was made (changing the unit in focus doesn't reorder it)
 
 //------- static functions -------//
 
@@ -148,7 +149,10 @@ int unit_list_units(Unit* mainUnit, short* recnoArray)
 				recnoArray[unitCount++] = unitRecno;
 		}
 
-		sort_main_nation_recno = mainUnit->nation_recno;
+		if( !inspect_first_nation_recno )		// the unit in the panel when the inspect list was made
+			inspect_first_nation_recno = mainUnit->nation_recno ? mainUnit->nation_recno : -1;
+
+		sort_main_nation_recno = inspect_first_nation_recno;
 
 		qsort( recnoArray, unitCount, sizeof(short), sort_inspect_function );
 	}
@@ -552,6 +556,7 @@ int unit_list_detect(Unit* mainUnit, int dispY1)
 void unit_list_set_inspect(short* recnoArray, int unitCount)
 {
 	inspect_unit_count = MIN(unitCount, MAX_UNIT_LIST);
+	inspect_first_nation_recno = 0;		// set by the first unit shown
 
 	memcpy( inspect_unit_array, recnoArray, sizeof(short)*inspect_unit_count );
 
@@ -572,6 +577,7 @@ void unit_list_set_inspect(short* recnoArray, int unitCount)
 void unit_list_clear_inspect()
 {
 	inspect_unit_count = 0;
+	inspect_first_nation_recno = 0;
 }
 //----------- End of function unit_list_clear_inspect -----------//
 
