@@ -16,7 +16,7 @@ the game plays. This branch includes everything in the `7kmod` branch, documente
   changes, and the first stays at 0 while the mod is still being tested.
 - Sections of each version: **Added**, **Changed**, **Fixed**, **Compatibility**.
 - This file is the English translation of `CHANGELOG-gameplay.md`; both are updated
-  together. `COMBAT_ANALYSIS.md` is in Spanish only.
+  together.
 
 ---
 
@@ -26,6 +26,8 @@ the game plays. This branch includes everything in the `7kmod` branch, documente
 - **Players' guide** (`GUIDE.md` and `GUIDE.en.md`): everything the mod changes, by
   topic and in players' terms, with what is only in New Adversaries marked [NA]. The
   installer puts it in `Docs` and in the Start menu.
+- **`COMBAT_ANALYSIS` in English** (`COMBAT_ANALYSIS.en.md`), and the installer puts it
+  in `Docs` with the other documents.
 - **Fryhtan kingdom** (brought from `7kmod-fryhtan`): the training bar on the map (from
   7kmod) also on the lairs.
 

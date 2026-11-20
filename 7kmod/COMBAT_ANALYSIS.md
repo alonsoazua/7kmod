@@ -1,5 +1,7 @@
 # Análisis de combate: soldados y Fryhtans
 
+**Español** | [English](COMBAT_ANALYSIS.en.md)
+
 Cómo funciona el combate entre unidades, con los números de cada raza y de cada
 Fryhtan. Las secciones 1 a 6 describen las reglas y datos del **juego original**
 (sin el balance del mod) y sirven como referencia para comparar. La sección 8

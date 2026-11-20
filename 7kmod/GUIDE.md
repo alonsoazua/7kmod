@@ -308,7 +308,7 @@ repositorio:
 |---|---|
 | `KEYBINDINGS.md` | Todas las teclas y cómo cambiarlas |
 | `ADVANCED_CONFIG.md` | Opciones avanzadas de `config.txt` |
-| `COMBAT_ANALYSIS.md` | Cómo funciona el combate, con tablas por raza y Fryhtan (solo en el repositorio, en español) |
+| `COMBAT_ANALYSIS.md` | Cómo funciona el combate, con tablas por raza y Fryhtan |
 | `SIEGE_WEAPONS.md` | Armas de asedio |
 | `GREATER_BEINGS.md` | Greater Beings y sus poderes |
 | `SPYING.md` | Espionaje |

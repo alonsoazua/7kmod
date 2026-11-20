@@ -47,7 +47,7 @@ for f in CHANGELOG CHANGELOG-gameplay CHANGELOG-fryhtan; do
 	txt "$REPO/7kmod/$f.md"    "$STAGE/Changelog/$f.txt"
 	txt "$REPO/7kmod/$f.en.md" "$STAGE/Changelog/$f.en.txt"
 done
-for f in GUIDE KEYBINDINGS GREATER_BEINGS SPYING SIEGE_WEAPONS ADVANCED_CONFIG; do
+for f in GUIDE KEYBINDINGS GREATER_BEINGS SPYING SIEGE_WEAPONS COMBAT_ANALYSIS ADVANCED_CONFIG; do
 	txt "$REPO/7kmod/$f.md"    "$STAGE/Docs/$f.txt"
 	txt "$REPO/7kmod/$f.en.md" "$STAGE/Docs/$f.en.txt"
 done

@@ -76,6 +76,8 @@ versión en inglés con el mismo nombre terminado en `.en.md`.
 - `KEYBINDINGS.md`: atajos de teclado.
 - `GREATER_BEINGS.md`, `SPYING.md`, `SIEGE_WEAPONS.md`: cómo funcionan los Greater
   Beings, el espionaje y las armas de asedio.
+- `COMBAT_ANALYSIS.md` (en `7kmod-gameplay`): cómo funciona el combate, con tablas por
+  raza y Fryhtan.
 
 ## Compilar
 

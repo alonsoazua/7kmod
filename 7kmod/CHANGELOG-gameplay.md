@@ -25,6 +25,8 @@ estilo de juego. Esta rama incluye todo lo de la rama `7kmod`, documentado en
 - **Guía para jugadores** (`GUIDE.md` y `GUIDE.en.md`): todo lo que cambia el mod, por
   tema y en lenguaje de jugador, con lo que solo está en New Adversaries marcado [NA].
   El instalador la pone en `Docs` y en el menú Inicio.
+- **`COMBAT_ANALYSIS` en inglés** (`COMBAT_ANALYSIS.en.md`), y el instalador lo pone en
+  `Docs` con los demás documentos.
 - **Reino Fryhtan** (traído de `7kmod-fryhtan`): la barra de entrenamiento en el mapa
   (de 7kmod) también en las guaridas.
 

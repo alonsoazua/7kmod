@@ -149,7 +149,7 @@ The full list of keys of the game and the mod, and how to change them, is in
   attacks at another combat level; the Zulus are 25% faster.
 - **Shots are no longer blocked** by buildings, walls or mountains.
 
-The exact numbers are in `COMBAT_ANALYSIS.md` (in Spanish).
+The exact numbers are in `COMBAT_ANALYSIS.en.md`.
 
 ---
 
@@ -306,7 +306,7 @@ repository:
 |---|---|
 | `KEYBINDINGS.en.md` | All the keys and how to change them |
 | `ADVANCED_CONFIG.en.md` | Advanced options of `config.txt` |
-| `COMBAT_ANALYSIS.md` | How combat works, with tables by race and Fryhtan (repository only, in Spanish) |
+| `COMBAT_ANALYSIS.en.md` | How combat works, with tables by race and Fryhtan |
 | `SIEGE_WEAPONS.en.md` | Siege weapons |
 | `GREATER_BEINGS.en.md` | Greater Beings and their powers |
 | `SPYING.en.md` | Spying |
