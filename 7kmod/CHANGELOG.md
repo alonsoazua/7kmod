@@ -23,6 +23,18 @@ incluye todo lo de `7kmod` y documenta lo suyo en `CHANGELOG-gameplay.md`.
 
 ## [Sin publicar]
 
+### Agregado
+- **Grupos más claros** (`Ctrl+1`–`9` para asignar, `Alt+1`–`9` para seleccionar):
+  - **Botones de grupo:** en la orilla derecha del mapa, encima del botón de borrar
+    noticias, un botón chico por cada grupo con unidades en el mapa, del 1 (arriba) al 9
+    (abajo), cada uno en su lugar fijo y con el estilo de los botones de noticias. Clic
+    selecciona el grupo; doble clic además centra la vista en él. El del grupo
+    seleccionado se ve hundido.
+  - **Panel de la unidad:** junto al color del reino, un cuadro con el número del grupo de
+    la unidad (solo tus unidades con grupo).
+  - **Lista de unidades:** dice "Group N" abajo cuando la selección es exactamente un
+    grupo.
+
 ---
 
 ## [0.5.0] - 2026-11-19

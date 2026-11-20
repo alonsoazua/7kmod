@@ -25,6 +25,7 @@
 #include <string.h>
 #include <OVGA.h>
 #include <vga_util.h>
+#include <OGRPSEL.h>
 #include <OFONT.h>
 #include <OMOUSE.h>
 #include <OHELP.h>
@@ -259,11 +260,22 @@ void unit_list_disp(Unit* mainUnit, int dispY1, int refreshFlag)
 	{
 		vga_util.d3_panel_up( INFO_X1, dispY1, INFO_X2, INFO_Y2 );
 
+		int groupNum = mainUnit->is_own() ? group_select.selected_group() : 0;		// the selection is a group (Ctrl+1-9)
+
 		if( pageCount > 1 )
 		{
 			String str;
 
-			str  = _("Page");
+			if( groupNum )
+			{
+				// TRANSLATORS: Group <Number>
+				str  = _("Group");
+				str += " ";
+				str += groupNum;
+				str += "   ";
+			}
+
+			str += _("Page");
 			str += " ";
 			str += list_page+1;
 			str += " / ";
@@ -278,6 +290,17 @@ void unit_list_disp(Unit* mainUnit, int dispY1, int refreshFlag)
 		{
 			button_list_prev.reset();
 			button_list_next.reset();
+
+			if( groupNum )
+			{
+				String str;
+
+				str  = _("Group");
+				str += " ";
+				str += groupNum;
+
+				font_san.put( INFO_X1+6, stripY1+5, str );
+			}
 		}
 	}
 

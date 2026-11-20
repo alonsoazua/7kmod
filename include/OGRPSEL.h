@@ -36,7 +36,13 @@ class GroupSelect
 		void	deinit();
 
 		void	group_units(int groupNum);
-		void	select_grouped_units(int groupNum);
+		int	select_grouped_units(int groupNum);		// 7kmod: returns the unit shown in the panel, 0 if the group has none
+
+		//--- 7kmod: the buttons of the groups, at the right of the news, and the group of the selection ---//
+
+		void	disp_buttons();
+		int	detect_buttons();
+		int	selected_group();		// the group that is exactly the selected units, 0 if none
 };
 
 extern GroupSelect group_select;
