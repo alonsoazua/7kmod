@@ -23,7 +23,18 @@ incluye todo lo de `7kmod` y documenta lo suyo en `CHANGELOG-gameplay.md`.
 
 ## [Sin publicar]
 
+---
+
+## [0.5.0] - 2026-11-20
+
+Publicada como **New Adversaries Classic 0.5.0**, en el instalador
+`NewAdversaries-0.5.0-setup.exe`.
+
 ### Agregado
+- **Aviso "Game Speed":** al cambiar la velocidad (teclas `1`–`9`), al quitar la pausa y
+  al iniciar o cargar una partida aparece "Game Speed: N" (N es la tecla de esa
+  velocidad, 9 la máxima) en el mismo lugar que "Game Paused", durante 10 segundos. En
+  multijugador también aparece cuando otro jugador cambia la velocidad.
 - **Grupos más claros** (`Ctrl+1`–`9` para asignar, `Alt+1`–`9` para seleccionar):
   - **Botones de grupo:** en la orilla derecha del mapa, encima del botón de borrar
     noticias, un botón chico por cada grupo con unidades en el mapa, del 1 (arriba) al 9
@@ -51,20 +62,6 @@ incluye todo lo de `7kmod` y documenta lo suyo en `CHANGELOG-gameplay.md`.
     (antes seleccionaba solo esa unidad); **doble clic** selecciona solo esa unidad;
     **`Ctrl` + clic** la pone en foco y centra la vista en ella. El clic derecho la sigue
     quitando de la selección.
-
----
-
-## [0.5.0] - 2026-11-19
-
-Publicada como **New Adversaries Classic 0.5.0**, en el instalador
-`NewAdversaries-0.5.0-setup.exe`.
-
-### Agregado
-
-- **Aviso "Game Speed":** al cambiar la velocidad (teclas `1`–`9`), al quitar la pausa y
-  al iniciar o cargar una partida aparece "Game Speed: N" (N es la tecla de esa
-  velocidad, 9 la máxima) en el mismo lugar que "Game Paused", durante 10 segundos. En
-  multijugador también aparece cuando otro jugador cambia la velocidad.
 
 ---
 
